@@ -1,9 +1,15 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {StyleSheet, Switch, Text, TouchableOpacity, View} from 'react-native';
 import {useTheme} from '../../utils/ThemeProvider';
 
 export const SplashScreen = ({navigation}) => {
   const {theme, toggleTheme, colorTheme} = useTheme();
+
+  useEffect(() => {
+    setTimeout(() => {
+      navigation.navigate('LoginScreen');
+    }, 3000);
+  }, []);
 
   return (
     <View style={{flex: 1, backgroundColor: theme.background}}>
@@ -14,12 +20,7 @@ export const SplashScreen = ({navigation}) => {
             backgroundColor: theme.background,
           },
         ]}>
-        <TouchableOpacity onPress={() => navigation.navigate('LoginScreen')}>
-          <Text style={[styles.text, {color: theme.text}]}>LoginScreen</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigation.navigate('SettingScreen')}>
-          <Text style={[styles.text, {color: theme.text}]}>SettingScreen</Text>
-        </TouchableOpacity>
+        <Text style={[styles.text, {color: theme.text}]}>SplashScreen</Text>
       </View>
     </View>
   );

@@ -35,7 +35,7 @@ export const DashboardScreen = ({navigation}) => {
       </View>
       <View style={[styles.mainView, {backgroundColor: theme.background}]}>
         <ScrollView
-          contentContainerStyle={{paddingBottom: hp(4)}}
+          contentContainerStyle={{paddingBottom: hp(12)}}
           showsVerticalScrollIndicator={false}>
           <View style={[styles.boxView, {backgroundColor: theme.lightColor}]}>
             <View
@@ -64,10 +64,46 @@ export const DashboardScreen = ({navigation}) => {
               />
             </View>
             <View>
-              <Text style={[styles.optionText, {color: theme.headerColor}]}>
+              <Text style={[styles.optionText, {color: theme.text}]}>
                 {'TK 6.30M'}
               </Text>
-              <Text style={[styles.optionText, {color: COLORS.black}]}>
+              <Text style={[styles.optionText, {color: theme.text}]}>
+                {'Invoice Amount'}
+              </Text>
+            </View>
+          </View>
+
+          <View style={[styles.boxView, {backgroundColor: theme.lightColor}]}>
+            <View
+              style={[styles.roundView, {backgroundColor: theme.headerColor}]}>
+              <Image
+                source={setting}
+                style={[styles.iconStyle1, {tintColor: COLORS.white}]}
+              />
+            </View>
+            <View>
+              <Text style={[styles.optionText, {color: theme.text}]}>
+                {'TK 6.30M'}
+              </Text>
+              <Text style={[styles.optionText, {color: theme.text}]}>
+                {'Invoice Amount'}
+              </Text>
+            </View>
+          </View>
+
+          <View style={[styles.boxView, {backgroundColor: theme.lightColor}]}>
+            <View
+              style={[styles.roundView, {backgroundColor: theme.headerColor}]}>
+              <Image
+                source={setting}
+                style={[styles.iconStyle1, {tintColor: COLORS.white}]}
+              />
+            </View>
+            <View>
+              <Text style={[styles.optionText, {color: theme.text}]}>
+                {'TK 6.30M'}
+              </Text>
+              <Text style={[styles.optionText, {color: theme.text}]}>
                 {'Invoice Amount'}
               </Text>
             </View>

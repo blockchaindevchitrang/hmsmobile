@@ -52,6 +52,8 @@
   "delete_app": "Delete App",
   "are_you_sure_you_want_to_delete_this_app": "Are you sure you want to delete this account?",
   "terms_use": "Terms of Use",
-  "privacy_policy": "Privacy Policy"
-
+  "privacy_policy": "Privacy Policy",
+  "doctor": "Doctor",
+  "appointment": "Appointment",
+  "notification": "Notification" 
 }

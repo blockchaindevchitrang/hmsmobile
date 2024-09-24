@@ -112,7 +112,6 @@ export const LoginScreen = ({navigation}) => {
             {t('please_first_enter_password')}
           </Text>
         )}
-        {/* <View style={styles.forgotView}> */}
         <Text
           style={[styles.forgotPassword, {color: theme.headerColor}]}
           onPress={() => {
@@ -120,14 +119,13 @@ export const LoginScreen = ({navigation}) => {
           }}>
           {t('forget_password')}
         </Text>
-        {/* </View> */}
 
         <TouchableOpacity
           style={[
             styles.buttonView,
             {opacity: isLoading ? 0.75 : 1, backgroundColor: theme.headerColor},
           ]}
-          onPress={() => navigation.navigate('DashboardScreen')}>
+          onPress={() => navigation.navigate('TabStack')}>
           {isLoading ? (
             <ActivityIndicator size={'large'} color={COLORS.white} />
           ) : (

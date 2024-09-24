@@ -5,8 +5,8 @@ const lightModeColors = {
   text: '#222',
   background: '#fff',
   buttonBackground: '#ddd',
-  headerColor: '#31a8a6',
-  lightColor: '#56f0ed',
+  headerColor: '#5eead4',
+  lightColor: '#ccfff0',
   grayColor: '#c7c7c7',
 };
 
@@ -14,8 +14,8 @@ const darkModeColors = {
   text: '#fff',
   background: '#222',
   buttonBackground: '#444',
-  headerColor: '#31a8a6',
-  lightColor: '#56f0ed',
+  headerColor: '#5eead4',
+  lightColor: '#ccfff0',
   grayColor: '#c7c7c7',
 };
 

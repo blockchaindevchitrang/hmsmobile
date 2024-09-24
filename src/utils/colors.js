@@ -29,7 +29,9 @@ const COLORS = {
   pinkColor: '#ff72b7',
   blueColor: '#6491f4',
   purpleColor: '#a76cf8',
-  lightBlueColor: '#55f0f4',
+  lightBlueColor: '#ccfff0',
+  lightColor: '#ccfff0',
+  headerGreenColor: '#5eead4',
 };
 
 export default COLORS;

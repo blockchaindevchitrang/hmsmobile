@@ -50,5 +50,8 @@
   "delete_app": "Xóa ứng dụng",
   "are_you_sure_you_want_to_delete_this_app": "Bạn có chắc chắn muốn xóa tài khoản này?",
   "terms_use": "Điều khoản sử dụng",
-  "privacy_policy": "Chính sách bảo mật"
+  "privacy_policy": "Chính sách bảo mật",
+  "doctor": "Bác sĩ",
+  "appointment": "Cuộc hẹn",
+  "notification": "Thông báo"
 }

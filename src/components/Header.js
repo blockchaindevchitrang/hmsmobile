@@ -5,22 +5,15 @@ import {
   TouchableOpacity,
   Image,
   StyleSheet,
-  DevSettings,
 } from 'react-native';
-import React, {useEffect, useState, useRef} from 'react';
+import React from 'react';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from './Pixel/index';
 import bell from '../images/bell.png';
-import sort from '../images/sort.png';
-import volumeMute from '../images/volumeMute.png';
-import sync from '../images/sync.png';
 import {COLORS, Fonts} from '../utils';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import back from '../images/back.png';
-import RNRestart from 'react-native-restart';
-import {useTranslation} from 'react-i18next';
 import {useTheme} from '../utils/ThemeProvider';
 
 const Header = ({
@@ -38,7 +31,7 @@ const Header = ({
 
   return (
     <SafeAreaView
-      style={[styles.safeAreaStyle, {backgroundColor: theme.lightColor}]}>
+      style={[styles.safeAreaStyle, {backgroundColor: theme.headerColor}]}>
       <View style={styles.container}>
         <View style={styles.titleView}>
           {backVisible && (
@@ -46,22 +39,9 @@ const Header = ({
               <Image style={styles.moreIcon} source={back} />
             </TouchableOpacity>
           )}
-          {userRole == 'admin' && (
-            <TouchableOpacity
-              style={styles.backIcon}
-              onPress={() => {
-                navigation.openDrawer();
-                if (filterVisible) {
-                  setFilterVisible(false);
-                }
-              }}>
-              <Image
-                style={[styles.moreIcon, {tintColor: COLORS.black}]}
-                source={sort}
-              />
-            </TouchableOpacity>
-          )}
-          <Text style={[styles.titleHeader, {color: COLORS.black}]}>{title}</Text>
+          <Text style={[styles.titleHeader, {color: COLORS.black}]}>
+            {title}
+          </Text>
         </View>
         <View style={styles.titleView}>
           {!notify && (
@@ -80,14 +60,6 @@ const Header = ({
               />
             </TouchableOpacity>
           )}
-          <TouchableOpacity
-            style={{marginHorizontal: wp(2)}}
-            onPress={() => RNRestart.restart()}>
-            <Image
-              style={[styles.bellIcon, {tintColor: COLORS.black}]}
-              source={sync}
-            />
-          </TouchableOpacity>
         </View>
       </View>
     </SafeAreaView>

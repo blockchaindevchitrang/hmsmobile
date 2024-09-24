@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: wp(4),
   },
   titleListText: {
-    fontSize: hp(2.1),
+    fontSize: hp(2),
     fontFamily: Fonts.FONTS.PoppinsBold,
     color: COLORS.black,
   },
@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
   },
   dataListText: {
     fontSize: hp(2),
-    fontFamily: Fonts.FONTS.PoppinsBold,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
   },
   dateBox: {
@@ -158,8 +158,8 @@ const styles = StyleSheet.create({
     textAlign: 'right',
   },
   dataListText1: {
-    fontSize: hp(1.8),
-    fontFamily: Fonts.FONTS.PoppinsBold,
+    fontSize: hp(1.7),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
     textAlign: 'center',
   },

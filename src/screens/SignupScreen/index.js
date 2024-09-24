@@ -118,7 +118,7 @@ export const SignupScreen = ({navigation}) => {
             styles.buttonView,
             {opacity: isLoading ? 0.75 : 1, backgroundColor: theme.headerColor},
           ]}
-          onPress={() => navigation.navigate('DashboardScreen')}>
+          onPress={() => navigation.navigate('TabStack')}>
           {isLoading ? (
             <ActivityIndicator size={'large'} color={COLORS.white} />
           ) : (
