@@ -27,7 +27,7 @@ const COLORS = {
   lightWhite: '#fae3d9',
   orangeColor: '#FFA577',
   pinkColor: '#ff72b7',
-  blueColor: '#6491f4',
+  blueColor: '#4285F4',
   purpleColor: '#a76cf8',
   lightBlueColor: '#ccfff0',
   lightColor: '#ccfff0',

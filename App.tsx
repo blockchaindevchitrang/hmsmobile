@@ -22,11 +22,13 @@ import bot from './src/images/health.png';
 import robot1 from './src/images/appointment.png';
 import letter from './src/images/bell.png';
 import setting from './src/images/more.png';
+import people from './src/images/people.png';
 import AppointmentScreen from './src/screens/AppointmentScreen';
 import DoctorScreen from './src/screens/DoctorScreen';
 import NotificationScreen from './src/screens/NotificationScreen';
 import {useTheme} from './src/utils/ThemeProvider';
 import {MenuProvider} from 'react-native-popup-menu';
+import UsersScreen from './src/screens/UsersScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -116,8 +118,8 @@ const TabStack = () => {
         }}
       />
       <Tab.Screen
-        name="NotificationScreen"
-        component={NotificationScreen}
+        name="UsersScreen"
+        component={UsersScreen}
         options={{
           headerShown: false,
           tabBarIcon: ({focused}) => (
@@ -126,7 +128,7 @@ const TabStack = () => {
                 styles.bottomView,
                 {backgroundColor: focused ? COLORS.white : theme.headerColor},
               ]}>
-              <Image style={styles.imageView1} source={letter} />
+              <Image style={styles.imageView1} source={people} />
             </View>
           ),
         }}

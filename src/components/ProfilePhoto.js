@@ -29,16 +29,16 @@ const styles = StyleSheet.create({
     margin: 7,
   },
   circle: {
-    width: 40, // Adjust size as needed
-    height: 40, // Adjust size as needed
-    borderRadius: 40, // Half of the width and height to make it a circle
+    width: 35, // Adjust size as needed
+    height: 35, // Adjust size as needed
+    borderRadius: 35, // Half of the width and height to make it a circle
     backgroundColor: '#3498db', // Change to any color or use a function to generate a color
     alignItems: 'center', // Center the text horizontally
     justifyContent: 'center', // Center the text vertically
   },
   text: {
     color: COLORS.white, // Text color
-    fontSize: hp(2.2), // Adjust font size for two characters
+    fontSize: hp(2), // Adjust font size for two characters
     fontWeight: Fonts.FONTS.PoppinsBold, // Make text bold
   },
 });

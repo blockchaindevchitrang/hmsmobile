@@ -31,12 +31,34 @@ const DoctorComponent = ({
   search,
   setSearch,
   allData,
+  filterData,
   setFilter,
-  backVisible,
-  userRole,
-  notify,
-  filterVisible,
-  setFilterVisible,
+  practice,
+  setPractice,
+  firstName,
+  setFirstName,
+  lastName,
+  setLastName,
+  middleName,
+  setMiddleName,
+  address1,
+  setAddress1,
+  address2,
+  setAddress2,
+  doctorCity,
+  setDoctorCity,
+  doctorState,
+  setDoctorState,
+  doctorZip,
+  setDoctorZip,
+  doctorFax,
+  setDoctorFax,
+  doctorEmail,
+  setDoctorEmail,
+  doctorContact,
+  setDoctorContact,
+  doctorAlternate,
+  setDoctorAlternate,
 }) => {
   const {theme} = useTheme();
   const menuRef = useRef(null);
@@ -102,8 +124,9 @@ const DoctorComponent = ({
             <TextInput
               value={search}
               placeholder={'Search'}
+              placeholderTextColor={theme.text}
               onChangeText={text => setSearch(text)}
-              style={styles.searchView}
+              style={[styles.searchView, {color: theme.text}]}
             />
             <View style={styles.filterView}>
               <TouchableOpacity style={styles.filterView1}>
@@ -176,7 +199,9 @@ const DoctorComponent = ({
                     ListEmptyComponent={() => (
                       <View key={0} style={styles.ListEmptyView}>
                         <View style={styles.subEmptyView}>
-                          <Text style={styles.emptyText}>{'No record found'}</Text>
+                          <Text style={styles.emptyText}>
+                            {'No record found'}
+                          </Text>
                         </View>
                       </View>
                     )}
@@ -191,7 +216,9 @@ const DoctorComponent = ({
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{paddingBottom: hp(12)}}>
           <View style={styles.subView}>
-            <Text style={styles.doctorText}>New Doctor</Text>
+            <Text style={[styles.doctorText, {color: theme.text}]}>
+              New Doctor
+            </Text>
             <View style={styles.filterView}>
               <TouchableOpacity
                 onPress={() => setAddDoctorVisible(false)}
@@ -208,9 +235,9 @@ const DoctorComponent = ({
               Practice<Text style={styles.dataHistoryText4}>*</Text>
             </Text>
             <TextInput
-              value={search}
+              value={practice}
               placeholder={'Select'}
-              onChangeText={text => setSearch(text)}
+              onChangeText={text => setPractice(text)}
               style={[styles.nameTextView, {width: '100%'}]}
             />
             <View style={styles.nameView}>
@@ -219,9 +246,9 @@ const DoctorComponent = ({
                   First Name<Text style={styles.dataHistoryText4}>*</Text>
                 </Text>
                 <TextInput
-                  value={search}
+                  value={firstName}
                   placeholder={'Enter first name'}
-                  onChangeText={text => setSearch(text)}
+                  onChangeText={text => setFirstName(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
                 />
               </View>
@@ -231,9 +258,9 @@ const DoctorComponent = ({
                   Last Name<Text style={styles.dataHistoryText4}>*</Text>
                 </Text>
                 <TextInput
-                  value={search}
+                  value={lastName}
                   placeholder={'Enter last name'}
-                  onChangeText={text => setSearch(text)}
+                  onChangeText={text => setLastName(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
                 />
               </View>
@@ -245,9 +272,9 @@ const DoctorComponent = ({
                   Middle Name<Text style={styles.dataHistoryText4}>*</Text>
                 </Text>
                 <TextInput
-                  value={search}
+                  value={middleName}
                   placeholder={'Enter middle name'}
-                  onChangeText={text => setSearch(text)}
+                  onChangeText={text => setMiddleName(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
                 />
               </View>
@@ -257,13 +284,150 @@ const DoctorComponent = ({
                   Practice<Text style={styles.dataHistoryText4}>*</Text>
                 </Text>
                 <TextInput
-                  value={search}
+                  value={practice}
                   placeholder={'Select'}
-                  onChangeText={text => setSearch(text)}
+                  onChangeText={text => setPractice(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
                 />
               </View>
             </View>
+
+            <Text style={[styles.dataHistoryText1, {marginBottom: hp(1)}]}>
+              <Text style={styles.dataHistoryText4}>*</Text>Mendatory
+            </Text>
+          </View>
+
+          <View style={styles.contactView}>
+            <Text
+              style={[
+                styles.doctorText,
+                {paddingVertical: hp(1), color: theme.text},
+              ]}>
+              Contact Information
+            </Text>
+            <View style={styles.nameView}>
+              <View style={{width: '48%'}}>
+                <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
+                  Address Line 1 <Text style={styles.dataHistoryText4}>*</Text>
+                </Text>
+                <TextInput
+                  value={address1}
+                  placeholder={'Enter Address Line 1'}
+                  onChangeText={text => setAddress1(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                />
+              </View>
+
+              <View style={{width: '48%'}}>
+                <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
+                  Address Line 2
+                </Text>
+                <TextInput
+                  value={address2}
+                  placeholder={'Enter Address Line 2'}
+                  onChangeText={text => setAddress2(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                />
+              </View>
+            </View>
+            <View style={styles.nameView}>
+              <View style={{width: '32%'}}>
+                <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
+                  City<Text style={styles.dataHistoryText4}>*</Text>
+                </Text>
+                <TextInput
+                  value={doctorCity}
+                  placeholder={'Enter City'}
+                  onChangeText={text => setDoctorCity(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                />
+              </View>
+
+              <View style={{width: '32%'}}>
+                <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
+                  State<Text style={styles.dataHistoryText4}>*</Text>
+                </Text>
+                <TextInput
+                  value={doctorState}
+                  placeholder={'Select'}
+                  onChangeText={text => setDoctorState(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                />
+              </View>
+
+              <View style={{width: '32%'}}>
+                <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
+                  Zip<Text style={styles.dataHistoryText4}>*</Text>
+                </Text>
+                <TextInput
+                  value={doctorZip}
+                  placeholder={'12345-1234'}
+                  onChangeText={text => setDoctorZip(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                />
+              </View>
+            </View>
+
+            <View style={styles.nameView}>
+              <View style={{width: '48%'}}>
+                <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
+                  Fax
+                </Text>
+                <TextInput
+                  value={doctorFax}
+                  placeholder={'Enter Fax'}
+                  onChangeText={text => setDoctorFax(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                />
+              </View>
+
+              <View style={{width: '48%'}}>
+                <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
+                  Email<Text style={styles.dataHistoryText4}>*</Text>
+                </Text>
+                <TextInput
+                  value={doctorEmail}
+                  placeholder={'Enter Email'}
+                  onChangeText={text => setDoctorEmail(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                />
+              </View>
+            </View>
+
+            <View style={styles.nameView}>
+              <View style={{width: '48%'}}>
+                <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
+                  Contact Phone<Text style={styles.dataHistoryText4}>*</Text>
+                </Text>
+                <TextInput
+                  value={doctorContact}
+                  placeholder={'Enter Contact Phone'}
+                  onChangeText={text => setDoctorContact(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                />
+              </View>
+
+              <View style={{width: '48%'}}>
+                <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
+                  Alternate Phone
+                </Text>
+                <TextInput
+                  value={doctorAlternate}
+                  placeholder={'Enter Alternate Phone'}
+                  onChangeText={text => setDoctorAlternate(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                />
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.buttonView}>
+            <TouchableOpacity onPress={() => {}} style={styles.prevView}>
+              <Text style={styles.prevText}>Previous</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => {}} style={styles.nextView}>
+              <Text style={styles.nextText}>Next</Text>
+            </TouchableOpacity>
           </View>
         </ScrollView>
       )}
@@ -465,7 +629,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.greyColor,
     fontFamily: Fonts.FONTS.PoppinsMedium,
-    fontSize: hp(2),
+    fontSize: hp(1.8),
     color: COLORS.black,
     borderRadius: 5,
     marginTop: hp(1),
@@ -476,6 +640,49 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     width: '100%',
-    marginTop: hp(2),
+    marginVertical: hp(2),
+  },
+  contactView: {
+    width: '94%',
+    paddingVertical: hp(2),
+    paddingHorizontal: wp(3),
+    alignSelf: 'center',
+    borderRadius: wp(2),
+  },
+  buttonView: {
+    width: '94%',
+    paddingHorizontal: wp(3),
+    alignSelf: 'center',
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  nextView: {
+    height: hp(4.5),
+    paddingHorizontal: wp(4),
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.blueColor,
+    marginLeft: wp(2),
+  },
+  nextText: {
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    fontSize: hp(2.2),
+    color: COLORS.white,
+  },
+  prevView: {
+    height: hp(4.5),
+    paddingHorizontal: wp(4),
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.lightGreyColor,
+    marginLeft: wp(2),
+  },
+  prevText: {
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    fontSize: hp(2.2),
+    color: COLORS.white,
   },
 });
