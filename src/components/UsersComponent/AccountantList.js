@@ -27,23 +27,27 @@ import draw from '../../images/draw.png';
 import DatePicker from 'react-native-date-picker';
 import ImagePicker from 'react-native-image-crop-picker';
 
-const UserList = ({searchBreak, setSearchBreak, allData}) => {
+const AccountantList = ({searchBreak, setSearchBreak, allData}) => {
   const {theme} = useTheme();
   const [newUserVisible, setNewUserVisible] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState('');
+  const [number, setNumber] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [address, setAddress] = useState('');
+  const [address1, setAddress1] = useState('');
   const [city, setCity] = useState('');
-  const [country, setCountry] = useState('');
+  const [bloodGroup, setBloodGroup] = useState('');
+  const [designation, setDesignation] = useState('');
+  const [qualification, setQualification] = useState('');
   const [postalCode, setPostalCode] = useState('');
   const [genderType, setGenderType] = useState('female');
   const [dateOfBirth, setDateOfBirth] = useState(new Date());
   const [dateModalVisible, setDateModalVisible] = useState(false);
   const [avatar, setAvatar] = useState(null);
+  const [status, setStatus] = useState(false);
 
   const openProfileImagePicker = async () => {
     try {
@@ -91,20 +95,8 @@ const UserList = ({searchBreak, setSearchBreak, allData}) => {
         </View>
         <Text
           style={[styles.dataHistoryText, {width: wp(26), textAlign: 'left'}]}>
-          {item.role}
+          {item.phone}
         </Text>
-        <View style={[styles.switchView]}>
-          <Switch
-            trackColor={{
-              false: item.verify ? COLORS.greenColor : COLORS.errorColor,
-              true: item.verify ? COLORS.greenColor : COLORS.errorColor,
-            }}
-            thumbColor={item.verify ? '#f4f3f4' : '#f4f3f4'}
-            ios_backgroundColor={COLORS.errorColor}
-            onValueChange={() => {}}
-            value={item.verify}
-          />
-        </View>
         <View style={[styles.switchView]}>
           <Switch
             trackColor={{
@@ -141,7 +133,7 @@ const UserList = ({searchBreak, setSearchBreak, allData}) => {
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{paddingBottom: hp(12)}}>
-          <View style={styles.subView}>
+          <View style={[styles.subView, {flexWrap: 'wrap'}]}>
             <TextInput
               value={searchBreak}
               placeholder={'Search'}
@@ -149,16 +141,16 @@ const UserList = ({searchBreak, setSearchBreak, allData}) => {
               onChangeText={text => setSearchBreak(text)}
               style={[styles.searchView, {color: theme.text}]}
             />
-            <View style={styles.filterView}>
-              <TouchableOpacity style={styles.filterView1}>
-                <Image style={styles.filterImage} source={filter} />
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => setNewUserVisible(true)}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>New User</Text>
-              </TouchableOpacity>
-            </View>
+          </View>
+          <View style={styles.filterView}>
+            <TouchableOpacity style={styles.filterView1}>
+              <Image style={styles.filterImage} source={filter} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setNewUserVisible(true)}
+              style={styles.actionView}>
+              <Text style={styles.actionText}>New Accountant</Text>
+            </TouchableOpacity>
           </View>
           <View
             style={[styles.activeView, {backgroundColor: theme.headerColor}]}>
@@ -170,13 +162,10 @@ const UserList = ({searchBreak, setSearchBreak, allData}) => {
                     {backgroundColor: theme.headerColor},
                   ]}>
                   <Text style={[styles.titleText, {width: wp(55)}]}>
-                    {'USERS'}
+                    {'ACCOUNTANTS'}
                   </Text>
                   <Text style={[styles.titleText, {width: wp(26)}]}>
-                    {'ROLE'}
-                  </Text>
-                  <Text style={[styles.titleText, {width: wp(24)}]}>
-                    {'EMAIL VERIFIED'}
+                    {'PHONE'}
                   </Text>
                   <Text style={[styles.titleText, {width: wp(24)}]}>
                     {'STATUS'}
@@ -215,7 +204,7 @@ const UserList = ({searchBreak, setSearchBreak, allData}) => {
           contentContainerStyle={{paddingBottom: hp(12)}}>
           <View style={styles.subView}>
             <Text style={[styles.doctorText, {color: theme.text}]}>
-              Create User
+              New Accountant
             </Text>
             <View style={styles.filterView}>
               <TouchableOpacity
@@ -263,51 +252,57 @@ const UserList = ({searchBreak, setSearchBreak, allData}) => {
 
             <View style={styles.nameView}>
               <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>ROLE</Text>
+                <Text style={styles.dataHistoryText1}>Phone:</Text>
                 <TextInput
-                  value={role}
-                  placeholder={'Select'}
-                  onChangeText={text => setRole(text)}
+                  value={number}
+                  placeholder={'9903618823'}
+                  onChangeText={text => setNumber(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>PASSWORD</Text>
-                <TextInput
-                  value={password}
-                  placeholder={'******'}
-                  onChangeText={text => setPassword(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                  secureTextEntry={true}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>CONFIRM PASSWORD</Text>
-                <TextInput
-                  value={confirmPassword}
-                  placeholder={'******'}
-                  onChangeText={text => setConfirmPassword(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                  secureTextEntry={true}
                 />
               </View>
             </View>
 
             <View style={styles.nameView}>
               <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>BLOOD GROUP:</Text>
+                <TextInput
+                  value={bloodGroup}
+                  placeholder={'Select'}
+                  onChangeText={text => setBloodGroup(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                />
+              </View>
+
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>DESIGNATION:</Text>
+                <TextInput
+                  value={designation}
+                  placeholder={'9903618823'}
+                  onChangeText={text => setDesignation(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                />
+              </View>
+            </View>
+
+            <View style={styles.nameView}>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>QUALIFICATION:</Text>
+                <TextInput
+                  value={qualification}
+                  placeholder={'9903618823'}
+                  onChangeText={text => setQualification(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                />
+              </View>
+
+              <View style={{width: '48%'}}>
                 <Text style={styles.dataHistoryText1}>DATE OF BIRTH</Text>
                 {/* <TextInput
-                  value={firstName}
-                  placeholder={'Enter first name'}
-                  onChangeText={text => setFirstName(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                /> */}
+                    value={firstName}
+                    placeholder={'Enter first name'}
+                    onChangeText={text => setFirstName(text)}
+                    style={[styles.nameTextView, {width: '100%'}]}
+                  /> */}
                 <Text
                   style={[
                     styles.nameTextView,
@@ -331,7 +326,8 @@ const UserList = ({searchBreak, setSearchBreak, allData}) => {
                   }}
                 />
               </View>
-
+            </View>
+            <View style={styles.nameView}>
               <View style={{width: '48%'}}>
                 <Text style={styles.dataHistoryText1}>GENDER</Text>
                 <View style={[styles.statusView, {paddingVertical: hp(1)}]}>
@@ -371,15 +367,84 @@ const UserList = ({searchBreak, setSearchBreak, allData}) => {
                   </View>
                 </View>
               </View>
+
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>STATUS</Text>
+                <View style={styles.statusView}>
+                  <Switch
+                    trackColor={{
+                      false: status ? COLORS.greenColor : COLORS.errorColor,
+                      true: status ? COLORS.greenColor : COLORS.errorColor,
+                    }}
+                    thumbColor={status ? '#f4f3f4' : '#f4f3f4'}
+                    ios_backgroundColor={COLORS.errorColor}
+                    onValueChange={() => setStatus(!status)}
+                    value={status}
+                  />
+                </View>
+              </View>
             </View>
 
             <View style={styles.nameView}>
               <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>ADDRESS</Text>
+                <Text style={styles.dataHistoryText1}>PASSWORD</Text>
+                <TextInput
+                  value={password}
+                  placeholder={'******'}
+                  onChangeText={text => setPassword(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                  secureTextEntry={true}
+                />
+              </View>
+            </View>
+
+            <View style={styles.nameView}>
+              <View style={{width: '100%'}}>
+                <Text style={styles.dataHistoryText1}>CONFIRM PASSWORD</Text>
+                <TextInput
+                  value={confirmPassword}
+                  placeholder={'******'}
+                  onChangeText={text => setConfirmPassword(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                  secureTextEntry={true}
+                />
+              </View>
+            </View>
+
+            <View style={styles.nameView}>
+              <View>
+                <Text style={styles.dataHistoryText1}>PROFILE</Text>
+                <View style={styles.profilePhotoView}>
+                  <TouchableOpacity
+                    style={styles.editView}
+                    onPress={() => openProfileImagePicker()}>
+                    <Image style={styles.editImage1} source={draw} />
+                  </TouchableOpacity>
+                  <Image style={styles.profileImage} source={man} />
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.nameView}>
+              <View style={{width: '100%'}}>
+                <Text style={styles.dataHistoryText1}>ADDRESS 1</Text>
                 <TextInput
                   value={address}
-                  placeholder={'******'}
+                  placeholder={'address 1'}
                   onChangeText={text => setAddress(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                  secureTextEntry={true}
+                />
+              </View>
+            </View>
+
+            <View style={styles.nameView}>
+              <View style={{width: '100%'}}>
+                <Text style={styles.dataHistoryText1}>ADDRESS 2</Text>
+                <TextInput
+                  value={address1}
+                  placeholder={'address 2'}
+                  onChangeText={text => setAddress1(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
                   secureTextEntry={true}
                 />
@@ -398,39 +463,13 @@ const UserList = ({searchBreak, setSearchBreak, allData}) => {
               </View>
 
               <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>COUNTRY</Text>
-                <TextInput
-                  value={country}
-                  placeholder={'Enter country'}
-                  onChangeText={text => setCountry(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>POSTAL CODE</Text>
+                <Text style={styles.dataHistoryText1}>ZIP</Text>
                 <TextInput
                   value={postalCode}
-                  placeholder={'Postal Code'}
+                  placeholder={'Zip'}
                   onChangeText={text => setPostalCode(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
                 />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View>
-                <Text style={styles.dataHistoryText1}>PROFILE</Text>
-                <View style={styles.profilePhotoView}>
-                  <TouchableOpacity
-                    style={styles.editView}
-                    onPress={() => openProfileImagePicker()}>
-                    <Image style={styles.editImage1} source={draw} />
-                  </TouchableOpacity>
-                  <Image style={styles.profileImage} source={man} />
-                </View>
               </View>
             </View>
           </View>
@@ -449,7 +488,7 @@ const UserList = ({searchBreak, setSearchBreak, allData}) => {
   );
 };
 
-export default UserList;
+export default AccountantList;
 
 const styles = StyleSheet.create({
   safeAreaStyle: {
@@ -466,8 +505,8 @@ const styles = StyleSheet.create({
     marginVertical: hp(2),
   },
   searchView: {
-    width: '50%',
-    paddingHorizontal: wp(2),
+    width: '100%',
+    paddingHorizontal: wp(3),
     paddingVertical: hp(0.5),
     borderWidth: 1,
     borderColor: COLORS.greyColor,
@@ -479,6 +518,9 @@ const styles = StyleSheet.create({
   filterView: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'flex-end',
+    paddingHorizontal: wp(3),
+    paddingBottom: hp(1),
   },
   filterView1: {
     height: hp(5),

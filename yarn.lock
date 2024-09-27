@@ -3161,9 +3161,11 @@ __metadata:
     react-native: 0.74.1
     react-native-calendar-picker: ^8.0.5
     react-native-config: ^1.5.3
+    react-native-date-picker: ^5.0.7
     react-native-device-info: ^11.1.0
     react-native-flash-message: ^0.4.2
     react-native-gesture-handler: ^2.19.0
+    react-native-image-crop-picker: ^0.41.2
     react-native-keyboard-aware-scroll-view: ^0.9.5
     react-native-localize: ^3.2.1
     react-native-modal: ^13.0.1
@@ -8576,6 +8578,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-native-date-picker@npm:^5.0.7":
+  version: 5.0.7
+  resolution: "react-native-date-picker@npm:5.0.7"
+  peerDependencies:
+    react: ">= 17.0.1"
+    react-native: ">= 0.64.3"
+  checksum: 94191bf3ce6e88a3acc4ca5e5514eaa6fc15c61666393d85ca258dba3a3efd9145c8fd31ed0f18676d7f083e17f08c760de8193ad24367a65761330084bcdc6b
+  languageName: node
+  linkType: hard
+
 "react-native-device-info@npm:^11.1.0":
   version: 11.1.0
   resolution: "react-native-device-info@npm:11.1.0"
@@ -8611,6 +8623,15 @@ __metadata:
     react: "*"
     react-native: "*"
   checksum: ce9b9fc6537debf962e6b8d84f1c4cf18fe00f39bd86498e84a203ebb26bf3543c2642ed247d974537840407b7ddb602939fd8c817c00a3416e87bddc8f2088f
+  languageName: node
+  linkType: hard
+
+"react-native-image-crop-picker@npm:^0.41.2":
+  version: 0.41.2
+  resolution: "react-native-image-crop-picker@npm:0.41.2"
+  peerDependencies:
+    react-native: ">=0.40.0"
+  checksum: c1333b3b761e948bd0bc856773f68dcc859c7ce39dda3e14d2c32c17d55927735bfc5cbbb7ac5e8bac21feda87c93399f2a596aca7d5b0611cc1e8203d97ad2e
   languageName: node
   linkType: hard
 

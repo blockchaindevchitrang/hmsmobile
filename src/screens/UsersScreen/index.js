@@ -20,6 +20,8 @@ import {TabView, SceneMap} from 'react-native-tab-view';
 import {COLORS} from '../../utils';
 import TransactionComponent from '../../components/TransactionComponent';
 import UserList from '../../components/UsersComponent/UserList';
+import AccountantList from '../../components/UsersComponent/AccountantList';
+import NursesList from '../../components/UsersComponent/NursesList';
 
 const allData = [
   {
@@ -64,6 +66,82 @@ const allData = [
   },
 ];
 
+const accountantData = [
+  {
+    id: 1,
+    name: 'Joey Tribiyani',
+    mail: 'joey@gmail.com',
+    phone: '9876543210',
+    status: true,
+  },
+  {
+    id: 2,
+    name: 'Monica Geller',
+    mail: 'monica@gmail.com',
+    phone: '9876543210',
+    status: true,
+  },
+  {
+    id: 3,
+    name: 'Ross Geller',
+    mail: 'ross@gmail.com',
+    phone: 'NA',
+    status: true,
+  },
+  {
+    id: 4,
+    name: 'Monica Geller',
+    mail: 'monica@gmail.com',
+    phone: '9876543210',
+    status: true,
+  },
+  {
+    id: 5,
+    name: 'Ross Geller',
+    mail: 'ross@gmail.com',
+    phone: '9876543210',
+    status: true,
+  },
+];
+
+const NurseData = [
+  {
+    id: 1,
+    name: 'Joey Tribiyani',
+    mail: 'joey@gmail.com',
+    phone: '9876543210',
+    status: true,
+  },
+  {
+    id: 2,
+    name: 'Monica Geller',
+    mail: 'monica@gmail.com',
+    phone: '9876543210',
+    status: true,
+  },
+  {
+    id: 3,
+    name: 'Ross Geller',
+    mail: 'ross@gmail.com',
+    phone: 'NA',
+    status: true,
+  },
+  {
+    id: 4,
+    name: 'Monica Geller',
+    mail: 'monica@gmail.com',
+    phone: '9876543210',
+    status: true,
+  },
+  {
+    id: 5,
+    name: 'Ross Geller',
+    mail: 'ross@gmail.com',
+    phone: '9876543210',
+    status: true,
+  },
+];
+
 export const UsersScreen = ({navigation}) => {
   const {t} = useTranslation();
   const {theme} = useTheme();
@@ -77,36 +155,40 @@ export const UsersScreen = ({navigation}) => {
     {key: 'technicians', title: 'Lab Technicians'},
     {key: 'pharmacists', title: 'Pharmacists'},
   ]);
+  const [searchUser, setSearchUser] = useState('');
+  const [searchRole, setSearchRole] = useState('');
+  const [searchAccountant, setSearchAccountant] = useState('');
   const [searchBreak, setSearchBreak] = useState('');
+  const [searchNurse, setSearchNurse] = useState('');
 
   const UserRoute = () => (
     <UserList
-      searchBreak={searchBreak}
-      setSearchBreak={setSearchBreak}
+      searchBreak={searchUser}
+      setSearchBreak={setSearchUser}
       allData={allData}
     />
   );
 
   const RoleRoute = () => (
     <TransactionComponent
-      searchBreak={searchBreak}
-      setSearchBreak={setSearchBreak}
+      searchBreak={searchRole}
+      setSearchBreak={setSearchRole}
       allData={allData}
     />
   );
 
   const AccountantRoute = () => (
-    <TransactionComponent
-      searchBreak={searchBreak}
-      setSearchBreak={setSearchBreak}
-      allData={allData}
+    <AccountantList
+      searchBreak={searchAccountant}
+      setSearchBreak={setSearchAccountant}
+      allData={accountantData}
     />
   );
 
   const NursesRoute = () => (
-    <TransactionComponent
-      searchBreak={searchBreak}
-      setSearchBreak={setSearchBreak}
+    <NursesList
+      searchBreak={searchNurse}
+      setSearchBreak={setSearchNurse}
       allData={allData}
     />
   );
