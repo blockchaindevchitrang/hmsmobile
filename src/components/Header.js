@@ -5,6 +5,8 @@ import {
   TouchableOpacity,
   Image,
   StyleSheet,
+  Alert,
+  Platform,
 } from 'react-native';
 import React from 'react';
 import {
@@ -14,6 +16,7 @@ import {
 import bell from '../images/bell.png';
 import {COLORS, Fonts} from '../utils';
 import back from '../images/back.png';
+import more from '../images/more.png';
 import {useTheme} from '../utils/ThemeProvider';
 
 const Header = ({
@@ -26,6 +29,7 @@ const Header = ({
   notify,
   filterVisible,
   setFilterVisible,
+  moreButtonClick,
 }) => {
   const {theme} = useTheme();
 
@@ -60,6 +64,20 @@ const Header = ({
               />
             </TouchableOpacity>
           )}
+          <TouchableOpacity
+            style={styles.bellButtonView}
+            onPress={moreButtonClick}>
+            <Image
+              style={[
+                styles.bellIcon,
+                {
+                  // marginHorizontal: wp(3),
+                  tintColor: COLORS.black,
+                },
+              ]}
+              source={more}
+            />
+          </TouchableOpacity>
         </View>
       </View>
     </SafeAreaView>

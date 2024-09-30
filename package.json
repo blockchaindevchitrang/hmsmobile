@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^2.0.0",
+    "@react-native-community/blur": "^4.4.1",
     "@react-navigation/bottom-tabs": "^6.6.1",
     "@react-navigation/native": "^6.1.18",
     "@react-navigation/native-stack": "^6.11.0",
@@ -26,6 +27,7 @@
     "react-native": "0.74.1",
     "react-native-calendar-picker": "^8.0.5",
     "react-native-config": "^1.5.3",
+    "react-native-context-menu-view": "^1.16.0",
     "react-native-date-picker": "^5.0.7",
     "react-native-device-info": "^11.1.0",
     "react-native-flash-message": "^0.4.2",

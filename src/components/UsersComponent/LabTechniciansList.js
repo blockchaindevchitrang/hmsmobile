@@ -33,7 +33,7 @@ import {
   MenuTrigger,
 } from 'react-native-popup-menu';
 
-const NursesList = ({searchBreak, setSearchBreak, allData}) => {
+const LabTechniciansList = ({searchBreak, setSearchBreak, allData}) => {
   const {theme} = useTheme();
   const menuRef = useRef(null);
   const [newUserVisible, setNewUserVisible] = useState(false);
@@ -102,16 +102,8 @@ const NursesList = ({searchBreak, setSearchBreak, allData}) => {
           </View>
         </View>
         <Text
-          style={[styles.dataHistoryText, {width: wp(26), textAlign: 'left'}]}>
-          {item.phone}
-        </Text>
-        <Text
-          style={[styles.dataHistoryText, {width: wp(30)}]}>
-          {item.qualification}
-        </Text>
-        <Text
-          style={[styles.dataHistoryText, {width: wp(24)}]}>
-          {item.bod}
+          style={[styles.dataHistoryText, {width: wp(27), textAlign: 'left'}]}>
+          {item.designation}
         </Text>
         <View style={[styles.switchView]}>
           <Switch
@@ -182,7 +174,9 @@ const NursesList = ({searchBreak, setSearchBreak, allData}) => {
                 <MenuTrigger text={''} />
                 <MenuOptions style={{marginVertical: hp(0.5)}}>
                   <MenuOption value={'add'}>
-                    <Text style={styles.dataHistoryText3}>New Nurse</Text>
+                    <Text style={styles.dataHistoryText3}>
+                      New Lab Technician
+                    </Text>
                   </MenuOption>
                   <MenuOption value={'excel'}>
                     <Text style={styles.dataHistoryText3}>Export to Excel</Text>
@@ -202,16 +196,10 @@ const NursesList = ({searchBreak, setSearchBreak, allData}) => {
                     {backgroundColor: theme.headerColor},
                   ]}>
                   <Text style={[styles.titleText, {width: wp(55)}]}>
-                    {'NURSES'}
+                    {'LAB TECHNICIAN'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(26)}]}>
-                    {'PHONE'}
-                  </Text>
-                  <Text style={[styles.titleText, {width: wp(30)}]}>
-                    {'QUALIFICATION'}
-                  </Text>
-                  <Text style={[styles.titleText, {width: wp(24)}]}>
-                    {'BIRTH DATE'}
+                  <Text style={[styles.titleText, {width: wp(27)}]}>
+                    {'DESIGNATION'}
                   </Text>
                   <Text style={[styles.titleText, {width: wp(24)}]}>
                     {'STATUS'}
@@ -250,7 +238,7 @@ const NursesList = ({searchBreak, setSearchBreak, allData}) => {
           contentContainerStyle={{paddingBottom: hp(12)}}>
           <View style={styles.subView}>
             <Text style={[styles.doctorText, {color: theme.text}]}>
-              Nurses Account
+              Lab Technicians Account
             </Text>
             <View style={styles.filterView}>
               <TouchableOpacity
@@ -389,11 +377,11 @@ const NursesList = ({searchBreak, setSearchBreak, allData}) => {
               <View style={{width: '48%'}}>
                 <Text style={styles.dataHistoryText1}>DATE OF BIRTH</Text>
                 {/* <TextInput
-                      value={firstName}
-                      placeholder={'Enter first name'}
-                      onChangeText={text => setFirstName(text)}
-                      style={[styles.nameTextView, {width: '100%'}]}
-                    /> */}
+                          value={firstName}
+                          placeholder={'Enter first name'}
+                          onChangeText={text => setFirstName(text)}
+                          style={[styles.nameTextView, {width: '100%'}]}
+                        /> */}
                 <Text
                   style={[
                     styles.nameTextView,
@@ -543,7 +531,7 @@ const NursesList = ({searchBreak, setSearchBreak, allData}) => {
   );
 };
 
-export default NursesList;
+export default LabTechniciansList;
 
 const styles = StyleSheet.create({
   safeAreaStyle: {

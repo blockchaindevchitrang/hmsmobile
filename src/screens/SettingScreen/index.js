@@ -28,7 +28,7 @@ export const SettingScreen = ({navigation}) => {
             backgroundColor: theme.background,
           },
         ]}>
-        <View style={[styles.settingView, {borderColor: theme.text}]}>
+        <View style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
           <Text style={[styles.text, {color: theme.text}]}>
             {colorTheme === 'dark' ? 'Dark Mode' : 'Light Mode'}
           </Text>
@@ -39,6 +39,10 @@ export const SettingScreen = ({navigation}) => {
             onValueChange={toggleTheme}
             value={colorTheme === 'dark'}
           />
+        </View>
+
+        <View style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
+          <Text style={[styles.text, {color: theme.text}]}>{'Billings'}</Text>
         </View>
       </View>
     </View>
@@ -69,6 +73,25 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingHorizontal: wp(4),
     borderRadius: wp(2),
+    marginBottom: 15,
+  },
+  menuOption: {
+    marginBottom: 15,
+    backgroundColor: '#ffd6a5',
+    borderRadius: 10,
+    width: '100%',
+    height: hp(6.5),
+    alignItems: 'center',
+    paddingHorizontal: wp(4),
+    justifyContent: 'space-between',
+    flexDirection: 'row',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.22,
+    shadowRadius: 2.22,
+    elevation: 3,
   },
 });
 
