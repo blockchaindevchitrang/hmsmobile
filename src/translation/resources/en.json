@@ -56,5 +56,6 @@
   "doctor": "Doctor",
   "appointment": "Appointment",
   "notification": "Notification",
-  "users": "Users"
+  "users": "Users",
+  "billing": "Billings"
 }

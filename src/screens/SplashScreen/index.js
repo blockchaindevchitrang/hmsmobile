@@ -1,6 +1,18 @@
-import React, { useEffect } from 'react';
-import {StyleSheet, Switch, Text, TouchableOpacity, View} from 'react-native';
+import React, {useEffect} from 'react';
+import {
+  Image,
+  StyleSheet,
+  Switch,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import {useTheme} from '../../utils/ThemeProvider';
+import headerLogo from '../../images/headerLogo.png';
+import {
+  heightPercentageToDP as hp,
+  widthPercentageToDP as wp,
+} from '../../components/Pixel';
 
 export const SplashScreen = ({navigation}) => {
   const {theme, toggleTheme, colorTheme} = useTheme();
@@ -20,7 +32,7 @@ export const SplashScreen = ({navigation}) => {
             backgroundColor: theme.background,
           },
         ]}>
-        <Text style={[styles.text, {color: theme.text}]}>SplashScreen</Text>
+        <Image source={headerLogo} style={styles.headerLogoImage} />
       </View>
     </View>
   );
@@ -39,6 +51,11 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 24,
     marginBottom: 20,
+  },
+  headerLogoImage: {
+    width: wp(50),
+    height: hp(12),
+    resizeMode: 'contain',
   },
 });
 

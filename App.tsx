@@ -20,15 +20,14 @@ import {
 import chart from './src/images/dashboards.png';
 import bot from './src/images/health.png';
 import robot1 from './src/images/appointment.png';
-import letter from './src/images/bell.png';
 import setting from './src/images/more.png';
 import people from './src/images/people.png';
 import AppointmentScreen from './src/screens/AppointmentScreen';
 import DoctorScreen from './src/screens/DoctorScreen';
-import NotificationScreen from './src/screens/NotificationScreen';
 import {useTheme} from './src/utils/ThemeProvider';
 import {MenuProvider} from 'react-native-popup-menu';
 import UsersScreen from './src/screens/UsersScreen';
+import BillingScreen from './src/screens/BillingScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -134,8 +133,8 @@ const TabStack = () => {
         }}
       />
       <Tab.Screen
-        name="SettingScreen"
-        component={SettingScreen}
+        name="SettingStack"
+        component={SettingStack}
         options={{
           headerShown: false,
           tabBarIcon: ({focused}) => (
@@ -152,6 +151,23 @@ const TabStack = () => {
     </Tab.Navigator>
   );
 };
+
+function SettingStack() {
+  return (
+    <Stack.Navigator initialRouteName="SettingScreen">
+      <Stack.Screen
+        name="SettingScreen"
+        component={SettingScreen}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="BillingScreen"
+        component={BillingScreen}
+        options={{headerShown: false}}
+      />
+    </Stack.Navigator>
+  );
+}
 
 const App = () => {
   return (

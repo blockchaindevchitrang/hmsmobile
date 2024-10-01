@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: '#FF3B30',
     borderRadius: 10,
-    width: '80%',
+    width: '90%',
   },
   closeButtonText: {
     textAlign: 'center',
@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     backgroundColor: '#ffd6a5',
     borderRadius: 10,
-    width: '80%',
+    width: '90%',
     height: hp(6.5),
     alignItems: 'center',
     justifyContent: 'center',
