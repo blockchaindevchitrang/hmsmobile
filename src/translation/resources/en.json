@@ -57,5 +57,7 @@
   "appointment": "Appointment",
   "notification": "Notification",
   "users": "Users",
-  "billing": "Billings"
+  "billing": "Billings",
+  "bed_management": "Bed Management",
+  "blood_bank": "Blood Bank"
 }

@@ -60,7 +60,9 @@ const lightModeColors = {
   headerColor: '#5eead4', // Default header color
   lightColor: '#ccfff0',
   grayColor: '#c7c7c7',
-  purpleColor: '#d1b5f5',
+  purpleColor: '#e8c9fa',
+  lightRedColor: '#fad7d2',
+  redColor: '#f95252',
 };
 
 const darkModeColors = {
@@ -70,7 +72,9 @@ const darkModeColors = {
   headerColor: '#5eead4', // Default header color
   lightColor: '#ccfff0',
   grayColor: '#c7c7c7',
-  purpleColor: '#d1b5f5',
+  purpleColor: '#e8c9fa',
+  lightRedColor: '#fad7d2',
+  redColor: '#f95252',
 };
 
 // AsyncStorage keys

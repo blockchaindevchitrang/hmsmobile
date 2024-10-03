@@ -55,5 +55,7 @@
   "appointment": "Cuộc hẹn",
   "notification": "Thông báo",
   "users": "Người dùng",
-  "billing": "Billings"
+  "billing": "Billings",
+  "bed_management": "Bed Management",
+  "blood_bank": "Blood Bank"
 }

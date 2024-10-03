@@ -14,10 +14,10 @@ import React, {useRef, useState} from 'react';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
-} from './../Pixel/index';
+} from '../Pixel/index';
 import {COLORS, Fonts} from '../../utils';
 import {useTheme} from '../../utils/ThemeProvider';
-import ProfilePhoto from './../ProfilePhoto';
+import ProfilePhoto from '../ProfilePhoto';
 import moment from 'moment';
 import deleteIcon from '../../images/delete.png';
 import editing from '../../images/editing.png';
@@ -26,55 +26,23 @@ import man from '../../images/man.png';
 import draw from '../../images/draw.png';
 import DatePicker from 'react-native-date-picker';
 import ImagePicker from 'react-native-image-crop-picker';
+import {
+  Menu,
+  MenuOptions,
+  MenuOption,
+  MenuTrigger,
+} from 'react-native-popup-menu';
 
-const PayrollList = ({searchBreak, setSearchBreak, allData}) => {
+const BedList = ({searchBreak, setSearchBreak, allData}) => {
   const {theme} = useTheme();
+  const menuRef = useRef(null);
   const [newUserVisible, setNewUserVisible] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [address, setAddress] = useState('');
-  const [city, setCity] = useState('');
-  const [country, setCountry] = useState('');
-  const [postalCode, setPostalCode] = useState('');
+  const [number, setNumber] = useState('');
   const [genderType, setGenderType] = useState('female');
-  const [dateOfBirth, setDateOfBirth] = useState(new Date());
-  const [dateModalVisible, setDateModalVisible] = useState(false);
-  const [avatar, setAvatar] = useState(null);
   const [status, setStatus] = useState(false);
-
-  const openProfileImagePicker = async () => {
-    try {
-      const image = await ImagePicker.openPicker({
-        width: 300,
-        height: 400,
-        cropping: false,
-        multiple: false, // Allow selecting only one image
-        compressImageQuality: 0.5,
-      });
-
-      if (image && image.path) {
-        if (image && image.path) {
-          var filename = image.path.substring(image.path.lastIndexOf('/') + 1);
-          let imageData = {
-            uri: Platform.OS === 'ios' ? image.sourceURL : image.path,
-            type: image.mime,
-            name: Platform.OS === 'ios' ? image.filename : filename,
-          };
-          setAvatar(imageData);
-
-          console.log('Selected image:', avatar);
-        }
-      } else {
-        console.log('No image selected');
-      }
-    } catch (error) {
-      console.log('Error selecting image:', error);
-    }
-  };
 
   const renderItem = ({item, index}) => {
     return (
@@ -83,33 +51,23 @@ const PayrollList = ({searchBreak, setSearchBreak, allData}) => {
           styles.dataHistoryView,
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
-        <Text style={[styles.dataHistoryText, {width: wp(14)}]}>
-          {item.srNo}
-        </Text>
-        <View style={[styles.switchView, {width: wp(26)}]}>
+        <View style={[styles.switchView, {width: wp(24)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataHistoryText1]}>{item.payroll}</Text>
+            <Text style={[styles.dataHistoryText1]}>{item.bed_id}</Text>
           </View>
         </View>
+        <Text style={[styles.dataHistoryText, {width: wp(16)}]}>
+          {item.bed}
+        </Text>
         <View style={[styles.nameDataView]}>
-          <ProfilePhoto username={item.name} />
-          <View>
-            <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
-            <Text style={[styles.dataHistoryText1]}>{item.mail}</Text>
-          </View>
+          <Text style={[styles.dataHistoryText2]}>{item.bed_type}</Text>
         </View>
-        <Text style={[styles.dataHistoryText, {width: wp(16)}]}>
-          {item.month}
-        </Text>
-        <Text style={[styles.dataHistoryText, {width: wp(16)}]}>
-          {item.year}
-        </Text>
         <Text style={[styles.dataHistoryText, {width: wp(24)}]}>
-          {item.salary}
+          {item.charge}
         </Text>
         <View style={[styles.switchView, {width: wp(24)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataHistoryText]}>{item.status}</Text>
+            <Text style={[styles.dataHistoryText1]}>{item.available}</Text>
           </View>
         </View>
         <View style={styles.actionDataView}>
@@ -150,10 +108,33 @@ const PayrollList = ({searchBreak, setSearchBreak, allData}) => {
               <Image style={styles.filterImage} source={filter} />
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() => setNewUserVisible(true)}
+              onPress={() => {
+                if (menuRef.current) {
+                  menuRef.current.open(); // Open the menu on button press
+                }
+              }}
               style={styles.actionView}>
-              <Text style={styles.actionText}>New Employee Payroll</Text>
+              <Text style={styles.actionText}>Action</Text>
             </TouchableOpacity>
+            <Menu
+              ref={menuRef}
+              onSelect={value => {
+                if (value == 'add') {
+                  setNewUserVisible(true);
+                } else {
+                  alert(`Selected number: ${value}`);
+                }
+              }}>
+              <MenuTrigger text={''} />
+              <MenuOptions style={{marginVertical: hp(0.5)}}>
+                <MenuOption value={'add'}>
+                  <Text style={styles.dataHistoryText3}>New Payment</Text>
+                </MenuOption>
+                <MenuOption value={'excel'}>
+                  <Text style={styles.dataHistoryText3}>Export to Excel</Text>
+                </MenuOption>
+              </MenuOptions>
+            </Menu>
           </View>
           <View
             style={[styles.activeView, {backgroundColor: theme.headerColor}]}>
@@ -164,30 +145,24 @@ const PayrollList = ({searchBreak, setSearchBreak, allData}) => {
                     styles.titleActiveView,
                     {backgroundColor: theme.headerColor},
                   ]}>
-                  <Text style={[styles.titleText, {width: wp(14)}]}>
-                    {'SR NO'}
+                  <Text style={[styles.titleText, {width: wp(24)}]}>
+                    {'BED ID'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(26)}]}>
-                    {'PAYROLL ID'}
+                  <Text style={[styles.titleText, {width: wp(16)}]}>
+                    {'BED'}
                   </Text>
                   <Text
                     style={[
                       styles.titleText,
-                      {width: wp(55), textAlign: 'left'},
+                      {width: wp(28), textAlign: 'left'},
                     ]}>
-                    {'EMPLOYEE'}
-                  </Text>
-                  <Text style={[styles.titleText, {width: wp(16)}]}>
-                    {'MONTH'}
-                  </Text>
-                  <Text style={[styles.titleText, {width: wp(16)}]}>
-                    {'YEAR'}
+                    {'BED TYPE'}
                   </Text>
                   <Text style={[styles.titleText, {width: wp(24)}]}>
-                    {'NET SALARY'}
+                    {'CHARGE'}
                   </Text>
                   <Text style={[styles.titleText, {width: wp(24)}]}>
-                    {'STATUS'}
+                    {'AVAILABLE'}
                   </Text>
                   <Text style={[styles.titleText, {width: wp(16)}]}>
                     {'ACTION'}
@@ -223,7 +198,7 @@ const PayrollList = ({searchBreak, setSearchBreak, allData}) => {
           contentContainerStyle={{paddingBottom: hp(12)}}>
           <View style={styles.subView}>
             <Text style={[styles.doctorText, {color: theme.text}]}>
-              Create Employee Payroll
+              Payments Account
             </Text>
             <View style={styles.filterView}>
               <TouchableOpacity
@@ -271,75 +246,17 @@ const PayrollList = ({searchBreak, setSearchBreak, allData}) => {
 
             <View style={styles.nameView}>
               <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>ROLE</Text>
+                <Text style={styles.dataHistoryText1}>Phone:</Text>
                 <TextInput
-                  value={role}
-                  placeholder={'Select'}
-                  onChangeText={text => setRole(text)}
+                  value={number}
+                  placeholder={'9903618823'}
+                  onChangeText={text => setNumber(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
                 />
               </View>
             </View>
 
             <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>PASSWORD</Text>
-                <TextInput
-                  value={password}
-                  placeholder={'******'}
-                  onChangeText={text => setPassword(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                  secureTextEntry={true}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>CONFIRM PASSWORD</Text>
-                <TextInput
-                  value={confirmPassword}
-                  placeholder={'******'}
-                  onChangeText={text => setConfirmPassword(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                  secureTextEntry={true}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>DATE OF BIRTH</Text>
-                {/* <TextInput
-                  value={firstName}
-                  placeholder={'Enter first name'}
-                  onChangeText={text => setFirstName(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                /> */}
-                <Text
-                  style={[
-                    styles.nameTextView,
-                    {width: '100%', paddingVertical: hp(1)},
-                  ]}
-                  onPress={() => setDateModalVisible(!dateModalVisible)}>
-                  {moment(dateOfBirth).format('DD/MM/YYYY')}
-                </Text>
-                <DatePicker
-                  open={dateModalVisible}
-                  modal={true}
-                  date={dateOfBirth}
-                  mode={'date'}
-                  onConfirm={date => {
-                    console.log('Console Log>>', date);
-                    setDateModalVisible(false);
-                    setDateOfBirth(date);
-                  }}
-                  onCancel={() => {
-                    setDateModalVisible(false);
-                  }}
-                />
-              </View>
-
               <View style={{width: '48%'}}>
                 <Text style={styles.dataHistoryText1}>GENDER</Text>
                 <View style={[styles.statusView, {paddingVertical: hp(1)}]}>
@@ -379,65 +296,20 @@ const PayrollList = ({searchBreak, setSearchBreak, allData}) => {
                   </View>
                 </View>
               </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>ADDRESS</Text>
-                <TextInput
-                  value={address}
-                  placeholder={'******'}
-                  onChangeText={text => setAddress(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                  secureTextEntry={true}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>CITY</Text>
-                <TextInput
-                  value={city}
-                  placeholder={'Enter city'}
-                  onChangeText={text => setCity(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
 
               <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>COUNTRY</Text>
-                <TextInput
-                  value={country}
-                  placeholder={'Enter country'}
-                  onChangeText={text => setCountry(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>POSTAL CODE</Text>
-                <TextInput
-                  value={postalCode}
-                  placeholder={'Postal Code'}
-                  onChangeText={text => setPostalCode(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View>
-                <Text style={styles.dataHistoryText1}>PROFILE</Text>
-                <View style={styles.profilePhotoView}>
-                  <TouchableOpacity
-                    style={styles.editView}
-                    onPress={() => openProfileImagePicker()}>
-                    <Image style={styles.editImage1} source={draw} />
-                  </TouchableOpacity>
-                  <Image style={styles.profileImage} source={man} />
+                <Text style={styles.dataHistoryText1}>STATUS</Text>
+                <View style={styles.statusView}>
+                  <Switch
+                    trackColor={{
+                      false: status ? COLORS.greenColor : COLORS.errorColor,
+                      true: status ? COLORS.greenColor : COLORS.errorColor,
+                    }}
+                    thumbColor={status ? '#f4f3f4' : '#f4f3f4'}
+                    ios_backgroundColor={COLORS.errorColor}
+                    onValueChange={() => setStatus(!status)}
+                    value={status}
+                  />
                 </View>
               </View>
             </View>
@@ -457,7 +329,7 @@ const PayrollList = ({searchBreak, setSearchBreak, allData}) => {
   );
 };
 
-export default PayrollList;
+export default BedList;
 
 const styles = StyleSheet.create({
   safeAreaStyle: {
@@ -600,7 +472,7 @@ const styles = StyleSheet.create({
   nameDataView: {
     flexDirection: 'row',
     alignItems: 'center',
-    width: wp(55),
+    width: wp(28),
     marginHorizontal: wp(2),
   },
   switchView: {

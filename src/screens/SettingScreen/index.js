@@ -24,10 +24,10 @@ const rangeArray = [
   '#65b6f6',
   '#65f69c',
   '#b5f58d',
+  '#f4c4f6',
   '#f665bf',
   '#f66595',
   '#f57979',
-  '#79e6f5',
   '#c68df5',
   '#f5cf8d',
   '#f5a38d',
@@ -140,6 +140,7 @@ export const SettingScreen = ({navigation}) => {
           </TouchableOpacity>
 
           <TouchableOpacity
+            onPress={() => navigation.navigate('BedScreen')}
             style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
             <Text style={[styles.text, {color: theme.text}]}>
               {'Bed Management'}
@@ -147,6 +148,7 @@ export const SettingScreen = ({navigation}) => {
           </TouchableOpacity>
 
           <TouchableOpacity
+            onPress={() => navigation.navigate('BloodBankScreen')}
             style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
             <Text style={[styles.text, {color: theme.text}]}>
               {'Blood Bank'}

@@ -27,54 +27,14 @@ import draw from '../../images/draw.png';
 import DatePicker from 'react-native-date-picker';
 import ImagePicker from 'react-native-image-crop-picker';
 
-const PayrollList = ({searchBreak, setSearchBreak, allData}) => {
+const InvoicesList = ({searchBreak, setSearchBreak, allData}) => {
   const {theme} = useTheme();
   const [newUserVisible, setNewUserVisible] = useState(false);
-  const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [role, setRole] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [address, setAddress] = useState('');
-  const [city, setCity] = useState('');
   const [country, setCountry] = useState('');
   const [postalCode, setPostalCode] = useState('');
-  const [genderType, setGenderType] = useState('female');
   const [dateOfBirth, setDateOfBirth] = useState(new Date());
   const [dateModalVisible, setDateModalVisible] = useState(false);
-  const [avatar, setAvatar] = useState(null);
-  const [status, setStatus] = useState(false);
-
-  const openProfileImagePicker = async () => {
-    try {
-      const image = await ImagePicker.openPicker({
-        width: 300,
-        height: 400,
-        cropping: false,
-        multiple: false, // Allow selecting only one image
-        compressImageQuality: 0.5,
-      });
-
-      if (image && image.path) {
-        if (image && image.path) {
-          var filename = image.path.substring(image.path.lastIndexOf('/') + 1);
-          let imageData = {
-            uri: Platform.OS === 'ios' ? image.sourceURL : image.path,
-            type: image.mime,
-            name: Platform.OS === 'ios' ? image.filename : filename,
-          };
-          setAvatar(imageData);
-
-          console.log('Selected image:', avatar);
-        }
-      } else {
-        console.log('No image selected');
-      }
-    } catch (error) {
-      console.log('Error selecting image:', error);
-    }
-  };
 
   const renderItem = ({item, index}) => {
     return (
@@ -83,12 +43,9 @@ const PayrollList = ({searchBreak, setSearchBreak, allData}) => {
           styles.dataHistoryView,
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
-        <Text style={[styles.dataHistoryText, {width: wp(14)}]}>
-          {item.srNo}
-        </Text>
         <View style={[styles.switchView, {width: wp(26)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataHistoryText1]}>{item.payroll}</Text>
+            <Text style={[styles.dataHistoryText1]}>{item.invoice}</Text>
           </View>
         </View>
         <View style={[styles.nameDataView]}>
@@ -98,14 +55,13 @@ const PayrollList = ({searchBreak, setSearchBreak, allData}) => {
             <Text style={[styles.dataHistoryText1]}>{item.mail}</Text>
           </View>
         </View>
-        <Text style={[styles.dataHistoryText, {width: wp(16)}]}>
-          {item.month}
-        </Text>
-        <Text style={[styles.dataHistoryText, {width: wp(16)}]}>
-          {item.year}
-        </Text>
+        <View style={[styles.switchView, {width: wp(30)}]}>
+          <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
+            <Text style={[styles.dataHistoryText1]}>{item.invoice_date}</Text>
+          </View>
+        </View>
         <Text style={[styles.dataHistoryText, {width: wp(24)}]}>
-          {item.salary}
+          {item.amount}
         </Text>
         <View style={[styles.switchView, {width: wp(24)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
@@ -152,7 +108,7 @@ const PayrollList = ({searchBreak, setSearchBreak, allData}) => {
             <TouchableOpacity
               onPress={() => setNewUserVisible(true)}
               style={styles.actionView}>
-              <Text style={styles.actionText}>New Employee Payroll</Text>
+              <Text style={styles.actionText}>New Invoice</Text>
             </TouchableOpacity>
           </View>
           <View
@@ -164,27 +120,21 @@ const PayrollList = ({searchBreak, setSearchBreak, allData}) => {
                     styles.titleActiveView,
                     {backgroundColor: theme.headerColor},
                   ]}>
-                  <Text style={[styles.titleText, {width: wp(14)}]}>
-                    {'SR NO'}
-                  </Text>
                   <Text style={[styles.titleText, {width: wp(26)}]}>
-                    {'PAYROLL ID'}
+                    {'INVOICE ID'}
                   </Text>
                   <Text
                     style={[
                       styles.titleText,
                       {width: wp(55), textAlign: 'left'},
                     ]}>
-                    {'EMPLOYEE'}
+                    {'PATIENT'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(16)}]}>
-                    {'MONTH'}
-                  </Text>
-                  <Text style={[styles.titleText, {width: wp(16)}]}>
-                    {'YEAR'}
+                  <Text style={[styles.titleText, {width: wp(30)}]}>
+                    {'INVOICE DATE'}
                   </Text>
                   <Text style={[styles.titleText, {width: wp(24)}]}>
-                    {'NET SALARY'}
+                    {'AMOUNT'}
                   </Text>
                   <Text style={[styles.titleText, {width: wp(24)}]}>
                     {'STATUS'}
@@ -223,7 +173,7 @@ const PayrollList = ({searchBreak, setSearchBreak, allData}) => {
           contentContainerStyle={{paddingBottom: hp(12)}}>
           <View style={styles.subView}>
             <Text style={[styles.doctorText, {color: theme.text}]}>
-              Create Employee Payroll
+              Create Invoice
             </Text>
             <View style={styles.filterView}>
               <TouchableOpacity
@@ -237,20 +187,17 @@ const PayrollList = ({searchBreak, setSearchBreak, allData}) => {
           <View style={styles.profileView}>
             <View style={styles.nameView}>
               <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>FIRST NAME</Text>
-                <TextInput
-                  value={firstName}
-                  placeholder={'Enter first name'}
-                  onChangeText={text => setFirstName(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
+                <Text style={styles.dataHistoryText1}>Invoice#</Text>
+                <Text style={styles.invoiceId}>T45NF26</Text>
               </View>
 
               <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>LAST NAME</Text>
+                <Text style={styles.dataHistoryText1}>
+                  PRACTICE:<Text style={styles.dataHistoryText4}>*</Text>
+                </Text>
                 <TextInput
                   value={lastName}
-                  placeholder={'Enter last name'}
+                  placeholder={'Select'}
                   onChangeText={text => setLastName(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
                 />
@@ -258,64 +205,10 @@ const PayrollList = ({searchBreak, setSearchBreak, allData}) => {
             </View>
 
             <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>EMAIL ADDRESS</Text>
-                <TextInput
-                  value={email}
-                  placeholder={'Enter email'}
-                  onChangeText={text => setEmail(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>ROLE</Text>
-                <TextInput
-                  value={role}
-                  placeholder={'Select'}
-                  onChangeText={text => setRole(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>PASSWORD</Text>
-                <TextInput
-                  value={password}
-                  placeholder={'******'}
-                  onChangeText={text => setPassword(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                  secureTextEntry={true}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>CONFIRM PASSWORD</Text>
-                <TextInput
-                  value={confirmPassword}
-                  placeholder={'******'}
-                  onChangeText={text => setConfirmPassword(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                  secureTextEntry={true}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
               <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>DATE OF BIRTH</Text>
-                {/* <TextInput
-                  value={firstName}
-                  placeholder={'Enter first name'}
-                  onChangeText={text => setFirstName(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                /> */}
+                <Text style={styles.dataHistoryText1}>
+                  INVOICE DATE:<Text style={styles.dataHistoryText4}>*</Text>
+                </Text>
                 <Text
                   style={[
                     styles.nameTextView,
@@ -341,75 +234,12 @@ const PayrollList = ({searchBreak, setSearchBreak, allData}) => {
               </View>
 
               <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>GENDER</Text>
-                <View style={[styles.statusView, {paddingVertical: hp(1)}]}>
-                  <View style={[styles.optionView]}>
-                    <TouchableOpacity
-                      onPress={() => setGenderType('female')}
-                      style={[
-                        styles.roundBorder,
-                        {
-                          backgroundColor:
-                            genderType == 'female'
-                              ? COLORS.blueColor
-                              : COLORS.white,
-                          borderWidth: genderType == 'female' ? 0 : 0.5,
-                        },
-                      ]}>
-                      <View style={styles.round} />
-                    </TouchableOpacity>
-                    <Text style={styles.statusText}>Female</Text>
-                  </View>
-                  <View style={[styles.optionView]}>
-                    <TouchableOpacity
-                      onPress={() => setGenderType('male')}
-                      style={[
-                        styles.roundBorder,
-                        {
-                          backgroundColor:
-                            genderType == 'male'
-                              ? COLORS.blueColor
-                              : COLORS.white,
-                          borderWidth: genderType == 'male' ? 0 : 0.5,
-                        },
-                      ]}>
-                      <View style={styles.round} />
-                    </TouchableOpacity>
-                    <Text style={styles.statusText}>Male</Text>
-                  </View>
-                </View>
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>ADDRESS</Text>
-                <TextInput
-                  value={address}
-                  placeholder={'******'}
-                  onChangeText={text => setAddress(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                  secureTextEntry={true}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>CITY</Text>
-                <TextInput
-                  value={city}
-                  placeholder={'Enter city'}
-                  onChangeText={text => setCity(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-
-              <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>COUNTRY</Text>
+                <Text style={styles.dataHistoryText1}>
+                  DISCOUNT(%)<Text style={styles.dataHistoryText4}>*</Text>
+                </Text>
                 <TextInput
                   value={country}
-                  placeholder={'Enter country'}
+                  placeholder={'In Percentage'}
                   onChangeText={text => setCountry(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
                 />
@@ -418,27 +248,15 @@ const PayrollList = ({searchBreak, setSearchBreak, allData}) => {
 
             <View style={styles.nameView}>
               <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>POSTAL CODE</Text>
+                <Text style={styles.dataHistoryText1}>
+                  STATUS:<Text style={styles.dataHistoryText4}>*</Text>
+                </Text>
                 <TextInput
                   value={postalCode}
-                  placeholder={'Postal Code'}
+                  placeholder={'Select'}
                   onChangeText={text => setPostalCode(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
                 />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View>
-                <Text style={styles.dataHistoryText1}>PROFILE</Text>
-                <View style={styles.profilePhotoView}>
-                  <TouchableOpacity
-                    style={styles.editView}
-                    onPress={() => openProfileImagePicker()}>
-                    <Image style={styles.editImage1} source={draw} />
-                  </TouchableOpacity>
-                  <Image style={styles.profileImage} source={man} />
-                </View>
               </View>
             </View>
           </View>
@@ -457,7 +275,7 @@ const PayrollList = ({searchBreak, setSearchBreak, allData}) => {
   );
 };
 
-export default PayrollList;
+export default InvoicesList;
 
 const styles = StyleSheet.create({
   safeAreaStyle: {
@@ -820,5 +638,10 @@ const styles = StyleSheet.create({
     width: wp(3),
     height: hp(2.5),
     resizeMode: 'contain',
+  },
+  invoiceId: {
+    fontSize: hp(2),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.greyColor,
   },
 });

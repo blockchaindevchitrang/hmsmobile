@@ -19,118 +19,99 @@ import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from '../../components/Pixel';
-import {COLORS} from '../../utils';
 import headerLogo from '../../images/headerLogo.png';
 import {BlurView} from '@react-native-community/blur';
-import PharmacistsList from '../../components/UsersComponent/PharmacistsList';
 import AccountList from '../../components/BillingComponent/AccountList';
 import PayrollList from '../../components/BillingComponent/PayrollList';
 import InvoicesList from '../../components/BillingComponent/InvoicesList';
-import PaymentList from '../../components/BillingComponent/PaymentList';
-import ReportList from '../../components/BillingComponent/ReportList';
-import AdvanceList from '../../components/BillingComponent/AdvanceList';
 import ManualList from '../../components/BillingComponent/ManualList';
+import BedTypeList from '../../components/BedComponent/BedTypeList';
+import BedList from '../../components/BedComponent/BedList';
+import BedAssignList from '../../components/BedComponent/BedAssignList';
+import BloodBanksList from '../../components/BloodComponent/BloodBanksList';
+import BloodDonorList from '../../components/BloodComponent/BloodDonorList';
 
 const allData = [
   {
     id: 1,
-    name: 'Joey Tribiyani',
-    type: 'Credit',
-    status: true,
+    blood: 'O+',
+    bag: 5,
   },
   {
     id: 2,
-    name: 'Monica Geller',
-    type: 'Debit',
-    status: true,
+    blood: 'A+',
+    bag: 2,
   },
   {
     id: 3,
-    name: 'Ross Geller',
-    type: 'Debit',
-    status: false,
+    blood: 'B+',
+    bag: 2,
   },
   {
     id: 4,
-    name: 'Monica Geller',
-    type: 'Credit',
-    status: true,
+    blood: 'AB+',
+    bag: 10,
   },
   {
     id: 5,
-    name: 'Ross Geller',
-    type: 'Debit',
-    status: true,
+    blood: 'O-',
+    bag: 12,
   },
 ];
 
-const accountantData = [
+const BloodDonorData = [
   {
     id: 1,
-    srNo: 2,
-    payroll: 'N2JY0SK7',
-    name: 'Joey Tribiyani',
-    mail: 'joey@gmail.com',
-    month: 'Aug',
-    year: 2023,
-    salary: '$1,000.00',
-    status: 'Paid',
+    name: 'joey Tribiyani',
+    age: '48',
+    gender: 'Male',
+    blood_group: 'O+',
+    date: '22:02:00\n2023-05-25',
   },
   {
     id: 2,
-    srNo: 4,
-    payroll: 'N2JY0SK5',
     name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    month: 'May',
-    year: 2024,
-    salary: '$1,000.00',
-    status: 'Paid',
+    age: '43',
+    gender: 'Female',
+    blood_group: 'B+',
+    date: '22:02:00\n2023-05-25',
   },
   {
     id: 3,
-    srNo: 5,
-    payroll: 'N2JY0SK0',
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    month: 'May',
-    year: 2024,
-    salary: '$1,000.00',
-    status: 'Paid',
+    name: 'joey Tribiyani',
+    age: '49',
+    gender: 'Male',
+    blood_group: 'O+',
+    date: '22:02:00\n2023-05-25',
   },
   {
     id: 4,
-    srNo: 8,
-    payroll: 'N2JY0SL3',
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    month: 'May',
-    year: 2024,
-    salary: '$1,000.00',
-    status: 'Unpaid',
+    name: 'joey Tribiyani',
+    age: '45',
+    gender: 'Female',
+    blood_group: 'A-',
+    date: '22:02:00\n2023-05-25',
   },
   {
     id: 5,
-    srNo: 9,
-    payroll: 'N2JY0SK8',
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    month: 'May',
-    year: 2024,
-    salary: '$1,000.00',
-    status: 'Paid',
+    name: 'joey Tribiyani',
+    age: '41',
+    gender: 'Female',
+    blood_group: 'B-',
+    date: '22:02:00\n2023-05-25',
   },
 ];
 
-const InvoiceData = [
+const BedAssignData = [
   {
     id: 1,
     invoice: 'N2JY0SK7',
     name: 'Joey Tribiyani',
     mail: 'joey@gmail.com',
     invoice_date: '26th May, 2024',
-    amount: '$1,000.00',
-    status: 'Paid',
+    bed: 'General ward',
+    discharge: 'N/A',
+    status: true,
   },
   {
     id: 2,
@@ -138,8 +119,9 @@ const InvoiceData = [
     name: 'Monica Geller',
     mail: 'monica@gmail.com',
     invoice_date: '21th May, 2024',
-    amount: '$1,000.00',
-    status: 'Paid',
+    bed: 'VIP',
+    discharge: 'N/A',
+    status: true,
   },
   {
     id: 3,
@@ -147,8 +129,9 @@ const InvoiceData = [
     name: 'Ross Geller',
     mail: 'ross@gmail.com',
     invoice_date: '20th Dec, 2023',
-    amount: '$1,000.00',
-    status: 'Paid',
+    bed: 'Delux',
+    discharge: 'N/A',
+    status: true,
   },
   {
     id: 4,
@@ -156,8 +139,9 @@ const InvoiceData = [
     name: 'Monica Geller',
     mail: 'monica@gmail.com',
     invoice_date: '28th May, 2024',
-    amount: '$1,000.00',
-    status: 'Unpaid',
+    bed: 'General ward',
+    discharge: 'N/A',
+    status: true,
   },
   {
     id: 5,
@@ -165,84 +149,9 @@ const InvoiceData = [
     name: 'Ross Geller',
     mail: 'ross@gmail.com',
     invoice_date: '24th May, 2024',
-    amount: '$1,000.00',
-    status: 'Paid',
-  },
-];
-
-const PaymentData = [
-  {
-    id: 1,
-    name: 'Joey Tribiyani',
-    payment_date: '26th May, 2024',
-    pay: 'Jack',
-    amount: '$1,500.00',
-  },
-  {
-    id: 2,
-    name: 'Monica Geller',
-    payment_date: '21th May, 2024',
-    pay: 'Tick',
-    amount: '$1,000.00',
-  },
-  {
-    id: 3,
-    name: 'Ross Geller',
-    payment_date: '20th Dec, 2023',
-    pay: 'John',
-    amount: '$500.00',
-  },
-  {
-    id: 4,
-    name: 'Monica Geller',
-    payment_date: '28th May, 2024',
-    pay: 'Bella',
-    amount: '$1,000.00',
-  },
-  {
-    id: 5,
-    name: 'Ross Geller',
-    payment_date: '24th May, 2024',
-    pay: 'Bella',
-    amount: '$1,000.00',
-  },
-];
-
-const PharmacistsData = [
-  {
-    id: 1,
-    name: 'Joey Tribiyani',
-    mail: 'joey@gmail.com',
+    bed: 'General ward',
+    discharge: 'N/A',
     status: true,
-    blood: 'N/A',
-  },
-  {
-    id: 2,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    status: true,
-    blood: 'O+',
-  },
-  {
-    id: 3,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    status: false,
-    blood: 'N/A',
-  },
-  {
-    id: 4,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    status: true,
-    blood: 'AB-',
-  },
-  {
-    id: 5,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    status: false,
-    blood: 'A+',
   },
 ];
 
@@ -289,26 +198,21 @@ const ManualData = [
   },
 ];
 
-export const BillingScreen = ({navigation}) => {
+export const BloodBankScreen = ({navigation}) => {
   const {t} = useTranslation();
   const {theme} = useTheme();
-  const [index, setIndex] = React.useState(0);
-
   const [searchAccount, setSearchAccount] = useState('');
   const [searchPayroll, setSearchPayroll] = useState('');
-  const [searchPayment, setSearchPayment] = useState('');
   const [searchInvoice, setSearchInvoice] = useState('');
-  const [searchReceptionist, setSearchReceptionist] = useState('');
-  const [searchLabTechnician, setSearchLabTechnician] = useState('');
   const [searchPharmacists, setSearchPharmacists] = useState('');
   const [optionModalView, setOptionModalView] = useState(false);
-  const [selectedView, setSelectedView] = useState('Accounts');
+  const [selectedView, setSelectedView] = useState('Blood Banks');
 
   const animations = useRef(
-    [0, 0, 0, 0, 0, 0, 0, 0, 0].map(() => new Animated.Value(300)),
+    [0, 0, 0, 0, 0].map(() => new Animated.Value(300)),
   ).current;
   const opacities = useRef(
-    [0, 0, 0, 0, 0, 0, 0, 0, 0].map(() => new Animated.Value(0)),
+    [0, 0, 0, 0, 0].map(() => new Animated.Value(0)),
   ).current;
 
   const toggleMenu = open => {
@@ -365,57 +269,33 @@ export const BillingScreen = ({navigation}) => {
     <View style={[styles.container, {backgroundColor: theme.lightColor}]}>
       <View style={styles.headerView}>
         <Header
-          title={t('billing')}
+          title={t('blood_bank')}
           navigation={navigation}
           onPress={() => navigation.openDrawer()}
           moreButtonClick={() => toggleMenu(true)}
         />
       </View>
       <View style={styles.mainView}>
-        {selectedView == 'Accounts' ? (
-          <AccountList
+        {selectedView == 'Blood Banks' ? (
+          <BloodBanksList
             searchBreak={searchAccount}
             setSearchBreak={setSearchAccount}
             allData={allData}
           />
-        ) : selectedView == 'Employee Payrolls' ? (
-          <PayrollList
+        ) : selectedView == 'Blood Donors' ? (
+          <BloodDonorList
             searchBreak={searchPayroll}
             setSearchBreak={setSearchPayroll}
-            allData={accountantData}
+            allData={BloodDonorData}
           />
-        ) : selectedView == 'Invoices' ? (
-          <InvoicesList
+        ) : selectedView == 'Blood Donations' ? (
+          <BedAssignList
             searchBreak={searchInvoice}
             setSearchBreak={setSearchInvoice}
-            allData={InvoiceData}
-          />
-        ) : selectedView == 'Payments' ? (
-          <PaymentList
-            searchBreak={searchPayment}
-            setSearchBreak={setSearchPayment}
-            allData={PaymentData}
-          />
-        ) : selectedView == 'Payment Reports' ? (
-          <ReportList
-            searchBreak={searchReceptionist}
-            setSearchBreak={setSearchReceptionist}
-            allData={PaymentData}
-          />
-        ) : selectedView == 'Advance Payments' ? (
-          <AdvanceList
-            searchBreak={searchInvoice}
-            setSearchBreak={setSearchInvoice}
-            allData={InvoiceData}
-          />
-        ) : selectedView == 'Bills' ? (
-          <PharmacistsList
-            searchBreak={searchPharmacists}
-            setSearchBreak={setSearchPharmacists}
-            allData={PharmacistsData}
+            allData={BedAssignData}
           />
         ) : (
-          selectedView == 'Manual Billing Payments' && (
+          selectedView == 'Blood Issues' && (
             <ManualList
               searchBreak={searchPharmacists}
               setSearchBreak={setSearchPharmacists}
@@ -441,14 +321,10 @@ export const BillingScreen = ({navigation}) => {
           <View style={styles.menuContainer}>
             {[
               'Logo',
-              'Accounts',
-              'Employee Payrolls',
-              'Invoices',
-              'Payments',
-              'Payment Reports',
-              'Advance Payments',
-              'Bills',
-              'Manual Billing Payments',
+              'Blood Banks',
+              'Blood Donors',
+              'Blood Donations',
+              'Blood Issues',
             ].map((option, index) => (
               <>
                 {option == 'Logo' ? (
@@ -498,4 +374,4 @@ export const BillingScreen = ({navigation}) => {
   );
 };
 
-export default BillingScreen;
+export default BloodBankScreen;

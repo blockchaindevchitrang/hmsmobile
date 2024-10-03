@@ -28,6 +28,8 @@ import {useTheme} from './src/utils/ThemeProvider';
 import {MenuProvider} from 'react-native-popup-menu';
 import UsersScreen from './src/screens/UsersScreen';
 import BillingScreen from './src/screens/BillingScreen';
+import BedScreen from './src/screens/BedScreen';
+import BloodBankScreen from './src/screens/BloodBankScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -163,6 +165,16 @@ function SettingStack() {
       <Stack.Screen
         name="BillingScreen"
         component={BillingScreen}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="BedScreen"
+        component={BedScreen}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="BloodBankScreen"
+        component={BloodBankScreen}
         options={{headerShown: false}}
       />
     </Stack.Navigator>
