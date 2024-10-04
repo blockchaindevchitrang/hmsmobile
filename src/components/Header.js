@@ -30,6 +30,7 @@ const Header = ({
   filterVisible,
   setFilterVisible,
   moreButtonClick,
+  moreIcon,
 }) => {
   const {theme} = useTheme();
 
@@ -64,20 +65,22 @@ const Header = ({
               />
             </TouchableOpacity>
           )}
-          <TouchableOpacity
-            style={styles.bellButtonView}
-            onPress={moreButtonClick}>
-            <Image
-              style={[
-                styles.bellIcon,
-                {
-                  // marginHorizontal: wp(3),
-                  tintColor: COLORS.black,
-                },
-              ]}
-              source={more}
-            />
-          </TouchableOpacity>
+          {!moreIcon && (
+            <TouchableOpacity
+              style={styles.bellButtonView}
+              onPress={moreButtonClick}>
+              <Image
+                style={[
+                  styles.bellIcon,
+                  {
+                    // marginHorizontal: wp(3),
+                    tintColor: COLORS.black,
+                  },
+                ]}
+                source={more}
+              />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     </SafeAreaView>

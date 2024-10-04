@@ -9,8 +9,8 @@ import {
   TextInput,
   FlatList,
   Platform,
-  TouchableWithoutFeedback,
   Modal,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import React, {useRef, useState} from 'react';
 import {
@@ -23,29 +23,16 @@ import ProfilePhoto from '../ProfilePhoto';
 import moment from 'moment';
 import deleteIcon from '../../images/delete.png';
 import editing from '../../images/editing.png';
-import filter from '../../images/filter.png';
-import man from '../../images/man.png';
-import draw from '../../images/draw.png';
-import DatePicker from 'react-native-date-picker';
-import ImagePicker from 'react-native-image-crop-picker';
-import {
-  Menu,
-  MenuOptions,
-  MenuOption,
-  MenuTrigger,
-} from 'react-native-popup-menu';
 import close from '../../images/close.png';
 
-const BloodDonorList = ({searchBreak, setSearchBreak, allData}) => {
+const BloodDonationList = ({searchBreak, setSearchBreak, allData}) => {
   const {theme} = useTheme();
   const menuRef = useRef(null);
-  const [addDonorVisible, setAddDonorVisible] = useState(false);
+  const [newAccountVisible, setNewAccountVisible] = useState(false);
   const [eventTitle, setEventTitle] = useState('');
   const [departmentComment, setDepartmentComment] = useState('');
   const [statusVisible, setStatusVisible] = useState(false);
-  const [departmentType, setDepartmentType] = useState('male');
-  const [dateOfBirth, setDateOfBirth] = useState(new Date());
-  const [dateModalVisible, setDateModalVisible] = useState(false);
+  const [departmentType, setDepartmentType] = useState('debit');
 
   const renderItem = ({item, index}) => {
     return (
@@ -54,28 +41,12 @@ const BloodDonorList = ({searchBreak, setSearchBreak, allData}) => {
           styles.dataHistoryView,
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
-        <Text style={[styles.dataHistoryText, {width: wp(24)}]}>
-          {item.name}
-        </Text>
-        <View style={[styles.switchView, {width: wp(16)}]}>
+        <View style={[styles.nameDataView]}>
+          <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
+        </View>
+        <View style={[styles.switchView]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataHistoryText1]}>{item.age}</Text>
-          </View>
-        </View>
-        <View style={[styles.switchView, {width: wp(22)}]}>
-          <View style={[styles.dateBox1, {backgroundColor: theme.purpleColor}]}>
-            <Text style={[styles.dataHistoryText]}>{item.gender}</Text>
-          </View>
-        </View>
-        <View style={[styles.switchView, {width: wp(28)}]}>
-          <View
-            style={[styles.dateBox1, {backgroundColor: theme.lightRedColor}]}>
-            <Text style={[styles.dataHistoryText]}>{item.blood_group}</Text>
-          </View>
-        </View>
-        <View style={[styles.switchView, {width: wp(35)}]}>
-          <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataHistoryText1]}>{item.date}</Text>
+            <Text style={[styles.dataHistoryText2]}>{item.bag}</Text>
           </View>
         </View>
         <View style={styles.actionDataView}>
@@ -113,189 +84,93 @@ const BloodDonorList = ({searchBreak, setSearchBreak, allData}) => {
           </View>
           <View style={styles.filterView}>
             <TouchableOpacity
-              onPress={() => setAddDonorVisible(true)}
+              onPress={() => setNewAccountVisible(true)}
               style={styles.actionView}>
-              <Text style={styles.actionText}>New Blood Donor</Text>
+              <Text style={styles.actionText}>New Blood Donation</Text>
             </TouchableOpacity>
           </View>
           <View
             style={[styles.activeView, {backgroundColor: theme.headerColor}]}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <View>
-                <View
-                  style={[
-                    styles.titleActiveView,
-                    {backgroundColor: theme.headerColor},
-                  ]}>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: wp(24), textAlign: 'left'},
-                    ]}>
-                    {'NAME'}
-                  </Text>
-                  <Text style={[styles.titleText, {width: wp(16)}]}>
-                    {'AGE'}
-                  </Text>
-                  <Text style={[styles.titleText, {width: wp(22)}]}>
-                    {'GENDER'}
-                  </Text>
-                  <Text style={[styles.titleText, {width: wp(28)}]}>
-                    {'BLOOD GROUPS'}
-                  </Text>
-                  <Text style={[styles.titleText, {width: wp(35)}]}>
-                    {'LAST DONATION DATE'}
-                  </Text>
-                  <Text style={[styles.titleText, {width: wp(16)}]}>
-                    {'ACTION'}
-                  </Text>
-                </View>
-                <View style={styles.mainDataView}>
-                  <FlatList
-                    data={allData}
-                    renderItem={renderItem}
-                    bounces={false}
-                    showsHorizontalScrollIndicator={false}
-                    initialNumToRender={allData.length}
-                    nestedScrollEnabled
-                    virtualized
-                    ListEmptyComponent={() => (
-                      <View key={0} style={styles.ListEmptyView}>
-                        <View style={styles.subEmptyView}>
-                          <Text style={styles.emptyText}>
-                            {'No record found'}
-                          </Text>
-                        </View>
-                      </View>
-                    )}
-                  />
-                </View>
-              </View>
-            </ScrollView>
+            <View
+              style={[
+                styles.titleActiveView,
+                {backgroundColor: theme.headerColor},
+              ]}>
+              <Text style={[styles.titleText, {width: wp(40)}]}>{'NAME'}</Text>
+              <Text
+                style={[
+                  styles.titleText,
+                  {width: wp(16), textAlign: 'center'},
+                ]}>
+                {'BAGS'}
+              </Text>
+              <Text style={[styles.titleText, {width: wp(16)}]}>
+                {'ACTION'}
+              </Text>
+            </View>
+            <View style={styles.mainDataView}>
+              <FlatList
+                data={allData}
+                renderItem={renderItem}
+                bounces={false}
+                showsHorizontalScrollIndicator={false}
+                initialNumToRender={allData.length}
+                nestedScrollEnabled
+                virtualized
+                ListEmptyComponent={() => (
+                  <View key={0} style={styles.ListEmptyView}>
+                    <View style={styles.subEmptyView}>
+                      <Text style={styles.emptyText}>{'No record found'}</Text>
+                    </View>
+                  </View>
+                )}
+              />
+            </View>
           </View>
         </ScrollView>
       </View>
       <Modal
         animationType="fade"
         transparent={true}
-        visible={addDonorVisible}
-        onRequestClose={() => setAddDonorVisible(false)}>
+        visible={newAccountVisible}
+        onRequestClose={() => setNewAccountVisible(false)}>
         <View style={styles.maneModalView}>
           <TouchableWithoutFeedback
             onPress={() => {
-              setAddDonorVisible(false);
+              setNewAccountVisible(false);
             }}>
             <View style={styles.modalOverlay} />
           </TouchableWithoutFeedback>
           <View style={styles.container}>
             <View style={styles.headerView}>
-              <Text style={styles.headerText}>New Blood Donor</Text>
-              <TouchableOpacity onPress={() => setAddDonorVisible(false)}>
+              <Text style={styles.headerText}>New Blood Donation</Text>
+              <TouchableOpacity onPress={() => setNewAccountVisible(false)}>
                 <Image style={styles.closeImage} source={close} />
               </TouchableOpacity>
             </View>
             <Text style={[styles.titleText1, {marginTop: hp(1.5)}]}>
-              {'Name:'}
-              <Text style={styles.dataHistoryText4}>*</Text>
+              {'DONOR NAME:'}
             </Text>
             <TextInput
               value={eventTitle}
-              placeholder={'Name'}
+              placeholder={''}
               onChangeText={text => setEventTitle(text)}
               style={[styles.eventTextInput]}
             />
-
-            <Text style={[styles.titleText1]}>
-              {'Age:'}
-              <Text style={styles.dataHistoryText4}>*</Text>
-            </Text>
+            <Text style={[styles.titleText1]}>{'Bags:'}</Text>
             <TextInput
-              value={eventTitle}
-              placeholder={'Age'}
-              onChangeText={text => setEventTitle(text)}
+              value={departmentComment}
+              placeholder={''}
+              onChangeText={text => setDepartmentComment(text)}
               style={[styles.eventTextInput]}
             />
 
-            <View style={[styles.statusView1]}>
-              <Text style={styles.statusText}>
-                Gender: <Text style={styles.dataHistoryText4}>*</Text>
-              </Text>
-              <View style={[styles.optionView]}>
-                <TouchableOpacity
-                  onPress={() => setDepartmentType('male')}
-                  style={[
-                    styles.roundBorder,
-                    {
-                      backgroundColor:
-                        departmentType == 'male'
-                          ? COLORS.blueColor
-                          : COLORS.white,
-                      borderWidth: departmentType == 'male' ? 0 : 0.5,
-                    },
-                  ]}>
-                  <View style={styles.round} />
-                </TouchableOpacity>
-                <Text style={styles.statusText}>Male</Text>
-              </View>
-              <View style={[styles.optionView]}>
-                <TouchableOpacity
-                  onPress={() => setDepartmentType('female')}
-                  style={[
-                    styles.roundBorder,
-                    {
-                      backgroundColor:
-                        departmentType == 'female'
-                          ? COLORS.blueColor
-                          : COLORS.white,
-                      borderWidth: departmentType == 'female' ? 0 : 0.5,
-                    },
-                  ]}>
-                  <View style={styles.round} />
-                </TouchableOpacity>
-                <Text style={styles.statusText}>Female</Text>
-              </View>
-            </View>
-
-            <Text style={[styles.titleText1, {marginTop: hp(1.5)}]}>
-              {'Blood Group:'}
-              <Text style={styles.dataHistoryText4}>*</Text>
-            </Text>
-            <TextInput
-              value={eventTitle}
-              placeholder={'Select Blood Group'}
-              onChangeText={text => setEventTitle(text)}
-              style={[styles.eventTextInput]}
-            />
-
-            <Text style={[styles.titleText1]}>
-              {'Last Donations Date:'}
-              <Text style={styles.dataHistoryText4}>*</Text>
-            </Text>
-            <Text
-              style={[styles.eventTextInput]}
-              onPress={() => setDateModalVisible(!dateModalVisible)}>
-              {moment(dateOfBirth).format('DD/MM/YYYY')}
-            </Text>
-            <DatePicker
-              open={dateModalVisible}
-              modal={true}
-              date={dateOfBirth}
-              mode={'date'}
-              onConfirm={date => {
-                console.log('Console Log>>', date);
-                setDateModalVisible(false);
-                setDateOfBirth(date);
-              }}
-              onCancel={() => {
-                setDateModalVisible(false);
-              }}
-            />
             <View style={styles.buttonView}>
               <TouchableOpacity onPress={() => {}} style={styles.nextView}>
                 <Text style={styles.nextText}>Save</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                onPress={() => setAddDonorVisible(false)}
+                onPress={() => setNewAccountVisible(false)}
                 style={styles.prevView}>
                 <Text style={styles.prevText}>Cancel</Text>
               </TouchableOpacity>
@@ -307,7 +182,7 @@ const BloodDonorList = ({searchBreak, setSearchBreak, allData}) => {
   );
 };
 
-export default BloodDonorList;
+export default BloodDonationList;
 
 const styles = StyleSheet.create({
   safeAreaStyle: {
@@ -395,13 +270,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginTop: hp(1),
     paddingBottom: hp(0.5),
+    justifyContent: 'space-between',
   },
   titleText: {
     fontSize: hp(1.8),
     fontFamily: Fonts.FONTS.PoppinsSemiBold,
     color: COLORS.white,
     marginHorizontal: wp(2),
-    textAlign: 'center',
+    textAlign: 'left',
+  },
+  titleText1: {
+    fontSize: hp(1.8),
+    fontFamily: Fonts.FONTS.PoppinsSemiBold,
+    color: COLORS.black,
+    marginHorizontal: wp(3),
+    textAlign: 'left',
   },
   dataHistoryView: {
     width: '100%',
@@ -409,6 +292,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     alignSelf: 'flex-start',
+    justifyContent: 'space-between',
   },
   dataHistoryText: {
     fontSize: hp(1.8),
@@ -426,6 +310,7 @@ const styles = StyleSheet.create({
     fontSize: hp(1.8),
     fontFamily: Fonts.FONTS.PoppinsBold,
     color: COLORS.blueColor,
+    textAlign: 'center',
   },
   dataHistoryText3: {
     fontSize: hp(1.8),
@@ -450,11 +335,12 @@ const styles = StyleSheet.create({
   nameDataView: {
     flexDirection: 'row',
     alignItems: 'center',
-    width: wp(28),
+    width: wp(40),
     marginHorizontal: wp(2),
+    justifyContent: 'flex-start',
   },
   switchView: {
-    width: wp(24),
+    width: wp(16),
     justifyContent: 'center',
     marginHorizontal: wp(2),
     alignItems: 'center',
@@ -572,6 +458,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 5,
     padding: 5,
+    paddingHorizontal: wp(3),
   },
   startDateText: {
     fontSize: hp(2),
@@ -644,7 +531,9 @@ const styles = StyleSheet.create({
   statusView: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-start',
+    marginTop: hp(1.5),
+    width: '92%',
+    alignSelf: 'center',
   },
   profilePhotoView: {
     borderWidth: 0.5,
@@ -721,7 +610,7 @@ const styles = StyleSheet.create({
     color: COLORS.black,
     borderRadius: 5,
     alignSelf: 'center',
-    marginBottom: hp(2),
+    marginBottom: hp(3),
     marginTop: hp(1),
   },
   commentTextInput: {
@@ -736,19 +625,5 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     alignSelf: 'center',
     height: hp(14),
-  },
-  statusView1: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: hp(1.5),
-    width: '92%',
-    alignSelf: 'center',
-  },
-  titleText1: {
-    fontSize: hp(1.8),
-    fontFamily: Fonts.FONTS.PoppinsSemiBold,
-    color: COLORS.black,
-    marginHorizontal: wp(3),
-    textAlign: 'left',
   },
 });

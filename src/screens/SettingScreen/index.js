@@ -156,6 +156,7 @@ export const SettingScreen = ({navigation}) => {
           </TouchableOpacity>
 
           <TouchableOpacity
+            onPress={() => navigation.navigate('PrescriptionScreen')}
             style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
             <Text style={[styles.text, {color: theme.text}]}>
               {'Prescriptions'}
@@ -163,6 +164,7 @@ export const SettingScreen = ({navigation}) => {
           </TouchableOpacity>
 
           <TouchableOpacity
+            onPress={() => navigation.navigate('DiagnosisScreen')}
             style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
             <Text style={[styles.text, {color: theme.text}]}>
               {'Diagnosis'}

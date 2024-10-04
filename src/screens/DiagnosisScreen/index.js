@@ -25,103 +25,78 @@ import BloodBanksList from '../../components/BloodComponent/BloodBanksList';
 import BloodDonorList from '../../components/BloodComponent/BloodDonorList';
 import BloodDonationList from '../../components/BloodComponent/BloodDonationList';
 import BloodIssueList from '../../components/BloodComponent/BloodIssueList';
+import DiagnosisList from '../../components/DiagnosisComponent/DiagnosisList';
+import DiagnosisCategoriesList from '../../components/DiagnosisComponent/DiagnosisCategoriesList';
+import DiagnosisTestsList from '../../components/DiagnosisComponent/DiagnosisTestsList';
 
 const allData = [
   {
     id: 1,
-    blood: 'O+',
-    bag: 5,
+    report_type: 'CT Scan',
+    opo_no: 'EMP0000001',
+    date: '22:02:00 2023-05-25',
+    document: 'N/A',
+    des: 'N/A',
+    report: true,
   },
   {
     id: 2,
-    blood: 'A+',
-    bag: 2,
+    report_type: 'Neck Pain',
+    opo_no: 'EMP0000002',
+    date: '22:02:00 2023-05-25',
+    document: 'N/A',
+    des: 'Neck stiffness',
+    report: false,
   },
   {
     id: 3,
-    blood: 'B+',
-    bag: 2,
+    report_type: 'Blood',
+    opo_no: 'EMP0000003',
+    date: '22:02:00 2023-05-25',
+    document: 'N/A',
+    des: 'Blood',
+    report: true,
   },
   {
     id: 4,
-    blood: 'AB+',
-    bag: 10,
+    report_type: 'Fibrosis',
+    opo_no: 'EMP0000004',
+    date: '22:02:00 2023-05-25',
+    document: 'N/A',
+    des: 'N/A',
+    report: false,
   },
   {
     id: 5,
-    blood: 'O-',
-    bag: 12,
+    report_type: 'Blood Pressure',
+    opo_no: 'EMP0000005',
+    date: '22:02:00 2023-05-25',
+    document: 'N/A',
+    des: 'Blood Pressure',
+    report: true,
   },
 ];
 
-const BloodDonorData = [
+const DiagnosisCategoriesData = [
   {
     id: 1,
-    name: 'joey Tribiyani',
-    age: '48',
-    gender: 'Male',
-    blood_group: 'O+',
-    date: '22:02:00\n2023-05-25',
+    name: 'Allergy',
   },
   {
     id: 2,
-    name: 'Monica Geller',
-    age: '43',
-    gender: 'Female',
-    blood_group: 'B+',
-    date: '22:02:00\n2023-05-25',
+    name: 'Neck Pain',
   },
   {
     id: 3,
-    name: 'joey Tribiyani',
-    age: '49',
-    gender: 'Male',
-    blood_group: 'O+',
-    date: '22:02:00\n2023-05-25',
+    name: 'Blood',
   },
   {
     id: 4,
-    name: 'joey Tribiyani',
-    age: '45',
-    gender: 'Female',
-    blood_group: 'A-',
-    date: '22:02:00\n2023-05-25',
+    name: 'Fibrosis',
   },
   {
     id: 5,
-    name: 'joey Tribiyani',
-    age: '41',
-    gender: 'Female',
-    blood_group: 'B-',
-    date: '22:02:00\n2023-05-25',
-  },
-];
-
-const BloodDonationData = [
-  {
-    id: 1,
-    bag: '1',
-    name: 'Joey Tribiyani',
-  },
-  {
-    id: 2,
-    bag: '3',
-    name: 'Monica Geller',
-  },
-  {
-    id: 3,
-    bag: '1',
-    name: 'Ross Geller',
-  },
-  {
-    id: 4,
-    bag: '2',
-    name: 'Monica Geller',
-  },
-  {
-    id: 5,
-    bag: '1',
-    name: 'Ross Geller',
+    name: 'Blood Pressure',
   },
 ];
 
@@ -131,64 +106,44 @@ const BloodIssueData = [
     admission: 'EMP0000001',
     name: 'Joey Tribiyani',
     mail: 'joey@gmail.com',
-    date: '22:02:00 2023-05-25',
-    discharge: 'N/A',
-    package: 'Patient',
-    insurance: 'Cooper Mccall',
-    policy: 'N/A',
-    status: true,
+    date: '01 Feb, 2024',
+    discharge: 'Surgery',
   },
   {
     id: 2,
     admission: 'EMP0000002',
     name: 'Monica Geller',
     mail: 'monica@gmail.com',
-    date: '22:02:00 2023-05-25',
-    discharge: 'N/A',
-    package: 'Body Check up',
-    insurance: 'Colleen Craig',
-    policy: '4839920',
-    status: false,
+    date: '9 Sept, 2020',
+    discharge: 'X-ray',
   },
   {
     id: 3,
     admission: 'EMP0000003',
     name: 'Ross Geller',
     mail: 'ross@gmail.com',
-    date: '22:02:00 2023-05-25',
-    discharge: '22:02:00 2023-05-28',
-    package: 'N/A',
-    insurance: 'Demo Insurance',
-    policy: 'N/A',
-    status: true,
+    date: '12 Dec, 2022',
+    discharge: 'Full Body checkup',
   },
   {
     id: 4,
     admission: 'EMP0000004',
     name: 'Monica Geller',
     mail: 'monica@gmail.com',
-    date: '22:02:00 2023-05-25',
-    discharge: 'N/A',
-    package: 'Patient',
-    insurance: 'Demo Insurance',
-    policy: 'N/A',
-    status: false,
+    date: '12 Dec, 2022',
+    discharge: 'MRI',
   },
   {
     id: 5,
     admission: 'EMP0000005',
     name: 'Ross Geller',
     mail: 'ross@gmail.com',
-    date: '22:02:00 2023-05-25',
-    discharge: 'N/A',
-    package: 'Patient',
-    insurance: 'Demo Insurance',
-    policy: 'N/A',
-    status: false,
+    date: '12 Dec, 2022',
+    discharge: 'Dental Implant',
   },
 ];
 
-export const BloodBankScreen = ({navigation}) => {
+export const DiagnosisScreen = ({navigation}) => {
   const {t} = useTranslation();
   const {theme} = useTheme();
   const [searchAccount, setSearchAccount] = useState('');
@@ -196,13 +151,13 @@ export const BloodBankScreen = ({navigation}) => {
   const [searchInvoice, setSearchInvoice] = useState('');
   const [searchPharmacists, setSearchPharmacists] = useState('');
   const [optionModalView, setOptionModalView] = useState(false);
-  const [selectedView, setSelectedView] = useState('Blood Banks');
+  const [selectedView, setSelectedView] = useState('Diagnosis');
 
   const animations = useRef(
-    [0, 0, 0, 0, 0].map(() => new Animated.Value(300)),
+    [0, 0, 0, 0].map(() => new Animated.Value(300)),
   ).current;
   const opacities = useRef(
-    [0, 0, 0, 0, 0].map(() => new Animated.Value(0)),
+    [0, 0, 0, 0].map(() => new Animated.Value(0)),
   ).current;
 
   const toggleMenu = open => {
@@ -259,34 +214,28 @@ export const BloodBankScreen = ({navigation}) => {
     <View style={[styles.container, {backgroundColor: theme.lightColor}]}>
       <View style={styles.headerView}>
         <Header
-          title={t('blood_bank')}
+          title={t('diagnosis')}
           navigation={navigation}
           onPress={() => navigation.openDrawer()}
           moreButtonClick={() => toggleMenu(true)}
         />
       </View>
       <View style={styles.mainView}>
-        {selectedView == 'Blood Banks' ? (
-          <BloodBanksList
+        {selectedView == 'Diagnosis' ? (
+          <DiagnosisList
             searchBreak={searchAccount}
             setSearchBreak={setSearchAccount}
             allData={allData}
           />
-        ) : selectedView == 'Blood Donors' ? (
-          <BloodDonorList
+        ) : selectedView == 'Diagnosis Categories' ? (
+          <DiagnosisCategoriesList
             searchBreak={searchPayroll}
             setSearchBreak={setSearchPayroll}
-            allData={BloodDonorData}
-          />
-        ) : selectedView == 'Blood Donations' ? (
-          <BloodDonationList
-            searchBreak={searchInvoice}
-            setSearchBreak={setSearchInvoice}
-            allData={BloodDonationData}
+            allData={DiagnosisCategoriesData}
           />
         ) : (
-          selectedView == 'Blood Issues' && (
-            <BloodIssueList
+          selectedView == 'Diagnosis Tests' && (
+            <DiagnosisTestsList
               searchBreak={searchPharmacists}
               setSearchBreak={setSearchPharmacists}
               allData={BloodIssueData}
@@ -311,10 +260,9 @@ export const BloodBankScreen = ({navigation}) => {
           <View style={styles.menuContainer}>
             {[
               'Logo',
-              'Blood Banks',
-              'Blood Donors',
-              'Blood Donations',
-              'Blood Issues',
+              'Diagnosis',
+              'Diagnosis Categories',
+              'Diagnosis Tests',
             ].map((option, index) => (
               <>
                 {option == 'Logo' ? (
@@ -364,4 +312,4 @@ export const BloodBankScreen = ({navigation}) => {
   );
 };
 
-export default BloodBankScreen;
+export default DiagnosisScreen;

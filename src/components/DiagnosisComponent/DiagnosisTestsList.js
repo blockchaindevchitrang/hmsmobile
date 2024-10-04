@@ -8,44 +8,33 @@ import {
   ScrollView,
   TextInput,
   FlatList,
-  Platform,
-  TouchableWithoutFeedback,
   Modal,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import React, {useRef, useState} from 'react';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
-} from '../Pixel/index';
+} from './../Pixel/index';
 import {COLORS, Fonts} from '../../utils';
 import {useTheme} from '../../utils/ThemeProvider';
-import ProfilePhoto from '../ProfilePhoto';
-import moment from 'moment';
+import ProfilePhoto from './../ProfilePhoto';
+import filter from '../../images/filter.png';
 import deleteIcon from '../../images/delete.png';
 import editing from '../../images/editing.png';
-import filter from '../../images/filter.png';
-import man from '../../images/man.png';
-import draw from '../../images/draw.png';
-import DatePicker from 'react-native-date-picker';
-import ImagePicker from 'react-native-image-crop-picker';
-import {
-  Menu,
-  MenuOptions,
-  MenuOption,
-  MenuTrigger,
-} from 'react-native-popup-menu';
+import moment from 'moment';
 import close from '../../images/close.png';
 
-const BloodDonorList = ({searchBreak, setSearchBreak, allData}) => {
+const DiagnosisTestsList = ({searchBreak, setSearchBreak, allData}) => {
   const {theme} = useTheme();
   const menuRef = useRef(null);
-  const [addDonorVisible, setAddDonorVisible] = useState(false);
-  const [eventTitle, setEventTitle] = useState('');
-  const [departmentComment, setDepartmentComment] = useState('');
-  const [statusVisible, setStatusVisible] = useState(false);
-  const [departmentType, setDepartmentType] = useState('male');
-  const [dateOfBirth, setDateOfBirth] = useState(new Date());
-  const [dateModalVisible, setDateModalVisible] = useState(false);
+  const [newBloodIssueVisible, setNewBloodIssueVisible] = useState(false);
+  const [issueDate, setIssueDate] = useState('');
+  const [doctorName, setDoctorName] = useState('');
+  const [patientName, setPatientName] = useState('');
+  const [bloodGroup, setBloodGroup] = useState('');
+  const [Amount, setAmount] = useState('');
+  const [Remarks, setRemarks] = useState('');
 
   const renderItem = ({item, index}) => {
     return (
@@ -54,30 +43,34 @@ const BloodDonorList = ({searchBreak, setSearchBreak, allData}) => {
           styles.dataHistoryView,
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
-        <Text style={[styles.dataHistoryText, {width: wp(24)}]}>
-          {item.name}
-        </Text>
-        <View style={[styles.switchView, {width: wp(16)}]}>
+        <View style={[styles.switchView, {width: wp(30)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataHistoryText1]}>{item.age}</Text>
+            <Text style={[styles.dataHistoryText1]}>{item.admission}</Text>
           </View>
         </View>
-        <View style={[styles.switchView, {width: wp(22)}]}>
-          <View style={[styles.dateBox1, {backgroundColor: theme.purpleColor}]}>
-            <Text style={[styles.dataHistoryText]}>{item.gender}</Text>
+        <View style={styles.nameDataView}>
+          <ProfilePhoto username={item.name} />
+          <View>
+            <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
+            <Text style={[styles.dataHistoryText1]}>{item.mail}</Text>
           </View>
         </View>
-        <View style={[styles.switchView, {width: wp(28)}]}>
-          <View
-            style={[styles.dateBox1, {backgroundColor: theme.lightRedColor}]}>
-            <Text style={[styles.dataHistoryText]}>{item.blood_group}</Text>
+        <View style={styles.nameDataView}>
+          <ProfilePhoto username={item.name} />
+          <View>
+            <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
+            <Text style={[styles.dataHistoryText1]}>{item.mail}</Text>
           </View>
         </View>
-        <View style={[styles.switchView, {width: wp(35)}]}>
-          <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataHistoryText1]}>{item.date}</Text>
+          <View style={[styles.switchView, {width: wp(43)}]}>
+              <Text style={[styles.dataHistoryText1]}>{item.discharge}</Text>
           </View>
-        </View>
+          <View style={[styles.switchView, {width: wp(35)}]}>
+            <View
+              style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
+              <Text style={[styles.dataHistoryText1]}>{item.date}</Text>
+            </View>
+          </View>
         <View style={styles.actionDataView}>
           <TouchableOpacity>
             <Image
@@ -102,7 +95,7 @@ const BloodDonorList = ({searchBreak, setSearchBreak, allData}) => {
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{paddingBottom: hp(12)}}>
-          <View style={[styles.subView, {flexWrap: 'wrap'}]}>
+          <View style={styles.subView}>
             <TextInput
               value={searchBreak}
               placeholder={'Search'}
@@ -113,9 +106,9 @@ const BloodDonorList = ({searchBreak, setSearchBreak, allData}) => {
           </View>
           <View style={styles.filterView}>
             <TouchableOpacity
-              onPress={() => setAddDonorVisible(true)}
+              onPress={() => setNewBloodIssueVisible(true)}
               style={styles.actionView}>
-              <Text style={styles.actionText}>New Blood Donor</Text>
+              <Text style={styles.actionText}>New Patient Diagnosis Test</Text>
             </TouchableOpacity>
           </View>
           <View
@@ -127,24 +120,28 @@ const BloodDonorList = ({searchBreak, setSearchBreak, allData}) => {
                     styles.titleActiveView,
                     {backgroundColor: theme.headerColor},
                   ]}>
+                  <Text style={[styles.titleText, {width: wp(30)}]}>
+                    {'REPORT NUMBER'}
+                  </Text>
                   <Text
                     style={[
                       styles.titleText,
-                      {width: wp(24), textAlign: 'left'},
+                      {width: wp(55), textAlign: 'left'},
                     ]}>
-                    {'NAME'}
+                    {'PATIENT'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(16)}]}>
-                    {'AGE'}
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {width: wp(55), textAlign: 'left'},
+                    ]}>
+                    {'DOCTORS'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(22)}]}>
-                    {'GENDER'}
-                  </Text>
-                  <Text style={[styles.titleText, {width: wp(28)}]}>
-                    {'BLOOD GROUPS'}
+                  <Text style={[styles.titleText, {width: wp(43)}]}>
+                    {'DIAGNOSIS CATEGORY'}
                   </Text>
                   <Text style={[styles.titleText, {width: wp(35)}]}>
-                    {'LAST DONATION DATE'}
+                    {'CREATED ON'}
                   </Text>
                   <Text style={[styles.titleText, {width: wp(16)}]}>
                     {'ACTION'}
@@ -178,124 +175,125 @@ const BloodDonorList = ({searchBreak, setSearchBreak, allData}) => {
       <Modal
         animationType="fade"
         transparent={true}
-        visible={addDonorVisible}
-        onRequestClose={() => setAddDonorVisible(false)}>
+        visible={newBloodIssueVisible}
+        onRequestClose={() => setNewBloodIssueVisible(false)}>
         <View style={styles.maneModalView}>
           <TouchableWithoutFeedback
             onPress={() => {
-              setAddDonorVisible(false);
+              setNewBloodIssueVisible(false);
             }}>
             <View style={styles.modalOverlay} />
           </TouchableWithoutFeedback>
           <View style={styles.container}>
             <View style={styles.headerView}>
-              <Text style={styles.headerText}>New Blood Donor</Text>
-              <TouchableOpacity onPress={() => setAddDonorVisible(false)}>
+              <Text style={styles.headerText}>New Blood Issues</Text>
+              <TouchableOpacity onPress={() => setNewBloodIssueVisible(false)}>
                 <Image style={styles.closeImage} source={close} />
               </TouchableOpacity>
             </View>
-            <Text style={[styles.titleText1, {marginTop: hp(1.5)}]}>
-              {'Name:'}
-              <Text style={styles.dataHistoryText4}>*</Text>
-            </Text>
-            <TextInput
-              value={eventTitle}
-              placeholder={'Name'}
-              onChangeText={text => setEventTitle(text)}
-              style={[styles.eventTextInput]}
-            />
-
-            <Text style={[styles.titleText1]}>
-              {'Age:'}
-              <Text style={styles.dataHistoryText4}>*</Text>
-            </Text>
-            <TextInput
-              value={eventTitle}
-              placeholder={'Age'}
-              onChangeText={text => setEventTitle(text)}
-              style={[styles.eventTextInput]}
-            />
-
-            <View style={[styles.statusView1]}>
-              <Text style={styles.statusText}>
-                Gender: <Text style={styles.dataHistoryText4}>*</Text>
-              </Text>
-              <View style={[styles.optionView]}>
-                <TouchableOpacity
-                  onPress={() => setDepartmentType('male')}
-                  style={[
-                    styles.roundBorder,
-                    {
-                      backgroundColor:
-                        departmentType == 'male'
-                          ? COLORS.blueColor
-                          : COLORS.white,
-                      borderWidth: departmentType == 'male' ? 0 : 0.5,
-                    },
-                  ]}>
-                  <View style={styles.round} />
-                </TouchableOpacity>
-                <Text style={styles.statusText}>Male</Text>
+            <View style={styles.nameView}>
+              <View style={{width: '48%'}}>
+                <Text style={[styles.titleText1]}>
+                  {'Issue Date:'}
+                  <Text style={styles.dataHistoryText4}>*</Text>
+                </Text>
+                <TextInput
+                  value={issueDate}
+                  placeholder={'Issue Date'}
+                  onChangeText={text => setIssueDate(text)}
+                  style={[styles.nameTextView]}
+                />
               </View>
-              <View style={[styles.optionView]}>
-                <TouchableOpacity
-                  onPress={() => setDepartmentType('female')}
-                  style={[
-                    styles.roundBorder,
-                    {
-                      backgroundColor:
-                        departmentType == 'female'
-                          ? COLORS.blueColor
-                          : COLORS.white,
-                      borderWidth: departmentType == 'female' ? 0 : 0.5,
-                    },
-                  ]}>
-                  <View style={styles.round} />
-                </TouchableOpacity>
-                <Text style={styles.statusText}>Female</Text>
+              <View style={{width: '48%'}}>
+                <Text style={[styles.titleText1]}>
+                  {'Doctor Name:'}
+                  <Text style={styles.dataHistoryText4}>*</Text>
+                </Text>
+                <TextInput
+                  value={doctorName}
+                  placeholder={'Doctor Name'}
+                  onChangeText={text => setDoctorName(text)}
+                  style={[styles.nameTextView]}
+                />
               </View>
             </View>
 
-            <Text style={[styles.titleText1, {marginTop: hp(1.5)}]}>
-              {'Blood Group:'}
-              <Text style={styles.dataHistoryText4}>*</Text>
-            </Text>
-            <TextInput
-              value={eventTitle}
-              placeholder={'Select Blood Group'}
-              onChangeText={text => setEventTitle(text)}
-              style={[styles.eventTextInput]}
-            />
+            <View style={styles.nameView}>
+              <View style={{width: '48%'}}>
+                <Text style={[styles.titleText1]}>
+                  {'Patient Name:'}
+                  <Text style={styles.dataHistoryText4}>*</Text>
+                </Text>
+                <TextInput
+                  value={patientName}
+                  placeholder={'Patient Name'}
+                  onChangeText={text => setPatientName(text)}
+                  style={[styles.nameTextView]}
+                />
+              </View>
+              <View style={{width: '48%'}}>
+                <Text style={[styles.titleText1]}>
+                  {'Doctor Name:'}
+                  <Text style={styles.dataHistoryText4}>*</Text>
+                </Text>
+                <TextInput
+                  value={doctorName}
+                  placeholder={'Doctor Name'}
+                  onChangeText={text => setDoctorName(text)}
+                  style={[styles.nameTextView]}
+                />
+              </View>
+            </View>
 
-            <Text style={[styles.titleText1]}>
-              {'Last Donations Date:'}
-              <Text style={styles.dataHistoryText4}>*</Text>
-            </Text>
-            <Text
-              style={[styles.eventTextInput]}
-              onPress={() => setDateModalVisible(!dateModalVisible)}>
-              {moment(dateOfBirth).format('DD/MM/YYYY')}
-            </Text>
-            <DatePicker
-              open={dateModalVisible}
-              modal={true}
-              date={dateOfBirth}
-              mode={'date'}
-              onConfirm={date => {
-                console.log('Console Log>>', date);
-                setDateModalVisible(false);
-                setDateOfBirth(date);
-              }}
-              onCancel={() => {
-                setDateModalVisible(false);
-              }}
-            />
+            <View style={styles.nameView}>
+              <View style={{width: '48%'}}>
+                <Text style={[styles.titleText1]}>
+                  {'Blood Group:'}
+                  <Text style={styles.dataHistoryText4}>*</Text>
+                </Text>
+                <TextInput
+                  value={bloodGroup}
+                  placeholder={'Blood Group'}
+                  onChangeText={text => setBloodGroup(text)}
+                  style={[styles.nameTextView]}
+                />
+              </View>
+              <View style={{width: '48%'}}>
+                <Text style={[styles.titleText1]}>
+                  {'Amount:'}
+                  <Text style={styles.dataHistoryText4}>*</Text>
+                </Text>
+                <TextInput
+                  value={Amount}
+                  placeholder={'Amount'}
+                  onChangeText={text => setAmount(text)}
+                  style={[styles.nameTextView]}
+                />
+              </View>
+            </View>
+
+            <View style={styles.nameView}>
+              <View style={{width: '100%'}}>
+                <Text style={[styles.titleText1]}>
+                  {'Remarks:'}
+                  <Text style={styles.dataHistoryText4}>*</Text>
+                </Text>
+                <TextInput
+                  value={Remarks}
+                  placeholder={'Enter Remarks'}
+                  onChangeText={text => setRemarks(text)}
+                  style={[styles.commentTextInput]}
+                  multiline
+                  textAlignVertical="top"
+                />
+              </View>
+            </View>
             <View style={styles.buttonView}>
               <TouchableOpacity onPress={() => {}} style={styles.nextView}>
                 <Text style={styles.nextText}>Save</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                onPress={() => setAddDonorVisible(false)}
+                onPress={() => setNewBloodIssueVisible(false)}
                 style={styles.prevView}>
                 <Text style={styles.prevText}>Cancel</Text>
               </TouchableOpacity>
@@ -307,7 +305,7 @@ const BloodDonorList = ({searchBreak, setSearchBreak, allData}) => {
   );
 };
 
-export default BloodDonorList;
+export default DiagnosisTestsList;
 
 const styles = StyleSheet.create({
   safeAreaStyle: {
@@ -325,7 +323,7 @@ const styles = StyleSheet.create({
   },
   searchView: {
     width: '100%',
-    paddingHorizontal: wp(3),
+    paddingHorizontal: wp(2),
     paddingVertical: hp(0.5),
     borderWidth: 1,
     borderColor: COLORS.greyColor,
@@ -418,8 +416,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   dataHistoryText1: {
-    fontSize: hp(1.7),
-    fontFamily: Fonts.FONTS.PoppinsBold,
+    fontSize: hp(1.8),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
   },
   dataHistoryText2: {
@@ -450,14 +448,14 @@ const styles = StyleSheet.create({
   nameDataView: {
     flexDirection: 'row',
     alignItems: 'center',
-    width: wp(28),
+    width: wp(55),
     marginHorizontal: wp(2),
   },
   switchView: {
     width: wp(24),
+    alignItems: 'center',
     justifyContent: 'center',
     marginHorizontal: wp(2),
-    alignItems: 'center',
   },
   actionDataView: {
     width: wp(16),
@@ -490,14 +488,15 @@ const styles = StyleSheet.create({
     color: COLORS.black,
   },
   profileView: {
-    width: '100%',
+    width: '94%',
+    backgroundColor: '#eeeeee',
     paddingVertical: hp(1),
     paddingHorizontal: wp(3),
     alignSelf: 'center',
     borderRadius: wp(2),
   },
   nameTextView: {
-    width: '50%',
+    width: '100%',
     paddingHorizontal: wp(2),
     paddingVertical: hp(0.5),
     borderWidth: 1,
@@ -513,8 +512,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    width: '100%',
-    marginVertical: hp(1),
+    width: '94%',
+    marginVertical: hp(2),
     alignSelf: 'center',
   },
   contactView: {
@@ -526,12 +525,10 @@ const styles = StyleSheet.create({
   },
   buttonView: {
     width: '94%',
-    paddingHorizontal: wp(3),
     alignSelf: 'center',
     flexDirection: 'row',
     justifyContent: 'flex-end',
     alignItems: 'center',
-    marginTop: hp(2),
   },
   nextView: {
     height: hp(4.5),
@@ -565,7 +562,7 @@ const styles = StyleSheet.create({
     fontSize: hp(1.7),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
-    textAlign: 'left',
+    textAlign: 'center',
   },
   dateBox1: {
     alignItems: 'center',
@@ -641,38 +638,6 @@ const styles = StyleSheet.create({
     borderRadius: wp(1.5),
     backgroundColor: COLORS.white,
   },
-  statusView: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-  },
-  profilePhotoView: {
-    borderWidth: 0.5,
-    marginTop: hp(1),
-  },
-  profileImage: {
-    width: wp(28),
-    height: hp(13.5),
-    resizeMode: 'contain',
-  },
-  editView: {
-    width: wp(7),
-    height: wp(7),
-    borderRadius: wp(7),
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 0.5,
-    position: 'absolute',
-    zIndex: 1,
-    right: -wp(3),
-    top: -hp(2),
-    backgroundColor: COLORS.white,
-  },
-  editImage1: {
-    width: wp(3),
-    height: hp(2.5),
-    resizeMode: 'contain',
-  },
   container: {
     width: '94%',
     // height: hp(22),
@@ -721,11 +686,11 @@ const styles = StyleSheet.create({
     color: COLORS.black,
     borderRadius: 5,
     alignSelf: 'center',
-    marginBottom: hp(2),
+    marginBottom: hp(3),
     marginTop: hp(1),
   },
   commentTextInput: {
-    width: '92%',
+    width: '100%',
     paddingHorizontal: wp(3),
     paddingVertical: hp(1),
     borderWidth: 1,
@@ -737,18 +702,10 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     height: hp(14),
   },
-  statusView1: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: hp(1.5),
-    width: '92%',
-    alignSelf: 'center',
-  },
   titleText1: {
     fontSize: hp(1.8),
     fontFamily: Fonts.FONTS.PoppinsSemiBold,
     color: COLORS.black,
-    marginHorizontal: wp(3),
     textAlign: 'left',
   },
 });

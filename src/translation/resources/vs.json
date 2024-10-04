@@ -57,5 +57,8 @@
   "users": "Người dùng",
   "billing": "Billings",
   "bed_management": "Bed Management",
-  "blood_bank": "Blood Bank"
+  "blood_bank": "Blood Bank",
+  "prescription": "Prescriptions",
+  "diagnosis": "Diagnosis",
+  "enquiries": "Enquiries"
 }
