@@ -35,6 +35,10 @@ import DiagnosisScreen from './src/screens/DiagnosisScreen';
 import EnquiriesScreen from './src/screens/EnquiriesScreen';
 import FinanceScreen from './src/screens/FinanceScreen';
 import FrontOfficeScreen from './src/screens/FrontOfficeScreen';
+import HospitalChargesScreen from './src/screens/HospitalChargesScreen';
+import IPDScreen from './src/screens/IPDScreen';
+import MedicineScreen from './src/screens/MedicineScreen';
+import { PatientsScreen } from './src/screens/PatientsScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -205,6 +209,26 @@ function SettingStack() {
       <Stack.Screen
         name="FrontOfficeScreen"
         component={FrontOfficeScreen}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="HospitalChargesScreen"
+        component={HospitalChargesScreen}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="IPDScreen"
+        component={IPDScreen}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="MedicineScreen"
+        component={MedicineScreen}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="PatientsScreen"
+        component={PatientsScreen}
         options={{headerShown: false}}
       />
     </Stack.Navigator>

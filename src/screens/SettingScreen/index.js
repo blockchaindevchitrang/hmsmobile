@@ -200,6 +200,7 @@ export const SettingScreen = ({navigation}) => {
           </TouchableOpacity>
 
           <TouchableOpacity
+            onPress={() => navigation.navigate('HospitalChargesScreen')}
             style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
             <Text style={[styles.text, {color: theme.text}]}>
               {'Hospital Charges'}
@@ -207,6 +208,7 @@ export const SettingScreen = ({navigation}) => {
           </TouchableOpacity>
 
           <TouchableOpacity
+            onPress={() => navigation.navigate('IPDScreen')}
             style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
             <Text style={[styles.text, {color: theme.text}]}>{'IPD/OPD'}</Text>
           </TouchableOpacity>
@@ -219,6 +221,7 @@ export const SettingScreen = ({navigation}) => {
           </TouchableOpacity>
 
           <TouchableOpacity
+            onPress={() => navigation.navigate('MedicineScreen')}
             style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
             <Text style={[styles.text, {color: theme.text}]}>
               {'Medicines'}
@@ -226,6 +229,7 @@ export const SettingScreen = ({navigation}) => {
           </TouchableOpacity>
 
           <TouchableOpacity
+            onPress={() => navigation.navigate('PatientsScreen')}
             style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
             <Text style={[styles.text, {color: theme.text}]}>{'Patients'}</Text>
           </TouchableOpacity>

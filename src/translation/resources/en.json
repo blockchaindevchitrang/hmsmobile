@@ -64,5 +64,9 @@
   "diagnosis": "Diagnosis",
   "enquiries": "Enquiries",
   "finance": "Finance",
-  "front_office": "Front Office"
+  "front_office": "Front Office",
+  "hospital_charges": "Hospital Charges",
+  "ipd_opd": "IPD/OPD",
+  "medicines": "Medicines",
+  "patient": "Patients"
 }
