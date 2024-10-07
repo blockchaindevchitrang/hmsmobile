@@ -60,5 +60,7 @@
   "blood_bank": "Blood Bank",
   "prescription": "Prescriptions",
   "diagnosis": "Diagnosis",
-  "enquiries": "Enquiries"
+  "enquiries": "Enquiries",
+  "finance": "Finance",
+  "front_office": "Front Office"
 }

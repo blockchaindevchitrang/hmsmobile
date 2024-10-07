@@ -25,6 +25,7 @@ import {
 import headerLogo from '../../images/headerLogo.png';
 import {BlurView} from '@react-native-community/blur';
 import close from '../../images/close.png';
+import filter from '../../images/filter.png';
 import {
   Menu,
   MenuOptions,
@@ -42,35 +43,45 @@ const BloodIssueData = [
     id: 1,
     name: 'Joey Tribiyani',
     mail: 'joey@gmail.com',
+    type: 'Residential Care',
     date: '24th May, 2024',
+    view: 'City Hospital N/A',
     status: true,
   },
   {
     id: 2,
     name: 'Monica Geller',
     mail: 'monica@gmail.com',
-    date: 'N/A',
+    type: 'General Inquiry',
+    date: '12 Jan, 2021',
+    view: 'City Hospital N/A',
     status: false,
   },
   {
     id: 3,
     name: 'Ross Geller',
     mail: 'ross@gmail.com',
-    date: '28th June, 2024',
+    type: 'Feedback/Suggestions',
+    date: '9 Sept, 2020',
+    view: 'Ashok Patel',
     status: true,
   },
   {
     id: 4,
     name: 'Monica Geller',
     mail: 'monica@gmail.com',
-    date: 'N/A',
+    type: 'Feedback/Suggestions',
+    date: '12 Nov, 2023',
+    view: 'City Hospital N/A',
     status: false,
   },
   {
     id: 5,
     name: 'Ross Geller',
     mail: 'ross@gmail.com',
-    date: 'N/A',
+    type: 'Residential Care',
+    date: '01 Feb, 2024',
+    view: 'City Hospital N/A',
     status: true,
   },
 ];
@@ -102,25 +113,19 @@ export const EnquiriesScreen = ({navigation}) => {
             <Text style={[styles.dataHistoryText1]}>{item.mail}</Text>
           </View>
         </View>
-        <View style={styles.nameDataView}>
-          <ProfilePhoto username={item.name} />
-          <View>
-            <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
-            <Text style={[styles.dataHistoryText1]}>{item.mail}</Text>
+        <View style={[styles.switchView, {width: wp(45)}]}>
+          <View style={[styles.dateBox1, {backgroundColor: theme.lightBlue}]}>
+            <Text style={[styles.dataHistoryText1]}>{item.type}</Text>
           </View>
         </View>
-        {item.date == 'N/A' ? (
-          <Text style={[styles.dataHistoryText, {width: wp(35)}]}>
-            {item.date}
-          </Text>
-        ) : (
-          <View style={[styles.switchView, {width: wp(35)}]}>
-            <View
-              style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-              <Text style={[styles.dataHistoryText1]}>{item.date}</Text>
-            </View>
+        <View style={[styles.switchView, {width: wp(35)}]}>
+          <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
+            <Text style={[styles.dataHistoryText1]}>{item.date}</Text>
           </View>
-        )}
+        </View>
+        <Text style={[styles.dataHistoryText, {width: wp(30)}]}>
+          {item.view}
+        </Text>
         <View style={[styles.switchView, {width: wp(16)}]}>
           <Switch
             trackColor={{
@@ -168,34 +173,9 @@ export const EnquiriesScreen = ({navigation}) => {
               style={[styles.searchView, {color: theme.text}]}
             />
             <View style={styles.filterView}>
-              <TouchableOpacity
-                onPress={() => {
-                  if (menuRef.current) {
-                    menuRef.current.open(); // Open the menu on button press
-                  }
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>Action</Text>
+              <TouchableOpacity style={styles.filterView1}>
+                <Image style={styles.filterImage} source={filter} />
               </TouchableOpacity>
-              <Menu
-                ref={menuRef}
-                onSelect={value => {
-                  if (value == 'add') {
-                    setNewBloodIssueVisible(true);
-                  } else {
-                    alert(`Selected number: ${value}`);
-                  }
-                }}>
-                <MenuTrigger text={''} />
-                <MenuOptions style={{marginVertical: hp(0.5)}}>
-                  <MenuOption value={'add'}>
-                    <Text style={styles.dataHistoryText3}>New Perception</Text>
-                  </MenuOption>
-                  <MenuOption value={'excel'}>
-                    <Text style={styles.dataHistoryText3}>Export to Excel</Text>
-                  </MenuOption>
-                </MenuOptions>
-              </Menu>
             </View>
           </View>
           <View
@@ -217,17 +197,29 @@ export const EnquiriesScreen = ({navigation}) => {
                   <Text
                     style={[
                       styles.titleText,
-                      {width: wp(35), textAlign: 'left'},
+                      {width: wp(45), textAlign: 'left'},
                     ]}>
                     {'TYPE'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(35)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {width: wp(35), textAlign: 'left'},
+                    ]}>
                     {'CREATED ON'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(20)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {width: wp(30), textAlign: 'left'},
+                    ]}>
                     {'VIEWED BY'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(16)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {width: wp(16), textAlign: 'left'},
+                    ]}>
                     {'STATUS'}
                   </Text>
                   <Text style={[styles.titleText, {width: wp(16)}]}>

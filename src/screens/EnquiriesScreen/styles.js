@@ -122,7 +122,6 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
     marginHorizontal: wp(2),
-    textAlign: 'center',
   },
   dataHistoryText1: {
     fontSize: hp(1.8),
@@ -162,12 +161,12 @@ const styles = StyleSheet.create({
   },
   switchView: {
     width: wp(24),
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'center',
     marginHorizontal: wp(2),
   },
   actionDataView: {
-    width: wp(24),
+    width: wp(16),
     alignItems: 'center',
     justifyContent: 'center',
     marginHorizontal: wp(2),

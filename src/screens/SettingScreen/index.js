@@ -172,6 +172,7 @@ export const SettingScreen = ({navigation}) => {
           </TouchableOpacity>
 
           <TouchableOpacity
+            onPress={() => navigation.navigate('EnquiriesScreen')}
             style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
             <Text style={[styles.text, {color: theme.text}]}>
               {'Enquiries'}
@@ -179,11 +180,13 @@ export const SettingScreen = ({navigation}) => {
           </TouchableOpacity>
 
           <TouchableOpacity
+            onPress={() => navigation.navigate('FinanceScreen')}
             style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
             <Text style={[styles.text, {color: theme.text}]}>{'Finance'}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
+            onPress={() => navigation.navigate('FrontOfficeScreen')}
             style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
             <Text style={[styles.text, {color: theme.text}]}>
               {'Front Office'}
