@@ -68,5 +68,12 @@
   "hospital_charges": "Hospital Charges",
   "ipd_opd": "IPD/OPD",
   "medicines": "Medicines",
-  "patient": "Patients"
+  "patient": "Patients",
+  "vaccination": "Vaccination",
+  "documents": "Documents",
+  "inventory": "Inventory",
+  "pathology": "Pathology",
+  "radiology": "Radiology",
+  "reports": "Reports",
+  "transactions": "Transactions"
 }

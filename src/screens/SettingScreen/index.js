@@ -235,6 +235,7 @@ export const SettingScreen = ({navigation}) => {
           </TouchableOpacity>
 
           <TouchableOpacity
+            onPress={() => navigation.navigate('VaccinationScreen')}
             style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
             <Text style={[styles.text, {color: theme.text}]}>
               {'Vaccination'}
@@ -242,6 +243,7 @@ export const SettingScreen = ({navigation}) => {
           </TouchableOpacity>
 
           <TouchableOpacity
+            onPress={() => navigation.navigate('DocumentsScreen')}
             style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
             <Text style={[styles.text, {color: theme.text}]}>
               {'Documents'}
@@ -249,6 +251,7 @@ export const SettingScreen = ({navigation}) => {
           </TouchableOpacity>
 
           <TouchableOpacity
+            onPress={() => navigation.navigate('InventoryScreen')}
             style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
             <Text style={[styles.text, {color: theme.text}]}>
               {'Inventory'}
@@ -256,6 +259,7 @@ export const SettingScreen = ({navigation}) => {
           </TouchableOpacity>
 
           <TouchableOpacity
+            onPress={() => navigation.navigate('PathologyScreen')}
             style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
             <Text style={[styles.text, {color: theme.text}]}>
               {'Pathology'}
@@ -263,11 +267,13 @@ export const SettingScreen = ({navigation}) => {
           </TouchableOpacity>
 
           <TouchableOpacity
+            onPress={() => navigation.navigate('ReportsScreen')}
             style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
             <Text style={[styles.text, {color: theme.text}]}>{'Reports'}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
+            onPress={() => navigation.navigate('RadiologyScreen')}
             style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
             <Text style={[styles.text, {color: theme.text}]}>
               {'Radiology'}
@@ -285,6 +291,7 @@ export const SettingScreen = ({navigation}) => {
           </TouchableOpacity>
 
           <TouchableOpacity
+            onPress={() => navigation.navigate('TransactionsScreen')}
             style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
             <Text style={[styles.text, {color: theme.text}]}>
               {'Transactions'}

@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   optionButton: {
-    width: '95%',
+    width: '79%',
     height: hp(6.4),
     alignItems: 'center',
     justifyContent: 'center',

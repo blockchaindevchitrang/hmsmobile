@@ -26,16 +26,9 @@ import man from '../../images/man.png';
 import draw from '../../images/draw.png';
 import DatePicker from 'react-native-date-picker';
 import ImagePicker from 'react-native-image-crop-picker';
-import {
-  Menu,
-  MenuOptions,
-  MenuOption,
-  MenuTrigger,
-} from 'react-native-popup-menu';
 
-const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
+const GeneratePatient = ({searchBreak, setSearchBreak, allData}) => {
   const {theme} = useTheme();
-  const menuRef = useRef(null);
   const [newUserVisible, setNewUserVisible] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -96,26 +89,15 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
             <Text style={[styles.dataHistoryText1]}>{item.mail}</Text>
           </View>
         </View>
-        <Text style={[styles.dataHistoryText1, {width: wp(32)}]}>
-          {item.phone}
-        </Text>
-        <View style={[styles.switchView, {width: wp(32)}]}>
-          <Text style={[styles.dataHistoryText1]}>{item.qualification}</Text>
+        <View style={[styles.switchView, {width: wp(35)}]}>
+          <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
+            <Text style={[styles.dataHistoryText1]}>{item.unique_id}</Text>
+          </View>
         </View>
-        <Text style={[styles.dataHistoryText1, {width: wp(28)}]}>
-          {item.date}
-        </Text>
-        <View style={[styles.switchView, {width: wp(20)}]}>
-          <Switch
-            trackColor={{
-              false: item.status ? COLORS.greenColor : COLORS.errorColor,
-              true: item.status ? COLORS.greenColor : COLORS.errorColor,
-            }}
-            thumbColor={item.status ? '#f4f3f4' : '#f4f3f4'}
-            ios_backgroundColor={COLORS.errorColor}
-            onValueChange={() => {}}
-            value={item.status}
-          />
+        <View style={[styles.switchView, {width: wp(30)}]}>
+          <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
+            <Text style={[styles.dataHistoryText1]}>{item.template_name}</Text>
+          </View>
         </View>
         <View style={styles.actionDataView}>
           <TouchableOpacity>
@@ -149,41 +131,13 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
               onChangeText={text => setSearchBreak(text)}
               style={[styles.searchView, {color: theme.text}]}
             />
-            <View style={styles.filterView}>
-              <TouchableOpacity style={styles.filterView1}>
-                <Image style={styles.filterImage} source={filter} />
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => {
-                  if (menuRef.current) {
-                    menuRef.current.open(); // Open the menu on button press
-                  }
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>Action</Text>
-              </TouchableOpacity>
-              <Menu
-                ref={menuRef}
-                onSelect={value => {
-                  if (value == 'add') {
-                    setNewUserVisible(true);
-                  } else {
-                    alert(`Selected number: ${value}`);
-                  }
-                }}>
-                <MenuTrigger text={''} />
-                <MenuOptions style={{marginVertical: hp(0.5)}}>
-                  <MenuOption value={'add'}>
-                    <Text style={styles.dataHistoryText3}>
-                      New Case Handler
-                    </Text>
-                  </MenuOption>
-                  <MenuOption value={'excel'}>
-                    <Text style={styles.dataHistoryText3}>Export to Excel</Text>
-                  </MenuOption>
-                </MenuOptions>
-              </Menu>
-            </View>
+          </View>
+          <View style={styles.filterView}>
+            <TouchableOpacity
+              onPress={() => setNewUserVisible(true)}
+              style={styles.actionView}>
+              <Text style={styles.actionText}>New Patient Smart Cards</Text>
+            </TouchableOpacity>
           </View>
           <View
             style={[styles.activeView, {backgroundColor: theme.headerColor}]}>
@@ -199,19 +153,13 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
                       styles.titleText,
                       {width: wp(55), textAlign: 'left'},
                     ]}>
-                    {'USERS'}
+                    {'PATIENT'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(32)}]}>
-                    {'PHONE'}
+                  <Text style={[styles.titleText, {width: wp(35)}]}>
+                    {'PATIENT UNIQUE ID'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(32)}]}>
-                    {'QUALIFICATION'}
-                  </Text>
-                  <Text style={[styles.titleText, {width: wp(28)}]}>
-                    {'BIRTH DATE'}
-                  </Text>
-                  <Text style={[styles.titleText, {width: wp(20)}]}>
-                    {'STATUS'}
+                  <Text style={[styles.titleText, {width: wp(30)}]}>
+                    {'TEMPLATE NAME'}
                   </Text>
                   <Text style={[styles.titleText, {width: wp(16)}]}>
                     {'ACTION'}
@@ -247,7 +195,7 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
           contentContainerStyle={{paddingBottom: hp(12)}}>
           <View style={styles.subView}>
             <Text style={[styles.doctorText, {color: theme.text}]}>
-              New Case Handlers
+              Add New Patient Cases
             </Text>
             <View style={styles.filterView}>
               <TouchableOpacity
@@ -481,7 +429,7 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
   );
 };
 
-export default CaseHandlerList;
+export default GeneratePatient;
 
 const styles = StyleSheet.create({
   safeAreaStyle: {
@@ -498,7 +446,7 @@ const styles = StyleSheet.create({
     marginVertical: hp(2),
   },
   searchView: {
-    width: '50%',
+    width: '100%',
     paddingHorizontal: wp(2),
     paddingVertical: hp(0.5),
     borderWidth: 1,
@@ -511,6 +459,9 @@ const styles = StyleSheet.create({
   filterView: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'flex-end',
+    paddingHorizontal: wp(3),
+    paddingBottom: hp(1),
   },
   filterView1: {
     height: hp(5),

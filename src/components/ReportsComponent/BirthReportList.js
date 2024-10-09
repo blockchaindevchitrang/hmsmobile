@@ -8,35 +8,30 @@ import {
   ScrollView,
   TextInput,
   FlatList,
+  Modal,
+  TouchableWithoutFeedback,
   Platform,
 } from 'react-native';
 import React, {useRef, useState} from 'react';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
-} from './../Pixel/index';
+} from '../Pixel/index';
 import {COLORS, Fonts} from '../../utils';
 import {useTheme} from '../../utils/ThemeProvider';
-import ProfilePhoto from './../ProfilePhoto';
-import moment from 'moment';
+import ProfilePhoto from '../ProfilePhoto';
+import filter from '../../images/filter.png';
 import deleteIcon from '../../images/delete.png';
 import editing from '../../images/editing.png';
-import filter from '../../images/filter.png';
+import moment from 'moment';
 import man from '../../images/man.png';
 import draw from '../../images/draw.png';
 import DatePicker from 'react-native-date-picker';
 import ImagePicker from 'react-native-image-crop-picker';
-import {
-  Menu,
-  MenuOptions,
-  MenuOption,
-  MenuTrigger,
-} from 'react-native-popup-menu';
 
-const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
+const BirthReportList = ({searchBreak, setSearchBreak, allData}) => {
   const {theme} = useTheme();
-  const menuRef = useRef(null);
-  const [newUserVisible, setNewUserVisible] = useState(false);
+  const [newBloodIssueVisible, setNewBloodIssueVisible] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -89,6 +84,11 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
           styles.dataHistoryView,
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
+        <View style={[styles.switchView, {width: wp(30)}]}>
+          <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
+            <Text style={[styles.dataHistoryText1]}>{item.admission}</Text>
+          </View>
+        </View>
         <View style={styles.nameDataView}>
           <ProfilePhoto username={item.name} />
           <View>
@@ -96,26 +96,17 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
             <Text style={[styles.dataHistoryText1]}>{item.mail}</Text>
           </View>
         </View>
-        <Text style={[styles.dataHistoryText1, {width: wp(32)}]}>
-          {item.phone}
-        </Text>
-        <View style={[styles.switchView, {width: wp(32)}]}>
-          <Text style={[styles.dataHistoryText1]}>{item.qualification}</Text>
+        <View style={styles.nameDataView}>
+          <ProfilePhoto username={item.name} />
+          <View>
+            <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
+            <Text style={[styles.dataHistoryText1]}>{item.mail}</Text>
+          </View>
         </View>
-        <Text style={[styles.dataHistoryText1, {width: wp(28)}]}>
-          {item.date}
-        </Text>
-        <View style={[styles.switchView, {width: wp(20)}]}>
-          <Switch
-            trackColor={{
-              false: item.status ? COLORS.greenColor : COLORS.errorColor,
-              true: item.status ? COLORS.greenColor : COLORS.errorColor,
-            }}
-            thumbColor={item.status ? '#f4f3f4' : '#f4f3f4'}
-            ios_backgroundColor={COLORS.errorColor}
-            onValueChange={() => {}}
-            value={item.status}
-          />
+        <View style={[styles.switchView, {width: wp(35)}]}>
+          <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
+            <Text style={[styles.dataHistoryText]}>{item.date}</Text>
+          </View>
         </View>
         <View style={styles.actionDataView}>
           <TouchableOpacity>
@@ -137,7 +128,7 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
 
   return (
     <View style={styles.safeAreaStyle}>
-      {!newUserVisible ? (
+      {!newBloodIssueVisible ? (
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{paddingBottom: hp(12)}}>
@@ -149,41 +140,16 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
               onChangeText={text => setSearchBreak(text)}
               style={[styles.searchView, {color: theme.text}]}
             />
-            <View style={styles.filterView}>
-              <TouchableOpacity style={styles.filterView1}>
-                <Image style={styles.filterImage} source={filter} />
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => {
-                  if (menuRef.current) {
-                    menuRef.current.open(); // Open the menu on button press
-                  }
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>Action</Text>
-              </TouchableOpacity>
-              <Menu
-                ref={menuRef}
-                onSelect={value => {
-                  if (value == 'add') {
-                    setNewUserVisible(true);
-                  } else {
-                    alert(`Selected number: ${value}`);
-                  }
-                }}>
-                <MenuTrigger text={''} />
-                <MenuOptions style={{marginVertical: hp(0.5)}}>
-                  <MenuOption value={'add'}>
-                    <Text style={styles.dataHistoryText3}>
-                      New Case Handler
-                    </Text>
-                  </MenuOption>
-                  <MenuOption value={'excel'}>
-                    <Text style={styles.dataHistoryText3}>Export to Excel</Text>
-                  </MenuOption>
-                </MenuOptions>
-              </Menu>
-            </View>
+          </View>
+          <View style={styles.filterView}>
+            <TouchableOpacity style={styles.filterView1}>
+              <Image style={styles.filterImage} source={filter} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setNewBloodIssueVisible(true)}
+              style={styles.actionView}>
+              <Text style={styles.actionText}>New Birth Reports</Text>
+            </TouchableOpacity>
           </View>
           <View
             style={[styles.activeView, {backgroundColor: theme.headerColor}]}>
@@ -194,24 +160,25 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
                     styles.titleActiveView,
                     {backgroundColor: theme.headerColor},
                   ]}>
+                  <Text style={[styles.titleText, {width: wp(30)}]}>
+                    {'CASE ID'}
+                  </Text>
                   <Text
                     style={[
                       styles.titleText,
                       {width: wp(55), textAlign: 'left'},
                     ]}>
-                    {'USERS'}
+                    {'PATIENT'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(32)}]}>
-                    {'PHONE'}
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {width: wp(55), textAlign: 'left'},
+                    ]}>
+                    {'DOCTORS'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(32)}]}>
-                    {'QUALIFICATION'}
-                  </Text>
-                  <Text style={[styles.titleText, {width: wp(28)}]}>
-                    {'BIRTH DATE'}
-                  </Text>
-                  <Text style={[styles.titleText, {width: wp(20)}]}>
-                    {'STATUS'}
+                  <Text style={[styles.titleText, {width: wp(35)}]}>
+                    {'DATE'}
                   </Text>
                   <Text style={[styles.titleText, {width: wp(16)}]}>
                     {'ACTION'}
@@ -228,11 +195,9 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
                     virtualized
                     ListEmptyComponent={() => (
                       <View key={0} style={styles.ListEmptyView}>
-                        <View style={styles.subEmptyView}>
-                          <Text style={styles.emptyText}>
-                            {'No record found'}
-                          </Text>
-                        </View>
+                        <Text style={styles.emptyText}>
+                          {'No record found'}
+                        </Text>
                       </View>
                     )}
                   />
@@ -247,11 +212,11 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
           contentContainerStyle={{paddingBottom: hp(12)}}>
           <View style={styles.subView}>
             <Text style={[styles.doctorText, {color: theme.text}]}>
-              New Case Handlers
+              Create Birth Report
             </Text>
             <View style={styles.filterView}>
               <TouchableOpacity
-                onPress={() => setNewUserVisible(false)}
+                onPress={() => setNewBloodIssueVisible(false)}
                 style={styles.backButtonView}>
                 <Text style={styles.backText}>BACK</Text>
               </TouchableOpacity>
@@ -261,7 +226,7 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
           <View style={styles.profileView}>
             <View style={styles.nameView}>
               <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>FIRST NAME</Text>
+                <Text style={styles.dataHistoryText6}>FIRST NAME</Text>
                 <TextInput
                   value={firstName}
                   placeholder={'Enter first name'}
@@ -271,7 +236,7 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
               </View>
 
               <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>LAST NAME</Text>
+                <Text style={styles.dataHistoryText6}>LAST NAME</Text>
                 <TextInput
                   value={lastName}
                   placeholder={'Enter last name'}
@@ -283,7 +248,7 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
 
             <View style={styles.nameView}>
               <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>EMAIL ADDRESS</Text>
+                <Text style={styles.dataHistoryText6}>EMAIL ADDRESS</Text>
                 <TextInput
                   value={email}
                   placeholder={'Enter email'}
@@ -295,7 +260,7 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
 
             <View style={styles.nameView}>
               <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>ROLE</Text>
+                <Text style={styles.dataHistoryText6}>ROLE</Text>
                 <TextInput
                   value={role}
                   placeholder={'Select'}
@@ -307,7 +272,7 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
 
             <View style={styles.nameView}>
               <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>PASSWORD</Text>
+                <Text style={styles.dataHistoryText6}>PASSWORD</Text>
                 <TextInput
                   value={password}
                   placeholder={'******'}
@@ -320,7 +285,7 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
 
             <View style={styles.nameView}>
               <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>CONFIRM PASSWORD</Text>
+                <Text style={styles.dataHistoryText6}>CONFIRM PASSWORD</Text>
                 <TextInput
                   value={confirmPassword}
                   placeholder={'******'}
@@ -333,13 +298,7 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
 
             <View style={styles.nameView}>
               <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>DATE OF BIRTH</Text>
-                {/* <TextInput
-                      value={firstName}
-                      placeholder={'Enter first name'}
-                      onChangeText={text => setFirstName(text)}
-                      style={[styles.nameTextView, {width: '100%'}]}
-                    /> */}
+                <Text style={styles.dataHistoryText6}>DATE OF BIRTH</Text>
                 <Text
                   style={[
                     styles.nameTextView,
@@ -365,7 +324,7 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
               </View>
 
               <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>GENDER</Text>
+                <Text style={styles.dataHistoryText6}>GENDER</Text>
                 <View style={[styles.statusView, {paddingVertical: hp(1)}]}>
                   <View style={[styles.optionView]}>
                     <TouchableOpacity
@@ -407,7 +366,7 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
 
             <View style={styles.nameView}>
               <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>ADDRESS</Text>
+                <Text style={styles.dataHistoryText6}>ADDRESS</Text>
                 <TextInput
                   value={address}
                   placeholder={'******'}
@@ -420,7 +379,7 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
 
             <View style={styles.nameView}>
               <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>CITY</Text>
+                <Text style={styles.dataHistoryText6}>CITY</Text>
                 <TextInput
                   value={city}
                   placeholder={'Enter city'}
@@ -430,7 +389,7 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
               </View>
 
               <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>COUNTRY</Text>
+                <Text style={styles.dataHistoryText6}>COUNTRY</Text>
                 <TextInput
                   value={country}
                   placeholder={'Enter country'}
@@ -442,7 +401,7 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
 
             <View style={styles.nameView}>
               <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>POSTAL CODE</Text>
+                <Text style={styles.dataHistoryText6}>POSTAL CODE</Text>
                 <TextInput
                   value={postalCode}
                   placeholder={'Postal Code'}
@@ -454,7 +413,7 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
 
             <View style={styles.nameView}>
               <View>
-                <Text style={styles.dataHistoryText1}>PROFILE</Text>
+                <Text style={styles.dataHistoryText6}>PROFILE</Text>
                 <View style={styles.profilePhotoView}>
                   <TouchableOpacity
                     style={styles.editView}
@@ -481,7 +440,7 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
   );
 };
 
-export default CaseHandlerList;
+export default BirthReportList;
 
 const styles = StyleSheet.create({
   safeAreaStyle: {
@@ -498,7 +457,7 @@ const styles = StyleSheet.create({
     marginVertical: hp(2),
   },
   searchView: {
-    width: '50%',
+    width: '100%',
     paddingHorizontal: wp(2),
     paddingVertical: hp(0.5),
     borderWidth: 1,
@@ -511,6 +470,9 @@ const styles = StyleSheet.create({
   filterView: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'flex-end',
+    paddingHorizontal: wp(3),
+    paddingBottom: hp(1),
   },
   filterView1: {
     height: hp(5),
@@ -572,7 +534,7 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.FONTS.PoppinsSemiBold,
     color: COLORS.white,
     marginHorizontal: wp(2),
-    textAlign: 'left',
+    // textAlign: 'center',
   },
   dataHistoryView: {
     width: '100%',
@@ -589,10 +551,15 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   dataHistoryText1: {
+    fontSize: hp(1.8),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+    marginHorizontal: wp(2),
+  },
+  dataHistoryText6: {
     fontSize: hp(1.7),
     fontFamily: Fonts.FONTS.PoppinsBold,
     color: COLORS.black,
-    marginHorizontal: wp(2),
   },
   dataHistoryText2: {
     fontSize: hp(1.8),
@@ -627,9 +594,9 @@ const styles = StyleSheet.create({
   },
   switchView: {
     width: wp(24),
+    alignItems: 'flex-start',
     justifyContent: 'center',
     marginHorizontal: wp(2),
-    alignItems: 'flex-start',
   },
   actionDataView: {
     width: wp(16),
@@ -669,7 +636,7 @@ const styles = StyleSheet.create({
     borderRadius: wp(2),
   },
   nameTextView: {
-    width: '50%',
+    width: '100%',
     paddingHorizontal: wp(2),
     paddingVertical: hp(0.5),
     borderWidth: 1,
@@ -685,8 +652,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    width: '100%',
-    marginVertical: hp(1),
+    width: '94%',
+    marginVertical: hp(2),
     alignSelf: 'center',
   },
   contactView: {
@@ -735,7 +702,7 @@ const styles = StyleSheet.create({
     fontSize: hp(1.7),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
-    textAlign: 'left',
+    textAlign: 'center',
   },
   dateBox1: {
     alignItems: 'center',
@@ -811,10 +778,75 @@ const styles = StyleSheet.create({
     borderRadius: wp(1.5),
     backgroundColor: COLORS.white,
   },
-  statusView: {
-    flexDirection: 'row',
+  container: {
+    width: '94%',
+    // height: hp(22),
+    paddingVertical: hp(2),
+    backgroundColor: COLORS.white,
+    borderRadius: 10,
+    // marginLeft: -wp(2.5),
+    // paddingTop: hp(3),
+  },
+  modalOverlay: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+  },
+  maneModalView: {
+    justifyContent: 'center',
     alignItems: 'center',
-    justifyContent: 'flex-start',
+    width: '100%',
+    height: '100%',
+  },
+  headerView: {
+    width: '96%',
+    alignSelf: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginVertical: hp(1),
+    paddingHorizontal: wp(2),
+  },
+  headerText: {
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    fontSize: hp(2.2),
+    color: COLORS.black,
+  },
+  eventTextInput: {
+    width: '92%',
+    paddingHorizontal: wp(3),
+    paddingVertical: hp(1),
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(2),
+    color: COLORS.black,
+    borderRadius: 5,
+    alignSelf: 'center',
+    marginBottom: hp(3),
+    marginTop: hp(1),
+  },
+  commentTextInput: {
+    width: '100%',
+    paddingHorizontal: wp(3),
+    paddingVertical: hp(1),
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(2),
+    color: COLORS.black,
+    borderRadius: 5,
+    alignSelf: 'center',
+    height: hp(14),
+  },
+  titleText1: {
+    fontSize: hp(1.8),
+    fontFamily: Fonts.FONTS.PoppinsSemiBold,
+    color: COLORS.black,
+    textAlign: 'left',
   },
   profilePhotoView: {
     borderWidth: 0.5,

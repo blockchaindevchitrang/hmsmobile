@@ -26,16 +26,9 @@ import man from '../../images/man.png';
 import draw from '../../images/draw.png';
 import DatePicker from 'react-native-date-picker';
 import ImagePicker from 'react-native-image-crop-picker';
-import {
-  Menu,
-  MenuOptions,
-  MenuOption,
-  MenuTrigger,
-} from 'react-native-popup-menu';
 
-const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
+const SmartCardTemplates = ({searchBreak, setSearchBreak, allData}) => {
   const {theme} = useTheme();
-  const menuRef = useRef(null);
   const [newUserVisible, setNewUserVisible] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -89,32 +82,82 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
           styles.dataHistoryView,
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
-        <View style={styles.nameDataView}>
-          <ProfilePhoto username={item.name} />
-          <View>
-            <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
-            <Text style={[styles.dataHistoryText1]}>{item.mail}</Text>
-          </View>
-        </View>
         <Text style={[styles.dataHistoryText1, {width: wp(32)}]}>
-          {item.phone}
+          {item.name}
         </Text>
-        <View style={[styles.switchView, {width: wp(32)}]}>
-          <Text style={[styles.dataHistoryText1]}>{item.qualification}</Text>
-        </View>
-        <Text style={[styles.dataHistoryText1, {width: wp(28)}]}>
-          {item.date}
+        <Text style={[styles.dataHistoryText1, {width: wp(32)}]}>
+          {item.header_color}
         </Text>
-        <View style={[styles.switchView, {width: wp(20)}]}>
+        <View style={[styles.switchView, {width: wp(30)}]}>
           <Switch
             trackColor={{
-              false: item.status ? COLORS.greenColor : COLORS.errorColor,
-              true: item.status ? COLORS.greenColor : COLORS.errorColor,
+              false: item.show_email ? COLORS.greenColor : COLORS.errorColor,
+              true: item.show_email ? COLORS.greenColor : COLORS.errorColor,
             }}
-            thumbColor={item.status ? '#f4f3f4' : '#f4f3f4'}
+            thumbColor={item.show_email ? '#f4f3f4' : '#f4f3f4'}
             ios_backgroundColor={COLORS.errorColor}
             onValueChange={() => {}}
-            value={item.status}
+            value={item.show_email}
+          />
+        </View>
+        <View style={[styles.switchView, {width: wp(30)}]}>
+          <Switch
+            trackColor={{
+              false: item.show_phone ? COLORS.greenColor : COLORS.errorColor,
+              true: item.show_phone ? COLORS.greenColor : COLORS.errorColor,
+            }}
+            thumbColor={item.show_phone ? '#f4f3f4' : '#f4f3f4'}
+            ios_backgroundColor={COLORS.errorColor}
+            onValueChange={() => {}}
+            value={item.show_phone}
+          />
+        </View>
+        <View style={[styles.switchView, {width: wp(30)}]}>
+          <Switch
+            trackColor={{
+              false: item.show_DOB ? COLORS.greenColor : COLORS.errorColor,
+              true: item.show_DOB ? COLORS.greenColor : COLORS.errorColor,
+            }}
+            thumbColor={item.show_DOB ? '#f4f3f4' : '#f4f3f4'}
+            ios_backgroundColor={COLORS.errorColor}
+            onValueChange={() => {}}
+            value={item.show_DOB}
+          />
+        </View>
+        <View style={[styles.switchView, {width: wp(40)}]}>
+          <Switch
+            trackColor={{
+              false: item.showGB ? COLORS.greenColor : COLORS.errorColor,
+              true: item.showGB ? COLORS.greenColor : COLORS.errorColor,
+            }}
+            thumbColor={item.showGB ? '#f4f3f4' : '#f4f3f4'}
+            ios_backgroundColor={COLORS.errorColor}
+            onValueChange={() => {}}
+            value={item.showGB}
+          />
+        </View>
+        <View style={[styles.switchView, {width: wp(30)}]}>
+          <Switch
+            trackColor={{
+              false: item.show_address ? COLORS.greenColor : COLORS.errorColor,
+              true: item.show_address ? COLORS.greenColor : COLORS.errorColor,
+            }}
+            thumbColor={item.show_address ? '#f4f3f4' : '#f4f3f4'}
+            ios_backgroundColor={COLORS.errorColor}
+            onValueChange={() => {}}
+            value={item.show_address}
+          />
+        </View>
+        <View style={[styles.switchView, {width: wp(48)}]}>
+          <Switch
+            trackColor={{
+              false: item.show_Patient ? COLORS.greenColor : COLORS.errorColor,
+              true: item.show_Patient ? COLORS.greenColor : COLORS.errorColor,
+            }}
+            thumbColor={item.show_Patient ? '#f4f3f4' : '#f4f3f4'}
+            ios_backgroundColor={COLORS.errorColor}
+            onValueChange={() => {}}
+            value={item.show_Patient}
           />
         </View>
         <View style={styles.actionDataView}>
@@ -149,41 +192,15 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
               onChangeText={text => setSearchBreak(text)}
               style={[styles.searchView, {color: theme.text}]}
             />
-            <View style={styles.filterView}>
-              <TouchableOpacity style={styles.filterView1}>
-                <Image style={styles.filterImage} source={filter} />
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => {
-                  if (menuRef.current) {
-                    menuRef.current.open(); // Open the menu on button press
-                  }
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>Action</Text>
-              </TouchableOpacity>
-              <Menu
-                ref={menuRef}
-                onSelect={value => {
-                  if (value == 'add') {
-                    setNewUserVisible(true);
-                  } else {
-                    alert(`Selected number: ${value}`);
-                  }
-                }}>
-                <MenuTrigger text={''} />
-                <MenuOptions style={{marginVertical: hp(0.5)}}>
-                  <MenuOption value={'add'}>
-                    <Text style={styles.dataHistoryText3}>
-                      New Case Handler
-                    </Text>
-                  </MenuOption>
-                  <MenuOption value={'excel'}>
-                    <Text style={styles.dataHistoryText3}>Export to Excel</Text>
-                  </MenuOption>
-                </MenuOptions>
-              </Menu>
-            </View>
+          </View>
+          <View style={styles.filterView}>
+            <TouchableOpacity
+              onPress={() => setNewUserVisible(true)}
+              style={styles.actionView}>
+              <Text style={styles.actionText}>
+                New Patient Samrt Card Template
+              </Text>
+            </TouchableOpacity>
           </View>
           <View
             style={[styles.activeView, {backgroundColor: theme.headerColor}]}>
@@ -194,24 +211,29 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
                     styles.titleActiveView,
                     {backgroundColor: theme.headerColor},
                   ]}>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: wp(55), textAlign: 'left'},
-                    ]}>
-                    {'USERS'}
+                  <Text style={[styles.titleText, {width: wp(32)}]}>
+                    {'TEMPLATE NAME'}
                   </Text>
                   <Text style={[styles.titleText, {width: wp(32)}]}>
-                    {'PHONE'}
+                    {'HEADER COLOR'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(32)}]}>
-                    {'QUALIFICATION'}
+                  <Text style={[styles.titleText, {width: wp(30)}]}>
+                    {'SHOW EMAIL'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(28)}]}>
-                    {'BIRTH DATE'}
+                  <Text style={[styles.titleText, {width: wp(30)}]}>
+                    {'SHOW PHONE'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(20)}]}>
-                    {'STATUS'}
+                  <Text style={[styles.titleText, {width: wp(30)}]}>
+                    {'SHOW DOB'}
+                  </Text>
+                  <Text style={[styles.titleText, {width: wp(40)}]}>
+                    {'SHOW BLOOD GROUP'}
+                  </Text>
+                  <Text style={[styles.titleText, {width: wp(30)}]}>
+                    {'SHOW ADDRESS'}
+                  </Text>
+                  <Text style={[styles.titleText, {width: wp(48)}]}>
+                    {'SHOW PATIENT UNIQUE ID'}
                   </Text>
                   <Text style={[styles.titleText, {width: wp(16)}]}>
                     {'ACTION'}
@@ -247,7 +269,7 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
           contentContainerStyle={{paddingBottom: hp(12)}}>
           <View style={styles.subView}>
             <Text style={[styles.doctorText, {color: theme.text}]}>
-              New Case Handlers
+              Add New Patient Cases
             </Text>
             <View style={styles.filterView}>
               <TouchableOpacity
@@ -481,7 +503,7 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
   );
 };
 
-export default CaseHandlerList;
+export default SmartCardTemplates;
 
 const styles = StyleSheet.create({
   safeAreaStyle: {
@@ -498,7 +520,7 @@ const styles = StyleSheet.create({
     marginVertical: hp(2),
   },
   searchView: {
-    width: '50%',
+    width: '100%',
     paddingHorizontal: wp(2),
     paddingVertical: hp(0.5),
     borderWidth: 1,
@@ -511,6 +533,9 @@ const styles = StyleSheet.create({
   filterView: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'flex-end',
+    paddingHorizontal: wp(3),
+    paddingBottom: hp(1),
   },
   filterView1: {
     height: hp(5),

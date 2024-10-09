@@ -26,16 +26,9 @@ import man from '../../images/man.png';
 import draw from '../../images/draw.png';
 import DatePicker from 'react-native-date-picker';
 import ImagePicker from 'react-native-image-crop-picker';
-import {
-  Menu,
-  MenuOptions,
-  MenuOption,
-  MenuTrigger,
-} from 'react-native-popup-menu';
 
-const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
+const PathologyParameter = ({searchBreak, setSearchBreak, allData}) => {
   const {theme} = useTheme();
-  const menuRef = useRef(null);
   const [newUserVisible, setNewUserVisible] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -89,6 +82,11 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
           styles.dataHistoryView,
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
+        <View style={[styles.switchView, {width: wp(32)}]}>
+          <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
+            <Text style={[styles.dataHistoryText1]}>{item.admission}</Text>
+          </View>
+        </View>
         <View style={styles.nameDataView}>
           <ProfilePhoto username={item.name} />
           <View>
@@ -96,14 +94,20 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
             <Text style={[styles.dataHistoryText1]}>{item.mail}</Text>
           </View>
         </View>
-        <Text style={[styles.dataHistoryText1, {width: wp(32)}]}>
-          {item.phone}
-        </Text>
-        <View style={[styles.switchView, {width: wp(32)}]}>
-          <Text style={[styles.dataHistoryText1]}>{item.qualification}</Text>
+        <View style={styles.nameDataView}>
+          <ProfilePhoto username={item.name} />
+          <View>
+            <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
+            <Text style={[styles.dataHistoryText1]}>{item.mail}</Text>
+          </View>
         </View>
-        <Text style={[styles.dataHistoryText1, {width: wp(28)}]}>
-          {item.date}
+        <View style={[styles.switchView, {width: wp(30)}]}>
+          <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
+            <Text style={[styles.dataHistoryText1]}>{item.date}</Text>
+          </View>
+        </View>
+        <Text style={[styles.dataHistoryText1, {width: wp(26)}]}>
+          {item.amount}
         </Text>
         <View style={[styles.switchView, {width: wp(20)}]}>
           <Switch
@@ -149,41 +153,13 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
               onChangeText={text => setSearchBreak(text)}
               style={[styles.searchView, {color: theme.text}]}
             />
-            <View style={styles.filterView}>
-              <TouchableOpacity style={styles.filterView1}>
-                <Image style={styles.filterImage} source={filter} />
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => {
-                  if (menuRef.current) {
-                    menuRef.current.open(); // Open the menu on button press
-                  }
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>Action</Text>
-              </TouchableOpacity>
-              <Menu
-                ref={menuRef}
-                onSelect={value => {
-                  if (value == 'add') {
-                    setNewUserVisible(true);
-                  } else {
-                    alert(`Selected number: ${value}`);
-                  }
-                }}>
-                <MenuTrigger text={''} />
-                <MenuOptions style={{marginVertical: hp(0.5)}}>
-                  <MenuOption value={'add'}>
-                    <Text style={styles.dataHistoryText3}>
-                      New Case Handler
-                    </Text>
-                  </MenuOption>
-                  <MenuOption value={'excel'}>
-                    <Text style={styles.dataHistoryText3}>Export to Excel</Text>
-                  </MenuOption>
-                </MenuOptions>
-              </Menu>
-            </View>
+          </View>
+          <View style={styles.filterView}>
+            <TouchableOpacity
+              onPress={() => setNewUserVisible(true)}
+              style={styles.actionView}>
+              <Text style={styles.actionText}>New Pathology Parameter</Text>
+            </TouchableOpacity>
           </View>
           <View
             style={[styles.activeView, {backgroundColor: theme.headerColor}]}>
@@ -194,24 +170,14 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
                     styles.titleActiveView,
                     {backgroundColor: theme.headerColor},
                   ]}>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: wp(55), textAlign: 'left'},
-                    ]}>
-                    {'USERS'}
+                  <Text style={[styles.titleText, {width: wp(25)}]}>
+                    {'NAME'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(32)}]}>
-                    {'PHONE'}
-                  </Text>
-                  <Text style={[styles.titleText, {width: wp(32)}]}>
-                    {'QUALIFICATION'}
-                  </Text>
-                  <Text style={[styles.titleText, {width: wp(28)}]}>
-                    {'BIRTH DATE'}
+                  <Text style={[styles.titleText, {width: wp(38)}]}>
+                    {'REFERENCE RANGE'}
                   </Text>
                   <Text style={[styles.titleText, {width: wp(20)}]}>
-                    {'STATUS'}
+                    {'UNIT'}
                   </Text>
                   <Text style={[styles.titleText, {width: wp(16)}]}>
                     {'ACTION'}
@@ -228,11 +194,9 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
                     virtualized
                     ListEmptyComponent={() => (
                       <View key={0} style={styles.ListEmptyView}>
-                        <View style={styles.subEmptyView}>
-                          <Text style={styles.emptyText}>
-                            {'No record found'}
-                          </Text>
-                        </View>
+                        <Text style={styles.emptyText}>
+                          {'No record found'}
+                        </Text>
                       </View>
                     )}
                   />
@@ -247,7 +211,7 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
           contentContainerStyle={{paddingBottom: hp(12)}}>
           <View style={styles.subView}>
             <Text style={[styles.doctorText, {color: theme.text}]}>
-              New Case Handlers
+              Add New Pathology Parameter
             </Text>
             <View style={styles.filterView}>
               <TouchableOpacity
@@ -481,7 +445,7 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
   );
 };
 
-export default CaseHandlerList;
+export default PathologyParameter;
 
 const styles = StyleSheet.create({
   safeAreaStyle: {
@@ -498,7 +462,7 @@ const styles = StyleSheet.create({
     marginVertical: hp(2),
   },
   searchView: {
-    width: '50%',
+    width: '100%',
     paddingHorizontal: wp(2),
     paddingVertical: hp(0.5),
     borderWidth: 1,
@@ -511,6 +475,9 @@ const styles = StyleSheet.create({
   filterView: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'flex-end',
+    paddingHorizontal: wp(3),
+    marginBottom: hp(1),
   },
   filterView1: {
     height: hp(5),
@@ -842,5 +809,16 @@ const styles = StyleSheet.create({
     width: wp(3),
     height: hp(2.5),
     resizeMode: 'contain',
+  },
+  ListEmptyView: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: hp(15),
+  },
+  emptyText: {
+    fontSize: hp(2.5),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
   },
 });

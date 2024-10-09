@@ -31,6 +31,10 @@ import LabTechniciansList from '../../components/UsersComponent/LabTechniciansLi
 import PharmacistsList from '../../components/UsersComponent/PharmacistsList';
 import PatientsList from '../../components/PatientsComponent/PatientsList';
 import CasesList from '../../components/PatientsComponent/CasesList';
+import CaseHandlerList from '../../components/PatientsComponent/CaseHandlerList';
+import PatientAdmissionList from '../../components/PatientsComponent/PatientAdmissionList';
+import SmartCardTemplates from '../../components/PatientsComponent/SmartCardTemplates';
+import GeneratePatient from '../../components/PatientsComponent/GeneratePatient';
 
 const allData = [
   {
@@ -128,94 +132,177 @@ const accountantData = [
   },
 ];
 
-const NurseData = [
+const CaseHandlerData = [
   {
     id: 1,
+    admission: 'EMP0000001',
     name: 'Joey Tribiyani',
     mail: 'joey@gmail.com',
+    date: 'N/A',
     phone: '9876543210',
+    qualification: 'Bsc',
     status: true,
-    qualification: 'mca',
-    bod: 'N/A',
   },
   {
     id: 2,
+    admission: 'EMP0000002',
     name: 'Monica Geller',
     mail: 'monica@gmail.com',
-    phone: '9876543210',
+    date: 'N/A',
+    phone: 'N/A',
+    qualification: 'Msc',
     status: true,
-    qualification: 'bsc',
-    bod: 'N/A',
   },
   {
     id: 3,
+    admission: 'EMP0000003',
     name: 'Ross Geller',
     mail: 'ross@gmail.com',
-    phone: 'NA',
+    date: '8th April, 1999',
+    phone: '9876543210',
+    qualification: '',
     status: false,
-    qualification: 'mca',
-    bod: '8th April, 1999',
   },
   {
     id: 4,
+    admission: 'EMP0000004',
     name: 'Monica Geller',
     mail: 'monica@gmail.com',
+    date: '10th May, 1998',
     phone: '9876543210',
+    qualification: 'MCom',
     status: true,
-    qualification: 'bsc',
-    bod: '10th May, 1998',
   },
   {
     id: 5,
+    admission: 'EMP0000005',
     name: 'Ross Geller',
     mail: 'ross@gmail.com',
+    date: '10th May, 1998',
     phone: '9876543210',
+    qualification: 'Bsc',
+    status: true,
+  },
+];
+
+const NurseData = [
+  {
+    id: 1,
+    admission: 'EMP0000001',
+    name: 'Joey Tribiyani',
+    mail: 'joey@gmail.com',
+    package: 'Patient',
+    status: true,
+    insurance: 'Cooper Mccall',
+    date: '22:02:00 2023-05-25',
+    discharge_date: 'N/A',
+    number: 'N/A',
+  },
+  {
+    id: 2,
+    admission: 'EMP0000002',
+    name: 'Monica Geller',
+    mail: 'monica@gmail.com',
+    package: 'Body Check up',
+    status: true,
+    insurance: 'Colleen Craig',
+    date: '22:02:00 2023-05-25',
+    discharge_date: 'N/A',
+    number: '4839920',
+  },
+  {
+    id: 3,
+    admission: 'EMP0000003',
+    name: 'Ross Geller',
+    mail: 'ross@gmail.com',
+    package: 'N/A',
     status: false,
-    qualification: 'msc',
-    bod: 'N/A',
+    insurance: 'Demo Insurance',
+    date: '22:02:00 2023-05-25',
+    discharge_date: '22:02:00 2023-05-25',
+    number: 'N/A',
+  },
+  {
+    id: 4,
+    admission: 'EMP0000004',
+    name: 'Monica Geller',
+    mail: 'monica@gmail.com',
+    package: 'Patient',
+    status: true,
+    insurance: 'Demo Insurance',
+    date: '22:02:00 2023-05-25',
+    discharge_date: 'N/A',
+    number: 'N/A',
+  },
+  {
+    id: 5,
+    admission: 'EMP0000005',
+    name: 'Ross Geller',
+    mail: 'ross@gmail.com',
+    package: 'Full Body Check up',
+    status: true,
+    insurance: 'Cooper Mccall',
+    date: '22:02:00 2023-05-25',
+    discharge_date: 'N/A',
+    number: '4839822',
   },
 ];
 
 const ReceptionistsData = [
   {
     id: 1,
-    name: 'Joey Tribiyani',
-    mail: 'joey@gmail.com',
-    phone: '9876543210',
-    status: true,
-    designation: 'Jr',
+    name: 'Default',
+    header_color: 'black',
+    show_email: true,
+    show_phone: true,
+    show_DOB: true,
+    showGB: false,
+    show_address: true,
+    show_Patient: true,
   },
   {
     id: 2,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    phone: '9876543210',
-    status: true,
-    designation: 'Doctor',
+    name: 'Testing',
+    header_color: 'blue',
+    show_email: false,
+    show_phone: true,
+    show_DOB: true,
+    showGB: false,
+    show_address: true,
+    show_Patient: true,
   },
   {
     id: 3,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    phone: 'NA',
-    status: false,
-    designation: 'Receptionist',
+    name: 'Johnny',
+    header_color: 'green',
+    show_email: true,
+    show_phone: false,
+    show_DOB: true,
+    showGB: false,
+    show_address: true,
+    show_Patient: true,
   },
   {
     id: 4,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    phone: '9876543210',
-    status: true,
-    designation: 'N/A',
+    name: 'Naledi Alisa',
+    header_color: 'red',
+    show_email: true,
+    show_phone: false,
+    show_DOB: true,
+    showGB: false,
+    show_address: true,
+    show_Patient: true,
   },
   {
     id: 5,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    phone: '9876543210',
-    status: false,
-    designation: 'Lab Technician',
+    name: 'Appoint',
+    header_color: 'yellow',
+    show_email: true,
+    show_phone: false,
+    show_DOB: true,
+    showGB: false,
+    show_address: true,
+    show_Patient: true,
   },
 ];
 
@@ -262,36 +349,36 @@ const PharmacistsData = [
     id: 1,
     name: 'Joey Tribiyani',
     mail: 'joey@gmail.com',
-    status: true,
-    blood: 'N/A',
+    unique_id: 'N2JY0SK9',
+    template_name: 'Testing',
   },
   {
     id: 2,
     name: 'Monica Geller',
     mail: 'monica@gmail.com',
-    status: true,
-    blood: 'O+',
+    unique_id: 'N2JY0SK9',
+    template_name: 'Testing',
   },
   {
     id: 3,
     name: 'Ross Geller',
     mail: 'ross@gmail.com',
-    status: false,
-    blood: 'N/A',
+    unique_id: 'N2JY0SK9',
+    template_name: 'Testing',
   },
   {
     id: 4,
     name: 'Monica Geller',
     mail: 'monica@gmail.com',
-    status: true,
-    blood: 'AB-',
+    unique_id: 'N2JY0SK9',
+    template_name: 'Testing',
   },
   {
     id: 5,
     name: 'Ross Geller',
     mail: 'ross@gmail.com',
-    status: false,
-    blood: 'A+',
+    unique_id: 'N2JY0SK9',
+    template_name: 'Testing',
   },
 ];
 
@@ -390,26 +477,26 @@ export const PatientsScreen = ({navigation}) => {
             allData={accountantData}
           />
         ) : selectedView == 'Case Handlers' ? (
-          <AccountantList
+          <CaseHandlerList
             searchBreak={searchAccountant}
             setSearchBreak={setSearchAccountant}
-            allData={accountantData}
+            allData={CaseHandlerData}
           />
         ) : selectedView == 'Patient Admissions' ? (
-          <NursesList
+          <PatientAdmissionList
             searchBreak={searchNurse}
             setSearchBreak={setSearchNurse}
             allData={NurseData}
           />
         ) : selectedView == 'Patient Smart Card Templates' ? (
-          <ReceptionistsList
+          <SmartCardTemplates
             searchBreak={searchReceptionist}
             setSearchBreak={setSearchReceptionist}
             allData={ReceptionistsData}
           />
         ) : (
           selectedView == 'Generate Patient Smart Cards' && (
-            <PharmacistsList
+            <GeneratePatient
               searchBreak={searchPharmacists}
               setSearchBreak={setSearchPharmacists}
               allData={PharmacistsData}

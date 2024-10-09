@@ -33,7 +33,7 @@ import {
   MenuTrigger,
 } from 'react-native-popup-menu';
 
-const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
+const PatientAdmissionList = ({searchBreak, setSearchBreak, allData}) => {
   const {theme} = useTheme();
   const menuRef = useRef(null);
   const [newUserVisible, setNewUserVisible] = useState(false);
@@ -89,6 +89,11 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
           styles.dataHistoryView,
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
+        <View style={[styles.switchView, {width: wp(32)}]}>
+          <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
+            <Text style={[styles.dataHistoryText1]}>{item.admission}</Text>
+          </View>
+        </View>
         <View style={styles.nameDataView}>
           <ProfilePhoto username={item.name} />
           <View>
@@ -96,14 +101,40 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
             <Text style={[styles.dataHistoryText1]}>{item.mail}</Text>
           </View>
         </View>
-        <Text style={[styles.dataHistoryText1, {width: wp(32)}]}>
-          {item.phone}
-        </Text>
-        <View style={[styles.switchView, {width: wp(32)}]}>
-          <Text style={[styles.dataHistoryText1]}>{item.qualification}</Text>
+        <View style={styles.nameDataView}>
+          <ProfilePhoto username={item.name} />
+          <View>
+            <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
+            <Text style={[styles.dataHistoryText1]}>{item.mail}</Text>
+          </View>
         </View>
-        <Text style={[styles.dataHistoryText1, {width: wp(28)}]}>
-          {item.date}
+        <View style={[styles.switchView, {width: wp(30)}]}>
+          <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
+            <Text style={[styles.dataHistoryText1]}>{item.date}</Text>
+          </View>
+        </View>
+        {item.discharge_date == 'N/A' ? (
+          <Text style={[styles.dataHistoryText, {width: wp(32)}]}>
+            {item.discharge_date}
+          </Text>
+        ) : (
+          <View style={[styles.switchView, {width: wp(32)}]}>
+            <View
+              style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
+              <Text style={[styles.dataHistoryText1]}>
+                {item.discharge_date}
+              </Text>
+            </View>
+          </View>
+        )}
+        <Text style={[styles.dataHistoryText1, {width: wp(32)}]}>
+          {item.package}
+        </Text>
+        <Text style={[styles.dataHistoryText1, {width: wp(30)}]}>
+          {item.insurance}
+        </Text>
+        <Text style={[styles.dataHistoryText1, {width: wp(32)}]}>
+          {item.number}
         </Text>
         <View style={[styles.switchView, {width: wp(20)}]}>
           <Switch
@@ -175,7 +206,7 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
                 <MenuOptions style={{marginVertical: hp(0.5)}}>
                   <MenuOption value={'add'}>
                     <Text style={styles.dataHistoryText3}>
-                      New Case Handler
+                      New Patient Admission
                     </Text>
                   </MenuOption>
                   <MenuOption value={'excel'}>
@@ -194,21 +225,37 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
                     styles.titleActiveView,
                     {backgroundColor: theme.headerColor},
                   ]}>
+                  <Text style={[styles.titleText, {width: wp(32)}]}>
+                    {'ADMISSION ID'}
+                  </Text>
                   <Text
                     style={[
                       styles.titleText,
                       {width: wp(55), textAlign: 'left'},
                     ]}>
-                    {'USERS'}
+                    {'PATIENT'}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {width: wp(55), textAlign: 'left'},
+                    ]}>
+                    {'DOCTORS'}
+                  </Text>
+                  <Text style={[styles.titleText, {width: wp(30)}]}>
+                    {'DATE'}
                   </Text>
                   <Text style={[styles.titleText, {width: wp(32)}]}>
-                    {'PHONE'}
+                    {'DISCHARGE DATE'}
                   </Text>
                   <Text style={[styles.titleText, {width: wp(32)}]}>
-                    {'QUALIFICATION'}
+                    {'PACKAGE'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(28)}]}>
-                    {'BIRTH DATE'}
+                  <Text style={[styles.titleText, {width: wp(30)}]}>
+                    {'INSURANCE'}
+                  </Text>
+                  <Text style={[styles.titleText, {width: wp(32)}]}>
+                    {'POLICY NUMBER'}
                   </Text>
                   <Text style={[styles.titleText, {width: wp(20)}]}>
                     {'STATUS'}
@@ -247,7 +294,7 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
           contentContainerStyle={{paddingBottom: hp(12)}}>
           <View style={styles.subView}>
             <Text style={[styles.doctorText, {color: theme.text}]}>
-              New Case Handlers
+              Add New Patient Cases
             </Text>
             <View style={styles.filterView}>
               <TouchableOpacity
@@ -481,7 +528,7 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
   );
 };
 
-export default CaseHandlerList;
+export default PatientAdmissionList;
 
 const styles = StyleSheet.create({
   safeAreaStyle: {
