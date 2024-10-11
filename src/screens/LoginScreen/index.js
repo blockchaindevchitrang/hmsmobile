@@ -20,6 +20,9 @@ import hidden from '../../images/hidden.png';
 import facebook from '../../images/facebook.png';
 import google from '../../images/google.png';
 import styles from './styles';
+import {onLoginApi} from '../../services/Api';
+import {ErrorComponent} from '../../components/ErrorComponent';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const LoginScreen = ({navigation}) => {
   const {t} = useTranslation();
@@ -33,15 +36,60 @@ export const LoginScreen = ({navigation}) => {
   const [apiErrorMessage, setApiErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  const onSignIn = async () => {
+    try {
+      setIsLoading(true);
+      if (email == '') {
+        setEmailError(true);
+        setIsLoading(false);
+      } else if (password == '') {
+        setPasswordError(true);
+        setIsLoading(false);
+      } else {
+        const response = await onLoginApi(email, password);
+        console.log('Get Response::', response.data);
+        if (response.status === 200) {
+          setIsLoading(false);
+          console.log('get Repsonse>>', response.data.data.token);
+          AsyncStorage.setItem('accessToken', response.data.data.token);
+          navigation.replace('TabStack');
+        }
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.log('Error::', error.response.data.error);
+      if (error[0] == 'AxiosError: Network Error') {
+        setApiError(true);
+        setApiErrorMessage('Network Error');
+        setIsLoading(false);
+      } else if (error.response.data.error == 'Permission denied.') {
+        setApiError(true);
+        setApiErrorMessage(t('invalid_credentials'));
+        setIsLoading(false);
+      } else {
+        setApiError(true);
+        setApiErrorMessage(t('server_issue_please_try_again_later'));
+        setIsLoading(false);
+      }
+    }
+  };
+
   return (
     <View style={[styles.container, {backgroundColor: theme.background}]}>
       <Text style={[styles.textStyle, {color: theme.headerColor}]}>
         {t('login')}
       </Text>
+      {apiError && (
+        <View style={styles.mainView}>
+          <ErrorComponent errorMessage={apiErrorMessage} />
+        </View>
+      )}
       <View style={[styles.mainView]}>
-        <Text style={[styles.emailPlaceHolder, {color: theme.text}]}>
-          {t('email_address')}
-        </Text>
+        <View style={styles.textInputTitleView}>
+          <Text style={[styles.emailPlaceHolder, {color: theme.text}]}>
+            {t('email_address')}
+          </Text>
+        </View>
         <View style={[styles.textInputView, {borderColor: theme.text}]}>
           <TextInput
             value={email}
@@ -63,10 +111,11 @@ export const LoginScreen = ({navigation}) => {
             {t('please_first_enter_email_address')}
           </Text>
         )}
-
-        <Text style={[styles.emailPlaceHolder, {color: theme.text}]}>
-          {t('password')}
-        </Text>
+        <View style={styles.textInputTitleView}>
+          <Text style={[styles.emailPlaceHolder, {color: theme.text}]}>
+            {t('password')}
+          </Text>
+        </View>
         <View
           style={[
             styles.textInputView,
@@ -115,6 +164,11 @@ export const LoginScreen = ({navigation}) => {
         <Text
           style={[styles.forgotPassword, {color: theme.headerColor}]}
           onPress={() => {
+            setEmail('');
+            setEmailError(false);
+            setPassword('');
+            setPasswordError(false);
+            setApiError(false);
             navigation.navigate('ForgotPassword');
           }}>
           {t('forget_password')}
@@ -125,14 +179,14 @@ export const LoginScreen = ({navigation}) => {
             styles.buttonView,
             {opacity: isLoading ? 0.75 : 1, backgroundColor: theme.headerColor},
           ]}
-          onPress={() => navigation.navigate('TabStack')}>
+          onPress={() => onSignIn()}>
           {isLoading ? (
             <ActivityIndicator size={'large'} color={COLORS.white} />
           ) : (
             <Text style={styles.signinText}>{t('sign_me_in')}</Text>
           )}
         </TouchableOpacity>
-        <Text style={[styles.haveAnAccount, {color: theme.text}]}>
+        {/* <Text style={[styles.haveAnAccount, {color: theme.text}]}>
           {t('do_not_have_an_account')}
           <Text
             style={[styles.signUpText, {color: theme.headerColor}]}
@@ -146,7 +200,7 @@ export const LoginScreen = ({navigation}) => {
             }}>
             {t('sign_up')}
           </Text>
-        </Text>
+        </Text> */}
 
         <View style={styles.socialView}>
           <TouchableOpacity style={styles.googleView}>

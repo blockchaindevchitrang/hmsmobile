@@ -220,6 +220,18 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.FONTS.PoppinsBold,
     color: COLORS.white,
   },
+  dataFoundView: {
+    justifyContent: 'center',
+    height: hp(10),
+    width: '100%',
+    alignItems: 'center',
+  },
+  dataFoundText: {
+    fontSize: hp(2.2),
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    textAlign: 'center',
+    color: COLORS.black,
+  },
 });
 
 export default styles;

@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useRef} from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -6,6 +6,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Animated,
 } from 'react-native';
 import {useTheme} from '../../utils/ThemeProvider';
 import Header from '../../components/Header';
@@ -17,6 +18,8 @@ import {
 import {COLORS, Fonts} from '../../utils';
 import SelectDropdown from 'react-native-select-dropdown';
 import styles from './styles';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {LogoutPopup} from '../../components/LogoutPopup';
 
 const rangeArray = [
   '#5eead4',
@@ -32,11 +35,176 @@ const rangeArray = [
   '#f5cf8d',
   '#f5a38d',
 ];
+
 export const SettingScreen = ({navigation}) => {
+  const scrollY = useRef(new Animated.Value(0)).current;
   const {t, i18n} = useTranslation();
   // const {theme, toggleTheme, colorTheme} = useTheme();
   const {theme, setCustomHeaderColor, toggleTheme, colorTheme} = useTheme();
   const [selectedColor, setSelectedColor] = useState('');
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const menuList = [
+    {
+      id: 1,
+      title: 'Dark Mode',
+      onPress: '',
+    },
+    {
+      id: 2,
+      title: 'Color Theme',
+      onPress: '',
+    },
+    {
+      id: 3,
+      title: 'Billings',
+      onPress: 'BillingScreen',
+    },
+    {
+      id: 4,
+      title: 'Bed Management',
+      onPress: 'BedScreen',
+    },
+    {
+      id: 5,
+      title: 'Blood Bank',
+      onPress: 'BloodBankScreen',
+    },
+    {
+      id: 6,
+      title: 'Prescriptions',
+      onPress: 'PrescriptionScreen',
+    },
+    {
+      id: 7,
+      title: 'Diagnosis',
+      onPress: 'DiagnosisScreen',
+    },
+    {
+      id: 8,
+      title: 'Enquiries',
+      onPress: 'EnquiriesScreen',
+    },
+    {
+      id: 9,
+      title: 'Finance',
+      onPress: 'FinanceScreen',
+    },
+    {
+      id: 10,
+      title: 'Front Office',
+      onPress: 'FrontOfficeScreen',
+    },
+    {
+      id: 11,
+      title: 'Front CMS',
+      onPress: '',
+    },
+    {
+      id: 12,
+      title: 'Hospital Charges',
+      onPress: 'HospitalChargesScreen',
+    },
+    {
+      id: 13,
+      title: 'IPD/OPD',
+      onPress: 'IPDScreen',
+    },
+    {
+      id: 14,
+      title: 'Live Consultations',
+      onPress: '',
+    },
+    {
+      id: 15,
+      title: 'Medicines',
+      onPress: 'MedicineScreen',
+    },
+    {
+      id: 16,
+      title: 'Patients',
+      onPress: 'PatientsScreen',
+    },
+    {
+      id: 17,
+      title: 'Vaccination',
+      onPress: 'VaccinationScreen',
+    },
+    {
+      id: 18,
+      title: 'Documents',
+      onPress: 'DocumentsScreen',
+    },
+    {
+      id: 19,
+      title: 'Inventory',
+      onPress: 'InventoryScreen',
+    },
+    {
+      id: 20,
+      title: 'Pathology',
+      onPress: 'PathologyScreen',
+    },
+    {
+      id: 21,
+      title: 'Reports',
+      onPress: 'ReportsScreen',
+    },
+    {
+      id: 22,
+      title: 'Radiology',
+      onPress: 'RadiologyScreen',
+    },
+    {
+      id: 23,
+      title: 'SMS/Mail',
+      onPress: '',
+    },
+    {
+      id: 24,
+      title: 'Services',
+      onPress: '',
+    },
+    {
+      id: 25,
+      title: 'Transactions',
+      onPress: 'TransactionsScreen',
+    },
+  ];
+
+  // const renderItem = ({ item, index }) => {
+  //   const inputRange = [-1, 0, 150 * index, 150 * (index + 2)];
+
+  //   const translateY = scrollY.interpolate({
+  //     inputRange,
+  //     outputRange: [50, 0, 0, -150], // items slide up as they come into view
+  //   });
+
+  //   const opacity = scrollY.interpolate({
+  //     inputRange,
+  //     outputRange: [0, 1, 1, 0], // items fade in as they come into view
+  //   });
+
+  //   return (
+  // <Animated.View style={[styles.menuOption, { transform: [{ translateY }], opacity }]}>
+  //   <TouchableOpacity
+  //       onPress={() => navigation.navigate('BillingScreen')}
+  //       style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
+  //       <Text style={[styles.text, {color: theme.text}]}>{'Billings'}</Text>
+  //     </TouchableOpacity>
+  //     </Animated.View>
+  //   );
+  // };
+
+  const onLogoutFun = async () => {
+    try {
+      AsyncStorage.setItem('accessToken', '');
+      setModalVisible(false);
+      navigation.replace('LoginScreen');
+    } catch (err) {
+      console.log('err', err);
+    }
+  };
 
   return (
     <View style={{flex: 1, backgroundColor: theme.background}}>
@@ -300,11 +468,16 @@ export const SettingScreen = ({navigation}) => {
 
           <TouchableOpacity
             style={styles.closeButton}
-            onPress={() => navigation.navigate('LoginScreen')}>
+            onPress={() => setModalVisible(true)}>
             <Text style={styles.closeButtonText}>Logout</Text>
           </TouchableOpacity>
         </ScrollView>
       </View>
+      <LogoutPopup
+        modelVisible={modalVisible}
+        setModelVisible={setModalVisible}
+        onPress={() => onLogoutFun()}
+      />
     </View>
   );
 };

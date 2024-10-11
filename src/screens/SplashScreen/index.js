@@ -13,15 +13,25 @@ import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from '../../components/Pixel';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const SplashScreen = ({navigation}) => {
   const {theme, toggleTheme, colorTheme} = useTheme();
 
   useEffect(() => {
     setTimeout(() => {
-      navigation.navigate('LoginScreen');
+      onCheckAuth();
     }, 3000);
   }, []);
+
+  const onCheckAuth = async () => {
+    const token = await AsyncStorage.getItem('accessToken');
+    if (token !== null) {
+      navigation.replace('TabStack');
+    } else {
+      navigation.replace('LoginScreen');
+    }
+  };
 
   return (
     <View style={{flex: 1, backgroundColor: theme.background}}>

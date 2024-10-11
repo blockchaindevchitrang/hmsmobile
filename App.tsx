@@ -45,6 +45,7 @@ import InventoryScreen from './src/screens/InventoryScreen';
 import PathologyScreen from './src/screens/PathologyScreen';
 import ReportsScreen from './src/screens/ReportsScreen';
 import TransactionsScreen from './src/screens/TransactionsScreen';
+import ForgotPassword from './src/screens/ForgotPassword';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -298,12 +299,12 @@ const App = () => {
                 component={TabStack}
                 options={{headerShown: false}}
               />
-              {/* <Stack.Screen
-                name="DashboardScreen"
-                component={DashboardScreen}
+              <Stack.Screen
+                name="ForgotPassword"
+                component={ForgotPassword}
                 options={{headerShown: false}}
               />
-              <Stack.Screen
+              {/* <Stack.Screen
                 name="SettingScreen"
                 component={SettingScreen}
                 options={{headerShown: false}}

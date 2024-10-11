@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -19,10 +19,37 @@ import {
 import setting from '../../images/setting.png';
 import styles from './styles';
 import Header from '../../components/Header';
+import {onComingDashboardGetApi, onDashboardGetApi} from '../../services/Api';
 
 export const DashboardScreen = ({navigation}) => {
   const {t} = useTranslation();
   const {theme} = useTheme();
+  const [dashboardData, setDashboardData] = useState([]);
+
+  useEffect(() => {
+    onGetDashboardData();
+    onUpcomingData();
+  }, []);
+
+  const onGetDashboardData = async () => {
+    try {
+      const response = await onDashboardGetApi();
+      if (response.status === 200) {
+        console.log('Get Response>>', response.data);
+        setDashboardData(response.data);
+      }
+    } catch (err) {
+      console.log('Error:', err);
+    }
+  };
+
+  const onUpcomingData = async () => {
+    try {
+      const response = await onComingDashboardGetApi();
+    } catch (err) {
+      console.log('Error:', err);
+    }
+  };
 
   return (
     <View style={[styles.container, {backgroundColor: theme.lightColor}]}>
@@ -37,7 +64,39 @@ export const DashboardScreen = ({navigation}) => {
         <ScrollView
           contentContainerStyle={{paddingBottom: hp(12)}}
           showsVerticalScrollIndicator={false}>
-          <View style={[styles.boxView, {backgroundColor: theme.lightColor}]}>
+          {dashboardData.length > 0 ? (
+            dashboardData.map((item, index) => {
+              return (
+                <View
+                  style={[styles.boxView, {backgroundColor: theme.lightColor}]}>
+                  <View
+                    style={[
+                      styles.roundView,
+                      {backgroundColor: theme.headerColor},
+                    ]}>
+                    <Image
+                      source={setting}
+                      style={[styles.iconStyle1, {tintColor: COLORS.white}]}
+                    />
+                  </View>
+                  <View>
+                    <Text style={[styles.optionText, {color: theme.text}]}>
+                      {'TK 6.30M'}
+                    </Text>
+                    <Text style={[styles.optionText, {color: theme.text}]}>
+                      {'Invoice Amount'}
+                    </Text>
+                  </View>
+                </View>
+              );
+            })
+          ) : (
+            <View style={styles.dataFoundView}>
+              <Text style={styles.dataFoundText}>Data not found</Text>
+            </View>
+          )}
+
+          {/* <View style={[styles.boxView, {backgroundColor: theme.lightColor}]}>
             <View
               style={[styles.roundView, {backgroundColor: theme.headerColor}]}>
               <Image
@@ -89,25 +148,7 @@ export const DashboardScreen = ({navigation}) => {
                 {'Invoice Amount'}
               </Text>
             </View>
-          </View>
-
-          <View style={[styles.boxView, {backgroundColor: theme.lightColor}]}>
-            <View
-              style={[styles.roundView, {backgroundColor: theme.headerColor}]}>
-              <Image
-                source={setting}
-                style={[styles.iconStyle1, {tintColor: COLORS.white}]}
-              />
-            </View>
-            <View>
-              <Text style={[styles.optionText, {color: theme.text}]}>
-                {'TK 6.30M'}
-              </Text>
-              <Text style={[styles.optionText, {color: theme.text}]}>
-                {'Invoice Amount'}
-              </Text>
-            </View>
-          </View>
+          </View> */}
 
           <View
             style={[styles.enquireView, {backgroundColor: theme.grayColor}]}>

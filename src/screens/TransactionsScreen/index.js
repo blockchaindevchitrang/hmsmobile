@@ -22,20 +22,7 @@ import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from '../../components/Pixel';
-import headerLogo from '../../images/headerLogo.png';
-import {BlurView} from '@react-native-community/blur';
 import close from '../../images/close.png';
-import {
-  Menu,
-  MenuOptions,
-  MenuOption,
-  MenuTrigger,
-} from 'react-native-popup-menu';
-import deleteIcon from '../../images/delete.png';
-import editing from '../../images/editing.png';
-import view from '../../images/view.png';
-import printing from '../../images/printing.png';
-import ProfilePhoto from '../../components/ProfilePhoto';
 
 const BloodIssueData = [
   {
