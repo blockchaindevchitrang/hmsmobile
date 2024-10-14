@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -21,13 +21,15 @@ import {
 } from '../../components/Pixel';
 import headerLogo from '../../images/headerLogo.png';
 import {BlurView} from '@react-native-community/blur';
-import AccountList from '../../components/BillingComponent/AccountList';
-import PayrollList from '../../components/BillingComponent/PayrollList';
-import InvoicesList from '../../components/BillingComponent/InvoicesList';
 import ManualList from '../../components/BillingComponent/ManualList';
 import BedTypeList from '../../components/BedComponent/BedTypeList';
 import BedList from '../../components/BedComponent/BedList';
 import BedAssignList from '../../components/BedComponent/BedAssignList';
+import {
+  onGetBedApi,
+  onGetBedAssignApi,
+  onGetBedTypeApi,
+} from '../../services/Api';
 
 const allData = [
   {
@@ -202,6 +204,15 @@ export const BedScreen = ({navigation}) => {
   const [searchPharmacists, setSearchPharmacists] = useState('');
   const [optionModalView, setOptionModalView] = useState(false);
   const [selectedView, setSelectedView] = useState('Bed Types');
+  const [BedTypeData, setBedTypeData] = useState([]);
+  const [bedData, setBedData] = useState([]);
+  const [bedAssignData, setBedAssignData] = useState([]);
+
+  useEffect(() => {
+    bedDataGet();
+    bedTypeDataGet();
+    bedAssignDataGet();
+  }, []);
 
   const animations = useRef(
     [0, 0, 0, 0, 0].map(() => new Animated.Value(300)),
@@ -260,6 +271,42 @@ export const BedScreen = ({navigation}) => {
     }
   };
 
+  const bedTypeDataGet = async () => {
+    try {
+      const response = await onGetBedTypeApi('created_at', 'ASC');
+      console.log('get Response:', response);
+      if (response.status) {
+        setBedTypeData(response.data);
+      }
+    } catch (err) {
+      console.log('Error:', err);
+    }
+  };
+
+  const bedDataGet = async () => {
+    try {
+      const response = await onGetBedApi();
+      console.log('get Response:', response);
+      if (response.status) {
+        setBedData(response.data);
+      }
+    } catch (err) {
+      console.log('Error:', err);
+    }
+  };
+
+  const bedAssignDataGet = async () => {
+    try {
+      const response = await onGetBedAssignApi('created_at', 'ASC');
+      console.log('get Response:', response);
+      if (response.status) {
+        setBedAssignData(response.data);
+      }
+    } catch (err) {
+      console.log('Error:', err);
+    }
+  };
+
   return (
     <View style={[styles.container, {backgroundColor: theme.lightColor}]}>
       <View style={styles.headerView}>
@@ -275,19 +322,19 @@ export const BedScreen = ({navigation}) => {
           <BedTypeList
             searchBreak={searchAccount}
             setSearchBreak={setSearchAccount}
-            allData={allData}
+            allData={BedTypeData}
           />
         ) : selectedView == 'Beds' ? (
           <BedList
             searchBreak={searchPayroll}
             setSearchBreak={setSearchPayroll}
-            allData={BedData}
+            allData={bedData}
           />
         ) : selectedView == 'Bed Assigns' ? (
           <BedAssignList
             searchBreak={searchInvoice}
             setSearchBreak={setSearchInvoice}
-            allData={BedAssignData}
+            allData={bedAssignData}
           />
         ) : (
           selectedView == 'Bed Status' && (

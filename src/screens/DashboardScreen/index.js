@@ -25,6 +25,7 @@ export const DashboardScreen = ({navigation}) => {
   const {t} = useTranslation();
   const {theme} = useTheme();
   const [dashboardData, setDashboardData] = useState([]);
+  const [upcomingDashboardData, setUpcomingDashboardData] = useState([]);
 
   useEffect(() => {
     onGetDashboardData();
@@ -34,20 +35,26 @@ export const DashboardScreen = ({navigation}) => {
   const onGetDashboardData = async () => {
     try {
       const response = await onDashboardGetApi();
+      console.log('Get onGetDashboardData>>', response);
       if (response.status === 200) {
-        console.log('Get Response>>', response.data);
+        console.log('Get onGetDashboardData>>', response.data);
         setDashboardData(response.data);
       }
     } catch (err) {
-      console.log('Error:', err);
+      console.log('Error:', err.response.data);
     }
   };
 
   const onUpcomingData = async () => {
     try {
-      const response = await onComingDashboardGetApi();
+      const response = await onComingDashboardGetApi('test');
+      console.log('Get onUpcomingData>>', response);
+      if (response.status === 200) {
+        console.log('Get onUpcomingData>>', response.data);
+        setUpcomingDashboardData(response.data);
+      }
     } catch (err) {
-      console.log('Error:', err);
+      console.log('Error:', err.response.data);
     }
   };
 
