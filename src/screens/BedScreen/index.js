@@ -1,11 +1,7 @@
 import React, {useState, useRef, useEffect} from 'react';
 import {
-  ScrollView,
-  StyleSheet,
-  Switch,
   Text,
   TouchableOpacity,
-  TouchableWithoutFeedback,
   View,
   Modal,
   Animated,

@@ -64,6 +64,7 @@ const lightModeColors = {
   lightRedColor: '#fad7d2',
   redColor: '#f95252',
   lightBlue: '#8dd3f5',
+  lightGreen: '#56e756',
 };
 
 const darkModeColors = {
@@ -77,6 +78,7 @@ const darkModeColors = {
   lightRedColor: '#fad7d2',
   redColor: '#f95252',
   lightBlue: '#8dd3f5',
+  lightGreen: '#56e756',
 };
 
 // AsyncStorage keys

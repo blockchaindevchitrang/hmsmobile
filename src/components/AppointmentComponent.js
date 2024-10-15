@@ -25,16 +25,11 @@ import calendar from '../images/calendar.png';
 import CalendarPicker from 'react-native-calendar-picker';
 import moment from 'moment';
 
-const AppointmentComponent = ({
-  searchBreak,
-  setSearchBreak,
-  allData,
-  doctorBreakName,
-  setDoctorBreakName,
-}) => {
+const AppointmentComponent = ({searchBreak, setSearchBreak, allData}) => {
   const {theme} = useTheme();
   const menuRef = useRef(null);
   const [addDoctorVisible, setAddHolidayVisible] = useState(false);
+  const [doctorBreakName, setDoctorBreakName] = useState('');
   const [holidayStartDate, setHolidayStartDate] = useState(null);
   const [holidayEndDate, setHolidayEndDate] = useState(null);
   const [calenderVisible, setCalenderVisible] = useState(false);
@@ -238,11 +233,9 @@ const AppointmentComponent = ({
                     virtualized
                     ListEmptyComponent={() => (
                       <View key={0} style={styles.ListEmptyView}>
-                        <View style={styles.subEmptyView}>
-                          <Text style={styles.emptyText}>
-                            {'No record found'}
-                          </Text>
-                        </View>
+                        <Text style={styles.emptyText}>
+                          {'No record found'}
+                        </Text>
                       </View>
                     )}
                   />
@@ -687,5 +680,16 @@ const styles = StyleSheet.create({
     width: wp(1.5),
     borderRadius: wp(1.5),
     backgroundColor: COLORS.white,
+  },
+  ListEmptyView: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: hp(15),
+  },
+  emptyText: {
+    fontSize: hp(2.5),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
   },
 });

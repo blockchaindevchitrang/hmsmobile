@@ -26,6 +26,7 @@ import man from '../../images/man.png';
 import draw from '../../images/draw.png';
 import DatePicker from 'react-native-date-picker';
 import ImagePicker from 'react-native-image-crop-picker';
+import {onAddUsersApi} from '../../services/Api';
 
 const UserList = ({searchBreak, setSearchBreak, allData}) => {
   const {theme} = useTheme();
@@ -135,6 +136,28 @@ const UserList = ({searchBreak, setSearchBreak, allData}) => {
     );
   };
 
+  const onAddUsers = async () => {
+    try {
+      const formdata = new FormData();
+      formdata.append('first_name', firstName);
+      formdata.append('last_name', lastName);
+      formdata.append('email', email);
+      // formdata.append('phone', '');
+      // formdata.append('region_code', '+91');
+      formdata.append('image', '');
+      formdata.append('password', password);
+      formdata.append('password_confirmation', confirmPassword);
+      formdata.append('department_id', role);
+      const response = await onAddUsersApi(formdata);
+
+      if (response.status === 200) {
+        setNewUserVisible(false);
+      }
+    } catch (err) {
+      console.log('Add User Error:', err);
+    }
+  };
+
   return (
     <View style={styles.safeAreaStyle}>
       {!newUserVisible ? (
@@ -196,11 +219,9 @@ const UserList = ({searchBreak, setSearchBreak, allData}) => {
                     virtualized
                     ListEmptyComponent={() => (
                       <View key={0} style={styles.ListEmptyView}>
-                        <View style={styles.subEmptyView}>
-                          <Text style={styles.emptyText}>
-                            {'No record found'}
-                          </Text>
-                        </View>
+                        <Text style={styles.emptyText}>
+                          {'No record found'}
+                        </Text>
                       </View>
                     )}
                   />
@@ -436,10 +457,14 @@ const UserList = ({searchBreak, setSearchBreak, allData}) => {
           </View>
 
           <View style={styles.buttonView}>
-            <TouchableOpacity onPress={() => {}} style={styles.nextView}>
+            <TouchableOpacity
+              onPress={() => onAddUsers()}
+              style={styles.nextView}>
               <Text style={styles.nextText}>Save</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => {}} style={styles.prevView}>
+            <TouchableOpacity
+              onPress={() => setNewUserVisible(false)}
+              style={styles.prevView}>
               <Text style={styles.prevText}>Cancel</Text>
             </TouchableOpacity>
           </View>
@@ -809,5 +834,16 @@ const styles = StyleSheet.create({
     width: wp(3),
     height: hp(2.5),
     resizeMode: 'contain',
+  },
+  ListEmptyView: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: hp(15),
+  },
+  emptyText: {
+    fontSize: hp(2.5),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
   },
 });

@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -29,6 +29,8 @@ import {BlurView} from '@react-native-community/blur';
 import ReceptionistsList from '../../components/UsersComponent/ReceptionistsList';
 import LabTechniciansList from '../../components/UsersComponent/LabTechniciansList';
 import PharmacistsList from '../../components/UsersComponent/PharmacistsList';
+import {onGetAllUsersDataApi, onGetRoleDataApi} from '../../services/Api';
+import RoleList from '../../components/UsersComponent/RoleList';
 
 const allData = [
   {
@@ -302,6 +304,8 @@ export const UsersScreen = ({navigation}) => {
   const [searchPharmacists, setSearchPharmacists] = useState('');
   const [optionModalView, setOptionModalView] = useState(false);
   const [selectedView, setSelectedView] = useState('Users');
+  const [userData, setUserData] = useState([]);
+  const [roleData, setRoleData] = useState([]);
 
   // const UserRoute = () => (
   //   <UserList
@@ -408,6 +412,11 @@ export const UsersScreen = ({navigation}) => {
   //   </View>
   // );
 
+  useEffect(() => {
+    onGetUserData();
+    onGetRoleData();
+  }, []);
+
   const animations = useRef(
     [0, 0, 0, 0, 0, 0, 0, 0].map(() => new Animated.Value(300)),
   ).current;
@@ -465,6 +474,30 @@ export const UsersScreen = ({navigation}) => {
     }
   };
 
+  const onGetUserData = async () => {
+    try {
+      const response = await onGetAllUsersDataApi();
+      console.log('Response User Data', response.data);
+      if (response.status === 200) {
+        setUserData(response.data);
+      }
+    } catch (err) {
+      console.log('Get User Error:', err);
+    }
+  };
+
+  const onGetRoleData = async () => {
+    try {
+      const response = await onGetRoleDataApi();
+      console.log('Response Role Data', response.data);
+      if (response.status === 200) {
+        setRoleData(response.data);
+      }
+    } catch (err) {
+      console.log('Get User Error:', err);
+    }
+  };
+
   return (
     <View style={[styles.container, {backgroundColor: theme.lightColor}]}>
       <View style={styles.headerView}>
@@ -489,13 +522,13 @@ export const UsersScreen = ({navigation}) => {
           <UserList
             searchBreak={searchUser}
             setSearchBreak={setSearchUser}
-            allData={allData}
+            allData={userData}
           />
         ) : selectedView == 'Role' ? (
-          <AccountantList
+          <RoleList
             searchBreak={searchAccountant}
             setSearchBreak={setSearchAccountant}
-            allData={accountantData}
+            allData={roleData}
           />
         ) : selectedView == 'Accountant' ? (
           <AccountantList

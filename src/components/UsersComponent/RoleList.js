@@ -9,36 +9,60 @@ import {
   TextInput,
   FlatList,
   Platform,
-  Modal,
   TouchableWithoutFeedback,
+  Modal,
 } from 'react-native';
 import React, {useRef, useState} from 'react';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
-} from '../Pixel/index';
+} from './../Pixel/index';
 import {COLORS, Fonts} from '../../utils';
 import {useTheme} from '../../utils/ThemeProvider';
-import ProfilePhoto from '../ProfilePhoto';
+import ProfilePhoto from './../ProfilePhoto';
 import moment from 'moment';
 import deleteIcon from '../../images/delete.png';
 import editing from '../../images/editing.png';
+import filter from '../../images/filter.png';
+import {onAddRoleApi} from '../../services/Api';
 import close from '../../images/close.png';
-import {
-  Menu,
-  MenuOptions,
-  MenuOption,
-  MenuTrigger,
-} from 'react-native-popup-menu';
 
-const VaccinationList = ({searchBreak, setSearchBreak, allData}) => {
+const permissionOption = [
+  'User',
+  'Appointments',
+  'Billings',
+  'Bed Management',
+  'Blood Bank',
+  'Doctors',
+  'Prescriptions',
+  'Diagnosis',
+  'Enquiries',
+  'Finance',
+  'Front Office',
+  'Front CMS',
+  'Hospital Charges',
+  'IPD/OPD',
+  'Live Consultations',
+  'Medicine',
+  'Patient',
+  'Vaccination',
+  'Documents',
+  'Inventory',
+  'Pathology',
+  'Reports',
+  'Radiology',
+  'SMS/Mail',
+  'Services',
+  'Settings',
+  'Transaction',
+];
+
+const RoleList = ({searchBreak, setSearchBreak, allData}) => {
   const {theme} = useTheme();
-  const menuRef = useRef(null);
-  const [newAccountVisible, setNewAccountVisible] = useState(false);
-  const [eventTitle, setEventTitle] = useState('');
-  const [departmentComment, setDepartmentComment] = useState('');
-  const [statusVisible, setStatusVisible] = useState(false);
-  const [chargeType, setChargeType] = useState('');
+  const [newUserVisible, setNewUserVisible] = useState(false);
+  const [firstName, setFirstName] = useState('');
+  const [selectedOption, setSelectedOption] = useState(true);
+  const [email, setEmail] = useState('');
 
   const renderItem = ({item, index}) => {
     return (
@@ -47,15 +71,13 @@ const VaccinationList = ({searchBreak, setSearchBreak, allData}) => {
           styles.dataHistoryView,
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
-        <View style={[styles.nameDataView, {width: wp(28)}]}>
-          <Text style={[styles.dataHistoryText1]}>{item.name}</Text>
+        <View style={[styles.nameDataView]}>
+          <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
         </View>
-        <View style={[styles.nameDataView, {width: wp(37)}]}>
-          <Text style={[styles.dataHistoryText1]}>{item.manufacture}</Text>
-        </View>
-        <View style={[styles.nameDataView, {width: wp(20)}]}>
-          <Text style={[styles.dataHistoryText1]}>{item.brand}</Text>
-        </View>
+        <Text
+          style={[styles.dataHistoryText, {width: wp(40), textAlign: 'left'}]}>
+          {item.phone}
+        </Text>
         <View style={styles.actionDataView}>
           <TouchableOpacity>
             <Image
@@ -74,13 +96,35 @@ const VaccinationList = ({searchBreak, setSearchBreak, allData}) => {
     );
   };
 
+  const onAddRole = async () => {
+    try {
+      let raw = JSON.stringify({
+        name: firstName,
+        guard_name: 'api',
+        permissions: [
+          'manage_users',
+          'manage_beds',
+          'manage product & service',
+          'create invoice',
+        ],
+      });
+      const response = await onAddRoleApi(raw);
+      if (response.status === 200) {
+        console.log('Get Add Role Response', response.data);
+        setNewUserVisible(false);
+      }
+    } catch (err) {
+      console.log('Get Error:', err);
+    }
+  };
+
   return (
     <>
       <View style={styles.safeAreaStyle}>
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{paddingBottom: hp(12)}}>
-          <View style={styles.subView}>
+          <View style={[styles.subView, {flexWrap: 'wrap'}]}>
             <TextInput
               value={searchBreak}
               placeholder={'Search'}
@@ -90,33 +134,10 @@ const VaccinationList = ({searchBreak, setSearchBreak, allData}) => {
             />
             <View style={styles.filterView}>
               <TouchableOpacity
-                onPress={() => {
-                  if (menuRef.current) {
-                    menuRef.current.open(); // Open the menu on button press
-                  }
-                }}
+                onPress={() => setNewUserVisible(true)}
                 style={styles.actionView}>
-                <Text style={styles.actionText}>Actions</Text>
+                <Text style={styles.actionText}>New Role</Text>
               </TouchableOpacity>
-              <Menu
-                ref={menuRef}
-                onSelect={value => {
-                  if (value == 'add') {
-                    setNewAccountVisible(true);
-                  } else {
-                    alert(`Selected number: ${value}`);
-                  }
-                }}>
-                <MenuTrigger text={''} />
-                <MenuOptions style={{marginVertical: hp(0.5)}}>
-                  <MenuOption value={'add'}>
-                    <Text style={styles.dataHistoryText3}>New vaccination</Text>
-                  </MenuOption>
-                  <MenuOption value={'excel'}>
-                    <Text style={styles.dataHistoryText3}>Export to Excel</Text>
-                  </MenuOption>
-                </MenuOptions>
-              </Menu>
             </View>
           </View>
           <View
@@ -128,14 +149,11 @@ const VaccinationList = ({searchBreak, setSearchBreak, allData}) => {
                     styles.titleActiveView,
                     {backgroundColor: theme.headerColor},
                   ]}>
-                  <Text style={[styles.titleText, {width: wp(28)}]}>
-                    {'NAME'}
+                  <Text style={[styles.titleText, {width: wp(30)}]}>
+                    {'ROLE'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(37)}]}>
-                    {'MANUFACTURED BY'}
-                  </Text>
-                  <Text style={[styles.titleText, {width: wp(20)}]}>
-                    {'BRAND'}
+                  <Text style={[styles.titleText, {width: wp(40)}]}>
+                    {'PERMISSIONS'}
                   </Text>
                   <Text style={[styles.titleText, {width: wp(16)}]}>
                     {'ACTION'}
@@ -150,13 +168,13 @@ const VaccinationList = ({searchBreak, setSearchBreak, allData}) => {
                     initialNumToRender={allData.length}
                     nestedScrollEnabled
                     virtualized
-                    ListEmptyComponent={() => (
-                      <View key={0} style={styles.ListEmptyView}>
-                        <Text style={styles.emptyText}>
-                          {'No record found'}
-                        </Text>
-                      </View>
-                    )}
+                    ListEmptyComponent={() => {
+                      return (
+                        <View style={styles.ListEmptyView}>
+                          <Text style={styles.emptyText}>No record found</Text>
+                        </View>
+                      );
+                    }}
                   />
                 </View>
               </View>
@@ -167,53 +185,82 @@ const VaccinationList = ({searchBreak, setSearchBreak, allData}) => {
       <Modal
         animationType="fade"
         transparent={true}
-        visible={newAccountVisible}
-        onRequestClose={() => setNewAccountVisible(false)}>
+        visible={newUserVisible}
+        onRequestClose={() => setNewUserVisible(false)}>
         <View style={styles.maneModalView}>
           <TouchableWithoutFeedback
             onPress={() => {
-              setNewAccountVisible(false);
+              setNewUserVisible(false);
             }}>
             <View style={styles.modalOverlay} />
           </TouchableWithoutFeedback>
           <View style={styles.container}>
             <View style={styles.headerView}>
-              <Text style={styles.headerText}>Create Charge Category</Text>
-              <TouchableOpacity onPress={() => setNewAccountVisible(false)}>
+              <Text style={styles.headerText}>New Role</Text>
+              <TouchableOpacity onPress={() => setNewUserVisible(false)}>
                 <Image style={styles.closeImage} source={close} />
               </TouchableOpacity>
             </View>
             <Text style={[styles.titleText1, {marginTop: hp(1.5)}]}>
-              {'Charge Category'}
+              {'Name'}
             </Text>
             <TextInput
-              value={eventTitle}
+              value={firstName}
               placeholder={''}
-              onChangeText={text => setEventTitle(text)}
+              onChangeText={text => setFirstName(text)}
               style={[styles.eventTextInput]}
             />
-            <Text style={[styles.titleText1]}>{'Description'}</Text>
-            <TextInput
-              value={departmentComment}
-              placeholder={'Leave a comment...'}
-              onChangeText={text => setDepartmentComment(text)}
-              style={[styles.commentTextInput]}
-              multiline
-              textAlignVertical="top"
-            />
-            <Text style={[styles.titleText1]}>{'Charge Type'}</Text>
-            <TextInput
-              value={chargeType}
-              placeholder={''}
-              onChangeText={text => setChargeType(text)}
-              style={[styles.eventTextInput]}
-            />
+            <View style={styles.buttonView1}>
+              <TouchableOpacity
+                onPress={() => setSelectedOption(true)}
+                style={[
+                  styles.staffOption,
+                  {
+                    backgroundColor: !selectedOption
+                      ? COLORS.white
+                      : theme.lightGreen,
+                  },
+                ]}>
+                <Text
+                  style={[
+                    styles.staffText,
+                    {color: selectedOption ? COLORS.white : theme.lightGreen},
+                  ]}>
+                  Staff
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setSelectedOption(false)}
+                style={[
+                  styles.staffOption,
+                  {
+                    backgroundColor: selectedOption
+                      ? COLORS.white
+                      : theme.lightGreen,
+                  },
+                ]}>
+                <Text
+                  style={[
+                    styles.staffText,
+                    {color: !selectedOption ? COLORS.white : theme.lightGreen},
+                  ]}>
+                  HRM
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.permissionView}>
+              <Text style={styles.noticeText}>
+                Assign General Permission to Roles
+              </Text>
+            </View>
             <View style={styles.buttonView}>
-              <TouchableOpacity onPress={() => {}} style={styles.nextView}>
+              <TouchableOpacity
+                onPress={() => onAddRole()}
+                style={styles.nextView}>
                 <Text style={styles.nextText}>Save</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                onPress={() => setNewAccountVisible(false)}
+                onPress={() => setNewUserVisible(false)}
                 style={styles.prevView}>
                 <Text style={styles.prevText}>Cancel</Text>
               </TouchableOpacity>
@@ -225,7 +272,7 @@ const VaccinationList = ({searchBreak, setSearchBreak, allData}) => {
   );
 };
 
-export default VaccinationList;
+export default RoleList;
 
 const styles = StyleSheet.create({
   safeAreaStyle: {
@@ -243,7 +290,7 @@ const styles = StyleSheet.create({
   },
   searchView: {
     width: '50%',
-    paddingHorizontal: wp(2),
+    paddingHorizontal: wp(3),
     paddingVertical: hp(0.5),
     borderWidth: 1,
     borderColor: COLORS.greyColor,
@@ -313,7 +360,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginTop: hp(1),
     paddingBottom: hp(0.5),
-    justifyContent: 'space-between',
   },
   titleText: {
     fontSize: hp(1.8),
@@ -322,20 +368,12 @@ const styles = StyleSheet.create({
     marginHorizontal: wp(2),
     textAlign: 'left',
   },
-  titleText1: {
-    fontSize: hp(1.8),
-    fontFamily: Fonts.FONTS.PoppinsSemiBold,
-    color: COLORS.black,
-    marginHorizontal: wp(3),
-    textAlign: 'left',
-  },
   dataHistoryView: {
     width: '100%',
     height: hp(8),
     alignItems: 'center',
     flexDirection: 'row',
     alignSelf: 'flex-start',
-    justifyContent: 'space-between',
   },
   dataHistoryText: {
     fontSize: hp(1.8),
@@ -344,27 +382,10 @@ const styles = StyleSheet.create({
     marginHorizontal: wp(2),
     textAlign: 'center',
   },
-  dataHistoryText1: {
-    fontSize: hp(1.7),
-    fontFamily: Fonts.FONTS.PoppinsBold,
-    color: COLORS.black,
-  },
   dataHistoryText2: {
     fontSize: hp(1.8),
     fontFamily: Fonts.FONTS.PoppinsBold,
     color: COLORS.blueColor,
-    textAlign: 'center',
-  },
-  dataHistoryText3: {
-    fontSize: hp(1.8),
-    fontFamily: Fonts.FONTS.PoppinsMedium,
-    color: COLORS.black,
-    paddingVertical: hp(0.5),
-  },
-  dataHistoryText4: {
-    fontSize: hp(1.8),
-    fontFamily: Fonts.FONTS.PoppinsMedium,
-    color: COLORS.errorColor,
   },
   mainDataView: {
     minHeight: hp(29),
@@ -378,15 +399,8 @@ const styles = StyleSheet.create({
   nameDataView: {
     flexDirection: 'row',
     alignItems: 'center',
-    width: wp(35),
+    width: wp(30),
     marginHorizontal: wp(2),
-    // justifyContent: 'center',
-  },
-  switchView: {
-    width: wp(20),
-    justifyContent: 'center',
-    marginHorizontal: wp(2),
-    alignItems: 'flex-start',
   },
   actionDataView: {
     width: wp(16),
@@ -400,67 +414,12 @@ const styles = StyleSheet.create({
     height: hp(2.5),
     resizeMode: 'contain',
   },
-  backButtonView: {
-    height: hp(4),
-    paddingHorizontal: wp(3),
-    borderRadius: 5,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: COLORS.orange,
-  },
-  backText: {
-    fontFamily: Fonts.FONTS.PoppinsSemiBold,
-    fontSize: hp(1.8),
-    color: COLORS.white,
-  },
-  doctorText: {
-    fontFamily: Fonts.FONTS.PoppinsBold,
-    fontSize: hp(2.3),
-    color: COLORS.black,
-  },
-  profileView: {
-    width: '100%',
-    paddingVertical: hp(1),
-    paddingHorizontal: wp(3),
-    alignSelf: 'center',
-    borderRadius: wp(2),
-  },
-  nameTextView: {
-    width: '50%',
-    paddingHorizontal: wp(2),
-    paddingVertical: hp(0.5),
-    borderWidth: 1,
-    borderColor: COLORS.greyColor,
-    fontFamily: Fonts.FONTS.PoppinsMedium,
-    fontSize: hp(1.8),
-    color: COLORS.black,
-    borderRadius: 5,
-    marginTop: hp(1),
-    backgroundColor: COLORS.white,
-  },
-  nameView: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    width: '100%',
-    marginVertical: hp(1),
-    alignSelf: 'center',
-  },
-  contactView: {
-    width: '94%',
-    paddingVertical: hp(2),
-    paddingHorizontal: wp(3),
-    alignSelf: 'center',
-    borderRadius: wp(2),
-  },
   buttonView: {
     width: '94%',
-    paddingHorizontal: wp(3),
     alignSelf: 'center',
     flexDirection: 'row',
     justifyContent: 'flex-end',
     alignItems: 'center',
-    marginTop: hp(2),
   },
   nextView: {
     height: hp(4.5),
@@ -490,40 +449,6 @@ const styles = StyleSheet.create({
     fontSize: hp(2.2),
     color: COLORS.white,
   },
-  dataListText1: {
-    fontSize: hp(1.7),
-    fontFamily: Fonts.FONTS.PoppinsMedium,
-    color: COLORS.black,
-    textAlign: 'left',
-  },
-  dateBox1: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 5,
-    padding: 5,
-  },
-  startDateText: {
-    fontSize: hp(2),
-    fontFamily: Fonts.FONTS.PoppinsMedium,
-    color: COLORS.greyColor,
-  },
-  fullDateView: {
-    width: '100%',
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  dateView: {
-    width: '80%',
-    borderRadius: 5,
-    borderWidth: 0.5,
-    borderColor: COLORS.greyColor,
-    paddingVertical: hp(0.7),
-    backgroundColor: COLORS.white,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: wp(3),
-  },
   closeImage: {
     width: wp(5),
     height: hp(2),
@@ -531,78 +456,16 @@ const styles = StyleSheet.create({
     tintColor: COLORS.greyColor,
     marginLeft: wp(2),
   },
-  calenderImage: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  calenderView: {
-    backgroundColor: COLORS.white,
+  ListEmptyView: {
     width: '100%',
-    position: 'absolute',
-    padding: 5,
-    zIndex: 1,
-    borderRadius: 5,
-    top: hp(4),
-    left: wp(2),
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: hp(15),
   },
-  statusText: {
-    fontSize: hp(2),
+  emptyText: {
+    fontSize: hp(2.5),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
-  },
-  optionView: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginLeft: wp(3),
-  },
-  roundBorder: {
-    height: wp(4),
-    width: wp(4),
-    borderRadius: wp(4),
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 0.5,
-    marginRight: wp(1.5),
-  },
-  round: {
-    height: wp(1.5),
-    width: wp(1.5),
-    borderRadius: wp(1.5),
-    backgroundColor: COLORS.white,
-  },
-  statusView: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: hp(1.5),
-    width: '92%',
-    alignSelf: 'center',
-  },
-  profilePhotoView: {
-    borderWidth: 0.5,
-    marginTop: hp(1),
-  },
-  profileImage: {
-    width: wp(28),
-    height: hp(13.5),
-    resizeMode: 'contain',
-  },
-  editView: {
-    width: wp(7),
-    height: wp(7),
-    borderRadius: wp(7),
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 0.5,
-    position: 'absolute',
-    zIndex: 1,
-    right: -wp(3),
-    top: -hp(2),
-    backgroundColor: COLORS.white,
-  },
-  editImage1: {
-    width: wp(3),
-    height: hp(2.5),
-    resizeMode: 'contain',
   },
   container: {
     width: '94%',
@@ -655,29 +518,40 @@ const styles = StyleSheet.create({
     marginBottom: hp(3),
     marginTop: hp(1),
   },
-  commentTextInput: {
-    width: '92%',
-    paddingHorizontal: wp(3),
-    paddingVertical: hp(1),
-    borderWidth: 1,
-    borderColor: COLORS.greyColor,
-    fontFamily: Fonts.FONTS.PoppinsMedium,
-    fontSize: hp(2),
+  titleText1: {
+    fontSize: hp(1.8),
+    fontFamily: Fonts.FONTS.PoppinsSemiBold,
     color: COLORS.black,
-    borderRadius: 5,
-    alignSelf: 'center',
-    height: hp(14),
-    marginTop: hp(1),
-    marginBottom: hp(3),
+    marginHorizontal: wp(3),
+    textAlign: 'left',
   },
-  ListEmptyView: {
-    width: '100%',
+  staffOption: {
+    height: hp(4.5),
+    paddingHorizontal: wp(4),
+    borderRadius: 5,
     alignItems: 'center',
     justifyContent: 'center',
-    height: hp(15),
+    marginLeft: wp(2),
   },
-  emptyText: {
-    fontSize: hp(2.5),
+  buttonView1: {
+    width: '94%',
+    alignSelf: 'center',
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+  },
+  staffText: {
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    fontSize: hp(2.2),
+    color: COLORS.black,
+  },
+  permissionView: {
+    paddingVertical: hp(2),
+    width: '92%',
+    alignSelf: 'center',
+  },
+  noticeText: {
+    fontSize: hp(1.8),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
   },

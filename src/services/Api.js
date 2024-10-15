@@ -154,7 +154,7 @@ export const onDeleteUserDataApi = async id => {
   });
 };
 
-export const onGetAllUsersDataApi = async filterUrl => {
+export const onGetAllUsersDataApi = async () => {
   const token = await AsyncStorage.getItem('accessToken');
   const url = Api.baseUrl1 + 'get-users';
   console.log('Get Doctor Details Url:::', url);
@@ -186,6 +186,38 @@ export const onGetSpecificUsersDataApi = async id => {
   });
 };
 
+export const onGetRoleDataApi = async () => {
+  const token = await AsyncStorage.getItem('accessToken');
+  const url = Api.baseUrl1 + 'get-roles';
+  console.log('Get Doctor Details Url:::', url);
+  return new Promise((resolve, reject) => {
+    axios
+      .get(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(res => resolve(res))
+      .catch(err => reject(err));
+  });
+};
+
+export const onGetRolePermissionDataApi = async () => {
+  const token = await AsyncStorage.getItem('accessToken');
+  const url = Api.baseUrl1 + 'get-permissions';
+  console.log('Get Doctor Details Url:::', url);
+  return new Promise((resolve, reject) => {
+    axios
+      .get(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(res => resolve(res))
+      .catch(err => reject(err));
+  });
+};
+
 export const onGetProfileDataApi = async () => {
   const token = await AsyncStorage.getItem('accessToken');
   const url = Api.baseUrl1 + 'get-profile';
@@ -194,6 +226,24 @@ export const onGetProfileDataApi = async () => {
     axios
       .get(url, {
         headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(res => resolve(res))
+      .catch(err => reject(err));
+  });
+};
+
+export const onAddRoleApi = async requestData => {
+  const token = await AsyncStorage.getItem('accessToken');
+  console.log('Get Login Url:::', Api.baseUrl1);
+  const url = Api.baseUrl1 + 'add-role';
+  return new Promise((resolve, reject) => {
+    axios
+      .post(url, requestData, {
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
           Authorization: `Bearer ${token}`,
         },
       })

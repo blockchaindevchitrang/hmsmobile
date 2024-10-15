@@ -62,15 +62,14 @@ const DiagnosisTestsList = ({searchBreak, setSearchBreak, allData}) => {
             <Text style={[styles.dataHistoryText1]}>{item.mail}</Text>
           </View>
         </View>
-          <View style={[styles.switchView, {width: wp(43)}]}>
-              <Text style={[styles.dataHistoryText1]}>{item.discharge}</Text>
+        <View style={[styles.switchView, {width: wp(43)}]}>
+          <Text style={[styles.dataHistoryText1]}>{item.discharge}</Text>
+        </View>
+        <View style={[styles.switchView, {width: wp(35)}]}>
+          <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
+            <Text style={[styles.dataHistoryText1]}>{item.date}</Text>
           </View>
-          <View style={[styles.switchView, {width: wp(35)}]}>
-            <View
-              style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-              <Text style={[styles.dataHistoryText1]}>{item.date}</Text>
-            </View>
-          </View>
+        </View>
         <View style={styles.actionDataView}>
           <TouchableOpacity>
             <Image
@@ -158,11 +157,9 @@ const DiagnosisTestsList = ({searchBreak, setSearchBreak, allData}) => {
                     virtualized
                     ListEmptyComponent={() => (
                       <View key={0} style={styles.ListEmptyView}>
-                        <View style={styles.subEmptyView}>
-                          <Text style={styles.emptyText}>
-                            {'No record found'}
-                          </Text>
-                        </View>
+                        <Text style={styles.emptyText}>
+                          {'No record found'}
+                        </Text>
                       </View>
                     )}
                   />
@@ -707,5 +704,16 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.FONTS.PoppinsSemiBold,
     color: COLORS.black,
     textAlign: 'left',
+  },
+  ListEmptyView: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: hp(15),
+  },
+  emptyText: {
+    fontSize: hp(2.5),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
   },
 });

@@ -38,6 +38,14 @@ const BedAssignList = ({searchBreak, setSearchBreak, allData}) => {
   const [dateModalVisible, setDateModalVisible] = useState(false);
   const [status, setStatus] = useState(false);
 
+  const onAddBedAssign = async () => {
+    try {
+      setNewUserVisible(false);
+    } catch (err) {
+      console.log('Add Error:', err);
+    }
+  };
+
   const renderItem = ({item, index}) => {
     return (
       <View
@@ -291,10 +299,14 @@ const BedAssignList = ({searchBreak, setSearchBreak, allData}) => {
           </View>
 
           <View style={styles.buttonView}>
-            <TouchableOpacity onPress={() => {}} style={styles.nextView}>
+            <TouchableOpacity
+              onPress={() => onAddBedAssign()}
+              style={styles.nextView}>
               <Text style={styles.nextText}>Save</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => {}} style={styles.prevView}>
+            <TouchableOpacity
+              onPress={() => setNewUserVisible(false)}
+              style={styles.prevView}>
               <Text style={styles.prevText}>Cancel</Text>
             </TouchableOpacity>
           </View>

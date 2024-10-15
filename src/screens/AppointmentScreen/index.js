@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -25,6 +25,7 @@ import {BlurView} from '@react-native-community/blur';
 import headerLogo from '../../images/headerLogo.png';
 import TransactionComponent from '../../components/TransactionComponent';
 import AppointmentComponent from '../../components/AppointmentComponent';
+import { onGetAppointmentPaymentHistoryApi, onGetFilterAppointmentApi } from '../../services/Api';
 
 const allData = [
   {
@@ -133,9 +134,12 @@ export const AppointmentScreen = ({navigation}) => {
     {key: 'appointments', title: 'Appointments'},
     {key: 'transaction', title: 'Appointments Transaction'},
   ]);
+  const [searchAppointment, setSearchAppointment] = useState('');
   const [searchBreak, setSearchBreak] = useState('');
   const [optionModalView, setOptionModalView] = useState(false);
   const [selectedView, setSelectedView] = useState('Appointments');
+  const [appointmentList, setAppointmentList] = useState([]);
+  const [transactionList, setTransactionList] = useState([]);
 
   // const AppointmentRoute = () => (
   //   <AppointmentComponent
@@ -252,6 +256,37 @@ export const AppointmentScreen = ({navigation}) => {
     }
   };
 
+  useEffect(() => {
+    onAppointmentGet();
+    onTransactionDataGet();
+  }, []);
+
+  const onAppointmentGet = async () => {
+    try {
+      const response = await onGetFilterAppointmentApi(searchAppointment);
+
+      if (response.status === 200) {
+        console.log('Get Response :::', response.data);
+        setAppointmentList(response.data);
+      }
+    } catch (err) {
+      console.log('Error Get:', err);
+    }
+  };
+
+  const onTransactionDataGet = async () => {
+    try {
+      const response = await onGetAppointmentPaymentHistoryApi(searchBreak);
+
+      if (response.status === 200) {
+        console.log('Get Response :::', response.data);
+        setTransactionList(response.data);
+      }
+    } catch (err) {
+      console.log('Error Get:', err);
+    }
+  };
+
   return (
     <View style={[styles.container, {backgroundColor: theme.lightColor}]}>
       <View style={styles.headerView}>
@@ -274,16 +309,16 @@ export const AppointmentScreen = ({navigation}) => {
       <View style={styles.mainView}>
         {selectedView == 'Appointments' ? (
           <AppointmentComponent
-            searchBreak={searchBreak}
-            setSearchBreak={setSearchBreak}
-            allData={appointmentData}
+            searchBreak={searchAppointment}
+            setSearchBreak={setSearchAppointment}
+            allData={appointmentList}
           />
         ) : (
           selectedView == 'Appointments Transaction' && (
             <TransactionComponent
               searchBreak={searchBreak}
               setSearchBreak={setSearchBreak}
-              allData={allData}
+              allData={transactionList}
             />
           )
         )}
