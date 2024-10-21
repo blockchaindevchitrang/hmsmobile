@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -25,6 +25,7 @@ import BloodBanksList from '../../components/BloodComponent/BloodBanksList';
 import BloodDonorList from '../../components/BloodComponent/BloodDonorList';
 import BloodDonationList from '../../components/BloodComponent/BloodDonationList';
 import BloodIssueList from '../../components/BloodComponent/BloodIssueList';
+import {onGetBloodBankApi, onGetBloodDonorApi} from '../../services/Api';
 
 const allData = [
   {
@@ -197,6 +198,11 @@ export const BloodBankScreen = ({navigation}) => {
   const [searchPharmacists, setSearchPharmacists] = useState('');
   const [optionModalView, setOptionModalView] = useState(false);
   const [selectedView, setSelectedView] = useState('Blood Banks');
+  const [bloodBankData, setBloodBankData] = useState([]);
+  const [bloodDonorData, setBloodDonorData] = useState([]);
+  const [bloodDonationData, setBloodDonationData] = useState([]);
+  const [bloodIssueData, setBloodIssueData] = useState([]);
+  const [refresh, setRefresh] = useState(false);
 
   const animations = useRef(
     [0, 0, 0, 0, 0].map(() => new Animated.Value(300)),
@@ -255,6 +261,33 @@ export const BloodBankScreen = ({navigation}) => {
     }
   };
 
+  useEffect(() => {
+    onGetBloodBankData();
+  }, []);
+
+  const onGetBloodBankData = async () => {
+    try {
+      const response = await onGetBloodBankApi();
+      console.log('Response Role Data', response.data);
+      if (response.status === 200) {
+        setBloodBankData(response.data.data);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Get User Error:', err);
+    }
+    try {
+      const bloodDonor = await onGetBloodDonorApi();
+      console.log('Response bloodDonor Data', bloodDonor.data);
+      if (bloodDonor.status === 200) {
+        setBloodDonorData(bloodDonor.data.data);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Get User Error:', err);
+    }
+  };
+
   return (
     <View style={[styles.container, {backgroundColor: theme.lightColor}]}>
       <View style={styles.headerView}>
@@ -270,13 +303,13 @@ export const BloodBankScreen = ({navigation}) => {
           <BloodBanksList
             searchBreak={searchAccount}
             setSearchBreak={setSearchAccount}
-            allData={allData}
+            allData={bloodBankData}
           />
         ) : selectedView == 'Blood Donors' ? (
           <BloodDonorList
             searchBreak={searchPayroll}
             setSearchBreak={setSearchPayroll}
-            allData={BloodDonorData}
+            allData={bloodDonorData}
           />
         ) : selectedView == 'Blood Donations' ? (
           <BloodDonationList

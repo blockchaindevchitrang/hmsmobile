@@ -140,6 +140,7 @@ export const AppointmentScreen = ({navigation}) => {
   const [selectedView, setSelectedView] = useState('Appointments');
   const [appointmentList, setAppointmentList] = useState([]);
   const [transactionList, setTransactionList] = useState([]);
+  const [refresh, setRefresh] = useState(false);
 
   // const AppointmentRoute = () => (
   //   <AppointmentComponent
@@ -267,7 +268,7 @@ export const AppointmentScreen = ({navigation}) => {
 
       if (response.status === 200) {
         console.log('Get Response :::', response.data);
-        setAppointmentList(response.data);
+        setAppointmentList(response.data.data);
       }
     } catch (err) {
       console.log('Error Get:', err);

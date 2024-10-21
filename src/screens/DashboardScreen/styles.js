@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
   dateBox: {
     alignItems: 'center',
     justifyContent: 'center',
-    width: '50%',
+    width: '45%',
     height: hp(3),
   },
   listView1: {

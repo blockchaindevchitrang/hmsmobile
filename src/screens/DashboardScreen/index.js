@@ -20,12 +20,14 @@ import setting from '../../images/setting.png';
 import styles from './styles';
 import Header from '../../components/Header';
 import {onComingDashboardGetApi, onDashboardGetApi} from '../../services/Api';
+import moment from 'moment';
 
 export const DashboardScreen = ({navigation}) => {
   const {t} = useTranslation();
   const {theme} = useTheme();
   const [dashboardData, setDashboardData] = useState([]);
   const [upcomingDashboardData, setUpcomingDashboardData] = useState([]);
+  const [refresh, setRefresh] = useState(false);
 
   useEffect(() => {
     onGetDashboardData();
@@ -37,8 +39,9 @@ export const DashboardScreen = ({navigation}) => {
       const response = await onDashboardGetApi();
       console.log('Get onGetDashboardData>>', response);
       if (response.status === 200) {
-        console.log('Get onGetDashboardData>>', response.data);
-        setDashboardData(response.data);
+        console.log('Get onGetDashboardData>>', response.data.data);
+        setDashboardData(response.data.data);
+        setRefresh(!refresh);
       }
     } catch (err) {
       console.log('Error:', err.response.data);
@@ -52,10 +55,25 @@ export const DashboardScreen = ({navigation}) => {
       if (response.status === 200) {
         console.log('Get onUpcomingData>>', response.data);
         setUpcomingDashboardData(response.data);
+        setRefresh(!refresh);
       }
     } catch (err) {
       console.log('Error:', err.response.data);
     }
+  };
+
+  const formatNumber = num => {
+    console.log('get Number:::', num);
+    if (num >= 1000000000) {
+      return (num / 1000000000).toFixed(1).replace(/\.0$/, '') + 'B';
+    }
+    if (num >= 1000000) {
+      return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+    }
+    if (num >= 1000) {
+      return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+    }
+    return num;
   };
 
   return (
@@ -71,39 +89,7 @@ export const DashboardScreen = ({navigation}) => {
         <ScrollView
           contentContainerStyle={{paddingBottom: hp(12)}}
           showsVerticalScrollIndicator={false}>
-          {dashboardData.length > 0 ? (
-            dashboardData.map((item, index) => {
-              return (
-                <View
-                  style={[styles.boxView, {backgroundColor: theme.lightColor}]}>
-                  <View
-                    style={[
-                      styles.roundView,
-                      {backgroundColor: theme.headerColor},
-                    ]}>
-                    <Image
-                      source={setting}
-                      style={[styles.iconStyle1, {tintColor: COLORS.white}]}
-                    />
-                  </View>
-                  <View>
-                    <Text style={[styles.optionText, {color: theme.text}]}>
-                      {'TK 6.30M'}
-                    </Text>
-                    <Text style={[styles.optionText, {color: theme.text}]}>
-                      {'Invoice Amount'}
-                    </Text>
-                  </View>
-                </View>
-              );
-            })
-          ) : (
-            <View style={styles.dataFoundView}>
-              <Text style={styles.dataFoundText}>Data not found</Text>
-            </View>
-          )}
-
-          {/* <View style={[styles.boxView, {backgroundColor: theme.lightColor}]}>
+          <View style={[styles.boxView, {backgroundColor: theme.lightColor}]}>
             <View
               style={[styles.roundView, {backgroundColor: theme.headerColor}]}>
               <Image
@@ -113,7 +99,7 @@ export const DashboardScreen = ({navigation}) => {
             </View>
             <View>
               <Text style={[styles.optionText, {color: theme.text}]}>
-                {'TK 6.30M'}
+                {`TK ${formatNumber(dashboardData?.invoiceAmount)}`}
               </Text>
               <Text style={[styles.optionText, {color: theme.text}]}>
                 {'Invoice Amount'}
@@ -131,10 +117,10 @@ export const DashboardScreen = ({navigation}) => {
             </View>
             <View>
               <Text style={[styles.optionText, {color: theme.text}]}>
-                {'TK 6.30M'}
+                {`TK ${formatNumber(dashboardData?.billAmount)}`}
               </Text>
               <Text style={[styles.optionText, {color: theme.text}]}>
-                {'Invoice Amount'}
+                {'Billed Amount'}
               </Text>
             </View>
           </View>
@@ -149,13 +135,103 @@ export const DashboardScreen = ({navigation}) => {
             </View>
             <View>
               <Text style={[styles.optionText, {color: theme.text}]}>
-                {'TK 6.30M'}
+                {`TK ${formatNumber(dashboardData?.paymentAmount)}`}
               </Text>
               <Text style={[styles.optionText, {color: theme.text}]}>
-                {'Invoice Amount'}
+                {'Payment Amount'}
               </Text>
             </View>
-          </View> */}
+          </View>
+
+          <View style={[styles.boxView, {backgroundColor: theme.lightColor}]}>
+            <View
+              style={[styles.roundView, {backgroundColor: theme.headerColor}]}>
+              <Image
+                source={setting}
+                style={[styles.iconStyle1, {tintColor: COLORS.white}]}
+              />
+            </View>
+            <View>
+              <Text style={[styles.optionText, {color: theme.text}]}>
+                {`TK ${formatNumber(dashboardData?.advancePaymentAmount)}`}
+              </Text>
+              <Text style={[styles.optionText, {color: theme.text}]}>
+                {'Adv Pay-Amount'}
+              </Text>
+            </View>
+          </View>
+
+          <View style={[styles.boxView, {backgroundColor: theme.lightColor}]}>
+            <View
+              style={[styles.roundView, {backgroundColor: theme.headerColor}]}>
+              <Image
+                source={setting}
+                style={[styles.iconStyle1, {tintColor: COLORS.white}]}
+              />
+            </View>
+            <View>
+              <Text style={[styles.optionText, {color: theme.text}]}>
+                {dashboardData?.doctors}
+              </Text>
+              <Text style={[styles.optionText, {color: theme.text}]}>
+                {'Doctors'}
+              </Text>
+            </View>
+          </View>
+
+          <View style={[styles.boxView, {backgroundColor: theme.lightColor}]}>
+            <View
+              style={[styles.roundView, {backgroundColor: theme.headerColor}]}>
+              <Image
+                source={setting}
+                style={[styles.iconStyle1, {tintColor: COLORS.white}]}
+              />
+            </View>
+            <View>
+              <Text style={[styles.optionText, {color: theme.text}]}>
+                {dashboardData?.patients}
+              </Text>
+              <Text style={[styles.optionText, {color: theme.text}]}>
+                {'Patients'}
+              </Text>
+            </View>
+          </View>
+
+          <View style={[styles.boxView, {backgroundColor: theme.lightColor}]}>
+            <View
+              style={[styles.roundView, {backgroundColor: theme.headerColor}]}>
+              <Image
+                source={setting}
+                style={[styles.iconStyle1, {tintColor: COLORS.white}]}
+              />
+            </View>
+            <View>
+              <Text style={[styles.optionText, {color: theme.text}]}>
+                {dashboardData?.nurses}
+              </Text>
+              <Text style={[styles.optionText, {color: theme.text}]}>
+                {'Nurses'}
+              </Text>
+            </View>
+          </View>
+
+          <View style={[styles.boxView, {backgroundColor: theme.lightColor}]}>
+            <View
+              style={[styles.roundView, {backgroundColor: theme.headerColor}]}>
+              <Image
+                source={setting}
+                style={[styles.iconStyle1, {tintColor: COLORS.white}]}
+              />
+            </View>
+            <View>
+              <Text style={[styles.optionText, {color: theme.text}]}>
+                {dashboardData?.availableBeds}
+              </Text>
+              <Text style={[styles.optionText, {color: theme.text}]}>
+                {'Available Beds'}
+              </Text>
+            </View>
+          </View>
 
           <View
             style={[styles.enquireView, {backgroundColor: theme.grayColor}]}>
@@ -171,15 +247,34 @@ export const DashboardScreen = ({navigation}) => {
                 <Text style={styles.titleListText}>TITLE</Text>
                 <Text style={styles.titleListText}>CREATED ON</Text>
               </View>
-              <View style={[styles.dataView]}>
-                <Text style={[styles.dataListText, {color: theme.headerColor}]}>
-                  enfshdu
-                </Text>
-                <View
-                  style={[styles.dateBox, {backgroundColor: theme.lightColor}]}>
-                  <Text style={styles.dataListText}>23rd, Aug, 2023</Text>
+              {dashboardData?.noticeBoards?.length > 0 ? (
+                dashboardData?.noticeBoards.map((item, index) => {
+                  return (
+                    <View style={[styles.dataView]}>
+                      <Text
+                        style={[
+                          styles.dataListText,
+                          {color: theme.headerColor},
+                        ]}>
+                        {item.title}
+                      </Text>
+                      <View
+                        style={[
+                          styles.dateBox,
+                          {backgroundColor: theme.lightColor},
+                        ]}>
+                        <Text style={styles.dataListText}>
+                          {moment(item.created_at).format('DD MMM, YYYY')}
+                        </Text>
+                      </View>
+                    </View>
+                  );
+                })
+              ) : (
+                <View style={styles.dataFoundView}>
+                  <Text style={styles.dataFoundText}>Data not found</Text>
                 </View>
-              </View>
+              )}
             </View>
           </View>
 

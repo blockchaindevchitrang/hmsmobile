@@ -59,7 +59,7 @@ const lightModeColors = {
   buttonBackground: '#ddd',
   headerColor: '#5eead4', // Default header color
   lightColor: '#ccfff0',
-  grayColor: '#c7c7c7',
+  grayColor: 'rgb(239,239,242)',
   purpleColor: '#e8c9fa',
   lightRedColor: '#fad7d2',
   redColor: '#f95252',
@@ -73,7 +73,7 @@ const darkModeColors = {
   buttonBackground: '#444',
   headerColor: '#5eead4', // Default header color
   lightColor: '#ccfff0',
-  grayColor: '#c7c7c7',
+  grayColor: 'rgb(239,239,242)',
   purpleColor: '#e8c9fa',
   lightRedColor: '#fad7d2',
   redColor: '#f95252',

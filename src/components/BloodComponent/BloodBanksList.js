@@ -24,8 +24,9 @@ import moment from 'moment';
 import deleteIcon from '../../images/delete.png';
 import editing from '../../images/editing.png';
 import close from '../../images/close.png';
+import {onAddBloodBankApi} from '../../services/Api';
 
-const BloodBanksList = ({searchBreak, setSearchBreak, allData}) => {
+const BloodBanksList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
   const {theme} = useTheme();
   const menuRef = useRef(null);
   const [newAccountVisible, setNewAccountVisible] = useState(false);
@@ -33,6 +34,20 @@ const BloodBanksList = ({searchBreak, setSearchBreak, allData}) => {
   const [departmentComment, setDepartmentComment] = useState('');
   const [statusVisible, setStatusVisible] = useState(false);
   const [departmentType, setDepartmentType] = useState('debit');
+
+  const onAddBloodBank = async () => {
+    try {
+      const response = await onAddBloodBankApi(eventTitle, departmentComment);
+      if (response.data.success) {
+        onGetData();
+        setNewAccountVisible(false);
+        setEventTitle('');
+        setDepartmentComment('');
+      }
+    } catch (err) {
+      console.log('Get Error::', err);
+    }
+  };
 
   const renderItem = ({item, index}) => {
     return (
@@ -42,13 +57,18 @@ const BloodBanksList = ({searchBreak, setSearchBreak, allData}) => {
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
         <View style={[styles.nameDataView]}>
-          <Text style={[styles.dataHistoryText2]}>{item.blood}</Text>
+          <Text style={[styles.dataHistoryText2]}>{item.blood_group}</Text>
         </View>
         <View style={[styles.nameDataView, {width: wp(33)}]}>
-          <Text style={[styles.dataHistoryText2]}>{item.bag}</Text>
+          <Text style={[styles.dataHistoryText2]}>{item.remained_bags}</Text>
         </View>
         <View style={styles.actionDataView}>
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              setNewAccountVisible(true);
+              setEventTitle(item.blood_group);
+              setDepartmentComment(`${item.remained_bags}`);
+            }}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.blueColor}]}
               source={editing}
@@ -81,7 +101,11 @@ const BloodBanksList = ({searchBreak, setSearchBreak, allData}) => {
             />
             <View style={styles.filterView}>
               <TouchableOpacity
-                onPress={() => setNewAccountVisible(true)}
+                onPress={() => {
+                  setNewAccountVisible(true);
+                  setEventTitle('');
+                  setDepartmentComment('');
+                }}
                 style={styles.actionView}>
                 <Text style={styles.actionText}>New Blood Group</Text>
               </TouchableOpacity>
@@ -160,7 +184,9 @@ const BloodBanksList = ({searchBreak, setSearchBreak, allData}) => {
             />
 
             <View style={styles.buttonView}>
-              <TouchableOpacity onPress={() => {}} style={styles.nextView}>
+              <TouchableOpacity
+                onPress={() => onAddBloodBank()}
+                style={styles.nextView}>
                 <Text style={styles.nextText}>Save</Text>
               </TouchableOpacity>
               <TouchableOpacity

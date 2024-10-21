@@ -29,7 +29,11 @@ import {BlurView} from '@react-native-community/blur';
 import ReceptionistsList from '../../components/UsersComponent/ReceptionistsList';
 import LabTechniciansList from '../../components/UsersComponent/LabTechniciansList';
 import PharmacistsList from '../../components/UsersComponent/PharmacistsList';
-import {onGetAllUsersDataApi, onGetRoleDataApi} from '../../services/Api';
+import {
+  onGetAllUsersDataApi,
+  onGetRoleDataApi,
+  onGetRolePermissionDataApi,
+} from '../../services/Api';
 import RoleList from '../../components/UsersComponent/RoleList';
 
 const allData = [
@@ -75,7 +79,7 @@ const allData = [
   },
 ];
 
-const accountantData = [
+const AccountantData = [
   {
     id: 1,
     name: 'Joey Tribiyani',
@@ -306,6 +310,13 @@ export const UsersScreen = ({navigation}) => {
   const [selectedView, setSelectedView] = useState('Users');
   const [userData, setUserData] = useState([]);
   const [roleData, setRoleData] = useState([]);
+  const [accountantData, setAccountantData] = useState([]);
+  const [nursesData, setNursesData] = useState([]);
+  const [receptionistData, setReceptionistData] = useState([]);
+  const [labTechniciansData, setLabTechniciansData] = useState([]);
+  const [pharmacistsData, setPharmacistsData] = useState([]);
+  const [rolePermission, setRolePermission] = useState([]);
+  const [refresh, setRefresh] = useState(false);
 
   // const UserRoute = () => (
   //   <UserList
@@ -415,6 +426,7 @@ export const UsersScreen = ({navigation}) => {
   useEffect(() => {
     onGetUserData();
     onGetRoleData();
+    onGetRolePermissionData();
   }, []);
 
   const animations = useRef(
@@ -479,7 +491,44 @@ export const UsersScreen = ({navigation}) => {
       const response = await onGetAllUsersDataApi();
       console.log('Response User Data', response.data);
       if (response.status === 200) {
-        setUserData(response.data);
+        const usersData = response.data.data;
+        const accountantData = usersData.filter(
+          user => user.department === 'Accountant',
+        );
+        const nursesData = usersData.filter(
+          user => user.department === 'Nurse',
+        );
+        const receptionistData = usersData.filter(
+          user => user.department === 'Receptionist',
+        );
+        const labTechniciansData = usersData.filter(
+          user => user.department === 'Lab Technician',
+        );
+        const pharmacistsData = usersData.filter(
+          user => user.department === 'Pharmacist',
+        );
+
+        // Set data to respective states
+        setAccountantData(accountantData);
+        setNursesData(nursesData);
+        setReceptionistData(receptionistData);
+        setLabTechniciansData(labTechniciansData);
+        setPharmacistsData(pharmacistsData);
+        setUserData(response.data.data);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Get User Error:', err);
+    }
+  };
+
+  const onGetRolePermissionData = async () => {
+    try {
+      const response = await onGetRolePermissionDataApi();
+      console.log('Response Role Data', response.data);
+      if (response.status === 200) {
+        setRolePermission(response.data.data);
+        setRefresh(!refresh);
       }
     } catch (err) {
       console.log('Get User Error:', err);
@@ -491,7 +540,8 @@ export const UsersScreen = ({navigation}) => {
       const response = await onGetRoleDataApi();
       console.log('Response Role Data', response.data);
       if (response.status === 200) {
-        setRoleData(response.data);
+        setRoleData(response.data.data);
+        setRefresh(!refresh);
       }
     } catch (err) {
       console.log('Get User Error:', err);
@@ -540,26 +590,26 @@ export const UsersScreen = ({navigation}) => {
           <NursesList
             searchBreak={searchNurse}
             setSearchBreak={setSearchNurse}
-            allData={NurseData}
+            allData={nursesData}
           />
         ) : selectedView == 'Receptionists' ? (
           <ReceptionistsList
             searchBreak={searchReceptionist}
             setSearchBreak={setSearchReceptionist}
-            allData={ReceptionistsData}
+            allData={receptionistData}
           />
         ) : selectedView == 'Lab Technicians' ? (
           <LabTechniciansList
             searchBreak={searchLabTechnician}
             setSearchBreak={setSearchLabTechnician}
-            allData={LabTechniciansData}
+            allData={labTechniciansData}
           />
         ) : (
           selectedView == 'Pharmacists' && (
             <PharmacistsList
               searchBreak={searchPharmacists}
               setSearchBreak={setSearchPharmacists}
-              allData={PharmacistsData}
+              allData={pharmacistsData}
             />
           )
         )}

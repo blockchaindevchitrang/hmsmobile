@@ -120,13 +120,13 @@ export const onAddUsersApi = async requestData => {
   });
 };
 
-export const onUpdateUserDataApi = async filterUrl => {
+export const onUpdateUserDataApi = async (id, body) => {
   const token = await AsyncStorage.getItem('accessToken');
   console.log('Get Login Url:::', Api.baseUrl1);
-  const url = Api.baseUrl1 + filterUrl;
+  const url = Api.baseUrl1 + `update-user/${id}`;
   return new Promise((resolve, reject) => {
     axios
-      .patch(url, {
+      .patch(url, body, {
         headers: {
           'Content-Type': 'multipart/form-data',
           Accept: 'application/json',
@@ -652,9 +652,7 @@ export const onUpdateBedAssignApi = async filterUrl => {
 
 export const onGetBloodBankApi = async (group, bags) => {
   const token = await AsyncStorage.getItem('accessToken');
-  const url =
-    Api.baseUrl1 +
-    `blood-bank-create?blood_group=${group}&remained_bags=${bags}`;
+  const url = Api.baseUrl1 + 'blood-bank-get';
   console.log('Get Doctor Details Url:::', url);
   return new Promise((resolve, reject) => {
     axios
@@ -684,10 +682,10 @@ export const onDeleteBloodBankApi = async id => {
   });
 };
 
-export const onAddBloodBankApi = async filterUrl => {
+export const onAddBloodBankApi = async (group, bags) => {
   const token = await AsyncStorage.getItem('accessToken');
   console.log('Get Login Url:::', Api.baseUrl1);
-  const url = Api.baseUrl1 + filterUrl;
+  const url = Api.baseUrl1 + `blood_group=${group}+&remained_bags=${bags}`;
   return new Promise((resolve, reject) => {
     axios
       .post(url, {
@@ -712,6 +710,22 @@ export const onUpdateBloodBankApi = async filterUrl => {
         headers: {
           'Content-Type': 'application/json',
           Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(res => resolve(res))
+      .catch(err => reject(err));
+  });
+};
+
+export const onGetBloodDonorApi = async () => {
+  const token = await AsyncStorage.getItem('accessToken');
+  const url = Api.baseUrl1 + 'blood-donor-get';
+  console.log('Get Doctor Details Url:::', url);
+  return new Promise((resolve, reject) => {
+    axios
+      .get(url, {
+        headers: {
           Authorization: `Bearer ${token}`,
         },
       })
