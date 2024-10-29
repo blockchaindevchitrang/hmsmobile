@@ -195,76 +195,99 @@ const RoleList = ({searchBreak, setSearchBreak, allData}) => {
             <View style={styles.modalOverlay} />
           </TouchableWithoutFeedback>
           <View style={styles.container}>
-            <View style={styles.headerView}>
-              <Text style={styles.headerText}>New Role</Text>
-              <TouchableOpacity onPress={() => setNewUserVisible(false)}>
-                <Image style={styles.closeImage} source={close} />
-              </TouchableOpacity>
-            </View>
-            <Text style={[styles.titleText1, {marginTop: hp(1.5)}]}>
-              {'Name'}
-            </Text>
-            <TextInput
-              value={firstName}
-              placeholder={''}
-              onChangeText={text => setFirstName(text)}
-              style={[styles.eventTextInput]}
-            />
-            <View style={styles.buttonView1}>
-              <TouchableOpacity
-                onPress={() => setSelectedOption(true)}
-                style={[
-                  styles.staffOption,
-                  {
-                    backgroundColor: !selectedOption
-                      ? COLORS.white
-                      : theme.lightGreen,
-                  },
-                ]}>
-                <Text
-                  style={[
-                    styles.staffText,
-                    {color: selectedOption ? COLORS.white : theme.lightGreen},
-                  ]}>
-                  Staff
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => setSelectedOption(false)}
-                style={[
-                  styles.staffOption,
-                  {
-                    backgroundColor: selectedOption
-                      ? COLORS.white
-                      : theme.lightGreen,
-                  },
-                ]}>
-                <Text
-                  style={[
-                    styles.staffText,
-                    {color: !selectedOption ? COLORS.white : theme.lightGreen},
-                  ]}>
-                  HRM
-                </Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.permissionView}>
-              <Text style={styles.noticeText}>
-                Assign General Permission to Roles
+            <ScrollView
+              contentContainerStyle={styles.permissionsContainer}
+              showsVerticalScrollIndicator={false}>
+              <View style={styles.headerView}>
+                <Text style={styles.headerText}>New Role</Text>
+                <TouchableOpacity onPress={() => setNewUserVisible(false)}>
+                  <Image style={styles.closeImage} source={close} />
+                </TouchableOpacity>
+              </View>
+              <Text style={[styles.titleText1, {marginTop: hp(1.5)}]}>
+                {'Name'}
               </Text>
-            </View>
-            <View style={styles.buttonView}>
-              <TouchableOpacity
-                onPress={() => onAddRole()}
-                style={styles.nextView}>
-                <Text style={styles.nextText}>Save</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => setNewUserVisible(false)}
-                style={styles.prevView}>
-                <Text style={styles.prevText}>Cancel</Text>
-              </TouchableOpacity>
-            </View>
+              <TextInput
+                value={firstName}
+                placeholder={''}
+                onChangeText={text => setFirstName(text)}
+                style={[styles.eventTextInput]}
+              />
+              <View style={styles.buttonView1}>
+                <TouchableOpacity
+                  onPress={() => setSelectedOption(true)}
+                  style={[
+                    styles.staffOption,
+                    {
+                      backgroundColor: !selectedOption
+                        ? COLORS.white
+                        : theme.lightGreen,
+                    },
+                  ]}>
+                  <Text
+                    style={[
+                      styles.staffText,
+                      {color: selectedOption ? COLORS.white : theme.lightGreen},
+                    ]}>
+                    Staff
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => setSelectedOption(false)}
+                  style={[
+                    styles.staffOption,
+                    {
+                      backgroundColor: selectedOption
+                        ? COLORS.white
+                        : theme.lightGreen,
+                    },
+                  ]}>
+                  <Text
+                    style={[
+                      styles.staffText,
+                      {
+                        color: !selectedOption
+                          ? COLORS.white
+                          : theme.lightGreen,
+                      },
+                    ]}>
+                    HRM
+                  </Text>
+                </TouchableOpacity>
+              </View>
+              <View style={styles.permissionView}>
+                <Text style={styles.noticeText}>
+                  Assign General Permission to Roles
+                </Text>
+
+                {permissionOption.map((module, index) => (
+                  <View key={index} style={styles.permissionRow}>
+                    <Text style={styles.moduleText}>{module}</Text>
+                    <View style={styles.permissionCheckboxes}>
+                      {['Manage', 'Create', 'Edit', 'Delete'].map(
+                        (action, idx) => (
+                          <TouchableOpacity key={idx} style={styles.checkbox}>
+                            <Text style={styles.checkboxText}>{action}</Text>
+                          </TouchableOpacity>
+                        ),
+                      )}
+                    </View>
+                  </View>
+                ))}
+              </View>
+              <View style={styles.buttonView}>
+                <TouchableOpacity
+                  onPress={() => onAddRole()}
+                  style={styles.nextView}>
+                  <Text style={styles.nextText}>Save</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => setNewUserVisible(false)}
+                  style={styles.prevView}>
+                  <Text style={styles.prevText}>Cancel</Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
           </View>
         </View>
       </Modal>
@@ -469,7 +492,7 @@ const styles = StyleSheet.create({
   },
   container: {
     width: '94%',
-    // height: hp(22),
+    height: '94%',
     paddingVertical: hp(2),
     backgroundColor: COLORS.white,
     borderRadius: 10,
@@ -554,5 +577,35 @@ const styles = StyleSheet.create({
     fontSize: hp(1.8),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
+  },
+  permissionsContainer: {
+    paddingVertical: 10,
+  },
+  permissionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+  },
+  moduleText: {
+    width: '35%',
+    fontSize: hp(1.7),
+    fontWeight: '600',
+  },
+  permissionCheckboxes: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '60%',
+  },
+  checkbox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 5,
+  },
+  checkboxText: {
+    fontSize: 14,
+    marginLeft: 5,
   },
 });

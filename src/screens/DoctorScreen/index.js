@@ -1,4 +1,4 @@
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -28,6 +28,21 @@ import HolidayComponent from '../../components/HolidayComponent';
 import BreakComponent from '../../components/BreakComponent';
 import {BlurView} from '@react-native-community/blur';
 import headerLogo from '../../images/headerLogo.png';
+import {
+  onAddDoctorApi,
+  onAddDoctorDepartmentApi,
+  onDeleteDepartmentApi,
+  onDeleteDoctorApi,
+  onGetDoctorApi,
+  onGetDoctorDepartmentApi,
+  onUpdateDoctorApi,
+  onUpdateDoctorDepartmentApi,
+} from '../../services/Api';
+import FlashMessage, {
+  showMessage,
+  hideMessage,
+} from 'react-native-flash-message';
+import moment from 'moment';
 
 const allData = [
   {
@@ -201,147 +216,26 @@ export const DoctorScreen = ({navigation}) => {
   const [doctorBreakName, setDoctorBreakName] = useState('');
   const [selectedView, setSelectedView] = useState('Doctor');
   const [optionModalView, setOptionModalView] = useState(false);
+  const [doctorDataList, setDoctorDataList] = useState([]);
+  const [doctorDepartmentList, setDoctorDepartmentList] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [deleteUser, setDeleteUser] = useState(false);
+  const [refresh, setRefresh] = useState(false);
+  const [genderType, setGenderType] = useState('female');
+  const [dateOfBirth, setDateOfBirth] = useState(new Date());
+  const [dateModalVisible, setDateModalVisible] = useState(false);
+  const [status, setStatus] = useState(false);
+  const [description, setDescription] = useState('');
+  const [designation, setDesignation] = useState('');
+  const [qualification, setQualification] = useState('');
+  const [doctorBlood, setDoctorBlood] = useState('');
+  const [specialist, setSpecialist] = useState('');
+  const [charge, setCharge] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [avatar, setAvatar] = useState(null);
   const {t} = useTranslation();
   const {theme} = useTheme();
-  const [index, setIndex] = React.useState(0);
-  const [routes] = React.useState([
-    {key: 'doctor', title: 'Doctor'},
-    {key: 'department', title: 'Doctor Departments'},
-    {key: 'schedule', title: 'Schedules'},
-    {key: 'holiday', title: 'Doctor Holidays'},
-    {key: 'break', title: 'Breaks'},
-  ]);
-
-  // const DoctorRoute = () => (
-  //   <DoctorComponent
-  //     allData={allData}
-  //     search={search}
-  //     setSearch={setSearch}
-  //     filterData={filter}
-  //     setFilter={setFilter}
-  //     practice={practice}
-  //     setPractice={setPractice}
-  //     firstName={firstName}
-  //     setFirstName={setFirstName}
-  //     lastName={lastName}
-  //     setLastName={setLastName}
-  //     middleName={middleName}
-  //     setMiddleName={setMiddleName}
-  //     address1={address1}
-  //     setAddress1={setAddress1}
-  //     address2={address2}
-  //     setAddress2={setAddress2}
-  //     doctorCity={doctorCity}
-  //     setDoctorCity={setDoctorCity}
-  //     doctorState={doctorState}
-  //     setDoctorState={setDoctorState}
-  //     doctorZip={doctorZip}
-  //     setDoctorZip={setDoctorZip}
-  //     doctorFax={doctorFax}
-  //     setDoctorFax={setDoctorFax}
-  //     doctorEmail={doctorEmail}
-  //     setDoctorEmail={setDoctorEmail}
-  //     doctorContact={doctorContact}
-  //     setDoctorContact={setDoctorContact}
-  //     doctorAlternate={doctorAlternate}
-  //     setDoctorAlternate={setDoctorAlternate}
-  //   />
-  // );
-
-  // const DepartmentRoute = () => (
-  //   <DepartmentComponent
-  //     searchDepartment={searchDepartment}
-  //     setSearchDepartment={setSearchDepartment}
-  //     allData={departmentData}
-  //     eventTitle={eventTitle}
-  //     setEventTitle={setEventTitle}
-  //     departmentComment={departmentComment}
-  //     setDepartmentComment={setDepartmentComment}
-  //     statusVisible={statusVisible}
-  //     setStatusVisible={setStatusVisible}
-  //     departmentType={departmentType}
-  //     setDepartmentType={setDepartmentType}
-  //     addDoctorVisible={addDoctorVisible}
-  //     setAddDoctorVisible={setAddDoctorVisible}
-  //   />
-  // );
-
-  // const ScheduleRoute = () => (
-  //   <ScheduleComponent
-  //     searchDepartment={searchSchedule}
-  //     setSearchDepartment={setSearchSchedule}
-  //     allData={scheduleData}
-  //     addScheduleVisible={addScheduleVisible}
-  //     setAddScheduleVisible={setAddScheduleVisible}
-  //   />
-  // );
-
-  // const HolidayRoute = () => (
-  //   <HolidayComponent
-  //     searchHoliday={searchHoliday}
-  //     setSearchHoliday={setSearchHoliday}
-  //     allData={scheduleData}
-  //     addHolidayVisible={addHolidayVisible}
-  //     setAddHolidayVisible={setAddHolidayVisible}
-  //   />
-  // );
-
-  // const BreakRoute = () => (
-  //   <BreakComponent
-  //     searchBreak={searchBreak}
-  //     setSearchBreak={setSearchBreak}
-  //     allData={breakData}
-  //     doctorBreakName={doctorBreakName}
-  //     setDoctorBreakName={setDoctorBreakName}
-  //   />
-  // );
-
-  // const renderScene = SceneMap({
-  //   doctor: DoctorRoute,
-  //   department: DepartmentRoute,
-  //   schedule: ScheduleRoute,
-  //   holiday: HolidayRoute,
-  //   break: BreakRoute,
-  // });
-
-  // const renderItem =
-  //   ({navigationState, position}) =>
-  //   ({route, index}) => {
-  //     const isActive = navigationState.index === index;
-  //     return (
-  //       <View
-  //         style={[
-  //           styles.tab,
-  //           {
-  //             backgroundColor: isActive
-  //               ? COLORS.headerGreenColor
-  //               : COLORS.greyColor,
-  //           },
-  //         ]}>
-  //         <View style={[styles.item]}>
-  //           <Text style={[styles.label]}>{route.title}</Text>
-  //         </View>
-  //       </View>
-  //     );
-  //   };
-
-  // const renderTabBar = (
-  //   props: SceneRendererProps & { navigationState: State }
-  // ) => (
-  //   <View style={[styles.tabbar, {backgroundColor: theme.lightColor}]}>
-  //     <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-  //       {props.navigationState.routes.map((route: Route, index: number) => {
-  //         return (
-  //           <TouchableWithoutFeedback
-  //             key={route.key}
-  //             onPress={() => props.jumpTo(route.key)}>
-  //             {renderItem(props)({route, index})}
-  //           </TouchableWithoutFeedback>
-  //         );
-  //       })}
-  //     </ScrollView>
-  //   </View>
-  // );
 
   const animations = useRef(
     [0, 0, 0, 0, 0, 0, 0, 0].map(() => new Animated.Value(300)),
@@ -349,6 +243,238 @@ export const DoctorScreen = ({navigation}) => {
   const opacities = useRef(
     [0, 0, 0, 0, 0, 0, 0, 0].map(() => new Animated.Value(0)),
   ).current;
+
+  useEffect(() => {
+    onGetDoctorData();
+  }, []);
+
+  const onGetDoctorData = async () => {
+    try {
+      const response = await onGetDoctorApi('doctor-get');
+      if (response.status == 200) {
+        setDoctorDataList(response.data.data);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Get Error:', err);
+    }
+  };
+
+  useEffect(() => {
+    onGetDoctorDepartmentData();
+  }, [searchDepartment]);
+
+  const onGetDoctorDepartmentData = async () => {
+    try {
+      const response = await onGetDoctorDepartmentApi(searchDepartment);
+      if (response.status == 200) {
+        setDoctorDepartmentList(response.data.data);
+        setAddDoctorVisible(false);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Get Error:', err);
+    }
+  };
+
+  const onAddDoctorDepartmentData = async () => {
+    try {
+      setIsLoading(true);
+      const response = await onAddDoctorDepartmentApi(
+        eventTitle,
+        departmentComment,
+        statusVisible ? 1 : 0,
+        departmentType,
+      );
+      if (response.status == 200) {
+        onGetDoctorDepartmentData();
+        setIsLoading(false);
+        showMessage({
+          message: 'Record Added Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      setIsLoading(false);
+      showMessage({
+        message: 'Please enter properly details.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Get Error:', err.response.data);
+    }
+  };
+
+  const onEditDoctorDepartmentData = async id => {
+    try {
+      setIsLoading(true);
+      const response = await onUpdateDoctorDepartmentApi(
+        id,
+        eventTitle,
+        departmentComment,
+        statusVisible ? 1 : 0,
+        departmentType,
+      );
+      if (response.status == 200) {
+        onGetDoctorDepartmentData();
+        setIsLoading(false);
+        showMessage({
+          message: 'Record Edit Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+        setEventTitle('');
+        setDepartmentComment('');
+        setStatusVisible(false);
+        setDepartmentType('debit');
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      setIsLoading(false);
+      showMessage({
+        message: 'Please enter properly details.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Get Error:', err);
+    }
+  };
+
+  const onAddDoctorData = async () => {
+    try {
+      setIsLoading(true);
+      const formdata = new FormData();
+      formdata.append('first_name', firstName);
+      formdata.append('last_name', lastName);
+      formdata.append('email', doctorEmail);
+      formdata.append('doctor_department_id', practice);
+      formdata.append('dob', moment(dateOfBirth).format('YYYY-MM-DD'));
+      formdata.append('gender', genderType == 'female' ? 1 : 0);
+      formdata.append('phone', doctorContact);
+      formdata.append('designation', designation);
+      formdata.append('qualification', qualification);
+      formdata.append('specialist', specialist);
+      formdata.append('password', password);
+      formdata.append('password_confirmation', confirmPassword);
+      formdata.append('appointment_charge', charge);
+      formdata.append('description', description);
+      formdata.append('address1', address1);
+      formdata.append('address2', address2);
+      formdata.append('city', doctorCity);
+      formdata.append('zip', doctorZip);
+      formdata.append('blood_group', doctorBlood);
+      // if (avatar != null) {
+      //   formdata.append('image', avatar);
+      // }
+      const response = await onAddDoctorApi(formdata);
+      if (response.status == 200) {
+        onGetDoctorData();
+        setAddDoctorVisible(false);
+        setIsLoading(false);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      setIsLoading(false);
+      console.log('Get Error:', err.response.data);
+    }
+  };
+
+  const onUpdateDoctorData = async id => {
+    try {
+      setIsLoading(true);
+      const formdata = new FormData();
+      formdata.append('first_name', firstName);
+      formdata.append('last_name', lastName);
+      formdata.append('email', doctorEmail);
+      formdata.append('doctor_department_id', 1);
+      formdata.append('dob', moment(dateOfBirth).format('YYYY-MM-DD'));
+      formdata.append('gender', genderType == 'female' ? 1 : 0);
+      formdata.append('phone', doctorContact);
+      formdata.append('designation', designation);
+      formdata.append('qualification', qualification);
+      formdata.append('specialist', specialist);
+      formdata.append('appointment_charge', charge);
+      formdata.append('description', description);
+      formdata.append('address1', address1);
+      formdata.append('address2', address2);
+      formdata.append('city', doctorCity);
+      formdata.append('zip', doctorZip);
+      formdata.append('blood_group', 1);
+      // if (avatar != null) {
+      //   formdata.append('image', avatar);
+      // }
+      const response = await onUpdateDoctorApi(formdata, id);
+      if (response.status == 200) {
+        onGetDoctorData();
+        setAddDoctorVisible(false);
+        setIsLoading(false);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      setIsLoading(false);
+      console.log('Get Error:', err.response.data);
+    }
+  };
+
+  const onDeleteDeleteData = async id => {
+    try {
+      setIsLoading(true);
+      const response = await onDeleteDoctorApi(id);
+      if (response.status == 200) {
+        onGetDoctorData();
+        setIsLoading(false);
+        setDeleteUser(false);
+        showMessage({
+          message: 'Record Delete Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      setIsLoading(false);
+      setDeleteUser(false);
+      showMessage({
+        message: 'Something want wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Get Error:', err.response.data);
+    }
+  };
+
+  const onDeleteDepartmentData = async id => {
+    try {
+      setIsLoading(true);
+      const response = await onDeleteDepartmentApi(id);
+      if (response.status == 200) {
+        onGetDoctorDepartmentData();
+        setIsLoading(false);
+        setDeleteUser(false);
+        showMessage({
+          message: 'Record Delete Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      setIsLoading(false);
+      setDeleteUser(false);
+      showMessage({
+        message: 'Something want wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Get Error:', err);
+    }
+  };
 
   const toggleMenu = open => {
     const toValue = open ? 0 : 300; // For closing, move down
@@ -422,7 +548,7 @@ export const DoctorScreen = ({navigation}) => {
       <View style={styles.mainView}>
         {selectedView == 'Doctor' ? (
           <DoctorComponent
-            allData={allData}
+            allData={doctorDataList}
             search={search}
             setSearch={setSearch}
             filterData={filter}
@@ -451,14 +577,46 @@ export const DoctorScreen = ({navigation}) => {
             setDoctorEmail={setDoctorEmail}
             doctorContact={doctorContact}
             setDoctorContact={setDoctorContact}
-            doctorAlternate={doctorAlternate}
-            setDoctorAlternate={setDoctorAlternate}
+            genderType={genderType}
+            setGenderType={setGenderType}
+            status={status}
+            setStatus={setStatus}
+            description={description}
+            setDescription={setDescription}
+            dateOfBirth={dateOfBirth}
+            setDateOfBirth={setDateOfBirth}
+            dateModalVisible={dateModalVisible}
+            setDateModalVisible={setDateModalVisible}
+            designation={designation}
+            setDesignation={setDesignation}
+            qualification={qualification}
+            setQualification={setQualification}
+            doctorBlood={doctorBlood}
+            setDoctorBlood={setDoctorBlood}
+            specialist={specialist}
+            setSpecialist={setSpecialist}
+            charge={charge}
+            setCharge={setCharge}
+            password={password}
+            setPassword={setPassword}
+            confirmPassword={confirmPassword}
+            setConfirmPassword={setConfirmPassword}
+            isLoading={isLoading}
+            addDoctorVisible={addDoctorVisible}
+            setAddDoctorVisible={setAddDoctorVisible}
+            onAddDoctorDepartmentData={() => onAddDoctorData()}
+            onEditDoctorDepartmentData={id => onUpdateDoctorData(id)}
+            onDeleteDepartmentData={id => onDeleteDeleteData(id)}
+            setDeleteUser={setDeleteUser}
+            deleteUser={deleteUser}
+            avatar={avatar}
+            setAvatar={setAvatar}
           />
         ) : selectedView == 'Doctor Departments' ? (
           <DepartmentComponent
             searchDepartment={searchDepartment}
             setSearchDepartment={setSearchDepartment}
-            allData={departmentData}
+            allData={doctorDepartmentList}
             eventTitle={eventTitle}
             setEventTitle={setEventTitle}
             departmentComment={departmentComment}
@@ -469,6 +627,12 @@ export const DoctorScreen = ({navigation}) => {
             setDepartmentType={setDepartmentType}
             addDoctorVisible={addDoctorVisible}
             setAddDoctorVisible={setAddDoctorVisible}
+            onAddDoctorDepartmentData={() => onAddDoctorDepartmentData()}
+            onEditDoctorDepartmentData={id => onEditDoctorDepartmentData(id)}
+            onDeleteDepartmentData={id => onDeleteDepartmentData(id)}
+            setDeleteUser={setDeleteUser}
+            deleteUser={deleteUser}
+            isLoading={isLoading}
           />
         ) : selectedView == 'Schedules' ? (
           <ScheduleComponent

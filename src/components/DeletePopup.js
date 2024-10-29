@@ -6,18 +6,22 @@ import {
   TouchableOpacity,
   Modal,
   TouchableWithoutFeedback,
+  ActivityIndicator,
 } from 'react-native';
 import {heightPercentageToDP as hp, widthPercentageToDP as wp} from './Pixel';
 import {COLORS, Fonts} from '../utils';
 import {useTranslation} from 'react-i18next';
+import {useTheme} from '../utils/ThemeProvider';
 
 export function DeletePopup({
   modelVisible,
   setModelVisible,
   onPress,
   setUserId,
+  isLoading,
 }) {
   const {t} = useTranslation();
+  const {theme} = useTheme();
   return (
     <Modal
       animationType="slide"
@@ -33,7 +37,9 @@ export function DeletePopup({
           <View style={styles.modalOverlay} />
         </TouchableWithoutFeedback>
         <View style={styles.container}>
-          <Text style={styles.referralTitleText}>{'Delete Record'}</Text>
+          <Text style={[styles.referralTitleText, {color: theme.headerColor}]}>
+            {'Delete Record'}
+          </Text>
           <Text style={styles.referralTitleText1}>
             {'Are you sure you want to delete this record?'}
           </Text>
@@ -46,8 +52,14 @@ export function DeletePopup({
               }}>
               <Text style={styles.linkText1}>{'Cancel'}</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.linkButton} onPress={onPress}>
-              <Text style={styles.linkText}>{'Delete'}</Text>
+            <TouchableOpacity
+              style={[styles.linkButton, {backgroundColor: theme.headerColor}]}
+              onPress={onPress}>
+              {isLoading ? (
+                <ActivityIndicator size={'small'} color={COLORS.white} />
+              ) : (
+                <Text style={styles.linkText}>{'Delete'}</Text>
+              )}
             </TouchableOpacity>
           </View>
         </View>

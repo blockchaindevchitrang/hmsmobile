@@ -259,16 +259,20 @@ export const AppointmentScreen = ({navigation}) => {
 
   useEffect(() => {
     onAppointmentGet();
+  }, [searchAppointment]);
+
+  useEffect(() => {
     onTransactionDataGet();
-  }, []);
+  }, [searchBreak]);
 
   const onAppointmentGet = async () => {
     try {
       const response = await onGetFilterAppointmentApi(searchAppointment);
 
       if (response.status === 200) {
-        console.log('Get Response :::', response.data);
-        setAppointmentList(response.data.data);
+        console.log('Get Response :::', response.data.data.items);
+        setAppointmentList(response.data.data.items);
+        setRefresh(!refresh);
       }
     } catch (err) {
       console.log('Error Get:', err);
@@ -280,8 +284,9 @@ export const AppointmentScreen = ({navigation}) => {
       const response = await onGetAppointmentPaymentHistoryApi(searchBreak);
 
       if (response.status === 200) {
-        console.log('Get Response :::', response.data);
-        setTransactionList(response.data);
+        console.log('Get Response :::', response.data.data.items);
+        setTransactionList(response.data.data.items);
+        setRefresh(!refresh);
       }
     } catch (err) {
       console.log('Error Get:', err);

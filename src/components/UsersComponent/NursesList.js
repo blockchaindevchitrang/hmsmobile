@@ -32,6 +32,12 @@ import {
   MenuOption,
   MenuTrigger,
 } from 'react-native-popup-menu';
+import {
+  onAddUsersApi,
+  onDeleteUserDataApi,
+  onUpdateUserDataApi,
+} from '../../services/Api';
+import {DeletePopup} from '../DeletePopup';
 
 const NursesList = ({searchBreak, setSearchBreak, allData}) => {
   const {theme} = useTheme();
@@ -56,6 +62,8 @@ const NursesList = ({searchBreak, setSearchBreak, allData}) => {
   const [dateModalVisible, setDateModalVisible] = useState(false);
   const [avatar, setAvatar] = useState(null);
   const [status, setStatus] = useState(false);
+  const [userId, setUserId] = useState('');
+  const [deleteUser, setDeleteUser] = useState(false);
 
   const openProfileImagePicker = async () => {
     try {
@@ -87,6 +95,83 @@ const NursesList = ({searchBreak, setSearchBreak, allData}) => {
     }
   };
 
+  const onAddUsers = async () => {
+    try {
+      const formdata = new FormData();
+      formdata.append('first_name', firstName);
+      formdata.append('last_name', lastName);
+      formdata.append('email', email);
+      // formdata.append('phone', '');
+      // formdata.append('region_code', '+91');
+      formdata.append('image', '');
+      formdata.append('password', password);
+      formdata.append('password_confirmation', confirmPassword);
+      formdata.append('department_id', designation);
+      formdata.append('country', country);
+      formdata.append('city', city);
+      formdata.append('postal_code', postalCode);
+      formdata.append('address1', address);
+      formdata.append('gender', genderType == 'female' ? 1 : 0);
+      const response = await onAddUsersApi(formdata);
+
+      if (response.status === 200) {
+        setNewUserVisible(false);
+      }
+    } catch (err) {
+      console.log('Add User Error:', err);
+    }
+  };
+
+  const onEditUsers = async () => {
+    try {
+      const formdata = new FormData();
+      formdata.append('first_name', firstName);
+      formdata.append('last_name', lastName);
+      formdata.append('email', email);
+      // formdata.append('phone', '');
+      // formdata.append('region_code', '+91');
+      formdata.append('image', '');
+      formdata.append('password', password);
+      formdata.append('password_confirmation', confirmPassword);
+      formdata.append('department_id', designation);
+      formdata.append('country', country);
+      formdata.append('city', city);
+      formdata.append('postal_code', postalCode);
+      formdata.append('address1', address);
+      formdata.append('gender', genderType == 'female' ? 1 : 0);
+      const response = await onUpdateUserDataApi(userId, formdata);
+
+      if (response.status === 200) {
+        setUserId('');
+        setFirstName('');
+        setLastName('');
+        setEmail('');
+        setDesignation('');
+        setDateOfBirth(new Date());
+        setGenderType('female');
+        setAddress('');
+        setCity('');
+        setCountry('');
+        setPostalCode('');
+        setNewUserVisible(false);
+      }
+    } catch (err) {
+      console.log('Add User Error:', err);
+    }
+  };
+
+  const onDeleteRecord = async () => {
+    try {
+      const response = await onDeleteUserDataApi(userId);
+      if (response.status == 200) {
+        setUserId('');
+        setDeleteUser(false);
+      }
+    } catch (err) {
+      console.log('Error Delete', err);
+    }
+  };
+
   const renderItem = ({item, index}) => {
     return (
       <View
@@ -98,7 +183,7 @@ const NursesList = ({searchBreak, setSearchBreak, allData}) => {
           <ProfilePhoto username={item.name} />
           <View>
             <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
-            <Text style={[styles.dataHistoryText1]}>{item.mail}</Text>
+            <Text style={[styles.dataHistoryText1]}>{item.email}</Text>
           </View>
         </View>
         <Text
@@ -109,28 +194,50 @@ const NursesList = ({searchBreak, setSearchBreak, allData}) => {
           {item.qualification}
         </Text>
         <Text style={[styles.dataHistoryText, {width: wp(24)}]}>
-          {item.bod}
+          {moment(item.dob).format('DD MMM, YYYY')}
         </Text>
         <View style={[styles.switchView]}>
           <Switch
             trackColor={{
-              false: item.status ? COLORS.greenColor : COLORS.errorColor,
-              true: item.status ? COLORS.greenColor : COLORS.errorColor,
+              false:
+                item.status == 'Active' ? COLORS.greenColor : COLORS.errorColor,
+              true:
+                item.status == 'Active' ? COLORS.greenColor : COLORS.errorColor,
             }}
-            thumbColor={item.status ? '#f4f3f4' : '#f4f3f4'}
+            thumbColor={item.status == 'Active' ? '#f4f3f4' : '#f4f3f4'}
             ios_backgroundColor={COLORS.errorColor}
             onValueChange={() => {}}
-            value={item.status}
+            value={item.status == 'Active' ? true : false}
           />
         </View>
         <View style={styles.actionDataView}>
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              setUserId(item.id);
+              const [first, last] = item.name.split(',');
+              setFirstName(first);
+              setLastName(last);
+              setEmail(item.email);
+              setDesignation(item.department);
+              setDateOfBirth(new Date(item.dob));
+              setGenderType(item.gender == 0 ? 'male' : 'female');
+              setAddress(item.address1);
+              setCity(item.city);
+              setCountry(item.country);
+              setPostalCode(item.postal_code);
+              setNewUserVisible(true);
+            }}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.blueColor}]}
               source={editing}
             />
           </TouchableOpacity>
-          <TouchableOpacity style={{marginLeft: wp(2)}}>
+          <TouchableOpacity
+            onPress={() => {
+              setUserId(item.id);
+              setDeleteUser(true);
+            }}
+            style={{marginLeft: wp(2)}}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.errorColor}]}
               source={deleteIcon}
@@ -172,6 +279,17 @@ const NursesList = ({searchBreak, setSearchBreak, allData}) => {
                 ref={menuRef}
                 onSelect={value => {
                   if (value == 'add') {
+                    setUserId('');
+                    setFirstName('');
+                    setLastName('');
+                    setEmail('');
+                    setDesignation('');
+                    setDateOfBirth(new Date());
+                    setGenderType('female');
+                    setAddress('');
+                    setCity('');
+                    setCountry('');
+                    setPostalCode('');
                     setNewUserVisible(true);
                   } else {
                     alert(`Selected number: ${value}`);
@@ -443,14 +561,17 @@ const NursesList = ({searchBreak, setSearchBreak, allData}) => {
 
             <View style={styles.nameView}>
               <View>
-                <Text style={styles.dataHistoryText1}>PROFILE</Text>
+                <Text style={styles.dataHistoryText5}>PROFILE</Text>
                 <View style={styles.profilePhotoView}>
                   <TouchableOpacity
                     style={styles.editView}
                     onPress={() => openProfileImagePicker()}>
                     <Image style={styles.editImage1} source={draw} />
                   </TouchableOpacity>
-                  <Image style={styles.profileImage} source={man} />
+                  <Image
+                    style={styles.profileImage}
+                    source={avatar != null ? {uri: avatar?.uri} : man}
+                  />
                 </View>
               </View>
             </View>
@@ -526,15 +647,40 @@ const NursesList = ({searchBreak, setSearchBreak, allData}) => {
           </View>
 
           <View style={styles.buttonView}>
-            <TouchableOpacity onPress={() => {}} style={styles.nextView}>
+            <TouchableOpacity
+              onPress={() => {
+                userId ? onEditUsers() : onAddUsers();
+              }}
+              style={styles.nextView}>
               <Text style={styles.nextText}>Save</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => {}} style={styles.prevView}>
+            <TouchableOpacity
+              onPress={() => {
+                setUserId('');
+                setFirstName('');
+                setLastName('');
+                setEmail('');
+                setDesignation('');
+                setDateOfBirth(new Date());
+                setGenderType('female');
+                setAddress('');
+                setCity('');
+                setCountry('');
+                setPostalCode('');
+                setNewUserVisible(false);
+              }}
+              style={styles.prevView}>
               <Text style={styles.prevText}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
       )}
+      <DeletePopup
+        modelVisible={deleteUser}
+        setModelVisible={setDeleteUser}
+        onPress={() => onDeleteRecord()}
+        setUserId={setUserId}
+      />
     </View>
   );
 };
@@ -636,7 +782,7 @@ const styles = StyleSheet.create({
   },
   dataHistoryView: {
     width: '100%',
-    height: hp(8),
+    paddingVertical: hp(1),
     alignItems: 'center',
     flexDirection: 'row',
     alignSelf: 'flex-start',
@@ -652,6 +798,7 @@ const styles = StyleSheet.create({
     fontSize: hp(1.7),
     fontFamily: Fonts.FONTS.PoppinsBold,
     color: COLORS.black,
+    width: wp(45),
   },
   dataHistoryText2: {
     fontSize: hp(1.8),
@@ -668,6 +815,11 @@ const styles = StyleSheet.create({
     fontSize: hp(1.8),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.errorColor,
+  },
+  dataHistoryText5: {
+    fontSize: hp(1.7),
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    color: COLORS.black,
   },
   mainDataView: {
     minHeight: hp(29),

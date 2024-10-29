@@ -23,6 +23,61 @@ const TransactionComponent = ({searchBreak, setSearchBreak, allData}) => {
   const {theme} = useTheme();
   const menuRef = useRef(null);
 
+  const convertDate = dateString => {
+    // First, remove the ordinal suffix (st, nd, rd, th) from the date string
+    const cleanDateString = dateString.replace(/(\d+)(st|nd|rd|th)/, '$1');
+
+    // Use regex to manually extract the parts of the date
+    const dateParts = cleanDateString.match(
+      /(\d+)\s(\w+),\s(\d{4})\s(\d+):(\d+)\s(AM|PM)/,
+    );
+
+    if (!dateParts) return 'Invalid date format'; // Return an error if the date can't be parsed
+
+    let [, day, month, year, hours, minutes, period] = dateParts;
+
+    // Convert month name to number
+    const monthNames = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    const monthIndex = monthNames.indexOf(month) + 1;
+
+    // Convert 12-hour format to 24-hour format
+    if (period === 'PM' && hours !== '12') {
+      hours = String(parseInt(hours) + 12);
+    } else if (period === 'AM' && hours === '12') {
+      hours = '00';
+    }
+
+    // Ensure two-digit formatting for day, month, hours, minutes
+    const formattedMonth = String(monthIndex).padStart(2, '0');
+    const formattedDay = String(day).padStart(2, '0');
+    const formattedHours = String(hours).padStart(2, '0');
+    const formattedMinutes = String(minutes).padStart(2, '0');
+
+    // Return the date in 'YYYY-MM-DD HH:MM:SS' format
+    return `${year}-${formattedMonth}-${formattedDay} ${formattedHours}:${formattedMinutes}:00`;
+  };
+
+  function formatDate(createdAt) {
+    // Use a regular expression to match the date portion (up to the comma)
+    const dateMatch = createdAt.match(/^(\d{1,2}[a-z]{2} \w+, \d{4})/);
+
+    // Return the matched date portion, or an empty string if no match is found
+    return dateMatch ? dateMatch[0] : '';
+  }
+
   const renderItem = ({item, index}) => {
     return (
       <View
@@ -31,17 +86,17 @@ const TransactionComponent = ({searchBreak, setSearchBreak, allData}) => {
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
         <View style={[styles.nameDataView]}>
-          <ProfilePhoto username={item.name} />
+          <ProfilePhoto username={item.patient_name} />
           <View>
-            <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
-            <Text style={[styles.dataHistoryText1]}>{item.mail}</Text>
+            <Text style={[styles.dataHistoryText2]}>{item.patient_name}</Text>
+            <Text style={[styles.dataHistoryText1]}>{item.patient_email}</Text>
           </View>
         </View>
         <View style={styles.nameDataView}>
-          <ProfilePhoto username={item.name} />
+          <ProfilePhoto username={item.doctor_name} />
           <View>
-            <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
-            <Text style={[styles.dataHistoryText1]}>{item.mail}</Text>
+            <Text style={[styles.dataHistoryText2]}>{item.doctor_name}</Text>
+            <Text style={[styles.dataHistoryText1]}>{item.doctor_email}</Text>
           </View>
         </View>
         <View style={[styles.switchView]}>
@@ -49,7 +104,7 @@ const TransactionComponent = ({searchBreak, setSearchBreak, allData}) => {
             <Text
               style={[styles.dataListText1, {textAlign: 'center'}]}
               numberOfLines={2}>
-              {item.date}
+              {convertDate(item.appointment_date)}
             </Text>
           </View>
         </View>
@@ -59,16 +114,16 @@ const TransactionComponent = ({searchBreak, setSearchBreak, allData}) => {
               styles.dateBox1,
               {backgroundColor: theme.purpleColor, width: wp(15)},
             ]}>
-            <Text style={[styles.dataListText1]}>{item.payment}</Text>
+            <Text style={[styles.dataListText1]}>{item.payment_mode}</Text>
           </View>
         </View>
         <View style={[styles.switchView]}>
-          <Text style={styles.dataListText1}>{item.amount}</Text>
+          <Text style={styles.dataListText1}>{item.appointment_charge}</Text>
         </View>
         <View style={[styles.switchView, {width: wp(30)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
             <Text style={styles.dataListText1} numberOfLines={2}>
-              {item.create_at}
+              {formatDate(item.created_at)}
             </Text>
           </View>
         </View>
@@ -158,7 +213,7 @@ const styles = StyleSheet.create({
     marginVertical: hp(2),
   },
   searchView: {
-    width: '50%',
+    width: '100%',
     paddingHorizontal: wp(2),
     paddingVertical: hp(0.5),
     borderWidth: 1,

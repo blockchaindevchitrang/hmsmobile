@@ -10,6 +10,7 @@ import {
   FlatList,
   Modal,
   TouchableWithoutFeedback,
+  ActivityIndicator,
 } from 'react-native';
 import React, {useRef, useState} from 'react';
 import {
@@ -21,6 +22,7 @@ import {useTheme} from '../utils/ThemeProvider';
 import deleteIcon from '../images/delete.png';
 import editing from '../images/editing.png';
 import close from '../images/close.png';
+import {DeletePopup} from './DeletePopup';
 
 const DepartmentComponent = ({
   searchDepartment,
@@ -36,9 +38,16 @@ const DepartmentComponent = ({
   setDepartmentType,
   addDoctorVisible,
   setAddDoctorVisible,
+  onAddDoctorDepartmentData,
+  onEditDoctorDepartmentData,
+  onDeleteDepartmentData,
+  deleteUser,
+  setDeleteUser,
+  isLoading,
 }) => {
   const {theme} = useTheme();
   const menuRef = useRef(null);
+  const [editId, setEditId] = useState('');
 
   const renderItem = ({item, index}) => {
     return (
@@ -48,16 +57,29 @@ const DepartmentComponent = ({
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
         <View style={styles.nameDataView}>
-          <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
+          <Text style={[styles.dataHistoryText2]}>{item.title}</Text>
         </View>
         <View style={styles.actionDataView}>
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              setEditId(item.id);
+              setEventTitle(item.title);
+              setDepartmentComment(item.description);
+              setStatusVisible(item.status == 1 ? true : false);
+              setDepartmentType(item.type);
+              setAddDoctorVisible(true);
+            }}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.blueColor}]}
               source={editing}
             />
           </TouchableOpacity>
-          <TouchableOpacity style={{marginLeft: wp(2)}}>
+          <TouchableOpacity
+            style={{marginLeft: wp(2)}}
+            onPress={() => {
+              setEditId(item.id);
+              setDeleteUser(true);
+            }}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.errorColor}]}
               source={deleteIcon}
@@ -84,7 +106,14 @@ const DepartmentComponent = ({
             />
             <View style={styles.filterView}>
               <TouchableOpacity
-                onPress={() => setAddDoctorVisible(true)}
+                onPress={() => {
+                  setEditId('');
+                  setEventTitle('');
+                  setDepartmentComment('');
+                  setStatusVisible(false);
+                  setDepartmentType('debit');
+                  setAddDoctorVisible(true);
+                }}
                 style={styles.actionView}>
                 <Text style={styles.actionText}>New Doctor Department</Text>
               </TouchableOpacity>
@@ -211,8 +240,18 @@ const DepartmentComponent = ({
               </View>
             </View>
             <View style={styles.buttonView}>
-              <TouchableOpacity onPress={() => {}} style={styles.nextView}>
-                <Text style={styles.nextText}>Save</Text>
+              <TouchableOpacity
+                onPress={
+                  editId != ''
+                    ? () => onEditDoctorDepartmentData(editId)
+                    : onAddDoctorDepartmentData
+                }
+                style={styles.nextView}>
+                {isLoading ? (
+                  <ActivityIndicator size={'small'} color={COLORS.white} />
+                ) : (
+                  <Text style={styles.nextText}>Save</Text>
+                )}
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => setAddDoctorVisible(false)}
@@ -223,6 +262,13 @@ const DepartmentComponent = ({
           </View>
         </View>
       </Modal>
+      <DeletePopup
+        modelVisible={deleteUser}
+        setModelVisible={setDeleteUser}
+        onPress={() => onDeleteDepartmentData(editId)}
+        setUserId={setEditId}
+        isLoading={isLoading}
+      />
     </>
   );
 };

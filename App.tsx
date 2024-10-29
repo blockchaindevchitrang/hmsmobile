@@ -46,6 +46,7 @@ import PathologyScreen from './src/screens/PathologyScreen';
 import ReportsScreen from './src/screens/ReportsScreen';
 import TransactionsScreen from './src/screens/TransactionsScreen';
 import ForgotPassword from './src/screens/ForgotPassword';
+import FlashMessage from 'react-native-flash-message';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -310,6 +311,7 @@ const App = () => {
                 options={{headerShown: false}}
               /> */}
             </Stack.Navigator>
+            <FlashMessage position={'top'} />
           </NavigationContainer>
         </I18nextProvider>
       </ThemeProvider>

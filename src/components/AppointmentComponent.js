@@ -24,6 +24,7 @@ import close from '../images/close.png';
 import calendar from '../images/calendar.png';
 import CalendarPicker from 'react-native-calendar-picker';
 import moment from 'moment';
+import DatePicker from 'react-native-date-picker';
 
 const AppointmentComponent = ({searchBreak, setSearchBreak, allData}) => {
   const {theme} = useTheme();
@@ -33,9 +34,13 @@ const AppointmentComponent = ({searchBreak, setSearchBreak, allData}) => {
   const [holidayStartDate, setHolidayStartDate] = useState(null);
   const [holidayEndDate, setHolidayEndDate] = useState(null);
   const [calenderVisible, setCalenderVisible] = useState(false);
-  const [fromTime, setFromTime] = useState('');
-  const [toTime, setToTime] = useState('');
-  const [breakType, setBreakType] = useState('every');
+  const [dateOfBirth, setDateOfBirth] = useState(new Date());
+  const [dateModalVisible, setDateModalVisible] = useState(false);
+  const [description, setDescription] = useState('');
+  const [status, setStatus] = useState(false);
+  const [patient, setPatient] = useState('');
+  const [department, setDepartment] = useState('');
+  const [doctor, setDoctor] = useState('');
 
   const onCloseDate = () => {
     setHolidayStartDate(null);
@@ -52,6 +57,53 @@ const AppointmentComponent = ({searchBreak, setSearchBreak, allData}) => {
     }
   };
 
+  const convertDate = dateString => {
+    // First, remove the ordinal suffix (st, nd, rd, th) from the date string
+    const cleanDateString = dateString.replace(/(\d+)(st|nd|rd|th)/, '$1');
+
+    // Use regex to manually extract the parts of the date
+    const dateParts = cleanDateString.match(
+      /(\d+)\s(\w+),\s(\d{4})\s(\d+):(\d+)\s(AM|PM)/,
+    );
+
+    if (!dateParts) return 'Invalid date format'; // Return an error if the date can't be parsed
+
+    let [, day, month, year, hours, minutes, period] = dateParts;
+
+    // Convert month name to number
+    const monthNames = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    const monthIndex = monthNames.indexOf(month) + 1;
+
+    // Convert 12-hour format to 24-hour format
+    if (period === 'PM' && hours !== '12') {
+      hours = String(parseInt(hours) + 12);
+    } else if (period === 'AM' && hours === '12') {
+      hours = '00';
+    }
+
+    // Ensure two-digit formatting for day, month, hours, minutes
+    const formattedMonth = String(monthIndex).padStart(2, '0');
+    const formattedDay = String(day).padStart(2, '0');
+    const formattedHours = String(hours).padStart(2, '0');
+    const formattedMinutes = String(minutes).padStart(2, '0');
+
+    // Return the date in 'YYYY-MM-DD HH:MM:SS' format
+    return `${year}-${formattedMonth}-${formattedDay} ${formattedHours}:${formattedMinutes}:00`;
+  };
+
   const renderItem = ({item, index}) => {
     return (
       <View
@@ -60,17 +112,17 @@ const AppointmentComponent = ({searchBreak, setSearchBreak, allData}) => {
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
         <View style={[styles.nameDataView]}>
-          <ProfilePhoto username={item.name} />
+          <ProfilePhoto username={item.patient_name} />
           <View>
-            <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
-            <Text style={[styles.dataHistoryText1]}>{item.mail}</Text>
+            <Text style={[styles.dataHistoryText2]}>{item.patient_name}</Text>
+            <Text style={[styles.dataHistoryText1]}>{item.patient_email}</Text>
           </View>
         </View>
         <View style={styles.nameDataView}>
-          <ProfilePhoto username={item.name} />
+          <ProfilePhoto username={item.doctor_name} />
           <View>
-            <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
-            <Text style={[styles.dataHistoryText1]}>{item.mail}</Text>
+            <Text style={[styles.dataHistoryText2]}>{item.doctor_name}</Text>
+            <Text style={[styles.dataHistoryText1]}>{item.doctor_email}</Text>
           </View>
         </View>
         <View style={[styles.switchView, {width: wp(30)}]}>
@@ -81,7 +133,7 @@ const AppointmentComponent = ({searchBreak, setSearchBreak, allData}) => {
             <Text
               style={[styles.dataListText1, {textAlign: 'center'}]}
               numberOfLines={2}>
-              {item.date}
+              {convertDate(item.date)}
             </Text>
           </View>
         </View>
@@ -91,9 +143,9 @@ const AppointmentComponent = ({searchBreak, setSearchBreak, allData}) => {
               styles.dateBox1,
               {
                 backgroundColor:
-                  item.status == 'Confirm'
+                  item.status == 1
                     ? COLORS.lightColor
-                    : item.status == 'Pending'
+                    : item.status == 0
                     ? COLORS.lightPrimary3
                     : COLORS.errorBG,
                 width: wp(20),
@@ -104,15 +156,19 @@ const AppointmentComponent = ({searchBreak, setSearchBreak, allData}) => {
                 styles.dataListText1,
                 {
                   color:
-                    item.status == 'Confirm'
+                    item.status == 1
                       ? theme.headerColor
-                      : item.status == 'Pending'
+                      : item.status == 0
                       ? COLORS.shadowColor
                       : COLORS.orange,
                   fontFamily: Fonts.FONTS.PoppinsSemiBold,
                 },
               ]}>
-              {item.status}
+              {item.status == 1
+                ? 'Confirm'
+                : item.status == 0
+                ? 'Pending'
+                : 'Cancelled'}
             </Text>
           </View>
         </View>
@@ -250,7 +306,7 @@ const AppointmentComponent = ({searchBreak, setSearchBreak, allData}) => {
           contentContainerStyle={{paddingBottom: hp(12)}}>
           <View style={styles.subView}>
             <Text style={[styles.doctorText, {color: theme.text}]}>
-              Doctor Breaks
+              Create Appointment
             </Text>
             <View style={styles.filterView}>
               <TouchableOpacity
@@ -263,71 +319,93 @@ const AppointmentComponent = ({searchBreak, setSearchBreak, allData}) => {
           <View style={styles.nameView}>
             <View style={{width: '48%'}}>
               <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
-                Doctor:<Text style={styles.dataHistoryText4}>*</Text>
+                Patient:<Text style={styles.dataHistoryText4}>*</Text>
               </Text>
               <TextInput
-                value={doctorBreakName}
+                value={patient}
                 placeholder={'Select'}
-                onChangeText={text => setDoctorBreakName(text)}
+                onChangeText={text => setPatient(text)}
                 style={[styles.nameTextView, {width: '100%'}]}
               />
             </View>
 
             <View style={{width: '48%'}}>
-              <View style={[styles.optionView]}>
-                <TouchableOpacity
-                  onPress={() => setBreakType('every')}
-                  style={[
-                    styles.roundBorder,
-                    {
-                      backgroundColor:
-                        breakType == 'every' ? COLORS.blueColor : COLORS.white,
-                      borderWidth: breakType == 'every' ? 0 : 0.5,
-                    },
-                  ]}>
-                  <View style={styles.round} />
-                </TouchableOpacity>
-                <Text style={styles.statusText}>Every Day</Text>
-              </View>
-              <View style={[styles.optionView, {marginTop: hp(1)}]}>
-                <TouchableOpacity
-                  onPress={() => setBreakType('single')}
-                  style={[
-                    styles.roundBorder,
-                    {
-                      backgroundColor:
-                        breakType == 'single' ? COLORS.blueColor : COLORS.white,
-                      borderWidth: breakType == 'single' ? 0 : 0.5,
-                    },
-                  ]}>
-                  <View style={styles.round} />
-                </TouchableOpacity>
-                <Text style={styles.statusText}>Single Day</Text>
-              </View>
+              <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
+                Doctor Department:<Text style={styles.dataHistoryText4}>*</Text>
+              </Text>
+              <TextInput
+                value={department}
+                placeholder={'Select'}
+                onChangeText={text => setDepartment(text)}
+                style={[styles.nameTextView, {width: '100%'}]}
+              />
             </View>
           </View>
           <View style={styles.nameView}>
             <View style={{width: '48%'}}>
               <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
-                FROM:
+                Doctor:<Text style={styles.dataHistoryText4}>*</Text>
               </Text>
               <TextInput
-                value={fromTime}
-                placeholder={'--:-- --'}
-                onChangeText={text => setFromTime(text)}
+                value={doctor}
+                placeholder={'Select'}
+                onChangeText={text => setDoctor(text)}
                 style={[styles.nameTextView, {width: '100%'}]}
               />
             </View>
 
             <View style={{width: '48%'}}>
               <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
-                TO:
+                DATE:<Text style={styles.dataHistoryText4}>*</Text>
               </Text>
+              <Text
+                style={[
+                  styles.nameTextView,
+                  {width: '100%', paddingVertical: hp(1)},
+                ]}
+                onPress={() => setDateModalVisible(!dateModalVisible)}>
+                {moment(dateOfBirth).format('DD/MM/YYYY')}
+              </Text>
+              <DatePicker
+                open={dateModalVisible}
+                modal={true}
+                date={dateOfBirth}
+                mode={'date'}
+                onConfirm={date => {
+                  console.log('Console Log>>', date);
+                  setDateModalVisible(false);
+                  setDateOfBirth(date);
+                }}
+                onCancel={() => {
+                  setDateModalVisible(false);
+                }}
+              />
+            </View>
+          </View>
+          <View style={styles.nameView}>
+            <View style={{width: '48%'}}>
+              <Text style={styles.dataHistoryText1}>Description:</Text>
               <TextInput
-                value={toTime}
-                placeholder={'--:-- --'}
-                onChangeText={text => setToTime(text)}
-                style={[styles.nameTextView, {width: '100%'}]}
+                value={description}
+                placeholder={'Enter Description...'}
+                onChangeText={text => setDescription(text)}
+                style={[styles.commentTextInput]}
+                multiline
+                textAlignVertical="top"
+              />
+            </View>
+
+            <View style={{width: '48%', alignItems: 'flex-start'}}>
+              <Text style={styles.dataHistoryText1}>Status:</Text>
+              <Switch
+                trackColor={{
+                  false: status ? COLORS.greenColor : COLORS.errorColor,
+                  true: status ? COLORS.greenColor : COLORS.errorColor,
+                }}
+                thumbColor={status ? '#f4f3f4' : '#f4f3f4'}
+                ios_backgroundColor={COLORS.errorColor}
+                onValueChange={() => setStatus(!status)}
+                value={status}
               />
             </View>
           </View>
@@ -456,6 +534,7 @@ const styles = StyleSheet.create({
     fontSize: hp(1.8),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
+    width: wp(45),
   },
   dataHistoryText2: {
     fontSize: hp(1.8),
@@ -547,7 +626,7 @@ const styles = StyleSheet.create({
   },
   nameView: {
     flexDirection: 'row',
-    alignItems: 'center',
+    // alignItems: 'center',
     justifyContent: 'space-between',
     width: '94%',
     marginVertical: hp(2),
@@ -691,5 +770,19 @@ const styles = StyleSheet.create({
     fontSize: hp(2.5),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
+  },
+  commentTextInput: {
+    width: '100%',
+    paddingHorizontal: wp(3),
+    paddingVertical: hp(1),
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    color: COLORS.black,
+    borderRadius: 5,
+    alignSelf: 'center',
+    height: hp(10),
+    marginTop: hp(1),
   },
 });

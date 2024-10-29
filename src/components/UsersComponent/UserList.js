@@ -26,10 +26,14 @@ import man from '../../images/man.png';
 import draw from '../../images/draw.png';
 import DatePicker from 'react-native-date-picker';
 import ImagePicker from 'react-native-image-crop-picker';
-import {onAddUsersApi, onDeleteUserDataApi, onUpdateUserDataApi} from '../../services/Api';
-import { DeletePopup } from '../DeletePopup';
+import {
+  onAddUsersApi,
+  onDeleteUserDataApi,
+  onUpdateUserDataApi,
+} from '../../services/Api';
+import {DeletePopup} from '../DeletePopup';
 
-const UserList = ({searchBreak, setSearchBreak, allData}) => {
+const UserList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
   const {theme} = useTheme();
   const [newUserVisible, setNewUserVisible] = useState(false);
   const [firstName, setFirstName] = useState('');
@@ -145,7 +149,12 @@ const UserList = ({searchBreak, setSearchBreak, allData}) => {
               source={editing}
             />
           </TouchableOpacity>
-          <TouchableOpacity style={{marginLeft: wp(2)}}>
+          <TouchableOpacity
+            onPress={() => {
+              setUserId(item.id);
+              setDeleteUser(true);
+            }}
+            style={{marginLeft: wp(2)}}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.errorColor}]}
               source={deleteIcon}
@@ -162,8 +171,6 @@ const UserList = ({searchBreak, setSearchBreak, allData}) => {
       formdata.append('first_name', firstName);
       formdata.append('last_name', lastName);
       formdata.append('email', email);
-      // formdata.append('phone', '');
-      // formdata.append('region_code', '+91');
       formdata.append('image', '');
       formdata.append('password', password);
       formdata.append('password_confirmation', confirmPassword);
@@ -176,7 +183,18 @@ const UserList = ({searchBreak, setSearchBreak, allData}) => {
       const response = await onAddUsersApi(formdata);
 
       if (response.status === 200) {
+        onGetData();
         setNewUserVisible(false);
+        setFirstName('');
+        setLastName('');
+        setEmail('');
+        setRole('');
+        setDateOfBirth(new Date());
+        setGenderType('female');
+        setAddress('');
+        setCity('');
+        setCountry('');
+        setPostalCode('');
       }
     } catch (err) {
       console.log('Add User Error:', err);
@@ -531,14 +549,17 @@ const UserList = ({searchBreak, setSearchBreak, allData}) => {
 
             <View style={styles.nameView}>
               <View>
-                <Text style={styles.dataHistoryText1}>PROFILE</Text>
+                <Text style={styles.dataHistoryText5}>PROFILE</Text>
                 <View style={styles.profilePhotoView}>
                   <TouchableOpacity
                     style={styles.editView}
                     onPress={() => openProfileImagePicker()}>
                     <Image style={styles.editImage1} source={draw} />
                   </TouchableOpacity>
-                  <Image style={styles.profileImage} source={man} />
+                  <Image
+                    style={styles.profileImage}
+                    source={avatar != null ? {uri: avatar?.uri} : man}
+                  />
                 </View>
               </View>
             </View>
@@ -665,7 +686,7 @@ const styles = StyleSheet.create({
   },
   dataHistoryView: {
     width: '100%',
-    height: hp(8),
+    paddingVertical: hp(1),
     alignItems: 'center',
     flexDirection: 'row',
     alignSelf: 'flex-start',
@@ -698,6 +719,11 @@ const styles = StyleSheet.create({
     fontSize: hp(1.8),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.errorColor,
+  },
+  dataHistoryText5: {
+    fontSize: hp(1.7),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
   },
   mainDataView: {
     minHeight: hp(29),

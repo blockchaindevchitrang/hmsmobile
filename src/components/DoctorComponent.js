@@ -8,6 +8,8 @@ import {
   ScrollView,
   TextInput,
   FlatList,
+  ActivityIndicator,
+  Platform,
 } from 'react-native';
 import React, {useRef, useState} from 'react';
 import {
@@ -20,12 +22,19 @@ import filter from '../images/filter.png';
 import ProfilePhoto from './ProfilePhoto';
 import deleteIcon from '../images/delete.png';
 import editing from '../images/editing.png';
+import man from '../images/man.png';
+import draw from '../images/draw.png';
 import {
   Menu,
   MenuOptions,
   MenuOption,
   MenuTrigger,
 } from 'react-native-popup-menu';
+import DatePicker from 'react-native-date-picker';
+import moment from 'moment';
+import {DeletePopup} from './DeletePopup';
+import ImagePicker from 'react-native-image-crop-picker';
+import {onGetDoctorDetailApi} from '../services/Api';
 
 const DoctorComponent = ({
   search,
@@ -39,8 +48,6 @@ const DoctorComponent = ({
   setFirstName,
   lastName,
   setLastName,
-  middleName,
-  setMiddleName,
   address1,
   setAddress1,
   address2,
@@ -51,18 +58,126 @@ const DoctorComponent = ({
   setDoctorState,
   doctorZip,
   setDoctorZip,
-  doctorFax,
-  setDoctorFax,
+  genderType,
+  setGenderType,
   doctorEmail,
   setDoctorEmail,
   doctorContact,
   setDoctorContact,
-  doctorAlternate,
-  setDoctorAlternate,
+  status,
+  setStatus,
+  description,
+  setDescription,
+  dateOfBirth,
+  setDateOfBirth,
+  dateModalVisible,
+  setDateModalVisible,
+  designation,
+  setDesignation,
+  qualification,
+  setQualification,
+  doctorBlood,
+  setDoctorBlood,
+  specialist,
+  setSpecialist,
+  charge,
+  setCharge,
+  password,
+  setPassword,
+  confirmPassword,
+  setConfirmPassword,
+  addDoctorVisible,
+  setAddDoctorVisible,
+  onAddDoctorDepartmentData,
+  onEditDoctorDepartmentData,
+  onDeleteDepartmentData,
+  deleteUser,
+  setDeleteUser,
+  isLoading,
+  setAvatar,
+  avatar,
 }) => {
   const {theme} = useTheme();
   const menuRef = useRef(null);
-  const [addDoctorVisible, setAddDoctorVisible] = useState(false);
+  const [editId, setEditId] = useState('');
+
+  const openProfileImagePicker = async () => {
+    try {
+      const image = await ImagePicker.openPicker({
+        width: 300,
+        height: 400,
+        cropping: false,
+        multiple: false, // Allow selecting only one image
+        compressImageQuality: 0.5,
+      });
+
+      if (image && image.path) {
+        if (image && image.path) {
+          var filename = image.path.substring(image.path.lastIndexOf('/') + 1);
+          let imageData = {
+            uri: Platform.OS === 'ios' ? image.sourceURL : image.path,
+            type: image.mime,
+            name: Platform.OS === 'ios' ? image.filename : filename,
+          };
+          setAvatar(imageData);
+
+          console.log('Selected image:', avatar);
+        }
+      } else {
+        console.log('No image selected');
+      }
+    } catch (error) {
+      console.log('Error selecting image:', error);
+    }
+  };
+
+  function parseFileFromUrl(url) {
+    // Extract the filename from the URL
+    const name = url.split('/').pop();
+
+    // Extract the file extension
+    const extension = name.split('.').pop();
+
+    // Define the MIME type based on the file extension
+    let type;
+    switch (extension) {
+      case 'jpeg':
+      case 'jpg':
+        type = 'image/jpeg';
+        break;
+      case 'png':
+        type = 'image/png';
+        break;
+
+      default:
+        type = 'application/octet-stream'; // Fallback type for unknown extensions
+    }
+
+    // Return the extracted information
+    return {
+      uri: url,
+      type,
+      name,
+    };
+  }
+
+  const onGetSpecificDoctor = async id => {
+    try {
+      const response = await onGetDoctorDetailApi(id);
+      if (response.status == 200) {
+        console.log('get ValueLL:::', response.data.data);
+        return response.data.data.doctor_detail;
+      } else {
+        return 0;
+      }
+    } catch (err) {
+      console.log('Get Error', err);
+    }
+  };
+
+  const isImageFormat = (url) => {
+    return url.endsWith('.png') || url.endsWith('.jpg') || url.endsWith('.jpeg');
+  };
 
   const renderItem = ({item, index}) => {
     return (
@@ -75,7 +190,9 @@ const DoctorComponent = ({
           <ProfilePhoto username={item.name} />
           <View>
             <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
-            <Text style={[styles.dataHistoryText1]}>{item.mail}</Text>
+            <Text numberOfLines={2} style={[styles.dataHistoryText1]}>
+              {item.email}
+            </Text>
           </View>
         </View>
         <Text style={[styles.dataHistoryText, {width: wp(24)}]}>
@@ -87,23 +204,55 @@ const DoctorComponent = ({
         <View style={[styles.switchView]}>
           <Switch
             trackColor={{
-              false: item.status ? COLORS.greenColor : COLORS.errorColor,
-              true: item.status ? COLORS.greenColor : COLORS.errorColor,
+              false: item.status == 1 ? COLORS.greenColor : COLORS.errorColor,
+              true: item.status == 1 ? COLORS.greenColor : COLORS.errorColor,
             }}
-            thumbColor={item.status ? '#f4f3f4' : '#f4f3f4'}
+            thumbColor={item.status == 1 ? '#f4f3f4' : '#f4f3f4'}
             ios_backgroundColor={COLORS.errorColor}
             onValueChange={() => {}}
-            value={item.status}
+            value={item.status == 1 ? true : false}
           />
         </View>
         <View style={styles.actionDataView}>
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={async () => {
+              let allData = await onGetSpecificDoctor(item.id);
+              console.log('Get Value Of Doctor::', allData);
+              const [first, last] = allData.doctor_name.split(' ');
+              setEditId(allData?.id);
+              setFirstName(first);
+              setLastName(last);
+              if (isImageFormat(allData.doctor_image)) {
+                console.log('Get ImageLLLL', parseFileFromUrl(allData.doctor_image));
+                setAvatar(parseFileFromUrl(allData.doctor_image));
+              }
+              setGenderType(allData?.gender == 'Female' ? 'female' : 'male');
+              setDateOfBirth(new Date(allData?.date_of_birth));
+              setDoctorContact(allData?.phone);
+              setDoctorEmail(allData?.email);
+              setDescription(allData?.description);
+              setQualification(allData?.qualification);
+              setSpecialist(allData?.specialist);
+              setPractice(allData?.doctor_department);
+              setCharge(`${allData?.appointment_charge}`);
+              setDesignation(allData?.designation);
+              setAddress1(allData?.address1);
+              setAddress2(allData?.address2);
+              setDoctorCity(allData?.city);
+              setDoctorZip(allData?.zip);
+              setAddDoctorVisible(true);
+            }}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.blueColor}]}
               source={editing}
             />
           </TouchableOpacity>
-          <TouchableOpacity style={{marginLeft: wp(2)}}>
+          <TouchableOpacity
+            style={{marginLeft: wp(2)}}
+            onPress={() => {
+              setEditId(item.id);
+              setDeleteUser(true);
+            }}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.errorColor}]}
               source={deleteIcon}
@@ -145,6 +294,25 @@ const DoctorComponent = ({
                 ref={menuRef}
                 onSelect={value => {
                   if (value == 'add') {
+                    // setEditId('');
+                    // setFirstName('');
+                    // setLastName('');
+                    // setGenderType('female');
+                    // setDateOfBirth(new Date());
+                    // setDoctorContact('');
+                    // setDoctorEmail('');
+                    // setDescription('');
+                    // setQualification('');
+                    // setSpecialist('');
+                    // setPractice('');
+                    // setCharge('');
+                    // setDesignation('');
+                    // setAddress1('');
+                    // setAddress2('');
+                    // setDoctorCity('');
+                    // setDoctorZip('');
+                    // setPassword('');
+                    // setConfirmPassword('');
                     setAddDoctorVisible(true);
                   } else {
                     alert(`Selected number: ${value}`);
@@ -198,11 +366,9 @@ const DoctorComponent = ({
                     virtualized
                     ListEmptyComponent={() => (
                       <View key={0} style={styles.ListEmptyView}>
-                        <View style={styles.subEmptyView}>
-                          <Text style={styles.emptyText}>
-                            {'No record found'}
-                          </Text>
-                        </View>
+                        <Text style={styles.emptyText}>
+                          {'No record found'}
+                        </Text>
                       </View>
                     )}
                   />
@@ -231,15 +397,6 @@ const DoctorComponent = ({
             <Text style={[styles.doctorText, {paddingVertical: hp(1)}]}>
               Profile
             </Text>
-            <Text style={styles.dataHistoryText1}>
-              Practice<Text style={styles.dataHistoryText4}>*</Text>
-            </Text>
-            <TextInput
-              value={practice}
-              placeholder={'Select'}
-              onChangeText={text => setPractice(text)}
-              style={[styles.nameTextView, {width: '100%'}]}
-            />
             <View style={styles.nameView}>
               <View style={{width: '48%'}}>
                 <Text style={styles.dataHistoryText1}>
@@ -266,29 +423,254 @@ const DoctorComponent = ({
               </View>
             </View>
 
+            <Text style={styles.dataHistoryText1}>
+              Doctor Department:<Text style={styles.dataHistoryText4}>*</Text>
+            </Text>
+            <TextInput
+              value={practice}
+              placeholder={'Select Department'}
+              onChangeText={text => setPractice(text)}
+              style={[styles.nameTextView, {width: '100%'}]}
+            />
+
+            <Text style={[styles.dataHistoryText1, {marginTop: hp(2)}]}>
+              Email:<Text style={styles.dataHistoryText4}>*</Text>
+            </Text>
+            <TextInput
+              value={doctorEmail}
+              placeholder={'Email'}
+              onChangeText={text => setDoctorEmail(text)}
+              style={[styles.nameTextView, {width: '100%'}]}
+            />
+
             <View style={styles.nameView}>
               <View style={{width: '48%'}}>
                 <Text style={styles.dataHistoryText1}>
-                  Middle Name<Text style={styles.dataHistoryText4}>*</Text>
+                  Designation:<Text style={styles.dataHistoryText4}>*</Text>
                 </Text>
                 <TextInput
-                  value={middleName}
-                  placeholder={'Enter middle name'}
-                  onChangeText={text => setMiddleName(text)}
+                  value={designation}
+                  placeholder={'Designation'}
+                  onChangeText={text => setDesignation(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
                 />
               </View>
 
               <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>
-                  Practice<Text style={styles.dataHistoryText4}>*</Text>
+                <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
+                  Phone:<Text style={styles.dataHistoryText4}>*</Text>
                 </Text>
                 <TextInput
-                  value={practice}
-                  placeholder={'Select'}
-                  onChangeText={text => setPractice(text)}
+                  value={doctorContact}
+                  placeholder={'Enter Phone'}
+                  keyboardType={'numeric'}
+                  onChangeText={text => setDoctorContact(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
                 />
+              </View>
+            </View>
+
+            <View style={styles.nameView}>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>
+                  Qualification:<Text style={styles.dataHistoryText4}>*</Text>
+                </Text>
+                <TextInput
+                  value={qualification}
+                  placeholder={'Qualification'}
+                  onChangeText={text => setQualification(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                />
+              </View>
+
+              <View style={{width: '48%'}}>
+                <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
+                  Date Of Birth:<Text style={styles.dataHistoryText4}>*</Text>
+                </Text>
+                <Text
+                  style={[
+                    styles.nameTextView,
+                    {width: '100%', paddingVertical: hp(1)},
+                  ]}
+                  onPress={() => setDateModalVisible(!dateModalVisible)}>
+                  {moment(dateOfBirth).format('DD/MM/YYYY')}
+                </Text>
+                <DatePicker
+                  open={dateModalVisible}
+                  modal={true}
+                  date={dateOfBirth}
+                  mode={'date'}
+                  onConfirm={date => {
+                    console.log('Console Log>>', date);
+                    setDateModalVisible(false);
+                    setDateOfBirth(date);
+                  }}
+                  onCancel={() => {
+                    setDateModalVisible(false);
+                  }}
+                />
+              </View>
+            </View>
+
+            <View style={styles.nameView}>
+              <View style={{width: '32%'}}>
+                <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
+                  Blood Group:<Text style={styles.dataHistoryText4}>*</Text>
+                </Text>
+                <TextInput
+                  value={doctorBlood}
+                  placeholder={'Select Blood'}
+                  onChangeText={text => setDoctorBlood(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                />
+              </View>
+
+              <View style={{width: '44%'}}>
+                <Text
+                  style={[
+                    styles.dataHistoryText1,
+                    {color: theme.text, marginLeft: wp(3)},
+                  ]}>
+                  Gender<Text style={styles.dataHistoryText4}>*</Text>
+                </Text>
+                <View style={[styles.statusView, {paddingVertical: hp(1)}]}>
+                  <View style={[styles.optionView]}>
+                    <TouchableOpacity
+                      onPress={() => setGenderType('female')}
+                      style={[
+                        styles.roundBorder,
+                        {
+                          backgroundColor:
+                            genderType == 'female'
+                              ? COLORS.blueColor
+                              : COLORS.white,
+                          borderWidth: genderType == 'female' ? 0 : 0.5,
+                        },
+                      ]}>
+                      <View style={styles.round} />
+                    </TouchableOpacity>
+                    <Text style={styles.statusText}>Female</Text>
+                  </View>
+                  <View style={[styles.optionView]}>
+                    <TouchableOpacity
+                      onPress={() => setGenderType('male')}
+                      style={[
+                        styles.roundBorder,
+                        {
+                          backgroundColor:
+                            genderType == 'male'
+                              ? COLORS.blueColor
+                              : COLORS.white,
+                          borderWidth: genderType == 'male' ? 0 : 0.5,
+                        },
+                      ]}>
+                      <View style={styles.round} />
+                    </TouchableOpacity>
+                    <Text style={styles.statusText}>Male</Text>
+                  </View>
+                </View>
+              </View>
+
+              <View style={{width: '20%'}}>
+                <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
+                  Status:
+                </Text>
+                <View style={[styles.statusView, {paddingVertical: hp(1)}]}>
+                  <Switch
+                    trackColor={{
+                      false: status ? COLORS.greenColor : COLORS.errorColor,
+                      true: status ? COLORS.greenColor : COLORS.errorColor,
+                    }}
+                    thumbColor={status ? '#f4f3f4' : '#f4f3f4'}
+                    ios_backgroundColor={COLORS.errorColor}
+                    onValueChange={() => setStatus(!status)}
+                    value={status}
+                  />
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.nameView}>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>
+                  Specialist:<Text style={styles.dataHistoryText4}>*</Text>
+                </Text>
+                <TextInput
+                  value={specialist}
+                  placeholder={'Specialist'}
+                  onChangeText={text => setSpecialist(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                />
+              </View>
+
+              <View style={{width: '48%'}}>
+                <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
+                  Appointment Charge:
+                  <Text style={styles.dataHistoryText4}>*</Text>
+                </Text>
+                <TextInput
+                  value={charge}
+                  placeholder={'Appointment Charge'}
+                  onChangeText={text => setCharge(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                />
+              </View>
+            </View>
+            {editId == '' && (
+              <View style={styles.nameView}>
+                <View style={{width: '48%'}}>
+                  <Text style={styles.dataHistoryText1}>
+                    Password:<Text style={styles.dataHistoryText4}>*</Text>
+                  </Text>
+                  <TextInput
+                    value={password}
+                    placeholder={'Password'}
+                    onChangeText={text => setPassword(text)}
+                    style={[styles.nameTextView, {width: '100%'}]}
+                    secureTextEntry
+                  />
+                </View>
+
+                <View style={{width: '48%'}}>
+                  <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
+                    Confirm Password:
+                    <Text style={styles.dataHistoryText4}>*</Text>
+                  </Text>
+                  <TextInput
+                    value={confirmPassword}
+                    placeholder={'Confirm Password'}
+                    onChangeText={text => setConfirmPassword(text)}
+                    style={[styles.nameTextView, {width: '100%'}]}
+                    secureTextEntry
+                  />
+                </View>
+              </View>
+            )}
+            <Text style={[styles.dataHistoryText1, {marginTop: hp(2)}]}>
+              Description:<Text style={styles.dataHistoryText4}>*</Text>
+            </Text>
+            <TextInput
+              value={description}
+              placeholder={'Description'}
+              onChangeText={text => setDescription(text)}
+              style={[styles.commentTextInput]}
+              multiline
+              textAlignVertical="top"
+            />
+            <View style={styles.nameView}>
+              <View>
+                <Text style={styles.dataHistoryText5}>Profile:</Text>
+                <View style={styles.profilePhotoView}>
+                  <TouchableOpacity
+                    style={styles.editView}
+                    onPress={() => openProfileImagePicker()}>
+                    <Image style={styles.editImage1} source={draw} />
+                  </TouchableOpacity>
+                  <Image
+                    style={styles.profileImage}
+                    source={avatar != null ? {uri: avatar?.uri} : man}
+                  />
+                </View>
               </View>
             </View>
 
@@ -331,7 +713,7 @@ const DoctorComponent = ({
               </View>
             </View>
             <View style={styles.nameView}>
-              <View style={{width: '32%'}}>
+              <View style={{width: '48%'}}>
                 <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
                   City<Text style={styles.dataHistoryText4}>*</Text>
                 </Text>
@@ -343,32 +725,21 @@ const DoctorComponent = ({
                 />
               </View>
 
-              <View style={{width: '32%'}}>
-                <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
-                  State<Text style={styles.dataHistoryText4}>*</Text>
-                </Text>
-                <TextInput
-                  value={doctorState}
-                  placeholder={'Select'}
-                  onChangeText={text => setDoctorState(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-
-              <View style={{width: '32%'}}>
+              <View style={{width: '48%'}}>
                 <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
                   Zip<Text style={styles.dataHistoryText4}>*</Text>
                 </Text>
                 <TextInput
                   value={doctorZip}
                   placeholder={'12345-1234'}
+                  keyboardType={'numeric'}
                   onChangeText={text => setDoctorZip(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
                 />
               </View>
             </View>
 
-            <View style={styles.nameView}>
+            {/* <View style={styles.nameView}>
               <View style={{width: '48%'}}>
                 <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
                   Fax
@@ -392,9 +763,9 @@ const DoctorComponent = ({
                   style={[styles.nameTextView, {width: '100%'}]}
                 />
               </View>
-            </View>
+            </View> */}
 
-            <View style={styles.nameView}>
+            {/* <View style={styles.nameView}>
               <View style={{width: '48%'}}>
                 <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
                   Contact Phone<Text style={styles.dataHistoryText4}>*</Text>
@@ -406,31 +777,38 @@ const DoctorComponent = ({
                   style={[styles.nameTextView, {width: '100%'}]}
                 />
               </View>
-
-              <View style={{width: '48%'}}>
-                <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
-                  Alternate Phone
-                </Text>
-                <TextInput
-                  value={doctorAlternate}
-                  placeholder={'Enter Alternate Phone'}
-                  onChangeText={text => setDoctorAlternate(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-            </View>
+            </View> */}
           </View>
 
           <View style={styles.buttonView}>
-            <TouchableOpacity onPress={() => {}} style={styles.prevView}>
-              <Text style={styles.prevText}>Previous</Text>
+            <TouchableOpacity
+              onPress={
+                editId != ''
+                  ? () => onEditDoctorDepartmentData(editId)
+                  : onAddDoctorDepartmentData
+              }
+              style={styles.nextView}>
+              {isLoading ? (
+                <ActivityIndicator size={'small'} color={COLORS.white} />
+              ) : (
+                <Text style={styles.nextText}>Save</Text>
+              )}
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => {}} style={styles.nextView}>
-              <Text style={styles.nextText}>Next</Text>
+            <TouchableOpacity
+              onPress={() => setAddDoctorVisible(false)}
+              style={styles.prevView}>
+              <Text style={styles.prevText}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
       )}
+      <DeletePopup
+        modelVisible={deleteUser}
+        setModelVisible={setDeleteUser}
+        onPress={() => onDeleteDepartmentData(editId)}
+        setUserId={setEditId}
+        isLoading={isLoading}
+      />
     </View>
   );
 };
@@ -546,6 +924,7 @@ const styles = StyleSheet.create({
     fontSize: hp(1.8),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
+    width: wp(45),
   },
   dataHistoryText2: {
     fontSize: hp(1.8),
@@ -635,6 +1014,22 @@ const styles = StyleSheet.create({
     marginTop: hp(1),
     backgroundColor: COLORS.white,
   },
+  commentTextInput: {
+    width: '100%',
+    paddingHorizontal: wp(3),
+    paddingVertical: hp(1),
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(2),
+    color: COLORS.black,
+    borderRadius: 5,
+    alignSelf: 'center',
+    height: hp(14),
+    marginTop: hp(1),
+    backgroundColor: COLORS.white,
+    marginBottom: hp(2),
+  },
   nameView: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -684,5 +1079,73 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.FONTS.PoppinsBold,
     fontSize: hp(2.2),
     color: COLORS.white,
+  },
+  ListEmptyView: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: hp(15),
+  },
+  emptyText: {
+    fontSize: hp(2.5),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+  },
+  statusView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+  },
+  optionView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: wp(3),
+  },
+  roundBorder: {
+    height: wp(4),
+    width: wp(4),
+    borderRadius: wp(4),
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 0.5,
+    marginRight: wp(1.5),
+  },
+  round: {
+    height: wp(1.5),
+    width: wp(1.5),
+    borderRadius: wp(1.5),
+    backgroundColor: COLORS.white,
+  },
+  dataHistoryText5: {
+    fontSize: hp(1.7),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+  },
+  profilePhotoView: {
+    borderWidth: 0.5,
+    marginTop: hp(1),
+  },
+  profileImage: {
+    width: wp(28),
+    height: hp(13.5),
+    resizeMode: 'contain',
+  },
+  editView: {
+    width: wp(7),
+    height: wp(7),
+    borderRadius: wp(7),
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 0.5,
+    position: 'absolute',
+    zIndex: 1,
+    right: -wp(3),
+    top: -hp(2),
+    backgroundColor: COLORS.white,
+  },
+  editImage1: {
+    width: wp(3),
+    height: hp(2.5),
+    resizeMode: 'contain',
   },
 });

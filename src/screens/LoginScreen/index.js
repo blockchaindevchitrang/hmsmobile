@@ -57,7 +57,7 @@ export const LoginScreen = ({navigation}) => {
         setIsLoading(false);
       }
     } catch (error) {
-      console.log('Error::', error.response.data.error);
+      console.log('Error::', error.response.data);
       if (error[0] == 'AxiosError: Network Error') {
         setApiError(true);
         setApiErrorMessage('Network Error');

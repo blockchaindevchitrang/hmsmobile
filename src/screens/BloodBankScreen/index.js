@@ -304,6 +304,7 @@ export const BloodBankScreen = ({navigation}) => {
             searchBreak={searchAccount}
             setSearchBreak={setSearchAccount}
             allData={bloodBankData}
+            onGetData={() => onGetBloodBankData()}
           />
         ) : selectedView == 'Blood Donors' ? (
           <BloodDonorList

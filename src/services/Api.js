@@ -288,7 +288,7 @@ export const onGetAppointmentDataApi = async filterUrl => {
 
 export const onGetFilterAppointmentApi = async text => {
   const token = await AsyncStorage.getItem('accessToken');
-  const url = Api.baseUrl1 + `get-appointment?search=${text}`;
+  const url = Api.baseUrl1 + `appointment-get?search=${text}`;
   console.log('Get Doctor Details Url:::', url);
   return new Promise((resolve, reject) => {
     axios
@@ -356,7 +356,7 @@ export const onGetAppointmentPaymentHistoryApi = async text => {
 
 export const onGetDoctorDetailApi = async id => {
   const token = await AsyncStorage.getItem('accessToken');
-  const url = Api.baseUrl1 + `get-doctor/${id}`;
+  const url = Api.baseUrl1 + `doctor-edit/${id}`;
   console.log('Get Doctor Details Url:::', url);
   return new Promise((resolve, reject) => {
     axios
@@ -387,9 +387,9 @@ export const onGetFilterDoctorDepartmentApi = async (text, limit) => {
   });
 };
 
-export const onGetDoctorDepartmentApi = async id => {
+export const onGetDoctorDepartmentApi = async text => {
   const token = await AsyncStorage.getItem('accessToken');
-  const url = Api.baseUrl1 + `get-doctor-department/${id}`;
+  const url = Api.baseUrl1 + `filter-doctor-department?search=${text}`;
   console.log('Get Doctor Details Url:::', url);
   return new Promise((resolve, reject) => {
     axios
@@ -403,14 +403,40 @@ export const onGetDoctorDepartmentApi = async id => {
   });
 };
 
-export const onAddDoctorDepartmentApi = async (title, des) => {
+export const onAddDoctorDepartmentApi = async (title, des, status, type) => {
   const token = await AsyncStorage.getItem('accessToken');
-  console.log('Get Login Url:::', Api.baseUrl1);
   const url =
-    Api.baseUrl1 + `store-doctor-department?title=${title}&description=${des}`;
+    Api.baseUrl1 +
+    `store-doctor-department?title=${title}&description=${des}&status=${status}&type=${type}`;
+  console.log('Get Login Url:::', url);
   return new Promise((resolve, reject) => {
     axios
-      .post(url, {
+      .post(url, JSON.stringify({}), {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(res => resolve(res))
+      .catch(err => reject(err));
+  });
+};
+
+export const onUpdateDoctorDepartmentApi = async (
+  id,
+  title,
+  des,
+  status,
+  type,
+) => {
+  const token = await AsyncStorage.getItem('accessToken');
+
+  const url =
+    Api.baseUrl1 +
+    `update-doctor-department/${id}?title=${title}&description=${des}&status=${status}&type=${type}`;
+  console.log('Get Login Url:::', url);
+  return new Promise((resolve, reject) => {
+    axios
+      .patch(url, JSON.stringify({}), {
         headers: {
           'Content-Type': 'application/json',
           Accept: 'application/json',
@@ -422,18 +448,14 @@ export const onAddDoctorDepartmentApi = async (title, des) => {
   });
 };
 
-export const onUpdateDoctorDepartmentApi = async (id, title, des) => {
+export const onDeleteDepartmentApi = async id => {
   const token = await AsyncStorage.getItem('accessToken');
-  console.log('Get Login Url:::', Api.baseUrl1);
-  const url =
-    Api.baseUrl1 +
-    `update-doctor-department/${id}?title=${title}&description=${des}`;
+  const url = Api.baseUrl1 + `delete-doctor-department/${id}`;
+  console.log('Get Doctor Details Url:::', url);
   return new Promise((resolve, reject) => {
     axios
-      .patch(url, {
+      .delete(url, {
         headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
           Authorization: `Bearer ${token}`,
         },
       })
@@ -725,6 +747,74 @@ export const onGetBloodDonorApi = async () => {
   return new Promise((resolve, reject) => {
     axios
       .get(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(res => resolve(res))
+      .catch(err => reject(err));
+  });
+};
+
+export const onGetDoctorApi = async endPoint => {
+  const token = await AsyncStorage.getItem('accessToken');
+  const url = Api.baseUrl1 + endPoint;
+  console.log('Get Doctor Details Url:::', url);
+  return new Promise((resolve, reject) => {
+    axios
+      .get(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(res => resolve(res))
+      .catch(err => reject(err));
+  });
+};
+
+export const onAddDoctorApi = async requestData => {
+  const token = await AsyncStorage.getItem('accessToken');
+  console.log('Get Login Url:::', Api.baseUrl1);
+  const url = Api.baseUrl1 + 'doctor-store';
+  return new Promise((resolve, reject) => {
+    axios
+      .post(url, requestData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(res => resolve(res))
+      .catch(err => reject(err));
+  });
+};
+
+export const onUpdateDoctorApi = async (requestData, id) => {
+  const token = await AsyncStorage.getItem('accessToken');
+  const url = Api.baseUrl1 + `doctor-update/${id}`;
+  console.log('Get Login Url:::', url, requestData);
+  return new Promise((resolve, reject) => {
+    axios
+      .post(url, requestData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(res => resolve(res))
+      .catch(err => reject(err));
+  });
+};
+
+export const onDeleteDoctorApi = async id => {
+  const token = await AsyncStorage.getItem('accessToken');
+  const url = Api.baseUrl1 + `doctor-delete/${id}`;
+  console.log('Get Doctor Details Url:::', url);
+  return new Promise((resolve, reject) => {
+    axios
+      .delete(url, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
