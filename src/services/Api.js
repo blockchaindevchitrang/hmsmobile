@@ -88,7 +88,7 @@ export const onDashboardGetApi = async () => {
 
 export const onComingDashboardGetApi = async columnName => {
   const token = await AsyncStorage.getItem('accessToken');
-  const url = Api.baseUrl1 + `upcoming-appointment?columnName=${columnName}`;
+  const url = Api.baseUrl1 + `upcoming-appointment`;
   console.log('Get Login Url:::', url);
   return new Promise((resolve, reject) => {
     axios
@@ -483,12 +483,12 @@ export const onGetBedTypeApi = async (sortCol, sortType) => {
 
 export const onAddBedTypeApi = async (title, des) => {
   const token = await AsyncStorage.getItem('accessToken');
-  console.log('Get Login Url:::', Api.baseUrl1);
   const url =
     Api.baseUrl1 + `bed-type-create?title=${title}&description=${des}`;
+  console.log('Get Login Url:::', url);
   return new Promise((resolve, reject) => {
     axios
-      .post(url, {
+      .post(url, JSON.stringify({}), {
         headers: {
           'Content-Type': 'application/json',
           Accept: 'application/json',
@@ -502,12 +502,13 @@ export const onAddBedTypeApi = async (title, des) => {
 
 export const onUpdateBedTypeApi = async (id, title, des) => {
   const token = await AsyncStorage.getItem('accessToken');
-  console.log('Get Login Url:::', Api.baseUrl1);
+
   const url =
     Api.baseUrl1 + `bed-type-update/${id}?title=${title}&description=${des}`;
+  console.log('Get Login Url:::', url);
   return new Promise((resolve, reject) => {
     axios
-      .patch(url, {
+      .patch(url, JSON.stringify({}), {
         headers: {
           'Content-Type': 'application/json',
           Accept: 'application/json',
@@ -535,13 +536,15 @@ export const onDeleteBedTypeApi = async id => {
   });
 };
 
-export const onAddBedApi = async filterUrl => {
+export const onAddBedApi = async (name, charge, bed_type, description) => {
   const token = await AsyncStorage.getItem('accessToken');
   console.log('Get Login Url:::', Api.baseUrl1);
-  const url = Api.baseUrl1 + filterUrl;
+  const url =
+    Api.baseUrl1 +
+    `bed-create?name=${name}&charge=${charge}&bed_type=${bed_type}&description=${description}`;
   return new Promise((resolve, reject) => {
     axios
-      .post(url, {
+      .post(url, JSON.stringify({}), {
         headers: {
           'Content-Type': 'application/json',
           Accept: 'application/json',
@@ -553,13 +556,21 @@ export const onAddBedApi = async filterUrl => {
   });
 };
 
-export const onUpdateBedApi = async filterUrl => {
+export const onUpdateBedApi = async (
+  id,
+  name,
+  charge,
+  bed_type,
+  description,
+) => {
   const token = await AsyncStorage.getItem('accessToken');
   console.log('Get Login Url:::', Api.baseUrl1);
-  const url = Api.baseUrl1 + filterUrl;
+  const url =
+    Api.baseUrl1 +
+    `bed-update/${id}?name=${name}&charge=${charge}&bed_type=${bed_type}&description=${description}`;
   return new Promise((resolve, reject) => {
     axios
-      .patch(url, {
+      .patch(url, JSON.stringify({}), {
         headers: {
           'Content-Type': 'application/json',
           Accept: 'application/json',
@@ -811,6 +822,135 @@ export const onUpdateDoctorApi = async (requestData, id) => {
 export const onDeleteDoctorApi = async id => {
   const token = await AsyncStorage.getItem('accessToken');
   const url = Api.baseUrl1 + `doctor-delete/${id}`;
+  console.log('Get Doctor Details Url:::', url);
+  return new Promise((resolve, reject) => {
+    axios
+      .delete(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(res => resolve(res))
+      .catch(err => reject(err));
+  });
+};
+
+export const onGetDoctorHolidayApi = async text => {
+  const token = await AsyncStorage.getItem('accessToken');
+  const url = Api.baseUrl1 + `doctor-holiday-get?search=${text}`;
+  console.log('Get Doctor Details Url:::', url);
+  return new Promise((resolve, reject) => {
+    axios
+      .get(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(res => resolve(res))
+      .catch(err => reject(err));
+  });
+};
+
+export const onAddDoctorHolidayApi = async (doctor_id, date, reason) => {
+  const token = await AsyncStorage.getItem('accessToken');
+  const url =
+    Api.baseUrl1 +
+    `doctor-holiday-store?doctor_id=${doctor_id}&date=${date}&reason=${reason}`;
+  console.log('Get Login Url:::', url);
+  return new Promise((resolve, reject) => {
+    axios
+      .post(url, JSON.stringify({}), {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(res => resolve(res))
+      .catch(err => reject(err));
+  });
+};
+
+export const onUpdateDoctorHolidayApi = async (id, doctor_id, date, reason) => {
+  const token = await AsyncStorage.getItem('accessToken');
+
+  const url =
+    Api.baseUrl1 +
+    `doctor-holiday-update/${id}?doctor_id=${doctor_id}&date=${date}&reason=${reason}`;
+  console.log('Get Login Url:::', url);
+  return new Promise((resolve, reject) => {
+    axios
+      .patch(url, JSON.stringify({}), {
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(res => resolve(res))
+      .catch(err => reject(err));
+  });
+};
+
+export const onDeleteHolidayApi = async id => {
+  const token = await AsyncStorage.getItem('accessToken');
+  const url = Api.baseUrl1 + `doctor-holiday-delete/${id}`;
+  console.log('Get Doctor Details Url:::', url);
+  return new Promise((resolve, reject) => {
+    axios
+      .delete(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(res => resolve(res))
+      .catch(err => reject(err));
+  });
+};
+
+export const onGetDoctorBreakApi = async text => {
+  const token = await AsyncStorage.getItem('accessToken');
+  const url = Api.baseUrl1 + `lunch-break-get?search=${text}`;
+  console.log('Get Doctor Details Url:::', url);
+  return new Promise((resolve, reject) => {
+    axios
+      .get(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(res => resolve(res))
+      .catch(err => reject(err));
+  });
+};
+
+export const onAddDoctorBreakApi = async (
+  doctor_id,
+  break_from,
+  break_to,
+  optionType,
+  date,
+) => {
+  const token = await AsyncStorage.getItem('accessToken');
+  const url =
+    Api.baseUrl1 +
+    `lunch-break-store?doctor_id=${doctor_id}&break_from=${break_from}&break_to=${break_to}&${
+      optionType == 'every' ? 'every_day=1' : `date=${date}`
+    }`;
+  console.log('Get Login Url:::', url);
+  return new Promise((resolve, reject) => {
+    axios
+      .post(url, JSON.stringify({}), {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(res => resolve(res))
+      .catch(err => reject(err));
+  });
+};
+
+export const onDeleteBreakApi = async id => {
+  const token = await AsyncStorage.getItem('accessToken');
+  const url = Api.baseUrl1 + `lunch-break-delete/${id}`;
   console.log('Get Doctor Details Url:::', url);
   return new Promise((resolve, reject) => {
     axios

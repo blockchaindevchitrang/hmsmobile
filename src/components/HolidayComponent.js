@@ -8,6 +8,7 @@ import {
   ScrollView,
   TextInput,
   FlatList,
+  ActivityIndicator,
 } from 'react-native';
 import React, {useRef, useState} from 'react';
 import {
@@ -23,6 +24,10 @@ import close from '../images/close.png';
 import calendar from '../images/calendar.png';
 import CalendarPicker from 'react-native-calendar-picker';
 import moment from 'moment';
+import {useSelector} from 'react-redux';
+import SelectDropdown from 'react-native-select-dropdown';
+import DatePicker from 'react-native-date-picker';
+import {DeletePopup} from './DeletePopup';
 
 const HolidayComponent = ({
   searchHoliday,
@@ -34,11 +39,24 @@ const HolidayComponent = ({
   setDoctorName,
   holidayReason,
   setHolidayReason,
+  holidayDate,
+  setHolidayDate,
+  holidayDateModalVisible,
+  setHolidayDateModalVisible,
+  onAddDoctorDepartmentData,
+  onEditDoctorDepartmentData,
+  onDeleteDepartmentData,
+  setDeleteUser,
+  deleteUser,
+  isLoading,
 }) => {
+  const doctorData = useSelector(state => state.doctorData);
   const {theme} = useTheme();
   const [holidayStartDate, setHolidayStartDate] = useState(null);
   const [holidayEndDate, setHolidayEndDate] = useState(null);
   const [calenderVisible, setCalenderVisible] = useState(false);
+  const [doctorSelectedName, setDoctorSelectedName] = useState('');
+  const [editId, setEditId] = useState('');
 
   const renderItem = ({item, index}) => {
     return (
@@ -51,20 +69,33 @@ const HolidayComponent = ({
           <ProfilePhoto username={item.name} />
           <View>
             <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
-            <Text style={[styles.dataHistoryText1]}>{item.mail}</Text>
+            <Text style={[styles.dataHistoryText1]}>{item.email}</Text>
           </View>
         </View>
-        <Text style={[styles.dataHistoryText, {width: wp(24)}]}>
-          {item.specialist}
+        <Text style={[styles.dataHistoryText, {width: wp(27)}]}>
+          {moment(new Date(item.date)).format('YYYY-MM-DD')}
         </Text>
         <View style={styles.actionDataView}>
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              setEditId(item.id);
+              setDoctorName(item.doctor_id);
+              setDoctorSelectedName(item.name);
+              setHolidayDate(new Date(item.date));
+              setHolidayReason(item.reason);
+              setAddHolidayVisible(true);
+            }}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.blueColor}]}
               source={editing}
             />
           </TouchableOpacity>
-          <TouchableOpacity style={{marginLeft: wp(2)}}>
+          <TouchableOpacity
+            style={{marginLeft: wp(2)}}
+            onPress={() => {
+              setEditId(item.id);
+              setDeleteUser(true);
+            }}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.errorColor}]}
               source={deleteIcon}
@@ -96,7 +127,7 @@ const HolidayComponent = ({
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{paddingBottom: hp(12)}}>
-          <View
+          {/* <View
             style={[styles.subView, {marginVertical: hp(0), marginTop: hp(2)}]}>
             <View style={styles.fullDateView}>
               <TouchableOpacity
@@ -138,7 +169,7 @@ const HolidayComponent = ({
                 />
               </View>
             )}
-          </View>
+          </View> */}
           <View style={styles.subView}>
             <TextInput
               value={searchHoliday}
@@ -149,7 +180,14 @@ const HolidayComponent = ({
             />
             <View style={styles.filterView}>
               <TouchableOpacity
-                onPress={() => setAddHolidayVisible(true)}
+                onPress={() => {
+                  setEditId('');
+                  setDoctorName('');
+                  setDoctorSelectedName('');
+                  setHolidayDate(new Date());
+                  setHolidayReason('');
+                  setAddHolidayVisible(true);
+                }}
                 style={styles.actionView}>
                 <Text style={styles.actionText}>Add Holiday</Text>
               </TouchableOpacity>
@@ -164,10 +202,10 @@ const HolidayComponent = ({
                     styles.titleActiveView,
                     {backgroundColor: theme.headerColor},
                   ]}>
-                  <Text style={[styles.titleText, {width: wp(44)}]}>
+                  <Text style={[styles.titleText, {width: wp(45)}]}>
                     {'DOCTORS'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(23)}]}>
+                  <Text style={[styles.titleText, {width: wp(25)}]}>
                     {'PER PATIENT TIME'}
                   </Text>
                   <Text style={[styles.titleText, {width: wp(15)}]}>
@@ -217,11 +255,44 @@ const HolidayComponent = ({
               <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
                 Doctor:<Text style={styles.dataHistoryText4}>*</Text>
               </Text>
-              <TextInput
-                value={doctorName}
-                placeholder={'Select'}
-                onChangeText={text => setDoctorName(text)}
-                style={[styles.nameTextView, {width: '100%'}]}
+              <SelectDropdown
+                data={doctorData}
+                onSelect={(selectedItem, index) => {
+                  // setSelectedColor(selectedItem);
+                  setDoctorName(selectedItem.id);
+                  console.log('gert Value:::', selectedItem);
+                }}
+                defaultValue={doctorSelectedName}
+                renderButton={(selectedItem, isOpen) => {
+                  console.log('Get Response>>>', selectedItem);
+                  return (
+                    <View style={styles.dropdown2BtnStyle2}>
+                      {doctorName != '' ? (
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {doctorName == selectedItem?.id
+                            ? selectedItem?.name
+                            : doctorSelectedName}
+                        </Text>
+                      ) : (
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {selectedItem?.name || 'Select'}
+                        </Text>
+                      )}
+                    </View>
+                  );
+                }}
+                showsVerticalScrollIndicator={false}
+                renderItem={(item, index, isSelected) => {
+                  return (
+                    <TouchableOpacity style={styles.dropdownView}>
+                      <Text style={styles.dropdownItemTxtStyle}>
+                        {item.name}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                }}
+                dropdownIconPosition={'left'}
+                dropdownStyle={styles.dropdown2DropdownStyle}
               />
             </View>
 
@@ -229,12 +300,30 @@ const HolidayComponent = ({
               <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
                 Date
               </Text>
-              {/* <TextInput
-                value={doctorEmail}
-                placeholder={'Enter Email'}
-                onChangeText={text => setDoctorEmail(text)}
-                style={[styles.nameTextView, {width: '100%'}]}
-              /> */}
+              <Text
+                style={[
+                  styles.nameTextView,
+                  {width: '100%', paddingVertical: hp(1)},
+                ]}
+                onPress={() =>
+                  setHolidayDateModalVisible(!holidayDateModalVisible)
+                }>
+                {moment(holidayDate).format('DD/MM/YYYY')}
+              </Text>
+              <DatePicker
+                open={holidayDateModalVisible}
+                modal={true}
+                date={holidayDate}
+                mode={'date'}
+                onConfirm={date => {
+                  console.log('Console Log>>', date);
+                  setHolidayDateModalVisible(false);
+                  setHolidayDate(date);
+                }}
+                onCancel={() => {
+                  setHolidayDateModalVisible(false);
+                }}
+              />
             </View>
           </View>
           <View style={{width: '94%', alignSelf: 'center'}}>
@@ -249,15 +338,34 @@ const HolidayComponent = ({
             />
           </View>
           <View style={styles.buttonView}>
-            <TouchableOpacity onPress={() => {}} style={styles.nextView}>
-              <Text style={styles.nextText}>Save</Text>
+            <TouchableOpacity
+              onPress={
+                editId != ''
+                  ? () => onEditDoctorDepartmentData(editId)
+                  : onAddDoctorDepartmentData
+              }
+              style={styles.nextView}>
+              {isLoading ? (
+                <ActivityIndicator size={'small'} color={COLORS.white} />
+              ) : (
+                <Text style={styles.nextText}>Save</Text>
+              )}
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => {}} style={styles.prevView}>
+            <TouchableOpacity
+              onPress={() => setAddHolidayVisible(false)}
+              style={styles.prevView}>
               <Text style={styles.prevText}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
       )}
+      <DeletePopup
+        modelVisible={deleteUser}
+        setModelVisible={setDeleteUser}
+        onPress={() => onDeleteDepartmentData(editId)}
+        setUserId={setEditId}
+        isLoading={isLoading}
+      />
     </View>
   );
 };
@@ -322,7 +430,7 @@ const styles = StyleSheet.create({
     color: COLORS.white,
   },
   activeView: {
-    width: '92%',
+    width: '96%',
     minHeight: hp(35),
     maxHeight: hp(80),
     alignSelf: 'center',
@@ -356,7 +464,7 @@ const styles = StyleSheet.create({
   },
   dataHistoryView: {
     width: '100%',
-    height: hp(8),
+    paddingVertical: hp(1),
     alignItems: 'center',
     flexDirection: 'row',
     alignSelf: 'flex-start',
@@ -372,6 +480,7 @@ const styles = StyleSheet.create({
     fontSize: hp(1.8),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
+    width: wp(40),
   },
   dataHistoryText2: {
     fontSize: hp(1.8),
@@ -401,7 +510,7 @@ const styles = StyleSheet.create({
   nameDataView: {
     flexDirection: 'row',
     alignItems: 'center',
-    width: wp(45),
+    width: wp(46),
   },
   switchView: {
     width: wp(16),
@@ -578,5 +687,34 @@ const styles = StyleSheet.create({
     fontSize: hp(2.5),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
+  },
+  dropdown2DropdownStyle: {
+    backgroundColor: COLORS.white,
+    borderRadius: 4,
+    height: hp(25),
+    // borderRadius: 12,
+  },
+  dropdownItemTxtStyle: {
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    marginLeft: wp(2),
+  },
+  dropdownView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: hp(4),
+    borderBottomWidth: 0,
+  },
+  dropdown2BtnStyle2: {
+    width: wp(37),
+    height: hp(4.2),
+    backgroundColor: COLORS.white,
+    borderRadius: 5,
+    alignItems: 'center',
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    marginTop: hp(1),
   },
 });

@@ -35,6 +35,8 @@ import moment from 'moment';
 import {DeletePopup} from './DeletePopup';
 import ImagePicker from 'react-native-image-crop-picker';
 import {onGetDoctorDetailApi} from '../services/Api';
+import SelectDropdown from 'react-native-select-dropdown';
+import {useSelector} from 'react-redux';
 
 const DoctorComponent = ({
   search,
@@ -97,9 +99,13 @@ const DoctorComponent = ({
   setAvatar,
   avatar,
 }) => {
+  const departmentData = useSelector(state => state.departmentData);
+  const bloodData = useSelector(state => state.bloodData);
   const {theme} = useTheme();
   const menuRef = useRef(null);
   const [editId, setEditId] = useState('');
+  const [doctorSelectedName, setDoctorSelectedName] = useState('');
+  const [bloodSelected, setBloodSelected] = useState('');
 
   const openProfileImagePicker = async () => {
     try {
@@ -166,7 +172,7 @@ const DoctorComponent = ({
       const response = await onGetDoctorDetailApi(id);
       if (response.status == 200) {
         console.log('get ValueLL:::', response.data.data);
-        return response.data.data.doctor_detail;
+        return response.data.data;
       } else {
         return 0;
       }
@@ -218,28 +224,33 @@ const DoctorComponent = ({
             onPress={async () => {
               let allData = await onGetSpecificDoctor(item.id);
               console.log('Get Value Of Doctor::', allData);
-              const [first, last] = allData.doctor_name.split(' ');
-              setEditId(allData?.id);
+              const matchingKey = Object.entries(allData.doctorsDepartments).find(
+                ([key, value]) => value === allData?.doctor_detail?.doctor_department,
+              )?.[0];
+              const [first, last] = allData.doctor_detail.doctor_name.split(' ');
+              setEditId(allData?.doctor_detail?.id);
               setFirstName(first);
               setLastName(last);
-              if (isImageFormat(allData.doctor_image)) {
-                console.log('Get ImageLLLL', parseFileFromUrl(allData.doctor_image));
-                setAvatar(parseFileFromUrl(allData.doctor_image));
+              if (isImageFormat(allData?.doctor_detail?.doctor_image)) {
+                setAvatar(parseFileFromUrl(allData?.doctor_detail?.doctor_image));
               }
-              setGenderType(allData?.gender == 'Female' ? 'female' : 'male');
-              setDateOfBirth(new Date(allData?.date_of_birth));
-              setDoctorContact(allData?.phone);
-              setDoctorEmail(allData?.email);
-              setDescription(allData?.description);
-              setQualification(allData?.qualification);
-              setSpecialist(allData?.specialist);
-              setPractice(allData?.doctor_department);
-              setCharge(`${allData?.appointment_charge}`);
-              setDesignation(allData?.designation);
-              setAddress1(allData?.address1);
-              setAddress2(allData?.address2);
-              setDoctorCity(allData?.city);
-              setDoctorZip(allData?.zip);
+              setGenderType(allData?.doctor_detail?.gender == 'Female' ? 'female' : 'male');
+              setDateOfBirth(new Date(allData?.doctor_detail?.date_of_birth));
+              setDoctorContact(allData?.doctor_detail?.phone);
+              setDoctorEmail(allData?.doctor_detail?.email);
+              setDescription(allData?.doctor_detail?.description);
+              setQualification(allData?.doctor_detail?.qualification);
+              setSpecialist(allData?.doctor_detail?.specialist);
+              setBloodSelected(allData?.doctor_detail?.blood_group);
+              console.log('Get ImageLLLL', matchingKey);
+              setPractice(matchingKey);
+              setDoctorSelectedName(allData?.doctor_detail?.doctor_department);
+              setCharge(`${allData?.doctor_detail?.appointment_charge}`);
+              setDesignation(allData?.doctor_detail?.designation);
+              setAddress1(allData?.doctor_detail?.address1);
+              setAddress2(allData?.doctor_detail?.address2);
+              setDoctorCity(allData?.doctor_detail?.city);
+              setDoctorZip(allData?.doctor_detail?.zip);
               setAddDoctorVisible(true);
             }}>
             <Image
@@ -294,25 +305,25 @@ const DoctorComponent = ({
                 ref={menuRef}
                 onSelect={value => {
                   if (value == 'add') {
-                    // setEditId('');
-                    // setFirstName('');
-                    // setLastName('');
-                    // setGenderType('female');
-                    // setDateOfBirth(new Date());
-                    // setDoctorContact('');
-                    // setDoctorEmail('');
-                    // setDescription('');
-                    // setQualification('');
-                    // setSpecialist('');
-                    // setPractice('');
-                    // setCharge('');
-                    // setDesignation('');
-                    // setAddress1('');
-                    // setAddress2('');
-                    // setDoctorCity('');
-                    // setDoctorZip('');
-                    // setPassword('');
-                    // setConfirmPassword('');
+                    setEditId('');
+                    setFirstName('');
+                    setLastName('');
+                    setGenderType('female');
+                    setDateOfBirth(new Date());
+                    setDoctorContact('');
+                    setDoctorEmail('');
+                    setDescription('');
+                    setQualification('');
+                    setSpecialist('');
+                    setPractice('');
+                    setCharge('');
+                    setDesignation('');
+                    setAddress1('');
+                    setAddress2('');
+                    setDoctorCity('');
+                    setDoctorZip('');
+                    setPassword('');
+                    setConfirmPassword('');
                     setAddDoctorVisible(true);
                   } else {
                     alert(`Selected number: ${value}`);
@@ -426,11 +437,44 @@ const DoctorComponent = ({
             <Text style={styles.dataHistoryText1}>
               Doctor Department:<Text style={styles.dataHistoryText4}>*</Text>
             </Text>
-            <TextInput
-              value={practice}
-              placeholder={'Select Department'}
-              onChangeText={text => setPractice(text)}
-              style={[styles.nameTextView, {width: '100%'}]}
+            <SelectDropdown
+              data={departmentData}
+              onSelect={(selectedItem, index) => {
+                // setSelectedColor(selectedItem);
+                setPractice(selectedItem.id);
+                console.log('gert Value:::', selectedItem);
+              }}
+              defaultValue={doctorSelectedName}
+              renderButton={(selectedItem, isOpen) => {
+                console.log('Get Response>>>', selectedItem);
+                return (
+                  <View style={styles.dropdown2BtnStyle2}>
+                    {practice != '' ? (
+                      <Text style={styles.dropdownItemTxtStyle}>
+                        {practice == selectedItem?.id
+                          ? selectedItem?.title
+                          : doctorSelectedName}
+                      </Text>
+                    ) : (
+                      <Text style={styles.dropdownItemTxtStyle}>
+                        {selectedItem?.title || 'Select'}
+                      </Text>
+                    )}
+                  </View>
+                );
+              }}
+              showsVerticalScrollIndicator={false}
+              renderItem={(item, index, isSelected) => {
+                return (
+                  <TouchableOpacity style={styles.dropdownView}>
+                    <Text style={styles.dropdownItemTxtStyle}>
+                      {item.title}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              }}
+              dropdownIconPosition={'left'}
+              dropdownStyle={styles.dropdown2DropdownStyle}
             />
 
             <Text style={[styles.dataHistoryText1, {marginTop: hp(2)}]}>
@@ -517,11 +561,50 @@ const DoctorComponent = ({
                 <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
                   Blood Group:<Text style={styles.dataHistoryText4}>*</Text>
                 </Text>
-                <TextInput
+                {/* <TextInput
                   value={doctorBlood}
                   placeholder={'Select Blood'}
                   onChangeText={text => setDoctorBlood(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
+                /> */}
+                <SelectDropdown
+                  data={bloodData}
+                  onSelect={(selectedItem, index) => {
+                    // setSelectedColor(selectedItem);
+                    setDoctorBlood(selectedItem.id);
+                    console.log('gert Value:::', selectedItem);
+                  }}
+                  defaultValue={bloodSelected}
+                  renderButton={(selectedItem, isOpen) => {
+                    console.log('Get Response>>>', selectedItem);
+                    return (
+                      <View style={styles.dropdown2BtnStyle2}>
+                        {doctorBlood != '' ? (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {doctorBlood == selectedItem?.id
+                              ? selectedItem?.blood_group
+                              : bloodSelected}
+                          </Text>
+                        ) : (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {selectedItem?.blood_group || 'Select'}
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(item, index, isSelected) => {
+                    return (
+                      <TouchableOpacity style={styles.dropdownView}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {item.blood_group}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                  dropdownIconPosition={'left'}
+                  dropdownStyle={styles.dropdown2DropdownStyle}
                 />
               </View>
 
@@ -1147,5 +1230,34 @@ const styles = StyleSheet.create({
     width: wp(3),
     height: hp(2.5),
     resizeMode: 'contain',
+  },
+  dropdown2DropdownStyle: {
+    backgroundColor: COLORS.white,
+    borderRadius: 4,
+    height: hp(25),
+    // borderRadius: 12,
+  },
+  dropdownItemTxtStyle: {
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    marginLeft: wp(2),
+  },
+  dropdownView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: hp(4),
+    borderBottomWidth: 0,
+  },
+  dropdown2BtnStyle2: {
+    width: '100%',
+    height: hp(4.2),
+    backgroundColor: COLORS.white,
+    borderRadius: 5,
+    alignItems: 'center',
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    marginTop: hp(1),
   },
 });

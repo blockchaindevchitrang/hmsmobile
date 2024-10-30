@@ -47,6 +47,8 @@ import ReportsScreen from './src/screens/ReportsScreen';
 import TransactionsScreen from './src/screens/TransactionsScreen';
 import ForgotPassword from './src/screens/ForgotPassword';
 import FlashMessage from 'react-native-flash-message';
+import {Provider} from 'react-redux';
+import store from './src/redux/store';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -276,45 +278,47 @@ function SettingStack() {
 const App = () => {
   return (
     <MenuProvider>
-      <ThemeProvider>
-        <I18nextProvider i18n={i18n}>
-          <NavigationContainer>
-            <Stack.Navigator initialRouteName="SplashScreen">
-              <Stack.Screen
-                name="SplashScreen"
-                component={SplashScreen}
-                options={{headerShown: false}}
-              />
-              <Stack.Screen
-                name="LoginScreen"
-                component={LoginScreen}
-                options={{headerShown: false}}
-              />
-              <Stack.Screen
-                name="SignupScreen"
-                component={SignupScreen}
-                options={{headerShown: false}}
-              />
-              <Stack.Screen
-                name="TabStack"
-                component={TabStack}
-                options={{headerShown: false}}
-              />
-              <Stack.Screen
-                name="ForgotPassword"
-                component={ForgotPassword}
-                options={{headerShown: false}}
-              />
-              {/* <Stack.Screen
-                name="SettingScreen"
-                component={SettingScreen}
-                options={{headerShown: false}}
-              /> */}
-            </Stack.Navigator>
-            <FlashMessage position={'top'} />
-          </NavigationContainer>
-        </I18nextProvider>
-      </ThemeProvider>
+      <Provider store={store}>
+        <ThemeProvider>
+          <I18nextProvider i18n={i18n}>
+            <NavigationContainer>
+              <Stack.Navigator initialRouteName="SplashScreen">
+                <Stack.Screen
+                  name="SplashScreen"
+                  component={SplashScreen}
+                  options={{headerShown: false}}
+                />
+                <Stack.Screen
+                  name="LoginScreen"
+                  component={LoginScreen}
+                  options={{headerShown: false}}
+                />
+                <Stack.Screen
+                  name="SignupScreen"
+                  component={SignupScreen}
+                  options={{headerShown: false}}
+                />
+                <Stack.Screen
+                  name="TabStack"
+                  component={TabStack}
+                  options={{headerShown: false}}
+                />
+                <Stack.Screen
+                  name="ForgotPassword"
+                  component={ForgotPassword}
+                  options={{headerShown: false}}
+                />
+                {/* <Stack.Screen
+                  name="SettingScreen"
+                  component={SettingScreen}
+                  options={{headerShown: false}}
+                /> */}
+              </Stack.Navigator>
+              <FlashMessage position={'top'} />
+            </NavigationContainer>
+          </I18nextProvider>
+        </ThemeProvider>
+      </Provider>
     </MenuProvider>
   );
 };

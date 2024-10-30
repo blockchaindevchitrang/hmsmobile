@@ -21,16 +21,19 @@ import styles from './styles';
 import Header from '../../components/Header';
 import {onComingDashboardGetApi, onDashboardGetApi} from '../../services/Api';
 import moment from 'moment';
+import ProfilePhoto from '../../components/ProfilePhoto';
+import {useSelector} from 'react-redux';
 
 export const DashboardScreen = ({navigation}) => {
+  const dashboardData = useSelector(state => state.dashboardData);
   const {t} = useTranslation();
   const {theme} = useTheme();
-  const [dashboardData, setDashboardData] = useState([]);
+  // const [dashboardData, setDashboardData] = useState([]);
   const [upcomingDashboardData, setUpcomingDashboardData] = useState([]);
   const [refresh, setRefresh] = useState(false);
 
   useEffect(() => {
-    onGetDashboardData();
+    // onGetDashboardData();
     onUpcomingData();
   }, []);
 
@@ -50,11 +53,11 @@ export const DashboardScreen = ({navigation}) => {
 
   const onUpcomingData = async () => {
     try {
-      const response = await onComingDashboardGetApi('test');
+      const response = await onComingDashboardGetApi('');
       console.log('Get onUpcomingData>>', response);
       if (response.status === 200) {
-        console.log('Get onUpcomingData>>', response.data);
-        setUpcomingDashboardData(response.data);
+        console.log('Get onUpcomingData>>', response.data.data);
+        setUpcomingDashboardData(response.data.data);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -161,7 +164,9 @@ export const DashboardScreen = ({navigation}) => {
             </View>
           </View>
 
-          <View style={[styles.boxView, {backgroundColor: theme.lightColor}]}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('DoctorScreen')}
+            style={[styles.boxView, {backgroundColor: theme.lightColor}]}>
             <View
               style={[styles.roundView, {backgroundColor: theme.headerColor}]}>
               <Image
@@ -177,7 +182,7 @@ export const DashboardScreen = ({navigation}) => {
                 {'Doctors'}
               </Text>
             </View>
-          </View>
+          </TouchableOpacity>
 
           <View style={[styles.boxView, {backgroundColor: theme.lightColor}]}>
             <View
@@ -293,19 +298,53 @@ export const DashboardScreen = ({navigation}) => {
                   DATE
                 </Text>
               </View>
-              <View style={[styles.dataView1]}>
-                <Text style={[styles.dataListText]}>enfshdu</Text>
-                <Text style={[styles.dataListText]}>enfshdu</Text>
-                <View
-                  style={[
-                    styles.dateBox1,
-                    {backgroundColor: theme.lightColor},
-                  ]}>
-                  <Text style={styles.dataListText1} numberOfLines={2}>
-                    22:20:00 2023-05-25
-                  </Text>
+              {upcomingDashboardData?.length > 0 ? (
+                upcomingDashboardData.map(item => {
+                  return (
+                    <View style={[styles.dataView1]}>
+                      <View style={styles.nameDataView}>
+                        <ProfilePhoto username={item.patient_name} />
+                        <View>
+                          <Text style={[styles.dataHistoryText2]}>
+                            {item.patient_name}
+                          </Text>
+                          <Text
+                            numberOfLines={2}
+                            style={[styles.dataHistoryText1]}>
+                            {item.patient_email}
+                          </Text>
+                        </View>
+                      </View>
+                      <View style={styles.nameDataView}>
+                        <ProfilePhoto username={item.doctor_name} />
+                        <View>
+                          <Text style={[styles.dataHistoryText2]}>
+                            {item.doctor_name}
+                          </Text>
+                          <Text
+                            numberOfLines={2}
+                            style={[styles.dataHistoryText1]}>
+                            {item.doctor_email}
+                          </Text>
+                        </View>
+                      </View>
+                      <View
+                        style={[
+                          styles.dateBox1,
+                          {backgroundColor: theme.lightColor},
+                        ]}>
+                        <Text style={styles.dataListText1} numberOfLines={2}>
+                          {moment(new Date(item.date)).format('hh:mm:ss YYYY-MM-DD')}
+                        </Text>
+                      </View>
+                    </View>
+                  );
+                })
+              ) : (
+                <View style={styles.dataFoundView}>
+                  <Text style={styles.dataFoundText}>Data not found</Text>
                 </View>
-              </View>
+              )}
               <View style={styles.buttonView}>
                 <TouchableOpacity style={styles.button}>
                   <Text style={styles.buttonText}>Previous</Text>

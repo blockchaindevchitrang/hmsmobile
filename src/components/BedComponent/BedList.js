@@ -9,6 +9,9 @@ import {
   TextInput,
   FlatList,
   Platform,
+  ActivityIndicator,
+  Modal,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import React, {useRef, useState} from 'react';
 import {
@@ -32,17 +35,26 @@ import {
   MenuOption,
   MenuTrigger,
 } from 'react-native-popup-menu';
+import FlashMessage, {
+  showMessage,
+  hideMessage,
+} from 'react-native-flash-message';
+import {DeletePopup} from './../DeletePopup';
+import close from '../../images/close.png';
+import {onAddBedApi, onDeleteBedApi, onUpdateBedApi} from '../../services/Api';
 
-const BedList = ({searchBreak, setSearchBreak, allData}) => {
+const BedList = ({searchBreak, setSearchBreak, allData, onGetBedTypeData}) => {
   const {theme} = useTheme();
   const menuRef = useRef(null);
   const [newUserVisible, setNewUserVisible] = useState(false);
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [number, setNumber] = useState('');
-  const [genderType, setGenderType] = useState('female');
-  const [status, setStatus] = useState(false);
+  const [eventTitle, setEventTitle] = useState('');
+  const [bedType, setBedType] = useState('');
+  const [bedTypeId, setBedTypeId] = useState('');
+  const [charge, setCharge] = useState('');
+  const [departmentComment, setDepartmentComment] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [deleteUser, setDeleteUser] = useState(false);
+  const [editId, setEditId] = useState('');
 
   const renderItem = ({item, index}) => {
     return (
@@ -57,7 +69,7 @@ const BedList = ({searchBreak, setSearchBreak, allData}) => {
           </View>
         </View>
         <Text style={[styles.dataHistoryText, {width: wp(16)}]}>
-          {item.bed}
+          {item.name}
         </Text>
         <View style={[styles.nameDataView]}>
           <Text style={[styles.dataHistoryText2]}>{item.bed_type}</Text>
@@ -67,7 +79,7 @@ const BedList = ({searchBreak, setSearchBreak, allData}) => {
         </Text>
         <View style={[styles.switchView, {width: wp(24)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataHistoryText1]}>{item.available}</Text>
+            <Text style={[styles.dataHistoryText1]}>{item.availablility}</Text>
           </View>
         </View>
         <View style={styles.actionDataView}>
@@ -88,9 +100,100 @@ const BedList = ({searchBreak, setSearchBreak, allData}) => {
     );
   };
 
+  const onAddBedTypeData = async () => {
+    try {
+      setIsLoading(true);
+      const response = await onAddBedApi(
+        eventTitle,
+        charge,
+        bedTypeId,
+        departmentComment,
+      );
+      if (response.status == 200) {
+        onGetBedTypeData();
+        setIsLoading(false);
+        setNewUserVisible(false);
+        showMessage({
+          message: 'Record Added Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      }
+    } catch (err) {
+      setIsLoading(false);
+      showMessage({
+        message: 'Please enter properly details.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Get Error:', err);
+    }
+  };
+
+  const onEditBedTypeData = async () => {
+    try {
+      setIsLoading(true);
+      const response = await onUpdateBedApi(
+        editId,
+        eventTitle,
+        charge,
+        bedTypeId,
+        departmentComment,
+      );
+      if (response.status == 200) {
+        onGetBedTypeData();
+        setIsLoading(false);
+        setNewUserVisible(false);
+        showMessage({
+          message: 'Record Added Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      }
+    } catch (err) {
+      setIsLoading(false);
+      showMessage({
+        message: 'Please enter properly details.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Get Error:', err.response.data);
+    }
+  };
+
+  const onDeleteBedTypeData = async id => {
+    try {
+      setIsLoading(true);
+      const response = await onDeleteBedApi(id);
+      if (response.status == 200) {
+        onGetBedTypeData();
+        setIsLoading(false);
+        setDeleteUser(false);
+        showMessage({
+          message: 'Record Delete Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      }
+    } catch (err) {
+      setIsLoading(false);
+      setDeleteUser(false);
+      showMessage({
+        message: 'Something want wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Get Error:', err);
+    }
+  };
+
   return (
-    <View style={styles.safeAreaStyle}>
-      {!newUserVisible ? (
+    <>
+      <View style={styles.safeAreaStyle}>
+        {/* {!newUserVisible ? ( */}
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{paddingBottom: hp(12)}}>
@@ -128,7 +231,7 @@ const BedList = ({searchBreak, setSearchBreak, allData}) => {
               <MenuTrigger text={''} />
               <MenuOptions style={{marginVertical: hp(0.5)}}>
                 <MenuOption value={'add'}>
-                  <Text style={styles.dataHistoryText3}>New Payment</Text>
+                  <Text style={styles.dataHistoryText3}>New Bed</Text>
                 </MenuOption>
                 <MenuOption value={'excel'}>
                   <Text style={styles.dataHistoryText3}>Export to Excel</Text>
@@ -190,140 +293,220 @@ const BedList = ({searchBreak, setSearchBreak, allData}) => {
             </ScrollView>
           </View>
         </ScrollView>
-      ) : (
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{paddingBottom: hp(12)}}>
-          <View style={styles.subView}>
-            <Text style={[styles.doctorText, {color: theme.text}]}>
-              Payments Account
-            </Text>
-            <View style={styles.filterView}>
-              <TouchableOpacity
-                onPress={() => setNewUserVisible(false)}
-                style={styles.backButtonView}>
-                <Text style={styles.backText}>BACK</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          <View style={styles.profileView}>
-            <View style={styles.nameView}>
-              <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>FIRST NAME</Text>
-                <TextInput
-                  value={firstName}
-                  placeholder={'Enter first name'}
-                  onChangeText={text => setFirstName(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-
-              <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>LAST NAME</Text>
-                <TextInput
-                  value={lastName}
-                  placeholder={'Enter last name'}
-                  onChangeText={text => setLastName(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
+        {/* ) : (
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{paddingBottom: hp(12)}}>
+            <View style={styles.subView}>
+              <Text style={[styles.doctorText, {color: theme.text}]}>
+                Payments Account
+              </Text>
+              <View style={styles.filterView}>
+                <TouchableOpacity
+                  onPress={() => setNewUserVisible(false)}
+                  style={styles.backButtonView}>
+                  <Text style={styles.backText}>BACK</Text>
+                </TouchableOpacity>
               </View>
             </View>
 
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>EMAIL ADDRESS</Text>
-                <TextInput
-                  value={email}
-                  placeholder={'Enter email'}
-                  onChangeText={text => setEmail(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>Phone:</Text>
-                <TextInput
-                  value={number}
-                  placeholder={'9903618823'}
-                  onChangeText={text => setNumber(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>GENDER</Text>
-                <View style={[styles.statusView, {paddingVertical: hp(1)}]}>
-                  <View style={[styles.optionView]}>
-                    <TouchableOpacity
-                      onPress={() => setGenderType('female')}
-                      style={[
-                        styles.roundBorder,
-                        {
-                          backgroundColor:
-                            genderType == 'female'
-                              ? COLORS.blueColor
-                              : COLORS.white,
-                          borderWidth: genderType == 'female' ? 0 : 0.5,
-                        },
-                      ]}>
-                      <View style={styles.round} />
-                    </TouchableOpacity>
-                    <Text style={styles.statusText}>Female</Text>
-                  </View>
-                  <View style={[styles.optionView]}>
-                    <TouchableOpacity
-                      onPress={() => setGenderType('male')}
-                      style={[
-                        styles.roundBorder,
-                        {
-                          backgroundColor:
-                            genderType == 'male'
-                              ? COLORS.blueColor
-                              : COLORS.white,
-                          borderWidth: genderType == 'male' ? 0 : 0.5,
-                        },
-                      ]}>
-                      <View style={styles.round} />
-                    </TouchableOpacity>
-                    <Text style={styles.statusText}>Male</Text>
-                  </View>
+            <View style={styles.profileView}>
+              <View style={styles.nameView}>
+                <View style={{width: '48%'}}>
+                  <Text style={styles.dataHistoryText1}>FIRST NAME</Text>
+                  <TextInput
+                    value={firstName}
+                    placeholder={'Enter first name'}
+                    onChangeText={text => setFirstName(text)}
+                    style={[styles.nameTextView, {width: '100%'}]}
+                  />
                 </View>
-              </View>
 
-              <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>STATUS</Text>
-                <View style={styles.statusView}>
-                  <Switch
-                    trackColor={{
-                      false: status ? COLORS.greenColor : COLORS.errorColor,
-                      true: status ? COLORS.greenColor : COLORS.errorColor,
-                    }}
-                    thumbColor={status ? '#f4f3f4' : '#f4f3f4'}
-                    ios_backgroundColor={COLORS.errorColor}
-                    onValueChange={() => setStatus(!status)}
-                    value={status}
+                <View style={{width: '48%'}}>
+                  <Text style={styles.dataHistoryText1}>LAST NAME</Text>
+                  <TextInput
+                    value={lastName}
+                    placeholder={'Enter last name'}
+                    onChangeText={text => setLastName(text)}
+                    style={[styles.nameTextView, {width: '100%'}]}
                   />
                 </View>
               </View>
+
+              <View style={styles.nameView}>
+                <View style={{width: '100%'}}>
+                  <Text style={styles.dataHistoryText1}>EMAIL ADDRESS</Text>
+                  <TextInput
+                    value={email}
+                    placeholder={'Enter email'}
+                    onChangeText={text => setEmail(text)}
+                    style={[styles.nameTextView, {width: '100%'}]}
+                  />
+                </View>
+              </View>
+
+              <View style={styles.nameView}>
+                <View style={{width: '100%'}}>
+                  <Text style={styles.dataHistoryText1}>Phone:</Text>
+                  <TextInput
+                    value={number}
+                    placeholder={'9903618823'}
+                    onChangeText={text => setNumber(text)}
+                    style={[styles.nameTextView, {width: '100%'}]}
+                  />
+                </View>
+              </View>
+
+              <View style={styles.nameView}>
+                <View style={{width: '48%'}}>
+                  <Text style={styles.dataHistoryText1}>GENDER</Text>
+                  <View style={[styles.statusView, {paddingVertical: hp(1)}]}>
+                    <View style={[styles.optionView]}>
+                      <TouchableOpacity
+                        onPress={() => setGenderType('female')}
+                        style={[
+                          styles.roundBorder,
+                          {
+                            backgroundColor:
+                              genderType == 'female'
+                                ? COLORS.blueColor
+                                : COLORS.white,
+                            borderWidth: genderType == 'female' ? 0 : 0.5,
+                          },
+                        ]}>
+                        <View style={styles.round} />
+                      </TouchableOpacity>
+                      <Text style={styles.statusText}>Female</Text>
+                    </View>
+                    <View style={[styles.optionView]}>
+                      <TouchableOpacity
+                        onPress={() => setGenderType('male')}
+                        style={[
+                          styles.roundBorder,
+                          {
+                            backgroundColor:
+                              genderType == 'male'
+                                ? COLORS.blueColor
+                                : COLORS.white,
+                            borderWidth: genderType == 'male' ? 0 : 0.5,
+                          },
+                        ]}>
+                        <View style={styles.round} />
+                      </TouchableOpacity>
+                      <Text style={styles.statusText}>Male</Text>
+                    </View>
+                  </View>
+                </View>
+
+                <View style={{width: '48%'}}>
+                  <Text style={styles.dataHistoryText1}>STATUS</Text>
+                  <View style={styles.statusView}>
+                    <Switch
+                      trackColor={{
+                        false: status ? COLORS.greenColor : COLORS.errorColor,
+                        true: status ? COLORS.greenColor : COLORS.errorColor,
+                      }}
+                      thumbColor={status ? '#f4f3f4' : '#f4f3f4'}
+                      ios_backgroundColor={COLORS.errorColor}
+                      onValueChange={() => setStatus(!status)}
+                      value={status}
+                    />
+                  </View>
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.buttonView}>
+              <TouchableOpacity onPress={() => {}} style={styles.nextView}>
+                <Text style={styles.nextText}>Save</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => {}} style={styles.prevView}>
+                <Text style={styles.prevText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        )} */}
+      </View>
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={newUserVisible}
+        onRequestClose={() => setNewUserVisible(false)}>
+        <View style={styles.maneModalView}>
+          <TouchableWithoutFeedback
+            onPress={() => {
+              setNewUserVisible(false);
+            }}>
+            <View style={styles.modalOverlay} />
+          </TouchableWithoutFeedback>
+          <View style={styles.container}>
+            <View style={styles.headerView}>
+              <Text style={styles.headerText}>New Bed</Text>
+              <TouchableOpacity onPress={() => setNewUserVisible(false)}>
+                <Image style={styles.closeImage} source={close} />
+              </TouchableOpacity>
+            </View>
+            <Text style={styles.modalTitleText}>Bed</Text>
+            <TextInput
+              value={eventTitle}
+              placeholder={'Event title'}
+              onChangeText={text => setEventTitle(text)}
+              style={[styles.eventTextInput]}
+            />
+            <Text style={styles.modalTitleText}>Bed Type</Text>
+            <TextInput
+              value={eventTitle}
+              placeholder={'Event title'}
+              onChangeText={text => setEventTitle(text)}
+              style={[styles.eventTextInput]}
+            />
+            <Text style={styles.modalTitleText}>Charge</Text>
+            <TextInput
+              value={charge}
+              placeholder={'Charge'}
+              onChangeText={text => setCharge(text)}
+              style={[styles.eventTextInput]}
+            />
+            <Text style={styles.modalTitleText}>Description</Text>
+            <TextInput
+              value={departmentComment}
+              placeholder={'Leave a comment...'}
+              onChangeText={text => setDepartmentComment(text)}
+              style={[styles.commentTextInput]}
+              multiline
+              textAlignVertical="top"
+            />
+            <View style={styles.buttonView}>
+              <TouchableOpacity
+                onPress={
+                  editId != ''
+                    ? () => onEditBedTypeData(editId)
+                    : () => onAddBedTypeData()
+                }
+                style={styles.nextView}>
+                {isLoading ? (
+                  <ActivityIndicator size={'small'} color={COLORS.white} />
+                ) : (
+                  <Text style={styles.nextText}>Save</Text>
+                )}
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setNewUserVisible(false)}
+                style={styles.prevView}>
+                <Text style={styles.prevText}>Cancel</Text>
+              </TouchableOpacity>
             </View>
           </View>
-
-          <View style={styles.buttonView}>
-            <TouchableOpacity onPress={() => {}} style={styles.nextView}>
-              <Text style={styles.nextText}>Save</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => {}} style={styles.prevView}>
-              <Text style={styles.prevText}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      )}
-    </View>
+        </View>
+      </Modal>
+      <DeletePopup
+        modelVisible={deleteUser}
+        setModelVisible={setDeleteUser}
+        onPress={() => onDeleteBedTypeData(editId)}
+        setUserId={setEditId}
+        isLoading={isLoading}
+      />
+    </>
   );
 };
 
@@ -441,6 +624,13 @@ const styles = StyleSheet.create({
     fontSize: hp(1.7),
     fontFamily: Fonts.FONTS.PoppinsBold,
     color: COLORS.black,
+  },
+  modalTitleText: {
+    fontSize: hp(1.8),
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    color: COLORS.black,
+    marginVertical: hp(1),
+    marginHorizontal: wp(3),
   },
   dataHistoryText2: {
     fontSize: hp(1.8),
@@ -690,6 +880,70 @@ const styles = StyleSheet.create({
     width: wp(3),
     height: hp(2.5),
     resizeMode: 'contain',
+  },
+  container: {
+    width: '94%',
+    // height: hp(22),
+    paddingVertical: hp(2),
+    backgroundColor: COLORS.white,
+    borderRadius: 10,
+    // marginLeft: -wp(2.5),
+    // paddingTop: hp(3),
+  },
+  modalOverlay: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+  },
+  maneModalView: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    height: '100%',
+  },
+  headerView: {
+    width: '96%',
+    alignSelf: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginVertical: hp(1),
+    paddingHorizontal: wp(2),
+  },
+  headerText: {
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    fontSize: hp(2.2),
+    color: COLORS.black,
+  },
+  eventTextInput: {
+    width: '92%',
+    paddingHorizontal: wp(3),
+    paddingVertical: hp(1),
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(2),
+    color: COLORS.black,
+    borderRadius: 5,
+    alignSelf: 'center',
+    marginBottom: hp(2),
+  },
+  commentTextInput: {
+    width: '92%',
+    paddingHorizontal: wp(3),
+    paddingVertical: hp(1),
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(2),
+    color: COLORS.black,
+    borderRadius: 5,
+    alignSelf: 'center',
+    height: hp(14),
+    marginBottom: hp(2),
   },
   ListEmptyView: {
     width: '100%',

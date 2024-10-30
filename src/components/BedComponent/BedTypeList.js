@@ -11,6 +11,7 @@ import {
   Platform,
   Modal,
   TouchableWithoutFeedback,
+  ActivityIndicator,
 } from 'react-native';
 import React, {useRef, useState} from 'react';
 import {
@@ -23,27 +24,115 @@ import ProfilePhoto from '../ProfilePhoto';
 import moment from 'moment';
 import deleteIcon from '../../images/delete.png';
 import editing from '../../images/editing.png';
-import filter from '../../images/filter.png';
-import man from '../../images/man.png';
-import draw from '../../images/draw.png';
-import DatePicker from 'react-native-date-picker';
-import ImagePicker from 'react-native-image-crop-picker';
-import {
-  Menu,
-  MenuOptions,
-  MenuOption,
-  MenuTrigger,
-} from 'react-native-popup-menu';
+import FlashMessage, {
+  showMessage,
+  hideMessage,
+} from 'react-native-flash-message';
 import close from '../../images/close.png';
+import {DeletePopup} from './../DeletePopup';
+import {
+  onAddBedTypeApi,
+  onDeleteBedTypeApi,
+  onUpdateBedTypeApi,
+} from '../../services/Api';
 
-const BedTypeList = ({searchBreak, setSearchBreak, allData}) => {
+const BedTypeList = ({
+  searchBreak,
+  setSearchBreak,
+  allData,
+  onGetBedTypeData,
+}) => {
   const {theme} = useTheme();
   const menuRef = useRef(null);
   const [newAccountVisible, setNewAccountVisible] = useState(false);
   const [eventTitle, setEventTitle] = useState('');
   const [departmentComment, setDepartmentComment] = useState('');
-  const [statusVisible, setStatusVisible] = useState(false);
-  const [departmentType, setDepartmentType] = useState('debit');
+  const [isLoading, setIsLoading] = useState(false);
+  const [deleteUser, setDeleteUser] = useState(false);
+  const [editId, setEditId] = useState('');
+
+  const onAddBedTypeData = async () => {
+    try {
+      setIsLoading(true);
+      const response = await onAddBedTypeApi(eventTitle, departmentComment);
+      if (response.status == 200) {
+        onGetBedTypeData();
+        setIsLoading(false);
+        setNewAccountVisible(false);
+        showMessage({
+          message: 'Record Added Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      }
+    } catch (err) {
+      setIsLoading(false);
+      showMessage({
+        message: 'Please enter properly details.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Get Error:', err);
+    }
+  };
+
+  const onEditBedTypeData = async () => {
+    try {
+      setIsLoading(true);
+      const response = await onUpdateBedTypeApi(
+        editId,
+        eventTitle,
+        departmentComment,
+      );
+      if (response.status == 200) {
+        onGetBedTypeData();
+        setIsLoading(false);
+        setNewAccountVisible(false);
+        showMessage({
+          message: 'Record Added Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      }
+    } catch (err) {
+      setIsLoading(false);
+      showMessage({
+        message: 'Please enter properly details.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Get Error:', err.response.data);
+    }
+  };
+
+  const onDeleteBedTypeData = async id => {
+    try {
+      setIsLoading(true);
+      const response = await onDeleteBedTypeApi(id);
+      if (response.status == 200) {
+        onGetBedTypeData();
+        setIsLoading(false);
+        setDeleteUser(false);
+        showMessage({
+          message: 'Record Delete Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      }
+    } catch (err) {
+      setIsLoading(false);
+      setDeleteUser(false);
+      showMessage({
+        message: 'Something want wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Get Error:', err);
+    }
+  };
 
   const renderItem = ({item, index}) => {
     return (
@@ -53,17 +142,28 @@ const BedTypeList = ({searchBreak, setSearchBreak, allData}) => {
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
         <View style={[styles.nameDataView]}>
-          <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
+          <Text style={[styles.dataHistoryText2]}>{item.title}</Text>
         </View>
 
         <View style={styles.actionDataView}>
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              setEventTitle(item.title);
+              setDepartmentComment(item.description);
+              setEditId(item.id);
+              setNewAccountVisible(true);
+            }}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.blueColor}]}
               source={editing}
             />
           </TouchableOpacity>
-          <TouchableOpacity style={{marginLeft: wp(2)}}>
+          <TouchableOpacity
+            style={{marginLeft: wp(2)}}
+            onPress={() => {
+              setEditId(item.id);
+              setDeleteUser(true);
+            }}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.errorColor}]}
               source={deleteIcon}
@@ -90,7 +190,12 @@ const BedTypeList = ({searchBreak, setSearchBreak, allData}) => {
             />
             <View style={styles.filterView}>
               <TouchableOpacity
-                onPress={() => setNewAccountVisible(true)}
+                onPress={() => {
+                  setEditId('');
+                  setEventTitle('');
+                  setDepartmentComment('');
+                  setNewAccountVisible(true);
+                }}
                 style={styles.actionView}>
                 <Text style={styles.actionText}>New Bed Type</Text>
               </TouchableOpacity>
@@ -164,7 +269,7 @@ const BedTypeList = ({searchBreak, setSearchBreak, allData}) => {
               textAlignVertical="top"
             />
 
-            <View style={styles.statusView}>
+            {/* <View style={styles.statusView}>
               <Text style={styles.statusText}>Status: </Text>
               <Switch
                 trackColor={{
@@ -213,10 +318,20 @@ const BedTypeList = ({searchBreak, setSearchBreak, allData}) => {
                 </TouchableOpacity>
                 <Text style={styles.statusText}>Credit</Text>
               </View>
-            </View>
+            </View> */}
             <View style={styles.buttonView}>
-              <TouchableOpacity onPress={() => {}} style={styles.nextView}>
-                <Text style={styles.nextText}>Save</Text>
+              <TouchableOpacity
+                onPress={
+                  editId != ''
+                    ? () => onEditBedTypeData(editId)
+                    : () => onAddBedTypeData()
+                }
+                style={styles.nextView}>
+                {isLoading ? (
+                  <ActivityIndicator size={'small'} color={COLORS.white} />
+                ) : (
+                  <Text style={styles.nextText}>Save</Text>
+                )}
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => setNewAccountVisible(false)}
@@ -227,6 +342,13 @@ const BedTypeList = ({searchBreak, setSearchBreak, allData}) => {
           </View>
         </View>
       </Modal>
+      <DeletePopup
+        modelVisible={deleteUser}
+        setModelVisible={setDeleteUser}
+        onPress={() => onDeleteBedTypeData(editId)}
+        setUserId={setEditId}
+        isLoading={isLoading}
+      />
     </>
   );
 };

@@ -290,7 +290,7 @@ export const UsersScreen = ({navigation}) => {
   const [index, setIndex] = React.useState(0);
   const [routes] = React.useState([
     {key: 'user', title: 'Users'},
-    {key: 'role', title: 'Role'},
+    // {key: 'role', title: 'Role'},
     {key: 'accountant', title: 'Accountants'},
     {key: 'nurses', title: 'Nurses'},
     {key: 'receptionists', title: 'Receptionists'},
@@ -430,10 +430,10 @@ export const UsersScreen = ({navigation}) => {
   }, []);
 
   const animations = useRef(
-    [0, 0, 0, 0, 0, 0, 0, 0].map(() => new Animated.Value(300)),
+    [0, 0, 0, 0, 0, 0, 0].map(() => new Animated.Value(300)),
   ).current;
   const opacities = useRef(
-    [0, 0, 0, 0, 0, 0, 0, 0].map(() => new Animated.Value(0)),
+    [0, 0, 0, 0, 0, 0, 0].map(() => new Animated.Value(0)),
   ).current;
 
   const toggleMenu = open => {
@@ -574,12 +574,6 @@ export const UsersScreen = ({navigation}) => {
             setSearchBreak={setSearchUser}
             allData={userData}
           />
-        ) : selectedView == 'Role' ? (
-          <RoleList
-            searchBreak={searchAccountant}
-            setSearchBreak={setSearchAccountant}
-            allData={roleData}
-          />
         ) : selectedView == 'Accountant' ? (
           <AccountantList
             searchBreak={searchAccountant}
@@ -632,7 +626,6 @@ export const UsersScreen = ({navigation}) => {
             {[
               'Logo',
               'Users',
-              'Role',
               'Accountant',
               'Nurses',
               'Receptionists',
@@ -688,3 +681,10 @@ export const UsersScreen = ({navigation}) => {
 };
 
 export default UsersScreen;
+
+//  {/* ) : selectedView == 'Role' ? (
+//           <RoleList
+//             searchBreak={searchAccountant}
+//             setSearchBreak={setSearchAccountant}
+//             allData={roleData}
+//           /> */}

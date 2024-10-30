@@ -16,46 +16,42 @@ import {
 } from './Pixel/index';
 import {COLORS, Fonts} from '../utils';
 import {useTheme} from '../utils/ThemeProvider';
-import filter from '../images/filter.png';
 import ProfilePhoto from './ProfilePhoto';
 import deleteIcon from '../images/delete.png';
-import editing from '../images/editing.png';
-import close from '../images/close.png';
-import calendar from '../images/calendar.png';
-import CalendarPicker from 'react-native-calendar-picker';
 import moment from 'moment';
+import {useSelector} from 'react-redux';
+import SelectDropdown from 'react-native-select-dropdown';
+import DatePicker from 'react-native-date-picker';
+import {DeletePopup} from './DeletePopup';
+import {onAddDoctorBreakApi, onDeleteBreakApi} from '../services/Api';
+import FlashMessage, {
+  showMessage,
+  hideMessage,
+} from 'react-native-flash-message';
 
 const BreakComponent = ({
   searchBreak,
   setSearchBreak,
   allData,
-  doctorBreakName,
-  setDoctorBreakName,
+  onGetDoctorBreakData,
 }) => {
+  const doctorData = useSelector(state => state.doctorData);
   const {theme} = useTheme();
   const menuRef = useRef(null);
   const [addDoctorVisible, setAddHolidayVisible] = useState(false);
-  const [holidayStartDate, setHolidayStartDate] = useState(null);
-  const [holidayEndDate, setHolidayEndDate] = useState(null);
-  const [calenderVisible, setCalenderVisible] = useState(false);
-  const [fromTime, setFromTime] = useState('');
-  const [toTime, setToTime] = useState('');
+  const [fromTime, setFromTime] = useState(new Date());
+  const [toTime, setToTime] = useState(new Date());
   const [breakType, setBreakType] = useState('every');
-
-  const onCloseDate = () => {
-    setHolidayStartDate(null);
-    setHolidayEndDate(null);
-  };
-
-  const onDateChange = async (date, type) => {
-    if (type === 'END_DATE') {
-      setHolidayEndDate(date);
-      setCalenderVisible(false);
-    } else {
-      setHolidayStartDate(date);
-      setHolidayEndDate(null);
-    }
-  };
+  const [isLoading, setIsLoading] = useState(false);
+  const [doctorBreakName, setDoctorBreakName] = useState('');
+  const [doctorSelectedName, setDoctorSelectedName] = useState('');
+  const [refresh, setRefresh] = useState(false);
+  const [deleteUser, setDeleteUser] = useState(false);
+  const [editId, setEditId] = useState('');
+  const [fromDateVisible, setFromDateVisible] = useState(false);
+  const [singleDateVisible, setSingleDateVisible] = useState(false);
+  const [toDateVisible, setToDateVisible] = useState(false);
+  const [singleDate, setSingleDate] = useState(new Date());
 
   const renderItem = ({item, index}) => {
     return (
@@ -68,28 +64,32 @@ const BreakComponent = ({
           <ProfilePhoto username={item.name} />
           <View>
             <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
-            <Text style={[styles.dataHistoryText1]}>{item.mail}</Text>
+            <Text style={[styles.dataHistoryText1]}>{item.email}</Text>
           </View>
         </View>
         <View style={[styles.switchView]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataListText1]}>{item.specialist}</Text>
+            <Text style={[styles.dataListText1]}>{item.break_from}</Text>
           </View>
         </View>
         <View style={[styles.switchView]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataListText1]}>{item.qualification}</Text>
+            <Text style={[styles.dataListText1]}>{item.break_to}</Text>
           </View>
         </View>
         <View style={[styles.switchView]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.purpleColor}]}>
             <Text style={styles.dataListText1} numberOfLines={2}>
-              {item.status}
+              {item.date}
             </Text>
           </View>
         </View>
         <View style={styles.actionDataView}>
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              setEditId(item.id);
+              setDeleteUser(true);
+            }}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.errorColor}]}
               source={deleteIcon}
@@ -100,56 +100,73 @@ const BreakComponent = ({
     );
   };
 
+  const onAddDoctorBreakData = async () => {
+    try {
+      setIsLoading(true);
+      const response = await onAddDoctorBreakApi(
+        doctorBreakName,
+        moment(fromTime).format('hh:mm:ss'),
+        moment(toTime).format('hh:mm:ss'),
+        breakType,
+        moment(singleDate).format('YYYY-MM-DD'),
+      );
+      if (response.status == 200) {
+        onGetDoctorBreakData();
+        setIsLoading(false);
+        setAddHolidayVisible(false);
+        showMessage({
+          message: 'Record Added Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      setIsLoading(false);
+      showMessage({
+        message: 'Please enter properly details.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Get Error:', err.response.data);
+    }
+  };
+
+  const onDeleteBreakData = async id => {
+    try {
+      setIsLoading(true);
+      const response = await onDeleteBreakApi(id);
+      if (response.status == 200) {
+        onGetDoctorBreakData();
+        setIsLoading(false);
+        setDeleteUser(false);
+        showMessage({
+          message: 'Record Delete Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      setIsLoading(false);
+      setDeleteUser(false);
+      showMessage({
+        message: 'Something want wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Get Error:', err);
+    }
+  };
+
   return (
     <View style={styles.safeAreaStyle}>
       {!addDoctorVisible ? (
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{paddingBottom: hp(12)}}>
-          <View
-            style={[styles.subView, {marginVertical: hp(0), marginTop: hp(2)}]}>
-            <View style={styles.fullDateView}>
-              <TouchableOpacity
-                style={styles.dateView}
-                onPress={() => setCalenderVisible(true)}>
-                <Text style={styles.startDateText}>
-                  {holidayStartDate == null
-                    ? 'Start date'
-                    : moment(holidayStartDate).format('YYYY-MM-DD')}
-                </Text>
-                <Text style={styles.startDateText}>{'->'}</Text>
-                <View style={styles.calenderImage}>
-                  <Text style={styles.startDateText}>
-                    {holidayEndDate == null
-                      ? 'End date'
-                      : moment(holidayEndDate).format('YYYY-MM-DD')}
-                  </Text>
-                  {holidayStartDate == null && holidayEndDate == null ? (
-                    <Image source={calendar} style={styles.closeImage} />
-                  ) : (
-                    <TouchableOpacity onPress={() => onCloseDate()}>
-                      <Image source={close} style={styles.closeImage} />
-                    </TouchableOpacity>
-                  )}
-                </View>
-              </TouchableOpacity>
-            </View>
-            {calenderVisible && (
-              <View style={styles.calenderView}>
-                <CalendarPicker
-                  startFromMonday={true}
-                  allowRangeSelection={true}
-                  minDate={new Date(2017, 6, 3)}
-                  maxDate={new Date()}
-                  todayBackgroundColor="#f2e6ff"
-                  selectedDayColor="#7300e6"
-                  selectedDayTextColor="#FFFFFF"
-                  onDateChange={onDateChange}
-                />
-              </View>
-            )}
-          </View>
-
           <View style={styles.subView}>
             <TextInput
               value={searchBreak}
@@ -160,7 +177,13 @@ const BreakComponent = ({
             />
             <View style={styles.filterView}>
               <TouchableOpacity
-                onPress={() => setAddHolidayVisible(true)}
+                onPress={() => {
+                  setDoctorBreakName('');
+                  setFromTime(new Date());
+                  setToTime(new Date());
+                  setBreakType('every');
+                  setAddHolidayVisible(true);
+                }}
                 style={styles.actionView}>
                 <Text style={styles.actionText}>Add Breaks</Text>
               </TouchableOpacity>
@@ -234,11 +257,44 @@ const BreakComponent = ({
               <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
                 Doctor:<Text style={styles.dataHistoryText4}>*</Text>
               </Text>
-              <TextInput
-                value={doctorBreakName}
-                placeholder={'Select'}
-                onChangeText={text => setDoctorBreakName(text)}
-                style={[styles.nameTextView, {width: '100%'}]}
+              <SelectDropdown
+                data={doctorData}
+                onSelect={(selectedItem, index) => {
+                  // setSelectedColor(selectedItem);
+                  setDoctorBreakName(selectedItem.id);
+                  console.log('gert Value:::', selectedItem);
+                }}
+                defaultValue={doctorSelectedName}
+                renderButton={(selectedItem, isOpen) => {
+                  console.log('Get Response>>>', selectedItem);
+                  return (
+                    <View style={styles.dropdown2BtnStyle2}>
+                      {doctorBreakName != '' ? (
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {doctorBreakName == selectedItem?.id
+                            ? selectedItem?.name
+                            : doctorSelectedName}
+                        </Text>
+                      ) : (
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {selectedItem?.name || 'Select'}
+                        </Text>
+                      )}
+                    </View>
+                  );
+                }}
+                showsVerticalScrollIndicator={false}
+                renderItem={(item, index, isSelected) => {
+                  return (
+                    <TouchableOpacity style={styles.dropdownView}>
+                      <Text style={styles.dropdownItemTxtStyle}>
+                        {item.name}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                }}
+                dropdownIconPosition={'left'}
+                dropdownStyle={styles.dropdown2DropdownStyle}
               />
             </View>
 
@@ -280,11 +336,29 @@ const BreakComponent = ({
               <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
                 FROM:
               </Text>
-              <TextInput
-                value={fromTime}
-                placeholder={'--:-- --'}
-                onChangeText={text => setFromTime(text)}
-                style={[styles.nameTextView, {width: '100%'}]}
+              <Text
+                style={[
+                  styles.nameTextView,
+                  {width: '100%', paddingVertical: hp(1)},
+                ]}
+                onPress={() => setFromDateVisible(!fromDateVisible)}>
+                {fromTime == new Date()
+                  ? '--:--:--'
+                  : moment(fromTime).format('hh:mm:ss')}
+              </Text>
+              <DatePicker
+                open={fromDateVisible}
+                modal={true}
+                date={fromTime}
+                mode={'time'}
+                onConfirm={date => {
+                  console.log('Console Log>>', date);
+                  setFromDateVisible(false);
+                  setFromTime(date);
+                }}
+                onCancel={() => {
+                  setFromDateVisible(false);
+                }}
               />
             </View>
 
@@ -292,24 +366,86 @@ const BreakComponent = ({
               <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
                 TO:
               </Text>
-              <TextInput
-                value={toTime}
-                placeholder={'--:-- --'}
-                onChangeText={text => setToTime(text)}
-                style={[styles.nameTextView, {width: '100%'}]}
+              <Text
+                style={[
+                  styles.nameTextView,
+                  {width: '100%', paddingVertical: hp(1)},
+                ]}
+                onPress={() => setToDateVisible(!toDateVisible)}>
+                {toTime == new Date()
+                  ? '--:--:--'
+                  : moment(toTime).format('hh:mm:ss')}
+              </Text>
+              <DatePicker
+                open={toDateVisible}
+                modal={true}
+                date={toTime}
+                mode={'time'}
+                onConfirm={date => {
+                  console.log('Console Log>>', date);
+                  setToDateVisible(false);
+                  setToTime(date);
+                }}
+                onCancel={() => {
+                  setToDateVisible(false);
+                }}
               />
             </View>
           </View>
+          {breakType == 'single' && (
+            <View style={styles.nameView}>
+              <View style={{width: '100%'}}>
+                <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
+                  Date:
+                </Text>
+                <Text
+                  style={[
+                    styles.nameTextView,
+                    {width: '100%', paddingVertical: hp(1)},
+                  ]}
+                  onPress={() => setSingleDateVisible(!singleDateVisible)}>
+                  {singleDate == new Date()
+                    ? 'Date'
+                    : moment(singleDate).format('YYYY-MM-DD')}
+                </Text>
+                <DatePicker
+                  open={singleDateVisible}
+                  modal={true}
+                  date={singleDate}
+                  mode={'time'}
+                  onConfirm={date => {
+                    console.log('Console Log>>', date);
+                    setSingleDateVisible(false);
+                    setSingleDate(date);
+                  }}
+                  onCancel={() => {
+                    setSingleDateVisible(false);
+                  }}
+                />
+              </View>
+            </View>
+          )}
           <View style={styles.buttonView}>
-            <TouchableOpacity onPress={() => {}} style={styles.nextView}>
+            <TouchableOpacity
+              onPress={() => onAddDoctorBreakData()}
+              style={styles.nextView}>
               <Text style={styles.nextText}>Save</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => {}} style={styles.prevView}>
+            <TouchableOpacity
+              onPress={() => setAddHolidayVisible(false)}
+              style={styles.prevView}>
               <Text style={styles.prevText}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
       )}
+      <DeletePopup
+        modelVisible={deleteUser}
+        setModelVisible={setDeleteUser}
+        onPress={() => onDeleteBreakData(editId)}
+        setUserId={setEditId}
+        isLoading={isLoading}
+      />
     </View>
   );
 };
@@ -654,5 +790,34 @@ const styles = StyleSheet.create({
     fontSize: hp(2.5),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
+  },
+  dropdown2DropdownStyle: {
+    backgroundColor: COLORS.white,
+    borderRadius: 4,
+    height: hp(25),
+    // borderRadius: 12,
+  },
+  dropdownItemTxtStyle: {
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    marginLeft: wp(2),
+  },
+  dropdownView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: hp(4),
+    borderBottomWidth: 0,
+  },
+  dropdown2BtnStyle2: {
+    width: wp(37),
+    height: hp(4.2),
+    backgroundColor: COLORS.white,
+    borderRadius: 5,
+    alignItems: 'center',
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    marginTop: hp(1),
   },
 });

@@ -31,12 +31,17 @@ import headerLogo from '../../images/headerLogo.png';
 import {
   onAddDoctorApi,
   onAddDoctorDepartmentApi,
+  onAddDoctorHolidayApi,
   onDeleteDepartmentApi,
   onDeleteDoctorApi,
+  onDeleteHolidayApi,
   onGetDoctorApi,
+  onGetDoctorBreakApi,
   onGetDoctorDepartmentApi,
+  onGetDoctorHolidayApi,
   onUpdateDoctorApi,
   onUpdateDoctorDepartmentApi,
+  onUpdateDoctorHolidayApi,
 } from '../../services/Api';
 import FlashMessage, {
   showMessage,
@@ -218,6 +223,11 @@ export const DoctorScreen = ({navigation}) => {
   const [optionModalView, setOptionModalView] = useState(false);
   const [doctorDataList, setDoctorDataList] = useState([]);
   const [doctorDepartmentList, setDoctorDepartmentList] = useState([]);
+  const [doctorHolidayList, setDoctorHolidayList] = useState([]);
+  const [doctorBreakList, setDoctorBreakList] = useState([]);
+  const [holidayDoctor, setHolidayDoctor] = useState('');
+  const [holidayDate, setHolidayDate] = useState(new Date());
+  const [holidayReason, setHolidayReason] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [deleteUser, setDeleteUser] = useState(false);
   const [refresh, setRefresh] = useState(false);
@@ -233,6 +243,7 @@ export const DoctorScreen = ({navigation}) => {
   const [charge, setCharge] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [holidayDateModalVisible, setHolidayDateModalVisible] = useState(false);
   const [avatar, setAvatar] = useState(null);
   const {t} = useTranslation();
   const {theme} = useTheme();
@@ -476,6 +487,112 @@ export const DoctorScreen = ({navigation}) => {
     }
   };
 
+  useEffect(() => {
+    onGetDoctorHolidayData();
+  }, [searchHoliday]);
+
+  const onGetDoctorHolidayData = async () => {
+    try {
+      const response = await onGetDoctorHolidayApi(searchHoliday);
+      if (response.status == 200) {
+        setDoctorHolidayList(response.data.data);
+        setAddHolidayVisible(false);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Get Error:', err);
+    }
+  };
+
+  const onAddDoctorHolidayData = async () => {
+    try {
+      setIsLoading(true);
+      const response = await onAddDoctorHolidayApi(
+        holidayDoctor,
+        moment(holidayDate).format('YYYY-MM-DD'),
+        holidayReason,
+      );
+      if (response.status == 200) {
+        onGetDoctorHolidayData();
+        setIsLoading(false);
+        showMessage({
+          message: 'Record Added Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      setIsLoading(false);
+      showMessage({
+        message: 'Please enter properly details.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Get Error:', err.response.data);
+    }
+  };
+
+  const onEditDoctorHolidayData = async id => {
+    try {
+      setIsLoading(true);
+      const response = await onUpdateDoctorHolidayApi(
+        id,
+        holidayDoctor,
+        moment(holidayDate).format('YYYY-MM-DD'),
+        holidayReason,
+      );
+      if (response.status == 200) {
+        onGetDoctorHolidayData();
+        setIsLoading(false);
+        showMessage({
+          message: 'Record Edit Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      setIsLoading(false);
+      showMessage({
+        message: 'Please enter properly details.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Get Error:', err);
+    }
+  };
+
+  const onDeleteHolidayData = async id => {
+    try {
+      setIsLoading(true);
+      const response = await onDeleteHolidayApi(id);
+      if (response.status == 200) {
+        onGetDoctorHolidayData();
+        setIsLoading(false);
+        setDeleteUser(false);
+        showMessage({
+          message: 'Record Delete Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      setIsLoading(false);
+      setDeleteUser(false);
+      showMessage({
+        message: 'Something want wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Get Error:', err);
+    }
+  };
+
   const toggleMenu = open => {
     const toValue = open ? 0 : 300; // For closing, move down
     const opacityValue = open ? 1 : 0; // For fading
@@ -523,6 +640,23 @@ export const DoctorScreen = ({navigation}) => {
       ).start(() => {
         setOptionModalView(false); // Hide modal after animations complete
       });
+    }
+  };
+
+  useEffect(() => {
+    onGetDoctorBreakData();
+  }, [searchBreak]);
+
+  const onGetDoctorBreakData = async () => {
+    try {
+      const response = await onGetDoctorBreakApi(searchBreak);
+      if (response.status == 200) {
+        setDoctorBreakList(response.data.data);
+        // setAddHolidayVisible(false);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Get Error:', err);
     }
   };
 
@@ -646,18 +780,31 @@ export const DoctorScreen = ({navigation}) => {
           <HolidayComponent
             searchHoliday={searchHoliday}
             setSearchHoliday={setSearchHoliday}
-            allData={scheduleData}
+            allData={doctorHolidayList}
             addHolidayVisible={addHolidayVisible}
             setAddHolidayVisible={setAddHolidayVisible}
+            doctorName={holidayDoctor}
+            setDoctorName={setHolidayDoctor}
+            holidayDate={holidayDate}
+            setHolidayDate={setHolidayDate}
+            holidayReason={holidayReason}
+            setHolidayReason={setHolidayReason}
+            holidayDateModalVisible={holidayDateModalVisible}
+            setHolidayDateModalVisible={setHolidayDateModalVisible}
+            onAddDoctorDepartmentData={() => onAddDoctorHolidayData()}
+            onEditDoctorDepartmentData={id => onEditDoctorHolidayData(id)}
+            onDeleteDepartmentData={id => onDeleteHolidayData(id)}
+            setDeleteUser={setDeleteUser}
+            deleteUser={deleteUser}
+            isLoading={isLoading}
           />
         ) : (
           selectedView == 'Breaks' && (
             <BreakComponent
               searchBreak={searchBreak}
               setSearchBreak={setSearchBreak}
-              allData={breakData}
-              doctorBreakName={doctorBreakName}
-              setDoctorBreakName={setDoctorBreakName}
+              allData={doctorBreakList}
+              onGetDoctorBreakData={() => onGetDoctorBreakData()}
             />
           )
         )}

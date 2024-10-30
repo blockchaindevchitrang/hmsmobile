@@ -225,10 +225,10 @@ export const SettingScreen = ({navigation}) => {
         <ScrollView
           contentContainerStyle={{paddingBottom: hp(12)}}
           showsVerticalScrollIndicator={false}>
-          <TouchableOpacity
+          {/* <TouchableOpacity
             style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
             <Text style={[styles.text, {color: theme.text}]}>{'Profile'}</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
           <View
             style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>

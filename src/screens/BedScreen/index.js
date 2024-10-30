@@ -203,6 +203,7 @@ export const BedScreen = ({navigation}) => {
   const [BedTypeData, setBedTypeData] = useState([]);
   const [bedData, setBedData] = useState([]);
   const [bedAssignData, setBedAssignData] = useState([]);
+  const [refresh, setRefresh] = useState(false);
 
   useEffect(() => {
     bedDataGet();
@@ -270,36 +271,39 @@ export const BedScreen = ({navigation}) => {
   const bedTypeDataGet = async () => {
     try {
       const response = await onGetBedTypeApi('created_at', 'ASC');
-      console.log('get Response:', response);
+      console.log('get Response:', response.data.data);
       if (response.status) {
-        setBedTypeData(response.data);
+        setBedTypeData(response.data.data);
+        setRefresh(!refresh);
       }
     } catch (err) {
-      console.log('Error:', err);
+      console.log('Error:', err.response.data);
     }
   };
 
   const bedDataGet = async () => {
     try {
       const response = await onGetBedApi();
-      console.log('get Response:', response);
+      console.log('get Response:', response.data.data);
       if (response.status) {
-        setBedData(response.data);
+        setBedData(response.data.data);
+        setRefresh(!refresh);
       }
     } catch (err) {
-      console.log('Error:', err);
+      console.log('Error:', err.response.data);
     }
   };
 
   const bedAssignDataGet = async () => {
     try {
       const response = await onGetBedAssignApi('created_at', 'ASC');
-      console.log('get Response:', response);
+      console.log('get Response:', response.data.data);
       if (response.status) {
-        setBedAssignData(response.data);
+        setBedAssignData(response.data.data);
+        setRefresh(!refresh);
       }
     } catch (err) {
-      console.log('Error:', err);
+      console.log('Error:', err.response.data);
     }
   };
 
@@ -319,6 +323,7 @@ export const BedScreen = ({navigation}) => {
             searchBreak={searchAccount}
             setSearchBreak={setSearchAccount}
             allData={BedTypeData}
+            onGetBedTypeData={() => bedTypeDataGet()}
           />
         ) : selectedView == 'Beds' ? (
           <BedList

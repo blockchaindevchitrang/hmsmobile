@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: wp(3),
   },
   titleListText1: {
-    fontSize: hp(2.2),
+    fontSize: hp(2),
     fontFamily: Fonts.FONTS.PoppinsBold,
     color: COLORS.black,
     textAlign: 'right',
@@ -174,8 +174,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     width: '100%',
-    height: hp(8),
-    paddingHorizontal: wp(3),
+    paddingVertical: hp(1),
     backgroundColor: COLORS.greyColor,
   },
   noticeView1: {
@@ -231,6 +230,22 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.FONTS.PoppinsBold,
     textAlign: 'center',
     color: COLORS.black,
+  },
+  nameDataView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: wp(32),
+  },
+  dataHistoryText1: {
+    fontSize: hp(1.8),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+    width: '44%',
+  },
+  dataHistoryText2: {
+    fontSize: hp(1.8),
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    color: COLORS.blueColor,
   },
 });
 
