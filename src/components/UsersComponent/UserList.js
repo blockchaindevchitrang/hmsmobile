@@ -29,11 +29,15 @@ import ImagePicker from 'react-native-image-crop-picker';
 import {
   onAddUsersApi,
   onDeleteUserDataApi,
+  onGetSpecificUsersDataApi,
   onUpdateUserDataApi,
 } from '../../services/Api';
 import {DeletePopup} from '../DeletePopup';
+import {useSelector} from 'react-redux';
+import SelectDropdown from 'react-native-select-dropdown';
 
 const UserList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
+  const roleData = useSelector(state => state.roleData);
   const {theme} = useTheme();
   const [newUserVisible, setNewUserVisible] = useState(false);
   const [firstName, setFirstName] = useState('');
@@ -52,6 +56,7 @@ const UserList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
   const [avatar, setAvatar] = useState(null);
   const [userId, setUserId] = useState('');
   const [deleteUser, setDeleteUser] = useState(false);
+  const [doctorSelectedName, setDoctorSelectedName] = useState('');
 
   const openProfileImagePicker = async () => {
     try {
@@ -82,6 +87,56 @@ const UserList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
       console.log('Error selecting image:', error);
     }
   };
+
+  const onGetSpecificDoctor = async id => {
+    try {
+      const response = await onGetSpecificUsersDataApi(id);
+      if (response.status == 200) {
+        console.log('get ValueLL:::', response.data.message);
+        return response.data.message;
+      } else {
+        return 0;
+      }
+    } catch (err) {
+      console.log('Get Error', err);
+    }
+  };
+
+  const isImageFormat = url => {
+    return (
+      url.endsWith('.png') || url.endsWith('.jpg') || url.endsWith('.jpeg')
+    );
+  };
+
+  function parseFileFromUrl(url) {
+    // Extract the filename from the URL
+    const name = url.split('/').pop();
+
+    // Extract the file extension
+    const extension = name.split('.').pop();
+
+    // Define the MIME type based on the file extension
+    let type;
+    switch (extension) {
+      case 'jpeg':
+      case 'jpg':
+        type = 'image/jpeg';
+        break;
+      case 'png':
+        type = 'image/png';
+        break;
+
+      default:
+        type = 'application/octet-stream'; // Fallback type for unknown extensions
+    }
+
+    // Return the extracted information
+    return {
+      uri: url,
+      type,
+      name,
+    };
+  }
 
   const renderItem = ({item, index}) => {
     return (
@@ -129,19 +184,26 @@ const UserList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
         </View>
         <View style={styles.actionDataView}>
           <TouchableOpacity
-            onPress={() => {
+            onPress={async () => {
+              let allData = await onGetSpecificDoctor(item.id);
               setUserId(item.id);
               const [first, last] = item.name.split(',');
+              if (isImageFormat(item?.image_url)) {
+                setAvatar(parseFileFromUrl(item?.image_url));
+              }
               setFirstName(first);
               setLastName(last);
               setEmail(item.email);
-              setRole(item.department);
-              setDateOfBirth(new Date(item.dob));
-              setGenderType(item.gender == 0 ? 'male' : 'female');
-              setAddress(item.address1);
-              setCity(item.city);
-              setCountry(item.country);
-              setPostalCode(item.postal_code);
+              setRole(allData.department_id);
+              setDoctorSelectedName(item?.department);
+              if (allData.dob != null) {
+                setDateOfBirth(new Date(allData.dob));
+              }
+              setGenderType(allData.gender == 0 ? 'male' : 'female');
+              setAddress(allData.address1);
+              setCity(allData.city);
+              setCountry(allData.country);
+              setPostalCode(allData.postal_code);
               setNewUserVisible(true);
             }}>
             <Image
@@ -177,9 +239,13 @@ const UserList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
       formdata.append('department_id', role);
       formdata.append('country', country);
       formdata.append('city', city);
+      formdata.append('dob', moment(dateOfBirth).format('DD/MM/YYYY'));
       formdata.append('postal_code', postalCode);
       formdata.append('address1', address);
       formdata.append('gender', genderType == 'female' ? 1 : 0);
+      if (avatar != null) {
+        formdata.append('image', avatar);
+      }
       const response = await onAddUsersApi(formdata);
 
       if (response.status === 200) {
@@ -221,6 +287,7 @@ const UserList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
       const response = await onUpdateUserDataApi(userId, formdata);
 
       if (response.status === 200) {
+        onGetData();
         setUserId('');
         setFirstName('');
         setLastName('');
@@ -235,7 +302,7 @@ const UserList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
         setNewUserVisible(false);
       }
     } catch (err) {
-      console.log('Add User Error:', err);
+      console.log('Add User Error:', err.response.data);
     }
   };
 
@@ -243,11 +310,12 @@ const UserList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
     try {
       const response = await onDeleteUserDataApi(userId);
       if (response.status == 200) {
+        onGetData();
         setUserId('');
         setDeleteUser(false);
       }
     } catch (err) {
-      console.log('Error Delete', err);
+      console.log('Error Delete', err.response.data);
     }
   };
 
@@ -391,41 +459,81 @@ const UserList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
             <View style={styles.nameView}>
               <View style={{width: '100%'}}>
                 <Text style={styles.dataHistoryText1}>ROLE</Text>
-                <TextInput
+                {/* <TextInput
                   value={role}
                   placeholder={'Select'}
                   onChangeText={text => setRole(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
+                /> */}
+                <SelectDropdown
+                  data={roleData}
+                  onSelect={(selectedItem, index) => {
+                    // setSelectedColor(selectedItem);
+                    setRole(selectedItem.id);
+                    console.log('gert Value:::', selectedItem);
+                  }}
+                  defaultValue={doctorSelectedName}
+                  renderButton={(selectedItem, isOpen) => {
+                    console.log('Get Response>>>', selectedItem);
+                    return (
+                      <View style={styles.dropdown2BtnStyle2}>
+                        {role != '' ? (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {role == selectedItem?.id
+                              ? selectedItem?.name
+                              : doctorSelectedName}
+                          </Text>
+                        ) : (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {selectedItem?.name || 'Select'}
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(item, index, isSelected) => {
+                    return (
+                      <TouchableOpacity style={styles.dropdownView}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {item.name}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                  dropdownIconPosition={'left'}
+                  dropdownStyle={styles.dropdown2DropdownStyle}
                 />
               </View>
             </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>PASSWORD</Text>
-                <TextInput
-                  value={password}
-                  placeholder={'******'}
-                  onChangeText={text => setPassword(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                  secureTextEntry={true}
-                />
+            {userId == '' && (
+              <View style={styles.nameView}>
+                <View style={{width: '100%'}}>
+                  <Text style={styles.dataHistoryText1}>PASSWORD</Text>
+                  <TextInput
+                    value={password}
+                    placeholder={'******'}
+                    onChangeText={text => setPassword(text)}
+                    style={[styles.nameTextView, {width: '100%'}]}
+                    secureTextEntry={true}
+                  />
+                </View>
               </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>CONFIRM PASSWORD</Text>
-                <TextInput
-                  value={confirmPassword}
-                  placeholder={'******'}
-                  onChangeText={text => setConfirmPassword(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                  secureTextEntry={true}
-                />
+            )}
+            {userId == '' && (
+              <View style={styles.nameView}>
+                <View style={{width: '100%'}}>
+                  <Text style={styles.dataHistoryText1}>CONFIRM PASSWORD</Text>
+                  <TextInput
+                    value={confirmPassword}
+                    placeholder={'******'}
+                    onChangeText={text => setConfirmPassword(text)}
+                    style={[styles.nameTextView, {width: '100%'}]}
+                    secureTextEntry={true}
+                  />
+                </View>
               </View>
-            </View>
-
+            )}
             <View style={styles.nameView}>
               <View style={{width: '48%'}}>
                 <Text style={styles.dataHistoryText1}>DATE OF BIRTH</Text>
@@ -505,10 +613,9 @@ const UserList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
                 <Text style={styles.dataHistoryText1}>ADDRESS</Text>
                 <TextInput
                   value={address}
-                  placeholder={'******'}
+                  placeholder={'address'}
                   onChangeText={text => setAddress(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
-                  secureTextEntry={true}
                 />
               </View>
             </View>
@@ -543,6 +650,7 @@ const UserList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
                   placeholder={'Postal Code'}
                   onChangeText={text => setPostalCode(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
+                  keyboardType={'number-pad'}
                 />
               </View>
             </View>
@@ -968,5 +1076,34 @@ const styles = StyleSheet.create({
     fontSize: hp(2.5),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
+  },
+  dropdown2DropdownStyle: {
+    backgroundColor: COLORS.white,
+    borderRadius: 4,
+    height: hp(25),
+    // borderRadius: 12,
+  },
+  dropdownItemTxtStyle: {
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    marginLeft: wp(2),
+  },
+  dropdownView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: hp(4),
+    borderBottomWidth: 0,
+  },
+  dropdown2BtnStyle2: {
+    width: '100%',
+    height: hp(4.2),
+    backgroundColor: COLORS.white,
+    borderRadius: 5,
+    alignItems: 'center',
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    marginTop: hp(1),
   },
 });

@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -30,6 +30,7 @@ import PaymentList from '../../components/BillingComponent/PaymentList';
 import ReportList from '../../components/BillingComponent/ReportList';
 import AdvanceList from '../../components/BillingComponent/AdvanceList';
 import ManualList from '../../components/BillingComponent/ManualList';
+import { onGetAccountListApi } from '../../services/Api';
 
 const allData = [
   {
@@ -303,6 +304,8 @@ export const BillingScreen = ({navigation}) => {
   const [searchPharmacists, setSearchPharmacists] = useState('');
   const [optionModalView, setOptionModalView] = useState(false);
   const [selectedView, setSelectedView] = useState('Accounts');
+  const [accountList, setAccountList] = useState([]);
+  const [refresh, setRefresh] = useState(false);
 
   const animations = useRef(
     [0, 0, 0, 0, 0, 0, 0, 0, 0].map(() => new Animated.Value(300)),
@@ -361,6 +364,23 @@ export const BillingScreen = ({navigation}) => {
     }
   };
 
+  useEffect(() => {
+    onGetAccountData();
+  }, [searchAccount]);
+
+  const onGetAccountData = async () => {
+    try {
+      const response = await onGetAccountListApi(searchAccount);
+      console.log('GetAccountData>>', response.data.data);
+      if (response.status == 200) {
+        setAccountList(response.data.data);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Get AccountError>', err.response.data);
+    }
+  };
+
   return (
     <View style={[styles.container, {backgroundColor: theme.lightColor}]}>
       <View style={styles.headerView}>
@@ -376,7 +396,8 @@ export const BillingScreen = ({navigation}) => {
           <AccountList
             searchBreak={searchAccount}
             setSearchBreak={setSearchAccount}
-            allData={allData}
+            allData={accountList}
+            onGetData={onGetAccountData}
           />
         ) : selectedView == 'Employee Payrolls' ? (
           <PayrollList

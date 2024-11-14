@@ -35,6 +35,7 @@ import {
   onGetRolePermissionDataApi,
 } from '../../services/Api';
 import RoleList from '../../components/UsersComponent/RoleList';
+import { useSelector } from 'react-redux';
 
 const allData = [
   {
@@ -285,6 +286,7 @@ const PharmacistsData = [
 ];
 
 export const UsersScreen = ({navigation}) => {
+  const roleData = useSelector(state => state.roleData);
   const {t} = useTranslation();
   const {theme} = useTheme();
   const [index, setIndex] = React.useState(0);
@@ -309,7 +311,6 @@ export const UsersScreen = ({navigation}) => {
   const [optionModalView, setOptionModalView] = useState(false);
   const [selectedView, setSelectedView] = useState('Users');
   const [userData, setUserData] = useState([]);
-  const [roleData, setRoleData] = useState([]);
   const [accountantData, setAccountantData] = useState([]);
   const [nursesData, setNursesData] = useState([]);
   const [receptionistData, setReceptionistData] = useState([]);
@@ -425,7 +426,6 @@ export const UsersScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetUserData();
-    onGetRoleData();
     onGetRolePermissionData();
   }, []);
 
@@ -535,19 +535,6 @@ export const UsersScreen = ({navigation}) => {
     }
   };
 
-  const onGetRoleData = async () => {
-    try {
-      const response = await onGetRoleDataApi();
-      console.log('Response Role Data', response.data);
-      if (response.status === 200) {
-        setRoleData(response.data.data);
-        setRefresh(!refresh);
-      }
-    } catch (err) {
-      console.log('Get User Error:', err);
-    }
-  };
-
   return (
     <View style={[styles.container, {backgroundColor: theme.lightColor}]}>
       <View style={styles.headerView}>
@@ -573,30 +560,35 @@ export const UsersScreen = ({navigation}) => {
             searchBreak={searchUser}
             setSearchBreak={setSearchUser}
             allData={userData}
+            onGetData={onGetUserData}
           />
         ) : selectedView == 'Accountant' ? (
           <AccountantList
             searchBreak={searchAccountant}
             setSearchBreak={setSearchAccountant}
             allData={accountantData}
+            onGetData={onGetUserData}
           />
         ) : selectedView == 'Nurses' ? (
           <NursesList
             searchBreak={searchNurse}
             setSearchBreak={setSearchNurse}
             allData={nursesData}
+            onGetData={onGetUserData}
           />
         ) : selectedView == 'Receptionists' ? (
           <ReceptionistsList
             searchBreak={searchReceptionist}
             setSearchBreak={setSearchReceptionist}
             allData={receptionistData}
+            onGetData={onGetUserData}
           />
         ) : selectedView == 'Lab Technicians' ? (
           <LabTechniciansList
             searchBreak={searchLabTechnician}
             setSearchBreak={setSearchLabTechnician}
             allData={labTechniciansData}
+            onGetData={onGetUserData}
           />
         ) : (
           selectedView == 'Pharmacists' && (
@@ -604,6 +596,7 @@ export const UsersScreen = ({navigation}) => {
               searchBreak={searchPharmacists}
               setSearchBreak={setSearchPharmacists}
               allData={pharmacistsData}
+              onGetData={onGetUserData}
             />
           )
         )}

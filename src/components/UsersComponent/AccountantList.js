@@ -29,11 +29,15 @@ import ImagePicker from 'react-native-image-crop-picker';
 import {
   onAddUsersApi,
   onDeleteUserDataApi,
+  onGetSpecificUsersDataApi,
   onUpdateUserDataApi,
 } from '../../services/Api';
 import {DeletePopup} from '../DeletePopup';
+import SelectDropdown from 'react-native-select-dropdown';
+import {useSelector} from 'react-redux';
 
-const AccountantList = ({searchBreak, setSearchBreak, allData}) => {
+const AccountantList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
+  const bloodData = useSelector(state => state.bloodData);
   const {theme} = useTheme();
   const [newUserVisible, setNewUserVisible] = useState(false);
   const [firstName, setFirstName] = useState('');
@@ -56,6 +60,7 @@ const AccountantList = ({searchBreak, setSearchBreak, allData}) => {
   const [status, setStatus] = useState(false);
   const [userId, setUserId] = useState('');
   const [deleteUser, setDeleteUser] = useState(false);
+  const [bloodSelected, setBloodSelected] = useState('');
 
   const openProfileImagePicker = async () => {
     try {
@@ -93,12 +98,18 @@ const AccountantList = ({searchBreak, setSearchBreak, allData}) => {
       formdata.append('first_name', firstName);
       formdata.append('last_name', lastName);
       formdata.append('email', email);
-      // formdata.append('phone', '');
-      // formdata.append('region_code', '+91');
-      formdata.append('image', '');
+      formdata.append('phone', number);
+      if (avatar != null) {
+        formdata.append('image', avatar);
+      }
+      formdata.append('blood_group', bloodSelected);
+      formdata.append('designation', designation);
+      formdata.append('qualification', qualification);
+      formdata.append('status', status ? 1 : 2);
       formdata.append('password', password);
       formdata.append('password_confirmation', confirmPassword);
-      formdata.append('department_id', designation);
+      // formdata.append('dob', dateOfBirth);
+      formdata.append('department_id', '7');
       formdata.append('address2', address1);
       formdata.append('city', city);
       formdata.append('postal_code', postalCode);
@@ -107,10 +118,26 @@ const AccountantList = ({searchBreak, setSearchBreak, allData}) => {
       const response = await onAddUsersApi(formdata);
 
       if (response.status === 200) {
+        onGetData();
+        setFirstName('');
+        setLastName('');
+        setEmail('');
+        setDateOfBirth(new Date());
+        setGenderType('female');
+        setAddress('');
+        setCity('');
+        setPostalCode('');
+        setAvatar(null);
+        setAddress1('');
+        setPassword('');
+        setConfirmPassword('');
+        setBloodSelected('');
+        setDesignation('');
+        setQualification('');
         setNewUserVisible(false);
       }
     } catch (err) {
-      console.log('Add User Error:', err);
+      console.log('Add User Error:', err.response);
     }
   };
 
@@ -120,12 +147,15 @@ const AccountantList = ({searchBreak, setSearchBreak, allData}) => {
       formdata.append('first_name', firstName);
       formdata.append('last_name', lastName);
       formdata.append('email', email);
-      // formdata.append('phone', '');
-      // formdata.append('region_code', '+91');
-      formdata.append('image', '');
-      formdata.append('password', password);
-      formdata.append('password_confirmation', confirmPassword);
-      formdata.append('department_id', designation);
+      formdata.append('phone', number);
+      if (avatar != null) {
+        formdata.append('image', avatar);
+      }
+      formdata.append('designation', designation);
+      formdata.append('qualification', qualification);
+      formdata.append('status', status ? 1 : 2);
+      // formdata.append('dob', dateOfBirth);
+      formdata.append('department_id', '7');
       formdata.append('address2', address1);
       formdata.append('city', city);
       formdata.append('postal_code', postalCode);
@@ -134,21 +164,12 @@ const AccountantList = ({searchBreak, setSearchBreak, allData}) => {
       const response = await onUpdateUserDataApi(userId, formdata);
 
       if (response.status === 200) {
+        onGetData();
         setUserId('');
-        setFirstName('');
-        setLastName('');
-        setEmail('');
-        setDesignation('');
-        setDateOfBirth(new Date());
-        setGenderType('female');
-        setAddress('');
-        setCity('');
-        setAddress1('');
-        setPostalCode('');
         setNewUserVisible(false);
       }
     } catch (err) {
-      console.log('Add User Error:', err);
+      console.log('Add User Error:', err.response.data, firstName);
     }
   };
 
@@ -156,6 +177,7 @@ const AccountantList = ({searchBreak, setSearchBreak, allData}) => {
     try {
       const response = await onDeleteUserDataApi(userId);
       if (response.status == 200) {
+        onGetData();
         setUserId('');
         setDeleteUser(false);
       }
@@ -163,6 +185,56 @@ const AccountantList = ({searchBreak, setSearchBreak, allData}) => {
       console.log('Error Delete', err);
     }
   };
+
+  const onGetSpecificDoctor = async id => {
+    try {
+      const response = await onGetSpecificUsersDataApi(id);
+      if (response.status == 200) {
+        console.log('get ValueLL:::', response.data.message);
+        return response.data.message;
+      } else {
+        return 0;
+      }
+    } catch (err) {
+      console.log('Get Error', err);
+    }
+  };
+
+  const isImageFormat = url => {
+    return (
+      url.endsWith('.png') || url.endsWith('.jpg') || url.endsWith('.jpeg')
+    );
+  };
+
+  function parseFileFromUrl(url) {
+    // Extract the filename from the URL
+    const name = url.split('/').pop();
+
+    // Extract the file extension
+    const extension = name.split('.').pop();
+
+    // Define the MIME type based on the file extension
+    let type;
+    switch (extension) {
+      case 'jpeg':
+      case 'jpg':
+        type = 'image/jpeg';
+        break;
+      case 'png':
+        type = 'image/png';
+        break;
+
+      default:
+        type = 'application/octet-stream'; // Fallback type for unknown extensions
+    }
+
+    // Return the extracted information
+    return {
+      uri: url,
+      type,
+      name,
+    };
+  }
 
   const renderItem = ({item, index}) => {
     return (
@@ -198,19 +270,31 @@ const AccountantList = ({searchBreak, setSearchBreak, allData}) => {
         </View>
         <View style={styles.actionDataView}>
           <TouchableOpacity
-            onPress={() => {
+            onPress={async () => {
+              let allData = await onGetSpecificDoctor(item.id);
               setUserId(item.id);
               const [first, last] = item.name.split(',');
               setFirstName(first);
               setLastName(last);
+              if (isImageFormat(item?.image_url)) {
+                setAvatar(parseFileFromUrl(item?.image_url));
+              }
               setEmail(item.email);
-              setDesignation(item.department);
-              setDateOfBirth(new Date(item.dob));
-              setGenderType(item.gender == 0 ? 'male' : 'female');
-              setAddress(item.address1);
-              setCity(item.city);
-              setAddress1(item.address2);
-              setPostalCode(item.postal_code);
+              if (allData.dob != null) {
+                setDateOfBirth(new Date(allData.dob));
+              }
+              setGenderType(allData.gender == 0 ? 'male' : 'female');
+              setAddress(allData.address1);
+              setCity(allData.city);
+              setAddress1(allData.address2);
+              setPostalCode(allData.postal_code);
+              setQualification(allData.qualification);
+              setDesignation(allData.designation);
+              setNumber(allData.phone);
+              setStatus(allData.status == 'Active' ? true : false);
+              if (allData?.blood_group != null) {
+                setBloodSelected(allData?.blood_group);
+              }
               setNewUserVisible(true);
             }}>
             <Image
@@ -259,13 +343,18 @@ const AccountantList = ({searchBreak, setSearchBreak, allData}) => {
                 setFirstName('');
                 setLastName('');
                 setEmail('');
-                setDesignation('');
                 setDateOfBirth(new Date());
                 setGenderType('female');
                 setAddress('');
                 setCity('');
-                setAddress1('');
                 setPostalCode('');
+                setAvatar(null);
+                setAddress1('');
+                setPassword('');
+                setConfirmPassword('');
+                setBloodSelected('');
+                setDesignation('');
+                setQualification('');
                 setNewUserVisible(true);
               }}
               style={styles.actionView}>
@@ -376,6 +465,7 @@ const AccountantList = ({searchBreak, setSearchBreak, allData}) => {
                   placeholder={'9903618823'}
                   onChangeText={text => setNumber(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
+                  keyboardType={'number-pad'}
                 />
               </View>
             </View>
@@ -383,11 +473,51 @@ const AccountantList = ({searchBreak, setSearchBreak, allData}) => {
             <View style={styles.nameView}>
               <View style={{width: '48%'}}>
                 <Text style={styles.dataHistoryText1}>BLOOD GROUP:</Text>
-                <TextInput
+                {/* <TextInput
                   value={bloodGroup}
                   placeholder={'Select'}
                   onChangeText={text => setBloodGroup(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
+                /> */}
+                <SelectDropdown
+                  data={bloodData}
+                  onSelect={(selectedItem, index) => {
+                    // setSelectedColor(selectedItem);
+                    setBloodGroup(selectedItem.id);
+                    setBloodSelected(selectedItem.blood_group);
+                    console.log('gert Value:::', selectedItem);
+                  }}
+                  defaultValue={bloodSelected}
+                  renderButton={(selectedItem, isOpen) => {
+                    console.log('Get Response>>>', selectedItem);
+                    return (
+                      <View style={styles.dropdown2BtnStyle2}>
+                        {bloodSelected != '' ? (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {bloodSelected == selectedItem?.blood_group
+                              ? selectedItem?.blood_group
+                              : bloodSelected}
+                          </Text>
+                        ) : (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {selectedItem?.blood_group || 'Select'}
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(item, index, isSelected) => {
+                    return (
+                      <TouchableOpacity style={styles.dropdownView}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {item.blood_group}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                  dropdownIconPosition={'left'}
+                  dropdownStyle={styles.dropdown2DropdownStyle}
                 />
               </View>
 
@@ -395,7 +525,7 @@ const AccountantList = ({searchBreak, setSearchBreak, allData}) => {
                 <Text style={styles.dataHistoryText1}>DESIGNATION:</Text>
                 <TextInput
                   value={designation}
-                  placeholder={'9903618823'}
+                  placeholder={'designation'}
                   onChangeText={text => setDesignation(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
                 />
@@ -407,7 +537,7 @@ const AccountantList = ({searchBreak, setSearchBreak, allData}) => {
                 <Text style={styles.dataHistoryText1}>QUALIFICATION:</Text>
                 <TextInput
                   value={qualification}
-                  placeholder={'9903618823'}
+                  placeholder={'qualification'}
                   onChangeText={text => setQualification(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
                 />
@@ -503,31 +633,35 @@ const AccountantList = ({searchBreak, setSearchBreak, allData}) => {
               </View>
             </View>
 
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>PASSWORD</Text>
-                <TextInput
-                  value={password}
-                  placeholder={'******'}
-                  onChangeText={text => setPassword(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                  secureTextEntry={true}
-                />
+            {userId == '' && (
+              <View style={styles.nameView}>
+                <View style={{width: '100%'}}>
+                  <Text style={styles.dataHistoryText1}>PASSWORD</Text>
+                  <TextInput
+                    value={password}
+                    placeholder={'******'}
+                    onChangeText={text => setPassword(text)}
+                    style={[styles.nameTextView, {width: '100%'}]}
+                    secureTextEntry={true}
+                  />
+                </View>
               </View>
-            </View>
+            )}
 
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>CONFIRM PASSWORD</Text>
-                <TextInput
-                  value={confirmPassword}
-                  placeholder={'******'}
-                  onChangeText={text => setConfirmPassword(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                  secureTextEntry={true}
-                />
+            {userId == '' && (
+              <View style={styles.nameView}>
+                <View style={{width: '100%'}}>
+                  <Text style={styles.dataHistoryText1}>CONFIRM PASSWORD</Text>
+                  <TextInput
+                    value={confirmPassword}
+                    placeholder={'******'}
+                    onChangeText={text => setConfirmPassword(text)}
+                    style={[styles.nameTextView, {width: '100%'}]}
+                    secureTextEntry={true}
+                  />
+                </View>
               </View>
-            </View>
+            )}
 
             <View style={styles.nameView}>
               <View>
@@ -554,7 +688,6 @@ const AccountantList = ({searchBreak, setSearchBreak, allData}) => {
                   placeholder={'address 1'}
                   onChangeText={text => setAddress(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
-                  secureTextEntry={true}
                 />
               </View>
             </View>
@@ -567,7 +700,6 @@ const AccountantList = ({searchBreak, setSearchBreak, allData}) => {
                   placeholder={'address 2'}
                   onChangeText={text => setAddress1(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
-                  secureTextEntry={true}
                 />
               </View>
             </View>
@@ -590,6 +722,7 @@ const AccountantList = ({searchBreak, setSearchBreak, allData}) => {
                   placeholder={'Zip'}
                   onChangeText={text => setPostalCode(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
+                  keyboardType={'number-pad'}
                 />
               </View>
             </View>
@@ -1014,5 +1147,34 @@ const styles = StyleSheet.create({
     fontSize: hp(2.5),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
+  },
+  dropdown2DropdownStyle: {
+    backgroundColor: COLORS.white,
+    borderRadius: 4,
+    height: hp(25),
+    // borderRadius: 12,
+  },
+  dropdownItemTxtStyle: {
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    marginLeft: wp(2),
+  },
+  dropdownView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: hp(4),
+    borderBottomWidth: 0,
+  },
+  dropdown2BtnStyle2: {
+    width: '100%',
+    height: hp(4.2),
+    backgroundColor: COLORS.white,
+    borderRadius: 5,
+    alignItems: 'center',
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    marginTop: hp(1),
   },
 });

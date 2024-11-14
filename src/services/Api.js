@@ -172,7 +172,7 @@ export const onGetAllUsersDataApi = async () => {
 
 export const onGetSpecificUsersDataApi = async id => {
   const token = await AsyncStorage.getItem('accessToken');
-  const url = Api.baseUrl1 + `fetch-user?id=${id}`;
+  const url = Api.baseUrl1 + `fetch-user/${id}`;
   console.log('Get Doctor Details Url:::', url);
   return new Promise((resolve, reject) => {
     axios
@@ -254,11 +254,11 @@ export const onAddRoleApi = async requestData => {
 
 export const onAddAppointmentApi = async dataUrl => {
   const token = await AsyncStorage.getItem('accessToken');
-  console.log('Get Login Url:::', Api.baseUrl1);
   const url = Api.baseUrl1 + dataUrl;
+  console.log('Get Login Url:::', url);
   return new Promise((resolve, reject) => {
     axios
-      .post(url, {
+      .post(url, JSON.stringify({}), {
         headers: {
           'Content-Type': 'application/json',
           Accept: 'application/json',
@@ -308,7 +308,7 @@ export const onCancelAppointmentApi = async id => {
   const url = Api.baseUrl1 + `appointment-cancel/${id}`;
   return new Promise((resolve, reject) => {
     axios
-      .post(url, {
+      .post(url, JSON.stringify({}), {
         headers: {
           'Content-Type': 'application/json',
           Accept: 'application/json',
@@ -326,7 +326,7 @@ export const onSuccessAppointmentApi = async id => {
   const url = Api.baseUrl1 + `appointment-success/${id}`;
   return new Promise((resolve, reject) => {
     axios
-      .post(url, {
+      .post(url, JSON.stringify({}), {
         headers: {
           'Content-Type': 'application/json',
           Accept: 'application/json',
@@ -956,6 +956,56 @@ export const onDeleteBreakApi = async id => {
     axios
       .delete(url, {
         headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(res => resolve(res))
+      .catch(err => reject(err));
+  });
+};
+
+export const onGetPatientApi = async text => {
+  const token = await AsyncStorage.getItem('accessToken');
+  const url = Api.baseUrl1 + 'patients-list';
+  console.log('Get Doctor Details Url:::', url);
+  return new Promise((resolve, reject) => {
+    axios
+      .get(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(res => resolve(res))
+      .catch(err => reject(err));
+  });
+};
+
+export const onGetAccountListApi = async text => {
+  const token = await AsyncStorage.getItem('accessToken');
+  const url = Api.baseUrl1 + `account-get?search=${text}`;
+  console.log('Get Doctor Details Url:::', url);
+  return new Promise((resolve, reject) => {
+    axios
+      .get(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(res => resolve(res))
+      .catch(err => reject(err));
+  });
+};
+
+export const onAddAccountListApi = async dataUrl => {
+  const token = await AsyncStorage.getItem('accessToken');
+  const url = Api.baseUrl1 + dataUrl;
+  console.log('Get Login Url:::', url);
+  return new Promise((resolve, reject) => {
+    axios
+      .post(url, JSON.stringify({}), {
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
           Authorization: `Bearer ${token}`,
         },
       })

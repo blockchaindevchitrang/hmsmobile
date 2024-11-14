@@ -15,7 +15,7 @@ import {
 } from '../../components/Pixel';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useDispatch} from 'react-redux';
-import {onDashboardGetApi, onGetAllUsersDataApi, onGetBloodBankApi, onGetDoctorApi, onGetDoctorDepartmentApi, onGetRoleDataApi} from '../../services/Api';
+import {onDashboardGetApi, onGetAllUsersDataApi, onGetBloodBankApi, onGetDoctorApi, onGetDoctorDepartmentApi, onGetPatientApi, onGetRoleDataApi} from '../../services/Api';
 import {fetchBloodData, fetchDashboardData, fetchDepartmentData, fetchDoctorData, fetchRoleData, fetchUserData} from '../../redux/reducer';
 
 export const SplashScreen = ({navigation}) => {
@@ -55,14 +55,11 @@ export const SplashScreen = ({navigation}) => {
         dispatch(fetchBloodData(bloodData.data.data));
       }
 
-      const userData = await onGetAllUsersDataApi();
+      const userData = await onGetPatientApi();
       console.log('Get Department Response::', userData.data.data);
       if (userData.data.data) {
         const usersData = userData.data.data;
-        const accountantData = usersData.filter(
-          user => user.department === 'Patient',
-        );
-        dispatch(fetchUserData(accountantData));
+        dispatch(fetchUserData(usersData));
       }
 
       const roleData = await onGetRoleDataApi();

@@ -11,6 +11,7 @@ import {
   Platform,
   Modal,
   TouchableWithoutFeedback,
+  ActivityIndicator,
 } from 'react-native';
 import React, {useRef, useState} from 'react';
 import {
@@ -35,8 +36,9 @@ import {
   MenuTrigger,
 } from 'react-native-popup-menu';
 import close from '../../images/close.png';
+import {onAddAccountListApi} from '../../services/Api';
 
-const AccountList = ({searchBreak, setSearchBreak, allData}) => {
+const AccountList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
   const {theme} = useTheme();
   const menuRef = useRef(null);
   const [newAccountVisible, setNewAccountVisible] = useState(false);
@@ -44,6 +46,7 @@ const AccountList = ({searchBreak, setSearchBreak, allData}) => {
   const [departmentComment, setDepartmentComment] = useState('');
   const [statusVisible, setStatusVisible] = useState(false);
   const [departmentType, setDepartmentType] = useState('debit');
+  const [isLoading, setIsLoading] = useState(false);
 
   const renderItem = ({item, index}) => {
     return (
@@ -88,6 +91,25 @@ const AccountList = ({searchBreak, setSearchBreak, allData}) => {
         </View>
       </View>
     );
+  };
+
+  const onAddAccountData = async () => {
+    try {
+      setIsLoading(true);
+      let dataUrl = `account-create?name=${eventTitle}&type=${
+        departmentType == 'debit' ? 1 : 2
+      }&description=${departmentComment}&status=${statusVisible ? 1 : 0}`;
+      const response = await onAddAccountListApi(dataUrl);
+
+      if (response.status === 200) {
+        onGetData();
+        setIsLoading(false);
+        setNewAccountVisible(false);
+      }
+    } catch (err) {
+      setIsLoading(false);
+      console.log('Error>>', err.response.data);
+    }
   };
 
   return (
@@ -269,8 +291,14 @@ const AccountList = ({searchBreak, setSearchBreak, allData}) => {
               </View>
             </View>
             <View style={styles.buttonView}>
-              <TouchableOpacity onPress={() => {}} style={styles.nextView}>
-                <Text style={styles.nextText}>Save</Text>
+              <TouchableOpacity
+                onPress={() => onAddAccountData()}
+                style={styles.nextView}>
+                {isLoading ? (
+                  <ActivityIndicator size={'small'} color={COLORS.white} />
+                ) : (
+                  <Text style={styles.nextText}>Save</Text>
+                )}
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => setNewAccountVisible(false)}

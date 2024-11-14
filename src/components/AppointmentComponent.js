@@ -16,17 +16,37 @@ import {
 } from './Pixel/index';
 import {COLORS, Fonts} from '../utils';
 import {useTheme} from '../utils/ThemeProvider';
-import filter from '../images/filter.png';
 import ProfilePhoto from './ProfilePhoto';
-import deleteIcon from '../images/delete.png';
 import editing from '../images/editing.png';
 import close from '../images/close.png';
 import calendar from '../images/calendar.png';
+import cancel from '../images/cancel.png';
+import confirm from '../images/confirm.png';
 import CalendarPicker from 'react-native-calendar-picker';
 import moment from 'moment';
 import DatePicker from 'react-native-date-picker';
+import SelectDropdown from 'react-native-select-dropdown';
+import {useSelector} from 'react-redux';
+import {
+  onAddAppointmentApi,
+  onCancelAppointmentApi,
+  onSuccessAppointmentApi,
+} from '../services/Api';
+import {StatusComponent} from './StatusComponent';
+import FlashMessage, {
+  showMessage,
+  hideMessage,
+} from 'react-native-flash-message';
 
-const AppointmentComponent = ({searchBreak, setSearchBreak, allData}) => {
+const AppointmentComponent = ({
+  searchBreak,
+  setSearchBreak,
+  allData,
+  onGetData,
+}) => {
+  const departmentData = useSelector(state => state.departmentData);
+  const doctorData = useSelector(state => state.doctorData);
+  const user_data = useSelector(state => state.user_data);
   const {theme} = useTheme();
   const menuRef = useRef(null);
   const [addDoctorVisible, setAddHolidayVisible] = useState(false);
@@ -41,7 +61,14 @@ const AppointmentComponent = ({searchBreak, setSearchBreak, allData}) => {
   const [patient, setPatient] = useState('');
   const [department, setDepartment] = useState('');
   const [doctor, setDoctor] = useState('');
-
+  const [doctorSelectedName, setDoctorSelectedName] = useState('');
+  const [departmentSelected, setDepartmentSelected] = useState('');
+  const [patientSelected, setPatientSelected] = useState('');
+  const [cancelModal, setCancelModal] = useState(false);
+  const [userId, setUserId] = useState('');
+  const [fromPopup, setFromPopup] = useState('');
+  const [loading, setLoading] = useState(false);
+  console.log('Get allData Implement:>>>', allData);
   const onCloseDate = () => {
     setHolidayStartDate(null);
     setHolidayEndDate(null);
@@ -102,6 +129,60 @@ const AppointmentComponent = ({searchBreak, setSearchBreak, allData}) => {
 
     // Return the date in 'YYYY-MM-DD HH:MM:SS' format
     return `${year}-${formattedMonth}-${formattedDay} ${formattedHours}:${formattedMinutes}:00`;
+  };
+
+  const onConfirmAppointmentData = async () => {
+    try {
+      setLoading(true);
+      const response = await onSuccessAppointmentApi(userId);
+
+      if (response.status === 200) {
+        onGetData();
+        setLoading(false);
+        setCancelModal(false);
+        showMessage({
+          message: 'Appointment Confirm Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      }
+    } catch (err) {
+      showMessage({
+        message: 'Something is wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      setLoading(false);
+      console.log('Error>>', err.response.data);
+    }
+  };
+
+  const onCancelAppointmentData = async () => {
+    try {
+      setLoading(true);
+      const response = await onCancelAppointmentApi(userId);
+
+      if (response.status === 200) {
+        onGetData();
+        setLoading(false);
+        setCancelModal(false);
+        showMessage({
+          message: 'Appointment Cancel Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      }
+    } catch (err) {
+      setLoading(false);
+      showMessage({
+        message: 'Something is wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Error>>', err.response.data);
+    }
   };
 
   const renderItem = ({item, index}) => {
@@ -172,16 +253,63 @@ const AppointmentComponent = ({searchBreak, setSearchBreak, allData}) => {
             </Text>
           </View>
         </View>
-        <View style={[styles.switchView, {width: wp(20)}]}>
-          <TouchableOpacity>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-        </View>
+        {(item.status == 1 || item.status == 0) && (
+          <View style={[styles.switchView, {width: wp(20)}]}>
+            {item.status != 1 && (
+              <TouchableOpacity
+                onPress={() => {
+                  setFromPopup('cancel');
+                  setUserId(item.id);
+                  setCancelModal(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={cancel}
+                />
+              </TouchableOpacity>
+            )}
+            {item.status != 1 && (
+              <TouchableOpacity
+                onPress={() => {
+                  setFromPopup('confirm');
+                  setUserId(item.id);
+                  setCancelModal(true);
+                }}>
+                <Image
+                  style={[
+                    styles.editImage,
+                    {tintColor: COLORS.blueColor, marginHorizontal: wp(2)},
+                  ]}
+                  source={confirm}
+                />
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity>
+              <Image
+                style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                source={editing}
+              />
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
     );
+  };
+
+  const onAddAppointmentData = async () => {
+    try {
+      let dataUrl = `appointment-create?patient_id=${patient}&doctor_id=${doctor}&department_id=${department}&opd_date=${dateOfBirth}&problem=${description}&is_completed=${
+        status ? 1 : 0
+      }`;
+      const response = await onAddAppointmentApi(dataUrl);
+
+      if (response.status === 200) {
+        onGetData();
+        setAddHolidayVisible(false);
+      }
+    } catch (err) {
+      console.log('Error>>', err.response.data);
+    }
   };
 
   return (
@@ -321,11 +449,50 @@ const AppointmentComponent = ({searchBreak, setSearchBreak, allData}) => {
               <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
                 Patient:<Text style={styles.dataHistoryText4}>*</Text>
               </Text>
-              <TextInput
+              {/* <TextInput
                 value={patient}
                 placeholder={'Select'}
                 onChangeText={text => setPatient(text)}
                 style={[styles.nameTextView, {width: '100%'}]}
+              /> */}
+              <SelectDropdown
+                data={user_data}
+                onSelect={(selectedItem, index) => {
+                  // setSelectedColor(selectedItem);
+                  setPatient(selectedItem.id);
+                  console.log('gert Value:::', selectedItem);
+                }}
+                defaultValue={patientSelected}
+                renderButton={(selectedItem, isOpen) => {
+                  console.log('Get Response>>>', selectedItem);
+                  return (
+                    <View style={styles.dropdown2BtnStyle2}>
+                      {patient != '' ? (
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {patient == selectedItem?.id
+                            ? `${selectedItem?.patient_user?.first_name} ${selectedItem?.patient_user?.last_name}`
+                            : patientSelected}
+                        </Text>
+                      ) : (
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {selectedItem?.patient_user?.first_name || 'Select'}
+                        </Text>
+                      )}
+                    </View>
+                  );
+                }}
+                showsVerticalScrollIndicator={false}
+                renderItem={(item, index, isSelected) => {
+                  return (
+                    <TouchableOpacity style={styles.dropdownView}>
+                      <Text style={styles.dropdownItemTxtStyle}>
+                        {`${item?.patient_user?.first_name} ${item?.patient_user?.last_name}`}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                }}
+                dropdownIconPosition={'left'}
+                dropdownStyle={styles.dropdown2DropdownStyle}
               />
             </View>
 
@@ -333,11 +500,50 @@ const AppointmentComponent = ({searchBreak, setSearchBreak, allData}) => {
               <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
                 Doctor Department:<Text style={styles.dataHistoryText4}>*</Text>
               </Text>
-              <TextInput
+              {/* <TextInput
                 value={department}
                 placeholder={'Select'}
                 onChangeText={text => setDepartment(text)}
                 style={[styles.nameTextView, {width: '100%'}]}
+              /> */}
+              <SelectDropdown
+                data={departmentData}
+                onSelect={(selectedItem, index) => {
+                  // setSelectedColor(selectedItem);
+                  setDepartment(selectedItem.id);
+                  console.log('gert Value:::', selectedItem);
+                }}
+                defaultValue={departmentSelected}
+                renderButton={(selectedItem, isOpen) => {
+                  console.log('Get Response>>>', selectedItem);
+                  return (
+                    <View style={styles.dropdown2BtnStyle2}>
+                      {department != '' ? (
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {department == selectedItem?.id
+                            ? selectedItem?.title
+                            : departmentSelected}
+                        </Text>
+                      ) : (
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {selectedItem?.title || 'Select'}
+                        </Text>
+                      )}
+                    </View>
+                  );
+                }}
+                showsVerticalScrollIndicator={false}
+                renderItem={(item, index, isSelected) => {
+                  return (
+                    <TouchableOpacity style={styles.dropdownView}>
+                      <Text style={styles.dropdownItemTxtStyle}>
+                        {item.title}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                }}
+                dropdownIconPosition={'left'}
+                dropdownStyle={styles.dropdown2DropdownStyle}
               />
             </View>
           </View>
@@ -346,11 +552,50 @@ const AppointmentComponent = ({searchBreak, setSearchBreak, allData}) => {
               <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
                 Doctor:<Text style={styles.dataHistoryText4}>*</Text>
               </Text>
-              <TextInput
+              {/* <TextInput
                 value={doctor}
                 placeholder={'Select'}
                 onChangeText={text => setDoctor(text)}
                 style={[styles.nameTextView, {width: '100%'}]}
+              /> */}
+              <SelectDropdown
+                data={doctorData}
+                onSelect={(selectedItem, index) => {
+                  // setSelectedColor(selectedItem);
+                  setDoctor(selectedItem.id);
+                  console.log('gert Value:::', selectedItem);
+                }}
+                defaultValue={doctorSelectedName}
+                renderButton={(selectedItem, isOpen) => {
+                  console.log('Get Response>>>', selectedItem);
+                  return (
+                    <View style={styles.dropdown2BtnStyle2}>
+                      {doctor != '' ? (
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {doctor == selectedItem?.id
+                            ? selectedItem?.name
+                            : doctorSelectedName}
+                        </Text>
+                      ) : (
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {selectedItem?.name || 'Select'}
+                        </Text>
+                      )}
+                    </View>
+                  );
+                }}
+                showsVerticalScrollIndicator={false}
+                renderItem={(item, index, isSelected) => {
+                  return (
+                    <TouchableOpacity style={styles.dropdownView}>
+                      <Text style={styles.dropdownItemTxtStyle}>
+                        {item.name}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                }}
+                dropdownIconPosition={'left'}
+                dropdownStyle={styles.dropdown2DropdownStyle}
               />
             </View>
 
@@ -410,7 +655,9 @@ const AppointmentComponent = ({searchBreak, setSearchBreak, allData}) => {
             </View>
           </View>
           <View style={styles.buttonView}>
-            <TouchableOpacity onPress={() => {}} style={styles.nextView}>
+            <TouchableOpacity
+              onPress={() => onAddAppointmentData()}
+              style={styles.nextView}>
               <Text style={styles.nextText}>Save</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => {}} style={styles.prevView}>
@@ -419,6 +666,17 @@ const AppointmentComponent = ({searchBreak, setSearchBreak, allData}) => {
           </View>
         </ScrollView>
       )}
+      <StatusComponent
+        modelVisible={cancelModal}
+        setModelVisible={setCancelModal}
+        onPress={() => {
+          fromPopup == 'confirm'
+            ? onConfirmAppointmentData()
+            : onCancelAppointmentData();
+        }}
+        setUserId={setUserId}
+        isLoading={loading}
+      />
     </View>
   );
 };
@@ -518,7 +776,7 @@ const styles = StyleSheet.create({
   },
   dataHistoryView: {
     width: '100%',
-    height: hp(8),
+    paddingVertical: hp(1),
     alignItems: 'center',
     flexDirection: 'row',
     alignSelf: 'flex-start',
@@ -534,7 +792,7 @@ const styles = StyleSheet.create({
     fontSize: hp(1.8),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
-    width: wp(45),
+    width: wp(48),
   },
   dataHistoryText2: {
     fontSize: hp(1.8),
@@ -572,6 +830,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginHorizontal: wp(2),
+    flexDirection: 'row',
   },
   actionDataView: {
     width: wp(20),
@@ -783,6 +1042,35 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     alignSelf: 'center',
     height: hp(10),
+    marginTop: hp(1),
+  },
+  dropdown2DropdownStyle: {
+    backgroundColor: COLORS.white,
+    borderRadius: 4,
+    height: hp(25),
+    // borderRadius: 12,
+  },
+  dropdownItemTxtStyle: {
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    marginLeft: wp(2),
+  },
+  dropdownView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: hp(4),
+    borderBottomWidth: 0,
+  },
+  dropdown2BtnStyle2: {
+    width: '100%',
+    height: hp(4.2),
+    backgroundColor: COLORS.white,
+    borderRadius: 5,
+    alignItems: 'center',
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
     marginTop: hp(1),
   },
 });

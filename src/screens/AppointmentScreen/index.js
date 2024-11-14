@@ -318,6 +318,7 @@ export const AppointmentScreen = ({navigation}) => {
             searchBreak={searchAppointment}
             setSearchBreak={setSearchAppointment}
             allData={appointmentList}
+            onGetData={onAppointmentGet}
           />
         ) : (
           selectedView == 'Appointments Transaction' && (
