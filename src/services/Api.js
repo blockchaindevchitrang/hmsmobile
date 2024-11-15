@@ -1013,3 +1013,149 @@ export const onAddAccountListApi = async dataUrl => {
       .catch(err => reject(err));
   });
 };
+
+export const onDeleteAccountApi = async id => {
+  const token = await AsyncStorage.getItem('accessToken');
+  const url = Api.baseUrl1 + `account-delete/${id}`;
+  console.log('Get Doctor Details Url:::', url);
+  return new Promise((resolve, reject) => {
+    axios
+      .delete(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(res => resolve(res))
+      .catch(err => reject(err));
+  });
+};
+
+export const onGetEditAccountDataApi = async dataUrl => {
+  const token = await AsyncStorage.getItem('accessToken');
+  const url = Api.baseUrl1 + dataUrl;
+  console.log('Get Doctor Details Url:::', url);
+  return new Promise((resolve, reject) => {
+    axios
+      .patch(url, JSON.stringify({}), {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(res => resolve(res))
+      .catch(err => reject(err));
+  });
+};
+
+export const onGetEditAppointmentDataApi = async dataUrl => {
+  const token = await AsyncStorage.getItem('accessToken');
+  const url = Api.baseUrl1 + dataUrl;
+  console.log('Get Doctor Details Url:::', url);
+  return new Promise((resolve, reject) => {
+    axios
+      .patch(url, JSON.stringify({}), {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(res => resolve(res))
+      .catch(err => reject(err));
+  });
+};
+
+export const onGetSpecificAppointmentDataApi = async id => {
+  const token = await AsyncStorage.getItem('accessToken');
+  const url = Api.baseUrl1 + `appointment-edit/${id}`;
+  console.log('Get Doctor Details Url:::', url);
+  return new Promise((resolve, reject) => {
+    axios
+      .get(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(res => resolve(res))
+      .catch(err => reject(err));
+  });
+};
+
+export const onGetPayrollListApi = async text => {
+  const token = await AsyncStorage.getItem('accessToken');
+  const url = Api.baseUrl1 + `emplloyee-payroll-get?search=${text}`;
+  console.log('Get Doctor Details Url:::', url);
+  return new Promise((resolve, reject) => {
+    axios
+      .get(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(res => resolve(res))
+      .catch(err => reject(err));
+  });
+};
+
+export const onGetSpecificPayrollDataApi = async id => {
+  const token = await AsyncStorage.getItem('accessToken');
+  const url = Api.baseUrl1 + `appointment-edit/${id}`;
+  console.log('Get Doctor Details Url:::', url);
+  return new Promise((resolve, reject) => {
+    axios
+      .get(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(res => resolve(res))
+      .catch(err => reject(err));
+  });
+};
+
+export const onGetEditPayrollDataApi = async dataUrl => {
+  const token = await AsyncStorage.getItem('accessToken');
+  const url = Api.baseUrl1 + dataUrl;
+  console.log('Get Doctor Details Url:::', url);
+  return new Promise((resolve, reject) => {
+    axios
+      .patch(url, JSON.stringify({}), {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(res => resolve(res))
+      .catch(err => reject(err));
+  });
+};
+
+export const onAddPayrollListApi = async dataUrl => {
+  const token = await AsyncStorage.getItem('accessToken');
+  const url = Api.baseUrl1 + dataUrl;
+  console.log('Get Login Url:::', url);
+  return new Promise((resolve, reject) => {
+    axios
+      .post(url, JSON.stringify({}), {
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(res => resolve(res))
+      .catch(err => reject(err));
+  });
+};
+
+export const onDeletePayrollApi = async id => {
+  const token = await AsyncStorage.getItem('accessToken');
+  const url = Api.baseUrl1 + `emplloyee-payroll-delete/${id}`;
+  console.log('Get Doctor Details Url:::', url);
+  return new Promise((resolve, reject) => {
+    axios
+      .delete(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(res => resolve(res))
+      .catch(err => reject(err));
+  });
+};

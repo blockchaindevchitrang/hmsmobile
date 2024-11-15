@@ -30,6 +30,8 @@ import {useSelector} from 'react-redux';
 import {
   onAddAppointmentApi,
   onCancelAppointmentApi,
+  onGetEditAppointmentDataApi,
+  onGetSpecificAppointmentDataApi,
   onSuccessAppointmentApi,
 } from '../services/Api';
 import {StatusComponent} from './StatusComponent';
@@ -185,6 +187,50 @@ const AppointmentComponent = ({
     }
   };
 
+  const onEditAccountData = async () => {
+    try {
+      setLoading(true);
+      let dataUrl = `appointment-update/${userId}?patient_id=${patient}&doctor_id=${doctor}&department_id=${department}&opd_date=${dateOfBirth}&problem=${description}&is_completed=${
+        status ? 1 : 0
+      }`;
+      const response = await onGetEditAppointmentDataApi(dataUrl);
+
+      if (response.status === 200) {
+        onGetData();
+        setLoading(false);
+        setAddHolidayVisible(false);
+        showMessage({
+          message: 'Account Edit Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      }
+    } catch (err) {
+      setLoading(false);
+      showMessage({
+        message: 'Something is wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Error>>', err.response.data);
+    }
+  };
+
+  const onGetSpecificDoctor = async id => {
+    try {
+      const response = await onGetSpecificAppointmentDataApi(id);
+      if (response.status == 200) {
+        console.log('get ValueLL:::', response.data.data);
+        return response.data.data;
+      } else {
+        return 0;
+      }
+    } catch (err) {
+      console.log('Get Error', err);
+    }
+  };
+
   const renderItem = ({item, index}) => {
     return (
       <View
@@ -284,7 +330,20 @@ const AppointmentComponent = ({
                 />
               </TouchableOpacity>
             )}
-            <TouchableOpacity>
+            <TouchableOpacity
+              onPress={async () => {
+                let allData = await onGetSpecificDoctor(item.id);
+                setUserId(item.id);
+                setDoctor(allData?.doctor_id);
+                setDepartment(allData?.department_id);
+                setPatient(allData?.patient_id);
+                setDepartmentSelected(item.department);
+                setDoctorSelectedName(item.doctor_name);
+                setPatientSelected(item.patient_name);
+                setDescription(allData.problem);
+                setStatus(item.status == 0 ? false : true);
+                setAddHolidayVisible(true);
+              }}>
               <Image
                 style={[styles.editImage, {tintColor: COLORS.blueColor}]}
                 source={editing}
@@ -656,7 +715,9 @@ const AppointmentComponent = ({
           </View>
           <View style={styles.buttonView}>
             <TouchableOpacity
-              onPress={() => onAddAppointmentData()}
+              onPress={() => {
+                userId != '' ? onEditAccountData() : onAddAppointmentData();
+              }}
               style={styles.nextView}>
               <Text style={styles.nextText}>Save</Text>
             </TouchableOpacity>
@@ -792,7 +853,7 @@ const styles = StyleSheet.create({
     fontSize: hp(1.8),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
-    width: wp(48),
+    width: wp(45),
   },
   dataHistoryText2: {
     fontSize: hp(1.8),

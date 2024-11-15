@@ -30,7 +30,7 @@ import PaymentList from '../../components/BillingComponent/PaymentList';
 import ReportList from '../../components/BillingComponent/ReportList';
 import AdvanceList from '../../components/BillingComponent/AdvanceList';
 import ManualList from '../../components/BillingComponent/ManualList';
-import { onGetAccountListApi } from '../../services/Api';
+import { onGetAccountListApi, onGetPayrollListApi } from '../../services/Api';
 
 const allData = [
   {
@@ -305,6 +305,7 @@ export const BillingScreen = ({navigation}) => {
   const [optionModalView, setOptionModalView] = useState(false);
   const [selectedView, setSelectedView] = useState('Accounts');
   const [accountList, setAccountList] = useState([]);
+  const [payrollList, setPayrollList] = useState([]);
   const [refresh, setRefresh] = useState(false);
 
   const animations = useRef(
@@ -381,6 +382,23 @@ export const BillingScreen = ({navigation}) => {
     }
   };
 
+  useEffect(() => {
+    onGetPayrollData();
+  }, [searchPayroll]);
+
+  const onGetPayrollData = async () => {
+    try {
+      const response = await onGetPayrollListApi(searchPayroll);
+      console.log('GetAccountData>>', response.data.data);
+      if (response.status == 200) {
+        setPayrollList(response.data.data.items);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Get AccountError>', err.response.data);
+    }
+  };
+
   return (
     <View style={[styles.container, {backgroundColor: theme.lightColor}]}>
       <View style={styles.headerView}>
@@ -403,7 +421,8 @@ export const BillingScreen = ({navigation}) => {
           <PayrollList
             searchBreak={searchPayroll}
             setSearchBreak={setSearchPayroll}
-            allData={accountantData}
+            allData={payrollList}
+            onGetData={onGetPayrollData}
           />
         ) : selectedView == 'Invoices' ? (
           <InvoicesList

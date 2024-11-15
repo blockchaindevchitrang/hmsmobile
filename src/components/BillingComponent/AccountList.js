@@ -36,7 +36,14 @@ import {
   MenuTrigger,
 } from 'react-native-popup-menu';
 import close from '../../images/close.png';
-import {onAddAccountListApi} from '../../services/Api';
+import {
+  onAddAccountListApi,
+  onDeleteAccountApi,
+  onGetEditAccountDataApi,
+  onGetSpecificAccountDataApi,
+} from '../../services/Api';
+import {DeletePopup} from '../DeletePopup';
+import {showMessage} from 'react-native-flash-message';
 
 const AccountList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
   const {theme} = useTheme();
@@ -47,6 +54,65 @@ const AccountList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
   const [statusVisible, setStatusVisible] = useState(false);
   const [departmentType, setDepartmentType] = useState('debit');
   const [isLoading, setIsLoading] = useState(false);
+  const [userId, setUserId] = useState('');
+  const [deleteUser, setDeleteUser] = useState(false);
+
+  const onDeleteRecord = async () => {
+    try {
+      setIsLoading(true);
+      const response = await onDeleteAccountApi(userId);
+      if (response.status == 200) {
+        onGetData();
+        setUserId('');
+        setIsLoading(false);
+        setDeleteUser(false);
+        showMessage({
+          message: 'Account Delete Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      }
+    } catch (err) {
+      setIsLoading(false);
+      showMessage({
+        message: 'Something is wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Error Delete', err.response.data);
+    }
+  };
+
+  const onEditAccountData = async () => {
+    try {
+      setIsLoading(true);
+      let dataUrl = `account-update/${userId}?name=${eventTitle}&type=${
+        departmentType == 'debit' ? 1 : 2
+      }&description=${departmentComment}&status=${statusVisible ? 1 : 0}`;
+      const response = await onGetEditAccountDataApi(dataUrl);
+
+      if (response.status === 200) {
+        onGetData();
+        setIsLoading(false);
+        setNewAccountVisible(false);
+        showMessage({
+          message: 'Account Edit Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      }
+    } catch (err) {
+      setIsLoading(false);
+      showMessage({
+        message: 'Something is wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Error>>', err.response.data);
+    }
+  };
 
   const renderItem = ({item, index}) => {
     return (
@@ -66,23 +132,38 @@ const AccountList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
         <View style={[styles.switchView]}>
           <Switch
             trackColor={{
-              false: item.status ? COLORS.greenColor : COLORS.errorColor,
-              true: item.status ? COLORS.greenColor : COLORS.errorColor,
+              false:
+                item.status == 'Active' ? COLORS.greenColor : COLORS.errorColor,
+              true:
+                item.status == 'Active' ? COLORS.greenColor : COLORS.errorColor,
             }}
             thumbColor={item.status ? '#f4f3f4' : '#f4f3f4'}
             ios_backgroundColor={COLORS.errorColor}
             onValueChange={() => {}}
-            value={item.status}
+            value={item.status == 'Active' ? true : false}
           />
         </View>
         <View style={styles.actionDataView}>
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={async () => {
+              setUserId(item.id);
+              setEventTitle(item.name);
+              setDepartmentComment(item.description);
+              setDepartmentType(item.type == 'Debit' ? 'debit' : 'credit');
+              setStatusVisible(item.status == 'Active' ? true : false);
+              setNewAccountVisible(true);
+            }}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.blueColor}]}
               source={editing}
             />
           </TouchableOpacity>
-          <TouchableOpacity style={{marginLeft: wp(2)}}>
+          <TouchableOpacity
+            onPress={() => {
+              setUserId(item.id);
+              setDeleteUser(true);
+            }}
+            style={{marginLeft: wp(2)}}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.errorColor}]}
               source={deleteIcon}
@@ -292,7 +373,9 @@ const AccountList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
             </View>
             <View style={styles.buttonView}>
               <TouchableOpacity
-                onPress={() => onAddAccountData()}
+                onPress={() => {
+                  userId != '' ? onEditAccountData() : onAddAccountData();
+                }}
                 style={styles.nextView}>
                 {isLoading ? (
                   <ActivityIndicator size={'small'} color={COLORS.white} />
@@ -309,6 +392,13 @@ const AccountList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
           </View>
         </View>
       </Modal>
+      <DeletePopup
+        modelVisible={deleteUser}
+        setModelVisible={setDeleteUser}
+        onPress={() => onDeleteRecord()}
+        setUserId={setUserId}
+        isLoading={isLoading}
+      />
     </>
   );
 };

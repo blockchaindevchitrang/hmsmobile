@@ -84,11 +84,11 @@ const PayrollList = ({searchBreak, setSearchBreak, allData}) => {
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
         <Text style={[styles.dataHistoryText, {width: wp(14)}]}>
-          {item.srNo}
+          {item.sr_no}
         </Text>
         <View style={[styles.switchView, {width: wp(26)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataHistoryText1]}>{item.payroll}</Text>
+            <Text style={[styles.dataHistoryText1]}>{item.payroll_id}</Text>
           </View>
         </View>
         <View style={[styles.nameDataView]}>
@@ -105,7 +105,7 @@ const PayrollList = ({searchBreak, setSearchBreak, allData}) => {
           {item.year}
         </Text>
         <Text style={[styles.dataHistoryText, {width: wp(24)}]}>
-          {item.salary}
+          {item.net_salary}
         </Text>
         <View style={[styles.switchView, {width: wp(24)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>

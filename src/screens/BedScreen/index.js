@@ -330,12 +330,14 @@ export const BedScreen = ({navigation}) => {
             searchBreak={searchPayroll}
             setSearchBreak={setSearchPayroll}
             allData={bedData}
+            onGetBedTypeData={bedDataGet}
           />
         ) : selectedView == 'Bed Assigns' ? (
           <BedAssignList
             searchBreak={searchInvoice}
             setSearchBreak={setSearchInvoice}
             allData={bedAssignData}
+            getData={bedAssignDataGet}
           />
         ) : (
           selectedView == 'Bed Status' && (
