@@ -28,9 +28,9 @@ import DatePicker from 'react-native-date-picker';
 import SelectDropdown from 'react-native-select-dropdown';
 import {useSelector} from 'react-redux';
 import {
-  onAddAppointmentApi,
+  onAddAccountListApi,
   onCancelAppointmentApi,
-  onGetEditAppointmentDataApi,
+  onGetEditAccountDataApi,
   onGetSpecificAppointmentDataApi,
   onSuccessAppointmentApi,
 } from '../services/Api';
@@ -193,7 +193,7 @@ const AppointmentComponent = ({
       let dataUrl = `appointment-update/${userId}?patient_id=${patient}&doctor_id=${doctor}&department_id=${department}&opd_date=${dateOfBirth}&problem=${description}&is_completed=${
         status ? 1 : 0
       }`;
-      const response = await onGetEditAppointmentDataApi(dataUrl);
+      const response = await onGetEditAccountDataApi(dataUrl);
 
       if (response.status === 200) {
         onGetData();
@@ -360,7 +360,7 @@ const AppointmentComponent = ({
       let dataUrl = `appointment-create?patient_id=${patient}&doctor_id=${doctor}&department_id=${department}&opd_date=${dateOfBirth}&problem=${description}&is_completed=${
         status ? 1 : 0
       }`;
-      const response = await onAddAppointmentApi(dataUrl);
+      const response = await onAddAccountListApi(dataUrl);
 
       if (response.status === 200) {
         onGetData();
@@ -721,7 +721,9 @@ const AppointmentComponent = ({
               style={styles.nextView}>
               <Text style={styles.nextText}>Save</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => {}} style={styles.prevView}>
+            <TouchableOpacity
+              onPress={() => setAddHolidayVisible(false)}
+              style={styles.prevView}>
               <Text style={styles.prevText}>Cancel</Text>
             </TouchableOpacity>
           </View>

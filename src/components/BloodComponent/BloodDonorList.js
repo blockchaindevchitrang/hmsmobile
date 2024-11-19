@@ -11,6 +11,7 @@ import {
   Platform,
   TouchableWithoutFeedback,
   Modal,
+  ActivityIndicator,
 } from 'react-native';
 import React, {useRef, useState} from 'react';
 import {
@@ -35,19 +36,125 @@ import {
   MenuTrigger,
 } from 'react-native-popup-menu';
 import close from '../../images/close.png';
+import SelectDropdown from 'react-native-select-dropdown';
+import {useSelector} from 'react-redux';
+import FlashMessage, {
+  showMessage,
+  hideMessage,
+} from 'react-native-flash-message';
+import {DeletePopup} from '../DeletePopup';
+import {
+  onAddAccountListApi,
+  onDeleteBloodDonorApi,
+  onGetEditAccountDataApi,
+} from '../../services/Api';
 
-const BloodDonorList = ({searchBreak, setSearchBreak, allData}) => {
+const BloodDonorList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
+  const bloodData = useSelector(state => state.bloodData);
   const {theme} = useTheme();
   const menuRef = useRef(null);
   const [addDonorVisible, setAddDonorVisible] = useState(false);
   const [eventTitle, setEventTitle] = useState('');
-  const [departmentComment, setDepartmentComment] = useState('');
-  const [statusVisible, setStatusVisible] = useState(false);
+  const [bloodGroupId, setBloodGroupId] = useState('');
+  const [bloodGroup, setBloodGroup] = useState('');
+  const [donorName, setDonorName] = useState('');
+  const [donorAge, setDonorAge] = useState('');
   const [departmentType, setDepartmentType] = useState('male');
   const [dateOfBirth, setDateOfBirth] = useState(new Date());
   const [dateModalVisible, setDateModalVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [deleteUser, setDeleteUser] = useState(false);
+  const [userId, setUserId] = useState('');
+
+  const onAddBloodDonation = async () => {
+    try {
+      setLoading(true);
+      let urlData = `blood-donor-create?name=${donorName}&age=${donorAge}&blood_group=${bloodGroup}&last_donate_date=${new Date(
+        dateOfBirth,
+      ).toISOString()}&gender=${departmentType == 'male' ? 'Male' : 'Female'}`;
+      const response = await onAddAccountListApi(urlData);
+      if (response.status == 200) {
+        onGetData();
+        setLoading(false);
+        setAddDonorVisible(false);
+        showMessage({
+          message: 'Record Added Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      }
+    } catch (err) {
+      setLoading(false);
+      setAddDonorVisible(false);
+      showMessage({
+        message: 'Please enter properly details.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Error>>', err.response.data);
+    }
+  };
+
+  const onEditBloodDonorData = async () => {
+    try {
+      setLoading(true);
+      let urlData = `blood-donor-update/${userId}?name=${donorName}&age=${donorAge}&blood_group=${bloodGroup}&last_donate_date=${new Date(
+        dateOfBirth,
+      ).toISOString()}&gender=${departmentType == 'male' ? 'Male' : 'Female'}`;
+      const response = await onGetEditAccountDataApi(urlData);
+      if (response.status == 200) {
+        onGetData();
+        setLoading(false);
+        setAddDonorVisible(false);
+        showMessage({
+          message: 'Record Added Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      }
+    } catch (err) {
+      setLoading(false);
+      showMessage({
+        message: 'Please enter properly details.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Get Error:', err);
+    }
+  };
+
+  const onDeleteBedTypeData = async id => {
+    try {
+      setLoading(true);
+      const response = await onDeleteBloodDonorApi(id);
+      if (response.status == 200) {
+        onGetData();
+        setLoading(false);
+        setDeleteUser(false);
+        showMessage({
+          message: 'Record Delete Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      }
+    } catch (err) {
+      setLoading(false);
+      setDeleteUser(false);
+      showMessage({
+        message: 'Something want wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Get Error:', err);
+    }
+  };
 
   const renderItem = ({item, index}) => {
+    const time = moment(item.last_donate_date).format('hh:mm');
+    const date = moment(item.last_donate_date).format('DD MMM, YYYY');
     return (
       <View
         style={[
@@ -75,17 +182,35 @@ const BloodDonorList = ({searchBreak, setSearchBreak, allData}) => {
         </View>
         <View style={[styles.switchView, {width: wp(35)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataHistoryText1]}>{item.date}</Text>
+            <Text style={[styles.dataHistoryText1]}>
+              {time}
+              {'\n'}
+              {date}
+            </Text>
           </View>
         </View>
         <View style={styles.actionDataView}>
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              setUserId(item.id);
+              setDonorName(item.name);
+              setDonorAge(JSON.stringify(item.age));
+              setDepartmentType(item.gender == 'Male' ? 'male' : 'female');
+              setBloodGroup(item.blood_group);
+              setDateOfBirth(new Date(item.last_donate_date));
+              setAddDonorVisible(true);
+            }}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.blueColor}]}
               source={editing}
             />
           </TouchableOpacity>
-          <TouchableOpacity style={{marginLeft: wp(2)}}>
+          <TouchableOpacity
+            style={{marginLeft: wp(2)}}
+            onPress={() => {
+              setUserId(item.id);
+              setDeleteUser(true);
+            }}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.errorColor}]}
               source={deleteIcon}
@@ -113,7 +238,15 @@ const BloodDonorList = ({searchBreak, setSearchBreak, allData}) => {
           </View>
           <View style={styles.filterView}>
             <TouchableOpacity
-              onPress={() => setAddDonorVisible(true)}
+              onPress={() => {
+                setUserId('');
+                setDonorName('');
+                setDonorAge('');
+                setDepartmentType('male');
+                setBloodGroup('');
+                setDateOfBirth(new Date());
+                setAddDonorVisible(true);
+              }}
               style={styles.actionView}>
               <Text style={styles.actionText}>New Blood Donor</Text>
             </TouchableOpacity>
@@ -197,9 +330,9 @@ const BloodDonorList = ({searchBreak, setSearchBreak, allData}) => {
               <Text style={styles.dataHistoryText4}>*</Text>
             </Text>
             <TextInput
-              value={eventTitle}
+              value={donorName}
               placeholder={'Name'}
-              onChangeText={text => setEventTitle(text)}
+              onChangeText={text => setDonorName(text)}
               style={[styles.eventTextInput]}
             />
 
@@ -208,9 +341,9 @@ const BloodDonorList = ({searchBreak, setSearchBreak, allData}) => {
               <Text style={styles.dataHistoryText4}>*</Text>
             </Text>
             <TextInput
-              value={eventTitle}
+              value={donorAge}
               placeholder={'Age'}
-              onChangeText={text => setEventTitle(text)}
+              onChangeText={text => setDonorAge(text)}
               style={[styles.eventTextInput]}
             />
 
@@ -258,13 +391,52 @@ const BloodDonorList = ({searchBreak, setSearchBreak, allData}) => {
               {'Blood Group:'}
               <Text style={styles.dataHistoryText4}>*</Text>
             </Text>
-            <TextInput
+            {/* <TextInput
               value={eventTitle}
               placeholder={'Select Blood Group'}
               onChangeText={text => setEventTitle(text)}
               style={[styles.eventTextInput]}
+            /> */}
+            <SelectDropdown
+              data={bloodData}
+              onSelect={(selectedItem, index) => {
+                // setSelectedColor(selectedItem);
+                setBloodGroupId(selectedItem.id);
+                setBloodGroup(selectedItem.blood_group);
+                console.log('gert Value:::', selectedItem);
+              }}
+              defaultValue={bloodGroup}
+              renderButton={(selectedItem, isOpen) => {
+                console.log('Get Response>>>', selectedItem);
+                return (
+                  <View style={styles.dropdown2BtnStyle2}>
+                    {bloodGroup != '' ? (
+                      <Text style={styles.dropdownItemTxtStyle}>
+                        {bloodGroup == selectedItem?.id
+                          ? selectedItem?.blood_group
+                          : bloodGroup}
+                      </Text>
+                    ) : (
+                      <Text style={styles.dropdownItemTxtStyle}>
+                        {selectedItem?.blood_group || 'Select'}
+                      </Text>
+                    )}
+                  </View>
+                );
+              }}
+              showsVerticalScrollIndicator={false}
+              renderItem={(item, index, isSelected) => {
+                return (
+                  <TouchableOpacity style={styles.dropdownView}>
+                    <Text style={styles.dropdownItemTxtStyle}>
+                      {item.blood_group}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              }}
+              dropdownIconPosition={'left'}
+              dropdownStyle={styles.dropdown2DropdownStyle}
             />
-
             <Text style={[styles.titleText1]}>
               {'Last Donations Date:'}
               <Text style={styles.dataHistoryText4}>*</Text>
@@ -289,8 +461,16 @@ const BloodDonorList = ({searchBreak, setSearchBreak, allData}) => {
               }}
             />
             <View style={styles.buttonView}>
-              <TouchableOpacity onPress={() => {}} style={styles.nextView}>
-                <Text style={styles.nextText}>Save</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  userId != '' ? onEditBloodDonorData() : onAddBloodDonation();
+                }}
+                style={styles.nextView}>
+                {loading ? (
+                  <ActivityIndicator size={'small'} color={COLORS.white} />
+                ) : (
+                  <Text style={styles.nextText}>Save</Text>
+                )}
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => setAddDonorVisible(false)}
@@ -301,6 +481,13 @@ const BloodDonorList = ({searchBreak, setSearchBreak, allData}) => {
           </View>
         </View>
       </Modal>
+      <DeletePopup
+        modelVisible={deleteUser}
+        setModelVisible={setDeleteUser}
+        onPress={() => onDeleteBedTypeData(userId)}
+        setUserId={setUserId}
+        isLoading={loading}
+      />
     </>
   );
 };
@@ -419,6 +606,7 @@ const styles = StyleSheet.create({
     fontSize: hp(1.7),
     fontFamily: Fonts.FONTS.PoppinsBold,
     color: COLORS.black,
+    textAlign: 'center',
   },
   dataHistoryText2: {
     fontSize: hp(1.8),
@@ -759,5 +947,36 @@ const styles = StyleSheet.create({
     fontSize: hp(2.5),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
+  },
+  dropdown2DropdownStyle: {
+    backgroundColor: COLORS.white,
+    borderRadius: 4,
+    height: hp(25),
+    // borderRadius: 12,
+  },
+  dropdownItemTxtStyle: {
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    marginLeft: wp(2),
+  },
+  dropdownView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: hp(4),
+    borderBottomWidth: 0,
+  },
+  dropdown2BtnStyle2: {
+    width: '92%',
+    height: hp(5.5),
+    backgroundColor: COLORS.white,
+    borderRadius: 5,
+    alignItems: 'center',
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    marginTop: hp(1),
+    alignSelf: 'center',
+    marginBottom: hp(2),
   },
 });

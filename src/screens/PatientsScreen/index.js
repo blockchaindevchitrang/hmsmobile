@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -35,6 +35,7 @@ import CaseHandlerList from '../../components/PatientsComponent/CaseHandlerList'
 import PatientAdmissionList from '../../components/PatientsComponent/PatientAdmissionList';
 import SmartCardTemplates from '../../components/PatientsComponent/SmartCardTemplates';
 import GeneratePatient from '../../components/PatientsComponent/GeneratePatient';
+import { onGetCommonApi, onGetPatientApi, onGetPatientCasesApi } from '../../services/Api';
 
 const allData = [
   {
@@ -386,15 +387,20 @@ export const PatientsScreen = ({navigation}) => {
   const {t} = useTranslation();
   const {theme} = useTheme();
   const [searchUser, setSearchUser] = useState('');
-  const [searchRole, setSearchRole] = useState('');
-  const [searchAccountant, setSearchAccountant] = useState('');
-  const [searchBreak, setSearchBreak] = useState('');
-  const [searchNurse, setSearchNurse] = useState('');
-  const [searchReceptionist, setSearchReceptionist] = useState('');
-  const [searchLabTechnician, setSearchLabTechnician] = useState('');
-  const [searchPharmacists, setSearchPharmacists] = useState('');
+  const [searchCases, setSearchCases] = useState('');
+  const [searchCasesHandler, setSearchCasesHandler] = useState('');
+  const [searchAdmission, setSearchAdmission] = useState('');
+  const [searchTemplate, setSearchTemplate] = useState('');
+  const [searchSmartCard, setSearchSmartCard] = useState('');
   const [optionModalView, setOptionModalView] = useState(false);
   const [selectedView, setSelectedView] = useState('Patients');
+  const [patientsList, setPatientsList] = useState([]);
+  const [casesList, setCasesList] = useState([]);
+  const [caseHandlerList, setCaseHandlerList] = useState([]);
+  const [admissionList, setAdmissionList] = useState([]);
+  const [smartCardTempList, setSmartCardTempList] = useState([]);
+  const [patientSmartCardList, setPatientSmartCardList] = useState([]);
+  const [refresh, setRefresh] = useState(false);
 
   const animations = useRef(
     [0, 0, 0, 0, 0, 0, 0].map(() => new Animated.Value(300)),
@@ -453,6 +459,108 @@ export const PatientsScreen = ({navigation}) => {
     }
   };
 
+  useEffect(() => {
+    onGetPatientData();
+  }, []);
+
+  const onGetPatientData = async () => {
+    try {
+      const response = await onGetPatientApi();
+      console.log('get Response:', response.data.data);
+      if (response.status) {
+        setPatientsList(response.data.data);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Error>>', err);
+    }
+  };
+
+  useEffect(() => {
+    onGetPatientCasesData();
+  }, [searchUser]);
+
+  const onGetPatientCasesData = async () => {
+    try {
+      const response = await onGetPatientCasesApi(searchUser);
+      console.log('get Response:', response.data.data);
+      if (response.status) {
+        setCasesList(response.data.data);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Error>>', err);
+    }
+  };
+
+  useEffect(() => {
+    onGetCasesHandlerData();
+  }, [searchCasesHandler]);
+
+  const onGetCasesHandlerData = async () => {
+    try {
+      const response = await onGetCommonApi(`patient-admissions-get?search=${searchCasesHandler}`);
+      console.log('get Response:', response.data.data);
+      if (response.status) {
+        setCaseHandlerList(response.data.data);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Error>>', err);
+    }
+  };
+
+  useEffect(() => {
+    onGetAdmissionData();
+  }, [searchAdmission]);
+
+  const onGetAdmissionData = async () => {
+    try {
+      const response = await onGetCommonApi(`patient-admissions-get?search=${searchAdmission}`);
+      console.log('get Response:', response.data.data);
+      if (response.status) {
+        setAdmissionList(response.data.data);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Error>>', err);
+    }
+  };
+
+  useEffect(() => {
+    onGetSmartCardTempData();
+  }, [searchTemplate]);
+
+  const onGetSmartCardTempData = async () => {
+    try {
+      const response = await onGetCommonApi(`patient-smart-card-get?search=${searchTemplate}`);
+      console.log('get Response:', response.data.data);
+      if (response.status) {
+        setSmartCardTempList(response.data.data);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Error>>', err);
+    }
+  };
+
+  useEffect(() => {
+    onGetSmartCardData();
+  }, [searchSmartCard]);
+
+  const onGetSmartCardData = async () => {
+    try {
+      const response = await onGetCommonApi(`patient-smart-cards?search=${searchSmartCard}`);
+      console.log('get Response:', response.data.data);
+      if (response.status) {
+        setPatientSmartCardList(response.data.data);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Error>>', err);
+    }
+  };
+
   return (
     <View style={[styles.container, {backgroundColor: theme.lightColor}]}>
       <View style={styles.headerView}>
@@ -468,38 +576,44 @@ export const PatientsScreen = ({navigation}) => {
           <PatientsList
             searchBreak={searchUser}
             setSearchBreak={setSearchUser}
-            allData={allData}
+            allData={patientsList}
+            onGetData={onGetPatientData}
           />
         ) : selectedView == 'Cases' ? (
           <CasesList
-            searchBreak={searchAccountant}
-            setSearchBreak={setSearchAccountant}
+            searchBreak={searchCases}
+            setSearchBreak={setSearchCases}
             allData={accountantData}
+            onGetData={onGetPatientCasesData}
           />
         ) : selectedView == 'Case Handlers' ? (
           <CaseHandlerList
-            searchBreak={searchAccountant}
-            setSearchBreak={setSearchAccountant}
+            searchBreak={caseHandlerList}
+            setSearchBreak={setCaseHandlerList}
             allData={CaseHandlerData}
+            onGetData={onGetCasesHandlerData}
           />
         ) : selectedView == 'Patient Admissions' ? (
           <PatientAdmissionList
-            searchBreak={searchNurse}
-            setSearchBreak={setSearchNurse}
-            allData={NurseData}
+            searchBreak={searchAdmission}
+            setSearchBreak={setSearchAdmission}
+            allData={admissionList}
+            onGetData={onGetAdmissionData}
           />
         ) : selectedView == 'Patient Smart Card Templates' ? (
           <SmartCardTemplates
-            searchBreak={searchReceptionist}
-            setSearchBreak={setSearchReceptionist}
-            allData={ReceptionistsData}
+            searchBreak={searchTemplate}
+            setSearchBreak={setSearchTemplate}
+            allData={smartCardTempList}
+            onGetData={onGetSmartCardTempData}
           />
         ) : (
           selectedView == 'Generate Patient Smart Cards' && (
             <GeneratePatient
-              searchBreak={searchPharmacists}
-              setSearchBreak={setSearchPharmacists}
-              allData={PharmacistsData}
+              searchBreak={searchSmartCard}
+              setSearchBreak={setSearchSmartCard}
+              allData={patientSmartCardList}
+              onGetData={onGetSmartCardData}
             />
           )
         )}

@@ -30,17 +30,142 @@ import {
   MenuOption,
   MenuTrigger,
 } from 'react-native-popup-menu';
+import SelectDropdown from 'react-native-select-dropdown';
+import {useSelector} from 'react-redux';
+import FlashMessage, {
+  showMessage,
+  hideMessage,
+} from 'react-native-flash-message';
+import {DeletePopup} from '../DeletePopup';
+import {
+  onAddBloodIssueApi,
+  onDeleteBloodIssueApi,
+  onGetEditBloodIssueApi,
+  onGetSpecificIssueDataApi,
+} from '../../services/Api';
+import DatePicker from 'react-native-date-picker';
 
-const BloodIssueList = ({searchBreak, setSearchBreak, allData}) => {
+const BloodIssueList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
+  const bloodDonor = useSelector(state => state.bloodDonor);
+  const doctorData = useSelector(state => state.doctorData);
+  const user_data = useSelector(state => state.user_data);
   const {theme} = useTheme();
   const menuRef = useRef(null);
   const [newBloodIssueVisible, setNewBloodIssueVisible] = useState(false);
-  const [issueDate, setIssueDate] = useState('');
+  const [issueDate, setIssueDate] = useState(new Date());
   const [doctorName, setDoctorName] = useState('');
+  const [doctorId, setDoctorId] = useState('');
   const [patientName, setPatientName] = useState('');
+  const [patientId, setPatientId] = useState('');
+  const [donorName, setDonorName] = useState('');
+  const [donorId, setDonorId] = useState('');
   const [bloodGroup, setBloodGroup] = useState('');
   const [Amount, setAmount] = useState('');
   const [Remarks, setRemarks] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [deleteUser, setDeleteUser] = useState(false);
+  const [userId, setUserId] = useState('');
+  const [dateModalVisible, setDateModalVisible] = useState(false);
+
+  const onAddBloodIssue = async () => {
+    try {
+      setLoading(true);
+      let urlData = `blood-issue-create?patient_id=${patientId}&doctor_id=${doctorId}&donor_id=${donorId}&issue_date=${moment(
+        issueDate,
+      ).format('YYYY-MM-DD')}&amount=${Amount}&remarks=${Remarks}`;
+      const response = await onAddBloodIssueApi(urlData);
+      if (response.status == 200) {
+        onGetData();
+        setLoading(false);
+        setNewBloodIssueVisible(false);
+        showMessage({
+          message: 'Record Added Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      }
+    } catch (err) {
+      setLoading(false);
+      setNewBloodIssueVisible(false);
+      showMessage({
+        message: 'Please enter properly details.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Error>>', err.response.data);
+    }
+  };
+
+  const onEditBloodIssueData = async () => {
+    try {
+      setLoading(true);
+      let urlData = `blood-issue-update/${userId}?patient_id=${patientId}&doctor_id=${doctorId}&donor_id=${donorId}&issue_date=${moment(
+        issueDate,
+      ).format('YYYY-MM-DD')}&amount=${Amount}&remarks=${Remarks}`;
+      const response = await onGetEditBloodIssueApi(urlData);
+      if (response.status == 200) {
+        onGetData();
+        setLoading(false);
+        setNewBloodIssueVisible(false);
+        showMessage({
+          message: 'Record Added Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      }
+    } catch (err) {
+      setLoading(false);
+      showMessage({
+        message: 'Please enter properly details.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Get Error:', err.response.data);
+    }
+  };
+
+  const onDeleteBedTypeData = async id => {
+    try {
+      setLoading(true);
+      const response = await onDeleteBloodIssueApi(id);
+      if (response.status == 200) {
+        onGetData();
+        setLoading(false);
+        setDeleteUser(false);
+        showMessage({
+          message: 'Record Delete Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      }
+    } catch (err) {
+      setLoading(false);
+      setDeleteUser(false);
+      showMessage({
+        message: 'Something want wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Get Error:', err);
+    }
+  };
+
+  const onGetSpecificBloodIssue = async id => {
+    try {
+      const response = await onGetSpecificIssueDataApi(id);
+      if (response.status == 200) {
+        console.log('get ValueLL:::', response.data.data);
+        return response.data.data;
+      } else {
+        return 0;
+      }
+    } catch (err) {
+      console.log('Get Error', err);
+    }
+  };
 
   const renderItem = ({item, index}) => {
     return (
@@ -171,6 +296,16 @@ const BloodIssueList = ({searchBreak, setSearchBreak, allData}) => {
                 ref={menuRef}
                 onSelect={value => {
                   if (value == 'add') {
+                    setUserId('');
+                    setDoctorId('');
+                    setDoctorName('');
+                    setDonorId('');
+                    setDonorName('');
+                    setPatientId('');
+                    setPatientName('');
+                    setAmount('');
+                    setRemarks('');
+                    setIssueDate(new Date());
                     setNewBloodIssueVisible(true);
                   } else {
                     alert(`Selected number: ${value}`);
@@ -284,11 +419,30 @@ const BloodIssueList = ({searchBreak, setSearchBreak, allData}) => {
                   {'Issue Date:'}
                   <Text style={styles.dataHistoryText4}>*</Text>
                 </Text>
-                <TextInput
+                {/* <TextInput
                   value={issueDate}
                   placeholder={'Issue Date'}
                   onChangeText={text => setIssueDate(text)}
                   style={[styles.nameTextView]}
+                /> */}
+                <Text
+                  style={[styles.eventTextInput]}
+                  onPress={() => setDateModalVisible(!dateModalVisible)}>
+                  {moment(issueDate).format('YYYY-MM-DD')}
+                </Text>
+                <DatePicker
+                  open={dateModalVisible}
+                  modal={true}
+                  date={issueDate}
+                  mode={'date'}
+                  onConfirm={date => {
+                    console.log('Console Log>>', date);
+                    setDateModalVisible(false);
+                    setIssueDate(date);
+                  }}
+                  onCancel={() => {
+                    setDateModalVisible(false);
+                  }}
                 />
               </View>
               <View style={{width: '48%'}}>
@@ -376,7 +530,11 @@ const BloodIssueList = ({searchBreak, setSearchBreak, allData}) => {
               </View>
             </View>
             <View style={styles.buttonView}>
-              <TouchableOpacity onPress={() => {}} style={styles.nextView}>
+              <TouchableOpacity
+                onPress={() => {
+                  userId != '' ? onEditBloodIssueData() : onAddBloodIssue();
+                }}
+                style={styles.nextView}>
                 <Text style={styles.nextText}>Save</Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -388,6 +546,13 @@ const BloodIssueList = ({searchBreak, setSearchBreak, allData}) => {
           </View>
         </View>
       </Modal>
+      <DeletePopup
+        modelVisible={deleteUser}
+        setModelVisible={setDeleteUser}
+        onPress={() => onDeleteBedTypeData(userId)}
+        setUserId={setUserId}
+        isLoading={loading}
+      />
     </>
   );
 };

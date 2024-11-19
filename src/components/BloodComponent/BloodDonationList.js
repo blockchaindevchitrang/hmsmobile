@@ -11,6 +11,7 @@ import {
   Platform,
   Modal,
   TouchableWithoutFeedback,
+  ActivityIndicator,
 } from 'react-native';
 import React, {useRef, useState} from 'react';
 import {
@@ -24,15 +25,134 @@ import moment from 'moment';
 import deleteIcon from '../../images/delete.png';
 import editing from '../../images/editing.png';
 import close from '../../images/close.png';
+import {
+  onAddAccountListApi,
+  onDeleteBloodDonationApi,
+  onGetEditAccountDataApi,
+  onGetSpecificDonationDataApi,
+} from '../../services/Api';
+import SelectDropdown from 'react-native-select-dropdown';
+import {useSelector} from 'react-redux';
+import FlashMessage, {
+  showMessage,
+  hideMessage,
+} from 'react-native-flash-message';
+import {DeletePopup} from '../DeletePopup';
 
-const BloodDonationList = ({searchBreak, setSearchBreak, allData}) => {
+const BloodDonationList = ({
+  searchBreak,
+  setSearchBreak,
+  allData,
+  onGetData,
+}) => {
+  const bloodDonor = useSelector(state => state.bloodDonor);
   const {theme} = useTheme();
   const menuRef = useRef(null);
   const [newAccountVisible, setNewAccountVisible] = useState(false);
   const [eventTitle, setEventTitle] = useState('');
   const [departmentComment, setDepartmentComment] = useState('');
-  const [statusVisible, setStatusVisible] = useState(false);
-  const [departmentType, setDepartmentType] = useState('debit');
+  const [donorId, setDonorId] = useState('');
+  const [refresh, setRefresh] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [deleteUser, setDeleteUser] = useState(false);
+  const [userId, setUserId] = useState('');
+
+  const onAddBloodDonation = async () => {
+    try {
+      setLoading(true);
+      let urlData = `blood-donation-create?blood_donor_id=${donorId}&bags=${departmentComment}`;
+      const response = await onAddAccountListApi(urlData);
+      if (response.status == 200) {
+        onGetData();
+        setLoading(false);
+        setNewAccountVisible(false);
+        setRefresh(!refresh);
+        showMessage({
+          message: 'Record Added Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      }
+    } catch (err) {
+      setLoading(false);
+      setNewAccountVisible(false);
+      showMessage({
+        message: 'Please enter properly details.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Error>>', err.response.data);
+    }
+  };
+
+  const onEditBedTypeData = async () => {
+    try {
+      setLoading(true);
+      let urlData = `blood-donation-update/${userId}?blood_donor_id=${donorId}&bags=${departmentComment}`;
+      const response = await onGetEditAccountDataApi(urlData);
+      if (response.status == 200) {
+        onGetData();
+        setLoading(false);
+        setNewAccountVisible(false);
+        showMessage({
+          message: 'Record Added Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      }
+    } catch (err) {
+      setLoading(false);
+      showMessage({
+        message: 'Please enter properly details.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Get Error:', err.response.data);
+    }
+  };
+
+  const onDeleteBedTypeData = async id => {
+    try {
+      setLoading(true);
+      const response = await onDeleteBloodDonationApi(id);
+      if (response.status == 200) {
+        onGetData();
+        setLoading(false);
+        setDeleteUser(false);
+        showMessage({
+          message: 'Record Delete Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      }
+    } catch (err) {
+      setLoading(false);
+      setDeleteUser(false);
+      showMessage({
+        message: 'Something want wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Get Error:', err);
+    }
+  };
+
+  const onGetSpecificDoctor = async id => {
+    try {
+      const response = await onGetSpecificDonationDataApi(id);
+      if (response.status == 200) {
+        console.log('get ValueLL:::', response.data.data);
+        return response.data.data;
+      } else {
+        return 0;
+      }
+    } catch (err) {
+      console.log('Get Error', err);
+    }
+  };
 
   const renderItem = ({item, index}) => {
     return (
@@ -42,21 +162,34 @@ const BloodDonationList = ({searchBreak, setSearchBreak, allData}) => {
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
         <View style={[styles.nameDataView]}>
-          <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
+          <Text style={[styles.dataHistoryText2]}>{item.blooddonor_name}</Text>
         </View>
         <View style={[styles.switchView]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataHistoryText2]}>{item.bag}</Text>
+            <Text style={[styles.dataHistoryText2]}>{item.bags}</Text>
           </View>
         </View>
         <View style={styles.actionDataView}>
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={async () => {
+              let allDatas = await onGetSpecificDoctor(item.id);
+              setUserId(item.id);
+              setDonorId(allDatas?.blood_donor_id);
+              setDepartmentComment(JSON.stringify(item?.bags));
+              setEventTitle(item?.blooddonor_name);
+              setNewAccountVisible(true);
+            }}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.blueColor}]}
               source={editing}
             />
           </TouchableOpacity>
-          <TouchableOpacity style={{marginLeft: wp(2)}}>
+          <TouchableOpacity
+            style={{marginLeft: wp(2)}}
+            onPress={() => {
+              setUserId(item.id);
+              setDeleteUser(true);
+            }}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.errorColor}]}
               source={deleteIcon}
@@ -84,7 +217,13 @@ const BloodDonationList = ({searchBreak, setSearchBreak, allData}) => {
           </View>
           <View style={styles.filterView}>
             <TouchableOpacity
-              onPress={() => setNewAccountVisible(true)}
+              onPress={() => {
+                setUserId('');
+                setDonorId('');
+                setDepartmentComment('');
+                setEventTitle('');
+                setNewAccountVisible(true);
+              }}
               style={styles.actionView}>
               <Text style={styles.actionText}>New Blood Donation</Text>
             </TouchableOpacity>
@@ -149,11 +288,48 @@ const BloodDonationList = ({searchBreak, setSearchBreak, allData}) => {
             <Text style={[styles.titleText1, {marginTop: hp(1.5)}]}>
               {'DONOR NAME:'}
             </Text>
-            <TextInput
+            {/* <TextInput
               value={eventTitle}
               placeholder={''}
               onChangeText={text => setEventTitle(text)}
               style={[styles.eventTextInput]}
+            /> */}
+            <SelectDropdown
+              data={bloodDonor}
+              onSelect={(selectedItem, index) => {
+                // setSelectedColor(selectedItem);
+                setDonorId(selectedItem.id);
+                console.log('gert Value:::', selectedItem);
+              }}
+              defaultValue={eventTitle}
+              renderButton={(selectedItem, isOpen) => {
+                console.log('Get Response>>>', selectedItem);
+                return (
+                  <View style={styles.dropdown2BtnStyle2}>
+                    {donorId != '' ? (
+                      <Text style={styles.dropdownItemTxtStyle}>
+                        {donorId == selectedItem?.id
+                          ? selectedItem?.name
+                          : eventTitle}
+                      </Text>
+                    ) : (
+                      <Text style={styles.dropdownItemTxtStyle}>
+                        {selectedItem?.name || 'Select'}
+                      </Text>
+                    )}
+                  </View>
+                );
+              }}
+              showsVerticalScrollIndicator={false}
+              renderItem={(item, index, isSelected) => {
+                return (
+                  <TouchableOpacity style={styles.dropdownView}>
+                    <Text style={styles.dropdownItemTxtStyle}>{item.name}</Text>
+                  </TouchableOpacity>
+                );
+              }}
+              dropdownIconPosition={'left'}
+              dropdownStyle={styles.dropdown2DropdownStyle}
             />
             <Text style={[styles.titleText1]}>{'Bags:'}</Text>
             <TextInput
@@ -161,11 +337,20 @@ const BloodDonationList = ({searchBreak, setSearchBreak, allData}) => {
               placeholder={''}
               onChangeText={text => setDepartmentComment(text)}
               style={[styles.eventTextInput]}
+              keyboardType={'number-pad'}
             />
 
             <View style={styles.buttonView}>
-              <TouchableOpacity onPress={() => {}} style={styles.nextView}>
-                <Text style={styles.nextText}>Save</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  userId != '' ? onEditBedTypeData() : onAddBloodDonation();
+                }}
+                style={styles.nextView}>
+                {loading ? (
+                  <ActivityIndicator size={'small'} color={COLORS.white} />
+                ) : (
+                  <Text style={styles.nextText}>Save</Text>
+                )}
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => setNewAccountVisible(false)}
@@ -176,6 +361,13 @@ const BloodDonationList = ({searchBreak, setSearchBreak, allData}) => {
           </View>
         </View>
       </Modal>
+      <DeletePopup
+        modelVisible={deleteUser}
+        setModelVisible={setDeleteUser}
+        onPress={() => onDeleteBedTypeData(userId)}
+        setUserId={setUserId}
+        isLoading={loading}
+      />
     </>
   );
 };
@@ -634,5 +826,36 @@ const styles = StyleSheet.create({
     fontSize: hp(2.5),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
+  },
+  dropdown2DropdownStyle: {
+    backgroundColor: COLORS.white,
+    borderRadius: 4,
+    height: hp(25),
+    // borderRadius: 12,
+  },
+  dropdownItemTxtStyle: {
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    marginLeft: wp(2),
+  },
+  dropdownView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: hp(4),
+    borderBottomWidth: 0,
+  },
+  dropdown2BtnStyle2: {
+    width: '92%',
+    height: hp(5.5),
+    backgroundColor: COLORS.white,
+    borderRadius: 5,
+    alignItems: 'center',
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    marginTop: hp(1),
+    alignSelf: 'center',
+    marginBottom: hp(2),
   },
 });

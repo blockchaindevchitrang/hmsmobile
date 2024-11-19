@@ -15,8 +15,8 @@ import {
 } from '../../components/Pixel';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useDispatch} from 'react-redux';
-import {onDashboardGetApi, onGetAllUsersDataApi, onGetBloodBankApi, onGetDoctorApi, onGetDoctorDepartmentApi, onGetPatientApi, onGetRoleDataApi} from '../../services/Api';
-import {fetchBloodData, fetchDashboardData, fetchDepartmentData, fetchDoctorData, fetchRoleData, fetchUserData} from '../../redux/reducer';
+import {onDashboardGetApi, onGetAllUsersDataApi, onGetBedApi, onGetBedTypeApi, onGetBloodBankApi, onGetBloodDonorApi, onGetDoctorApi, onGetDoctorDepartmentApi, onGetPatientApi, onGetRoleDataApi} from '../../services/Api';
+import {fetchBedData, fetchBedTypeData, fetchBloodData, fetchBloodDonorData, fetchDashboardData, fetchDepartmentData, fetchDoctorData, fetchRoleData, fetchUserData} from '../../redux/reducer';
 
 export const SplashScreen = ({navigation}) => {
   const {theme, toggleTheme, colorTheme} = useTheme();
@@ -60,6 +60,27 @@ export const SplashScreen = ({navigation}) => {
       if (userData.data.data) {
         const usersData = userData.data.data;
         dispatch(fetchUserData(usersData));
+      }
+
+      const bedData = await onGetBedApi();
+      console.log('Get Department Response::', bedData.data.data);
+      if (bedData.data.data) {
+        const usersData = bedData.data.data;
+        dispatch(fetchBedData(usersData));
+      }
+
+      const bloodDonorData = await onGetBloodDonorApi();
+      console.log('Get Department Response::', bloodDonorData.data.data);
+      if (bloodDonorData.data.data) {
+        const usersData = bloodDonorData.data.data;
+        dispatch(fetchBloodDonorData(usersData));
+      }
+
+      const bedTypeData = await onGetBedTypeApi('created_at', 'ASC');
+      console.log('Get Department Response::', bedTypeData.data.data);
+      if (bedTypeData.data.data) {
+        const usersData = bedTypeData.data.data;
+        dispatch(fetchBedTypeData(usersData));
       }
 
       const roleData = await onGetRoleDataApi();

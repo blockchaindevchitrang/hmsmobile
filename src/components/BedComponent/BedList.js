@@ -42,8 +42,11 @@ import FlashMessage, {
 import {DeletePopup} from './../DeletePopup';
 import close from '../../images/close.png';
 import {onAddBedApi, onDeleteBedApi, onUpdateBedApi} from '../../services/Api';
+import SelectDropdown from 'react-native-select-dropdown';
+import {useSelector} from 'react-redux';
 
 const BedList = ({searchBreak, setSearchBreak, allData, onGetBedTypeData}) => {
+  const bedTypeData = useSelector(state => state.bedTypeData);
   const {theme} = useTheme();
   const menuRef = useRef(null);
   const [newUserVisible, setNewUserVisible] = useState(false);
@@ -454,11 +457,50 @@ const BedList = ({searchBreak, setSearchBreak, allData, onGetBedTypeData}) => {
               style={[styles.eventTextInput]}
             />
             <Text style={styles.modalTitleText}>Bed Type</Text>
-            <TextInput
+            {/* <TextInput
               value={eventTitle}
               placeholder={'Event title'}
               onChangeText={text => setEventTitle(text)}
               style={[styles.eventTextInput]}
+            /> */}
+            <SelectDropdown
+              data={bedTypeData}
+              onSelect={(selectedItem, index) => {
+                // setSelectedColor(selectedItem);
+                setBedTypeId(selectedItem.id);
+                console.log('gert Value:::', selectedItem);
+              }}
+              defaultValue={bedType}
+              renderButton={(selectedItem, isOpen) => {
+                console.log('Get Response>>>', selectedItem);
+                return (
+                  <View style={styles.dropdown2BtnStyle2}>
+                    {bedTypeId != '' ? (
+                      <Text style={styles.dropdownItemTxtStyle}>
+                        {bedTypeId == selectedItem?.id
+                          ? selectedItem?.title
+                          : bedType}
+                      </Text>
+                    ) : (
+                      <Text style={styles.dropdownItemTxtStyle}>
+                        {selectedItem?.title || 'Select'}
+                      </Text>
+                    )}
+                  </View>
+                );
+              }}
+              showsVerticalScrollIndicator={false}
+              renderItem={(item, index, isSelected) => {
+                return (
+                  <TouchableOpacity style={styles.dropdownView}>
+                    <Text style={styles.dropdownItemTxtStyle}>
+                      {item.title}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              }}
+              dropdownIconPosition={'left'}
+              dropdownStyle={styles.dropdown2DropdownStyle}
             />
             <Text style={styles.modalTitleText}>Charge</Text>
             <TextInput
@@ -955,5 +997,36 @@ const styles = StyleSheet.create({
     fontSize: hp(2.5),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
+  },
+  dropdown2DropdownStyle: {
+    backgroundColor: COLORS.white,
+    borderRadius: 4,
+    height: hp(25),
+    // borderRadius: 12,
+  },
+  dropdownItemTxtStyle: {
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    marginLeft: wp(2),
+  },
+  dropdownView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: hp(4),
+    borderBottomWidth: 0,
+  },
+  dropdown2BtnStyle2: {
+    width: '92%',
+    height: hp(5.5),
+    backgroundColor: COLORS.white,
+    borderRadius: 5,
+    alignItems: 'center',
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    marginTop: hp(1),
+    alignSelf: 'center',
+    marginBottom: hp(2),
   },
 });

@@ -26,13 +26,17 @@ import man from '../../images/man.png';
 import draw from '../../images/draw.png';
 import DatePicker from 'react-native-date-picker';
 import ImagePicker from 'react-native-image-crop-picker';
+import SelectDropdown from 'react-native-select-dropdown';
+import {useSelector} from 'react-redux';
 
 const BedAssignList = ({searchBreak, setSearchBreak, allData}) => {
+  const bedData = useSelector(state => state.bedData);
   const {theme} = useTheme();
   const [newUserVisible, setNewUserVisible] = useState(false);
   const [caseData, setCase] = useState('');
   const [patient, setPatient] = useState('');
   const [bed, setBed] = useState('');
+  const [bedId, setBedId] = useState('');
   const [description, setDescription] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState(new Date());
   const [dateModalVisible, setDateModalVisible] = useState(false);
@@ -55,14 +59,14 @@ const BedAssignList = ({searchBreak, setSearchBreak, allData}) => {
         ]}>
         <View style={[styles.switchView, {width: wp(26)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataHistoryText1]}>{item.invoice}</Text>
+            <Text style={[styles.dataHistoryText1]}>{item.case_id}</Text>
           </View>
         </View>
         <View style={[styles.nameDataView]}>
-          <ProfilePhoto username={item.name} />
+          <ProfilePhoto username={item.patient_name} />
           <View>
-            <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
-            <Text style={[styles.dataHistoryText1]}>{item.mail}</Text>
+            <Text style={[styles.dataHistoryText2]}>{item.patient_name}</Text>
+            <Text style={[styles.dataHistoryText1]}>{item.patient_email}</Text>
           </View>
         </View>
         <Text
@@ -70,26 +74,28 @@ const BedAssignList = ({searchBreak, setSearchBreak, allData}) => {
             styles.dataHistoryText2,
             {width: wp(24), textAlign: 'left', marginHorizontal: wp(2)},
           ]}>
-          {item.bed}
+          {item.bed_name}
         </Text>
         <View style={[styles.switchView, {width: wp(28)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataHistoryText1]}>{item.invoice_date}</Text>
+            <Text style={[styles.dataHistoryText1]}>{item.assign_date}</Text>
           </View>
         </View>
         <Text style={[styles.dataHistoryText, {width: wp(32)}]}>
-          {item.discharge}
+          {item.discharge_date == null ? 'N/A' : item.discharge_date}
         </Text>
         <View style={[styles.switchView, {width: wp(16)}]}>
           <Switch
             trackColor={{
-              false: item.status ? COLORS.greenColor : COLORS.errorColor,
-              true: item.status ? COLORS.greenColor : COLORS.errorColor,
+              false:
+                item.status == 'Active' ? COLORS.greenColor : COLORS.errorColor,
+              true:
+                item.status == 'Active' ? COLORS.greenColor : COLORS.errorColor,
             }}
-            thumbColor={item.status ? '#f4f3f4' : '#f4f3f4'}
+            thumbColor={item.status == 'Active' ? '#f4f3f4' : '#f4f3f4'}
             ios_backgroundColor={COLORS.errorColor}
             onValueChange={() => {}}
-            value={item.status}
+            value={item.status == 'Active'}
           />
         </View>
         <View style={styles.actionDataView}>
@@ -235,11 +241,50 @@ const BedAssignList = ({searchBreak, setSearchBreak, allData}) => {
             <View style={styles.nameView}>
               <View style={{width: '48%'}}>
                 <Text style={styles.dataHistoryText1}>BED:</Text>
-                <TextInput
+                {/* <TextInput
                   value={bed}
                   placeholder={'Bed'}
                   onChangeText={text => setBed(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
+                /> */}
+                <SelectDropdown
+                  data={bedData}
+                  onSelect={(selectedItem, index) => {
+                    // setSelectedColor(selectedItem);
+                    setBedId(selectedItem.id);
+                    console.log('gert Value:::', selectedItem);
+                  }}
+                  defaultValue={bed}
+                  renderButton={(selectedItem, isOpen) => {
+                    console.log('Get Response>>>', selectedItem);
+                    return (
+                      <View style={styles.dropdown2BtnStyle2}>
+                        {bedId != '' ? (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {bedId == selectedItem?.id
+                              ? selectedItem?.name
+                              : bed}
+                          </Text>
+                        ) : (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {selectedItem?.name || 'Select'}
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(item, index, isSelected) => {
+                    return (
+                      <TouchableOpacity style={styles.dropdownView}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {item.name}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                  dropdownIconPosition={'left'}
+                  dropdownStyle={styles.dropdown2DropdownStyle}
                 />
               </View>
               <View style={{width: '48%'}}>
@@ -704,5 +749,34 @@ const styles = StyleSheet.create({
     fontSize: hp(2.5),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
+  },
+  dropdown2DropdownStyle: {
+    backgroundColor: COLORS.white,
+    borderRadius: 4,
+    height: hp(25),
+    // borderRadius: 12,
+  },
+  dropdownItemTxtStyle: {
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    marginLeft: wp(2),
+  },
+  dropdownView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: hp(4),
+    borderBottomWidth: 0,
+  },
+  dropdown2BtnStyle2: {
+    width: '100%',
+    height: hp(4.2),
+    backgroundColor: COLORS.white,
+    borderRadius: 5,
+    alignItems: 'center',
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    marginTop: hp(1),
   },
 });

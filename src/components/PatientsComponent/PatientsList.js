@@ -32,8 +32,9 @@ import {
   MenuOption,
   MenuTrigger,
 } from 'react-native-popup-menu';
+import { onAddPatientApi } from '../../services/Api';
 
-const PatientsList = ({searchBreak, setSearchBreak, allData}) => {
+const PatientsList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
   const {theme} = useTheme();
   const menuRef = useRef(null);
   const [newUserVisible, setNewUserVisible] = useState(false);
@@ -47,6 +48,7 @@ const PatientsList = ({searchBreak, setSearchBreak, allData}) => {
   const [address1, setAddress1] = useState('');
   const [city, setCity] = useState('');
   const [country, setCountry] = useState('');
+  const [phone, setPhone] = useState('');
   const [bloodGroup, setBloodGroup] = useState('');
   const [designation, setDesignation] = useState('');
   const [qualification, setQualification] = useState('');
@@ -56,6 +58,8 @@ const PatientsList = ({searchBreak, setSearchBreak, allData}) => {
   const [dateModalVisible, setDateModalVisible] = useState(false);
   const [avatar, setAvatar] = useState(null);
   const [status, setStatus] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [refresh, setRefresh] = useState(false);
 
   const openProfileImagePicker = async () => {
     try {
@@ -87,6 +91,78 @@ const PatientsList = ({searchBreak, setSearchBreak, allData}) => {
     }
   };
 
+  const onAddDoctorData = async () => {
+    try {
+      setIsLoading(true);
+      const formdata = new FormData();
+      formdata.append('first_name', firstName);
+      formdata.append('last_name', lastName);
+      formdata.append('email', email);
+      formdata.append('dob', moment(dateOfBirth).format('YYYY-MM-DD'));
+      formdata.append('gender', genderType == 'female' ? 1 : 0);
+      formdata.append('phone', number);
+      formdata.append('blood_group', bloodGroup);
+      formdata.append('password', password);
+      formdata.append('password_confirmation', confirmPassword);
+      formdata.append('appointment_charge', charge);
+      formdata.append('description', description);
+      formdata.append('address1', address);
+      formdata.append('address2', address1);
+      formdata.append('city', city);
+      formdata.append('zip', postalCode);
+      // if (avatar != null) {
+      //   formdata.append('image', avatar);
+      // }
+      const response = await onAddPatientApi(formdata);
+      if (response.status == 200) {
+        onGetData();
+        setNewUserVisible(false);
+        setIsLoading(false);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      setIsLoading(false);
+      console.log('Get Error:', err.response.data);
+    }
+  };
+
+  const onUpdateDoctorData = async id => {
+    try {
+      setIsLoading(true);
+      const formdata = new FormData();
+      formdata.append('first_name', firstName);
+      formdata.append('last_name', lastName);
+      formdata.append('email', doctorEmail);
+      formdata.append('doctor_department_id', 1);
+      formdata.append('dob', moment(dateOfBirth).format('YYYY-MM-DD'));
+      formdata.append('gender', genderType == 'female' ? 1 : 0);
+      formdata.append('phone', doctorContact);
+      formdata.append('designation', designation);
+      formdata.append('qualification', qualification);
+      formdata.append('specialist', specialist);
+      formdata.append('appointment_charge', charge);
+      formdata.append('description', description);
+      formdata.append('address1', address1);
+      formdata.append('address2', address2);
+      formdata.append('city', doctorCity);
+      formdata.append('zip', doctorZip);
+      formdata.append('blood_group', 1);
+      // if (avatar != null) {
+      //   formdata.append('image', avatar);
+      // }
+      const response = await onUpdateDoctorApi(formdata, id);
+      if (response.status == 200) {
+        onGetDoctorData();
+        setAddDoctorVisible(false);
+        setIsLoading(false);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      setIsLoading(false);
+      console.log('Get Error:', err.response.data);
+    }
+  };
+
   const renderItem = ({item, index}) => {
     return (
       <View
@@ -95,29 +171,43 @@ const PatientsList = ({searchBreak, setSearchBreak, allData}) => {
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
         <View style={[styles.nameDataView]}>
-          <ProfilePhoto username={item.name} />
+          <ProfilePhoto username={item?.patient_user?.first_name} />
           <View>
-            <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
-            <Text style={[styles.dataHistoryText1]}>{item.mail}</Text>
+            <Text style={[styles.dataHistoryText2]}>
+              {item?.patient_user?.first_name} {item?.patient_user?.last_name}
+            </Text>
+            <Text style={[styles.dataHistoryText1]}>
+              {item?.patient_user?.email}
+            </Text>
           </View>
         </View>
         <Text
           style={[styles.dataHistoryText, {width: wp(30), textAlign: 'left'}]}>
-          {item.phone}
+          {item?.patient_user?.phone != null
+            ? item?.patient_user?.phone
+            : 'N/A'}
         </Text>
         <Text style={[styles.dataHistoryText, {width: wp(30)}]}>
-          {item.group}
+          {item?.patient_user?.blood_group != null
+            ? item?.patient_user?.blood_group
+            : 'N/A'}
         </Text>
         <View style={[styles.switchView]}>
           <Switch
             trackColor={{
-              false: item.status ? COLORS.greenColor : COLORS.errorColor,
-              true: item.status ? COLORS.greenColor : COLORS.errorColor,
+              false:
+                item?.patient_user?.status == 1
+                  ? COLORS.greenColor
+                  : COLORS.errorColor,
+              true:
+                item?.patient_user?.status == 1
+                  ? COLORS.greenColor
+                  : COLORS.errorColor,
             }}
-            thumbColor={item.status ? '#f4f3f4' : '#f4f3f4'}
+            thumbColor={item?.patient_user?.status == 1 ? '#f4f3f4' : '#f4f3f4'}
             ios_backgroundColor={COLORS.errorColor}
             onValueChange={() => {}}
-            value={item.status}
+            value={item?.patient_user?.status == 1}
           />
         </View>
         <View style={styles.actionDataView}>
@@ -632,7 +722,7 @@ const styles = StyleSheet.create({
   },
   dataHistoryView: {
     width: '100%',
-    height: hp(8),
+    paddingVertical: hp(1),
     alignItems: 'center',
     flexDirection: 'row',
     alignSelf: 'flex-start',
@@ -648,6 +738,7 @@ const styles = StyleSheet.create({
     fontSize: hp(1.7),
     fontFamily: Fonts.FONTS.PoppinsBold,
     color: COLORS.black,
+    width: wp(45),
   },
   dataHistoryText2: {
     fontSize: hp(1.8),

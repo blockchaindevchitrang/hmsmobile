@@ -25,7 +25,7 @@ import BloodBanksList from '../../components/BloodComponent/BloodBanksList';
 import BloodDonorList from '../../components/BloodComponent/BloodDonorList';
 import BloodDonationList from '../../components/BloodComponent/BloodDonationList';
 import BloodIssueList from '../../components/BloodComponent/BloodIssueList';
-import {onGetBloodBankApi, onGetBloodDonorApi} from '../../services/Api';
+import {onGetBloodBankApi, onGetBloodDonationApi, onGetBloodDonorApi, onGetBloodIssueApi} from '../../services/Api';
 
 const allData = [
   {
@@ -288,6 +288,40 @@ export const BloodBankScreen = ({navigation}) => {
     }
   };
 
+  useEffect(() => {
+    onBloodDonationData();
+  }, [searchInvoice]);
+
+  const onBloodDonationData = async () => {
+    try {
+      const bloodDonor = await onGetBloodDonationApi(searchInvoice);
+      console.log('Response bloodDonor Data', bloodDonor.data);
+      if (bloodDonor.status === 200) {
+        setBloodDonationData(bloodDonor.data.data);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Get User Error:', err);
+    }
+  };
+
+  useEffect(() => {
+    onBloodIssueData();
+  }, [searchPharmacists]);
+
+  const onBloodIssueData = async () => {
+    try {
+      const bloodDonor = await onGetBloodIssueApi(searchPharmacists);
+      console.log('Response bloodDonor Data', bloodDonor.data);
+      if (bloodDonor.status === 200) {
+        setBloodIssueData(bloodDonor.data.data);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Get User Error:', err);
+    }
+  };
+
   return (
     <View style={[styles.container, {backgroundColor: theme.lightColor}]}>
       <View style={styles.headerView}>
@@ -311,19 +345,22 @@ export const BloodBankScreen = ({navigation}) => {
             searchBreak={searchPayroll}
             setSearchBreak={setSearchPayroll}
             allData={bloodDonorData}
+            onGetData={onGetBloodBankData}
           />
         ) : selectedView == 'Blood Donations' ? (
           <BloodDonationList
             searchBreak={searchInvoice}
             setSearchBreak={setSearchInvoice}
-            allData={BloodDonationData}
+            allData={bloodDonationData}
+            onGetData={onBloodDonationData}
           />
         ) : (
           selectedView == 'Blood Issues' && (
             <BloodIssueList
               searchBreak={searchPharmacists}
               setSearchBreak={setSearchPharmacists}
-              allData={BloodIssueData}
+              allData={bloodIssueData}
+              onGetData={onBloodIssueData}
             />
           )
         )}
