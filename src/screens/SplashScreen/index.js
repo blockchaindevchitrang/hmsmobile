@@ -15,8 +15,32 @@ import {
 } from '../../components/Pixel';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useDispatch} from 'react-redux';
-import {onDashboardGetApi, onGetAllUsersDataApi, onGetBedApi, onGetBedTypeApi, onGetBloodBankApi, onGetBloodDonorApi, onGetDoctorApi, onGetDoctorDepartmentApi, onGetPatientApi, onGetRoleDataApi} from '../../services/Api';
-import {fetchBedData, fetchBedTypeData, fetchBloodData, fetchBloodDonorData, fetchDashboardData, fetchDepartmentData, fetchDoctorData, fetchRoleData, fetchUserData} from '../../redux/reducer';
+import {
+  onDashboardGetApi,
+  onGetAccountListApi,
+  onGetAllUsersDataApi,
+  onGetBedApi,
+  onGetBedTypeApi,
+  onGetBloodBankApi,
+  onGetBloodDonorApi,
+  onGetDoctorApi,
+  onGetDoctorDepartmentApi,
+  onGetPatientApi,
+  onGetRoleDataApi,
+} from '../../services/Api';
+import {
+  fetchAccountData,
+  fetchAllUserData,
+  fetchBedData,
+  fetchBedTypeData,
+  fetchBloodData,
+  fetchBloodDonorData,
+  fetchDashboardData,
+  fetchDepartmentData,
+  fetchDoctorData,
+  fetchRoleData,
+  fetchUserData,
+} from '../../redux/reducer';
 
 export const SplashScreen = ({navigation}) => {
   const {theme, toggleTheme, colorTheme} = useTheme();
@@ -87,6 +111,18 @@ export const SplashScreen = ({navigation}) => {
       console.log('Get Department Response::', roleData.data.data);
       if (roleData.data.data) {
         dispatch(fetchRoleData(roleData.data.data));
+      }
+
+      const allUserData = await onGetAllUsersDataApi();
+      console.log('Get Department Response::', allUserData.data.data);
+      if (allUserData.data.data) {
+        dispatch(fetchAllUserData(allUserData.data.data));
+      }
+
+      const accountData = await onGetAccountListApi('');
+      console.log('Get accountData Response::', accountData.data.data);
+      if (accountData.data.data) {
+        dispatch(fetchAccountData(accountData.data.data));
       }
     } else {
       navigation.replace('LoginScreen');

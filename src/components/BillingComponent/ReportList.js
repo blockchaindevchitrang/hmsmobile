@@ -38,30 +38,19 @@ const ReportList = ({searchBreak, setSearchBreak, allData}) => {
           </View>
         </View>
         <View style={[styles.nameDataView]}>
-          <Text style={[styles.dataHistoryText1]}>{item.name}</Text>
+          <Text style={[styles.dataHistoryText1]}>{item.account}</Text>
         </View>
         <Text style={[styles.dataHistoryText, {width: wp(16)}]}>
-          {item.pay}
+          {item.pay_to}
         </Text>
         <View style={[styles.switchView, {width: wp(24)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
             <Text style={[styles.dataHistoryText1]}>Credit</Text>
           </View>
         </View>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        <Text style={[styles.dataHistoryText, {width: wp(22)}]}>
+          {item.amount}
+        </Text>
       </View>
     );
   };
@@ -99,11 +88,7 @@ const ReportList = ({searchBreak, setSearchBreak, allData}) => {
                 <Text style={[styles.titleText, {width: wp(30)}]}>
                   {'PAYMENT DATE'}
                 </Text>
-                <Text
-                  style={[
-                    styles.titleText,
-                    {width: wp(35), textAlign: 'left'},
-                  ]}>
+                <Text style={[styles.titleText, {width: wp(30)}]}>
                   {'ACCOUNT'}
                 </Text>
                 <Text style={[styles.titleText, {width: wp(16)}]}>
@@ -112,8 +97,8 @@ const ReportList = ({searchBreak, setSearchBreak, allData}) => {
                 <Text style={[styles.titleText, {width: wp(24)}]}>
                   {'TYPE'}
                 </Text>
-                <Text style={[styles.titleText, {width: wp(16)}]}>
-                  {'ACTION'}
+                <Text style={[styles.titleText, {width: wp(22)}]}>
+                  {'AMOUNT'}
                 </Text>
               </View>
               <View style={styles.mainDataView}>
@@ -283,7 +268,8 @@ const styles = StyleSheet.create({
   nameDataView: {
     flexDirection: 'row',
     alignItems: 'center',
-    width: wp(35),
+    justifyContent: 'center',
+    width: wp(30),
     marginHorizontal: wp(2),
   },
   switchView: {

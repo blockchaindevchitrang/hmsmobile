@@ -11,6 +11,7 @@ import {
   Platform,
   Modal,
   TouchableWithoutFeedback,
+  ActivityIndicator,
 } from 'react-native';
 import React, {useRef, useState} from 'react';
 import {
@@ -25,14 +26,154 @@ import deleteIcon from '../../images/delete.png';
 import editing from '../../images/editing.png';
 import filter from '../../images/filter.png';
 import close from '../../images/close.png';
+import {useSelector} from 'react-redux';
+import SelectDropdown from 'react-native-select-dropdown';
+import DatePicker from 'react-native-date-picker';
+import {
+  onAddAccountListApi,
+  onDeleteCommonApi,
+  onGetEditAccountDataApi,
+  onGetSpecificCommonApi,
+} from '../../services/Api';
+import FlashMessage, {
+  showMessage,
+  hideMessage,
+} from 'react-native-flash-message';
+import {DeletePopup} from '../DeletePopup';
 
-const AdvanceList = ({searchBreak, setSearchBreak, allData}) => {
+const AdvanceList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
+  const user_data = useSelector(state => state.user_data);
   const {theme} = useTheme();
   const [newAccountVisible, setNewAccountVisible] = useState(false);
-  const [eventTitle, setEventTitle] = useState('');
-  const [departmentComment, setDepartmentComment] = useState('');
-  const [statusVisible, setStatusVisible] = useState(false);
-  const [departmentType, setDepartmentType] = useState('debit');
+  const [amount, setAmount] = useState('');
+  const [paymentDate, setPaymentDate] = useState(new Date());
+  const [dateModalVisible, setDateModalVisible] = useState(false);
+  const [errorVisible, setErrorVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [userId, setUserId] = useState('');
+  const [deleteUser, setDeleteUser] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [patient, setPatient] = useState('');
+  const [patientId, setPatientId] = useState('');
+
+  const onAddPayRollData = async () => {
+    try {
+      if (patientId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select patient.');
+      } else if (amount == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter payment amount.');
+      } else {
+        setLoading(true);
+        setErrorVisible(false);
+        const urlData = `advance-payment-create?date=${moment(
+          paymentDate,
+        ).format('YYYY-MM-DD')}&patient_id=${patientId}&amount=${amount}`;
+        const response = await onAddAccountListApi(urlData);
+        if (response.status == 200) {
+          onGetData();
+          setLoading(false);
+          setNewAccountVisible(false);
+          showMessage({
+            message: 'Record Added Successfully',
+            type: 'success',
+            duration: 3000,
+          });
+        }
+      }
+    } catch (err) {
+      showMessage({
+        message: 'Something want wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      setLoading(false);
+      console.log('Error:', err);
+    }
+  };
+
+  const onEditPayRollData = async () => {
+    try {
+      if (patientId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select patient.');
+      } else if (amount == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter payment amount.');
+      } else {
+        setLoading(true);
+        setErrorVisible(false);
+        const urlData = `advance-payment-update/${userId}?date=${moment(
+          paymentDate,
+        ).format('YYYY-MM-DD')}&patient_id=${patientId}&amount=${amount}`;
+        const response = await onGetEditAccountDataApi(urlData);
+        if (response.status == 200) {
+          onGetData();
+          setLoading(false);
+          setNewAccountVisible(false);
+          showMessage({
+            message: 'Record Edit Successfully',
+            type: 'success',
+            duration: 3000,
+          });
+        }
+      }
+    } catch (err) {
+      setLoading(false);
+      showMessage({
+        message: 'Something want wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Error:', err);
+    }
+  };
+
+  const onGetSpecificDoctor = async id => {
+    try {
+      const response = await onGetSpecificCommonApi(
+        `advance-payment-edit/${id}`,
+      );
+      if (response.status == 200) {
+        console.log('get ValueLL:::', response.data.data);
+        return response.data.data;
+      } else {
+        return 0;
+      }
+    } catch (err) {
+      console.log('Get Error', err);
+    }
+  };
+
+  const onDeletePayrollData = async id => {
+    try {
+      setLoading(true);
+      const response = await onDeleteCommonApi(`advance-payment-delete/${id}`);
+      if (response.status == 200) {
+        onGetData();
+        setLoading(false);
+        setDeleteUser(false);
+        showMessage({
+          message: 'Record Delete Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      }
+    } catch (err) {
+      setLoading(false);
+      setDeleteUser(false);
+      showMessage({
+        message: 'Something want wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Get Error', err);
+    }
+  };
 
   const renderItem = ({item, index}) => {
     return (
@@ -43,32 +184,46 @@ const AdvanceList = ({searchBreak, setSearchBreak, allData}) => {
         ]}>
         <View style={[styles.switchView, {width: wp(26)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataHistoryText1]}>{item.invoice}</Text>
+            <Text style={[styles.dataHistoryText1]}>{item.receipt_no}</Text>
           </View>
         </View>
         <View style={[styles.nameDataView]}>
           <ProfilePhoto username={item.name} />
           <View>
             <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
-            <Text style={[styles.dataHistoryText1]}>{item.mail}</Text>
+            <Text style={[styles.dataHistoryText1]}>{item.email}</Text>
           </View>
         </View>
         <View style={[styles.switchView, {width: wp(30)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataHistoryText1]}>{item.invoice_date}</Text>
+            <Text style={[styles.dataHistoryText1]}>{item.date}</Text>
           </View>
         </View>
         <Text style={[styles.dataHistoryText, {width: wp(24)}]}>
           {item.amount}
         </Text>
         <View style={styles.actionDataView}>
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={async () => {
+              let allDatas = await onGetSpecificDoctor(item.id);
+              setUserId(item.id);
+              setPatient(item.name);
+              setPatientId(allDatas.patient_id);
+              setPaymentDate(new Date(allDatas.date));
+              setAmount(JSON.stringify(item.amount));
+              setNewAccountVisible(true);
+            }}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.blueColor}]}
               source={editing}
             />
           </TouchableOpacity>
-          <TouchableOpacity style={{marginLeft: wp(2)}}>
+          <TouchableOpacity
+            onPress={() => {
+              setUserId(item.id);
+              setDeleteUser(true);
+            }}
+            style={{marginLeft: wp(2)}}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.errorColor}]}
               source={deleteIcon}
@@ -99,7 +254,14 @@ const AdvanceList = ({searchBreak, setSearchBreak, allData}) => {
               <Image style={styles.filterImage} source={filter} />
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() => setNewAccountVisible(true)}
+              onPress={() => {
+                setUserId('');
+                setPatient('');
+                setPatientId('');
+                setPaymentDate(new Date());
+                setAmount('');
+                setNewAccountVisible(true);
+              }}
               style={styles.actionView}>
               <Text style={styles.actionText}>New Advance Payments</Text>
             </TouchableOpacity>
@@ -170,80 +332,113 @@ const AdvanceList = ({searchBreak, setSearchBreak, allData}) => {
           </TouchableWithoutFeedback>
           <View style={styles.container}>
             <View style={styles.headerView}>
-              <Text style={styles.headerText}>New Account</Text>
+              <Text style={styles.headerText}>New Advance Payment</Text>
               <TouchableOpacity onPress={() => setNewAccountVisible(false)}>
                 <Image style={styles.closeImage} source={close} />
               </TouchableOpacity>
             </View>
-            <TextInput
-              value={eventTitle}
-              placeholder={'Event title'}
-              onChangeText={text => setEventTitle(text)}
-              style={[styles.eventTextInput]}
-            />
-
-            <TextInput
-              value={departmentComment}
-              placeholder={'Leave a comment...'}
-              onChangeText={text => setDepartmentComment(text)}
-              style={[styles.commentTextInput]}
-              multiline
-              textAlignVertical="top"
-            />
-
-            <View style={styles.statusView}>
-              <Text style={styles.statusText}>Status: </Text>
-              <Switch
-                trackColor={{
-                  false: statusVisible ? COLORS.greenColor : COLORS.errorColor,
-                  true: statusVisible ? COLORS.greenColor : COLORS.errorColor,
-                }}
-                thumbColor={statusVisible ? '#f4f3f4' : '#f4f3f4'}
-                ios_backgroundColor={COLORS.errorColor}
-                onValueChange={() => setStatusVisible(!statusVisible)}
-                value={statusVisible}
-              />
-            </View>
-            <View style={[styles.statusView]}>
-              <Text style={styles.statusText}>Type: </Text>
-              <View style={[styles.optionView]}>
-                <TouchableOpacity
-                  onPress={() => setDepartmentType('debit')}
-                  style={[
-                    styles.roundBorder,
-                    {
-                      backgroundColor:
-                        departmentType == 'debit'
-                          ? COLORS.blueColor
-                          : COLORS.white,
-                      borderWidth: departmentType == 'debit' ? 0 : 0.5,
-                    },
-                  ]}>
-                  <View style={styles.round} />
-                </TouchableOpacity>
-                <Text style={styles.statusText}>Debit</Text>
+            <View style={styles.nameView}>
+              <View style={{width: '100%'}}>
+                <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
+                  Patient:<Text style={styles.dataHistoryText4}>*</Text>
+                </Text>
+                <SelectDropdown
+                  data={user_data}
+                  onSelect={(selectedItem, index) => {
+                    // setSelectedColor(selectedItem);
+                    setPatientId(selectedItem.id);
+                    console.log('gert Value:::', selectedItem);
+                  }}
+                  defaultValue={patient}
+                  renderButton={(selectedItem, isOpen) => {
+                    console.log('Get Response>>>', selectedItem);
+                    return (
+                      <View style={styles.dropdown2BtnStyle2}>
+                        {patientId != '' ? (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {patientId == selectedItem?.id
+                              ? `${selectedItem?.patient_user?.first_name} ${selectedItem?.patient_user?.last_name}`
+                              : patient}
+                          </Text>
+                        ) : (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {selectedItem?.patient_user?.first_name || 'Select'}
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(item, index, isSelected) => {
+                    return (
+                      <TouchableOpacity style={styles.dropdownView}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {`${item?.patient_user?.first_name} ${item?.patient_user?.last_name}`}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                  dropdownIconPosition={'left'}
+                  dropdownStyle={styles.dropdown2DropdownStyle}
+                />
               </View>
-              <View style={[styles.optionView]}>
-                <TouchableOpacity
-                  onPress={() => setDepartmentType('credit')}
+            </View>
+
+            <View style={styles.nameView}>
+              <View style={{width: '100%'}}>
+                <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
+                  Amount:<Text style={styles.dataHistoryText4}>*</Text>
+                </Text>
+                <TextInput
+                  value={amount}
+                  placeholder={'Amount'}
+                  onChangeText={text => setAmount(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                  keyboardType={'number-pad'}
+                />
+              </View>
+            </View>
+
+            <View style={styles.nameView}>
+              <View style={{width: '100%'}}>
+                <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
+                  Date:<Text style={styles.dataHistoryText4}>*</Text>
+                </Text>
+                <Text
                   style={[
-                    styles.roundBorder,
-                    {
-                      backgroundColor:
-                        departmentType == 'credit'
-                          ? COLORS.blueColor
-                          : COLORS.white,
-                      borderWidth: departmentType == 'credit' ? 0 : 0.5,
-                    },
-                  ]}>
-                  <View style={styles.round} />
-                </TouchableOpacity>
-                <Text style={styles.statusText}>Credit</Text>
+                    styles.nameTextView,
+                    {width: '100%', paddingVertical: hp(1)},
+                  ]}
+                  onPress={() => setDateModalVisible(!dateModalVisible)}>
+                  {moment(paymentDate).format('DD-MM-YYYY')}
+                </Text>
+                <DatePicker
+                  open={dateModalVisible}
+                  modal={true}
+                  date={paymentDate}
+                  mode={'date'}
+                  onConfirm={date => {
+                    console.log('Console Log>>', date);
+                    setDateModalVisible(false);
+                    setPaymentDate(date);
+                  }}
+                  onCancel={() => {
+                    setDateModalVisible(false);
+                  }}
+                />
               </View>
             </View>
             <View style={styles.buttonView}>
-              <TouchableOpacity onPress={() => {}} style={styles.nextView}>
-                <Text style={styles.nextText}>Save</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  userId != '' ? onEditPayRollData() : onAddPayRollData();
+                }}
+                style={styles.nextView}>
+                {loading ? (
+                  <ActivityIndicator size={'small'} color={COLORS.white} />
+                ) : (
+                  <Text style={styles.nextText}>Save</Text>
+                )}
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => setNewAccountVisible(false)}
@@ -254,6 +449,13 @@ const AdvanceList = ({searchBreak, setSearchBreak, allData}) => {
           </View>
         </View>
       </Modal>
+      <DeletePopup
+        modelVisible={deleteUser}
+        setModelVisible={setDeleteUser}
+        onPress={() => onDeletePayrollData(userId)}
+        setUserId={setUserId}
+        isLoading={loading}
+      />
     </>
   );
 };
@@ -464,7 +666,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    width: '100%',
+    width: '92%',
     marginVertical: hp(1),
     alignSelf: 'center',
   },
@@ -704,5 +906,34 @@ const styles = StyleSheet.create({
     fontSize: hp(2.5),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
+  },
+  dropdown2DropdownStyle: {
+    backgroundColor: COLORS.white,
+    borderRadius: 4,
+    height: hp(25),
+    // borderRadius: 12,
+  },
+  dropdownItemTxtStyle: {
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    marginLeft: wp(2),
+  },
+  dropdownView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: hp(4),
+    borderBottomWidth: 0,
+  },
+  dropdown2BtnStyle2: {
+    width: '100%',
+    height: hp(5),
+    backgroundColor: COLORS.white,
+    borderRadius: 5,
+    alignItems: 'center',
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    marginTop: hp(1),
   },
 });

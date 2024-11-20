@@ -10,7 +10,7 @@ import {
   FlatList,
   Platform,
 } from 'react-native';
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -18,61 +18,229 @@ import {
 import {COLORS, Fonts} from '../../utils';
 import {useTheme} from '../../utils/ThemeProvider';
 import ProfilePhoto from './../ProfilePhoto';
-import moment from 'moment';
 import deleteIcon from '../../images/delete.png';
 import editing from '../../images/editing.png';
 import filter from '../../images/filter.png';
-import man from '../../images/man.png';
-import draw from '../../images/draw.png';
-import DatePicker from 'react-native-date-picker';
-import ImagePicker from 'react-native-image-crop-picker';
+import {useSelector} from 'react-redux';
+import SelectDropdown from 'react-native-select-dropdown';
+import {
+  onAddAccountListApi,
+  onDeleteCommonApi,
+  onGetEditAccountDataApi,
+  onGetSpecificCommonApi,
+} from '../../services/Api';
+import {DeletePopup} from '../DeletePopup';
+import FlashMessage, {
+  showMessage,
+  hideMessage,
+} from 'react-native-flash-message';
 
-const PayrollList = ({searchBreak, setSearchBreak, allData}) => {
+const monthData = [
+  {id: 1, name: 'January'},
+  {id: 2, name: 'February'},
+  {id: 3, name: 'March'},
+  {id: 4, name: 'April'},
+  {id: 5, name: 'May'},
+  {id: 6, name: 'June'},
+  {id: 7, name: 'July'},
+  {id: 8, name: 'August'},
+  {id: 9, name: 'September'},
+  {id: 10, name: 'October'},
+  {id: 11, name: 'November'},
+  {id: 12, name: 'December'},
+];
+
+const statusData = [
+  {id: 0, name: 'Unpaid'},
+  {id: 1, name: 'Paid'},
+];
+
+const PayrollList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
+  const roleData = useSelector(state => state.roleData);
+  const allUserData = useSelector(state => state.allUserData);
   const {theme} = useTheme();
   const [newUserVisible, setNewUserVisible] = useState(false);
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
+  const [srNo, setSrNo] = useState('');
   const [role, setRole] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [address, setAddress] = useState('');
-  const [city, setCity] = useState('');
-  const [country, setCountry] = useState('');
-  const [postalCode, setPostalCode] = useState('');
-  const [genderType, setGenderType] = useState('female');
-  const [dateOfBirth, setDateOfBirth] = useState(new Date());
-  const [dateModalVisible, setDateModalVisible] = useState(false);
-  const [avatar, setAvatar] = useState(null);
-  const [status, setStatus] = useState(false);
+  const [roleId, setRoleId] = useState('');
+  const [employee, setEmployee] = useState('');
+  const [employeeId, setEmployeeId] = useState('');
+  const [month, setMonth] = useState('');
+  const [monthId, setMonthId] = useState('');
+  const [year, setYear] = useState('');
+  const [status, setStatus] = useState('Unpaid');
+  const [statusId, setStatusId] = useState('0');
+  const [basicSalary, setBasicSalary] = useState('');
+  const [allowance, setAllowance] = useState('');
+  const [deductions, setDeductions] = useState('');
+  const [netSalary, setNetSalary] = useState('0');
+  const [errorVisible, setErrorVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [userId, setUserId] = useState('');
+  const [deleteUser, setDeleteUser] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const openProfileImagePicker = async () => {
+  let accountantData = allUserData.filter(user => user.department === role);
+  useEffect(() => {
+    if (accountantData.length > 0) {
+      setEmployeeId(accountantData[0].id);
+      setEmployee(accountantData[0].name);
+    } else {
+      setEmployeeId('');
+      setEmployee('');
+    }
+  }, [accountantData]);
+
+  const onAddPayRollData = async () => {
     try {
-      const image = await ImagePicker.openPicker({
-        width: 300,
-        height: 400,
-        cropping: false,
-        multiple: false, // Allow selecting only one image
-        compressImageQuality: 0.5,
-      });
-
-      if (image && image.path) {
-        if (image && image.path) {
-          var filename = image.path.substring(image.path.lastIndexOf('/') + 1);
-          let imageData = {
-            uri: Platform.OS === 'ios' ? image.sourceURL : image.path,
-            type: image.mime,
-            name: Platform.OS === 'ios' ? image.filename : filename,
-          };
-          setAvatar(imageData);
-
-          console.log('Selected image:', avatar);
-        }
+      if (srNo == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter employee srNo.');
+      } else if (roleId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select employee role.');
+      } else if (monthId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select employee payroll month.');
+      } else if (year == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter employee payroll year.');
+      } else if (statusId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select status paid or not.');
+      } else if (basicSalary == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter employee basic salary.');
+      } else if (allowance == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter allowance number.');
+      } else if (allowance == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter deductions number.');
       } else {
-        console.log('No image selected');
+        setLoading(true);
+        setErrorVisible(false);
+        const urlData = `emplloyee-payroll-create?sr_no=${srNo}&owner_id=${employeeId}&owner_type=${roleId}&month=${monthId}&year=${year}&net_salary=${netSalary}&basic_salary=${basicSalary}&allowance=${allowance}&deductions=${deductions}`;
+        const response = await onAddAccountListApi(urlData);
+        if (response.status == 200) {
+          onGetData();
+          setLoading(false);
+          setNewUserVisible(false);
+          showMessage({
+            message: 'Record Added Successfully',
+            type: 'success',
+            duration: 3000,
+          });
+        }
       }
-    } catch (error) {
-      console.log('Error selecting image:', error);
+    } catch (err) {
+      showMessage({
+        message: 'Something want wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      setLoading(false);
+      console.log('Error:', err);
+    }
+  };
+
+  const onEditPayRollData = async () => {
+    try {
+      if (srNo == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter employee srNo.');
+      } else if (roleId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select employee role.');
+      } else if (monthId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select employee payroll month.');
+      } else if (year == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter employee payroll year.');
+      } else if (statusId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select status paid or not.');
+      } else if (basicSalary == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter employee basic salary.');
+      } else if (allowance == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter allowance number.');
+      } else if (allowance == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter deductions number.');
+      } else {
+        setLoading(true);
+        setErrorVisible(false);
+        const urlData = `emplloyee-payroll-update/${userId}?sr_no=${srNo}&owner_id=${employeeId}&owner_type=${roleId}&month=${monthId}&year=${year}&net_salary=${netSalary}&basic_salary=${basicSalary}&allowance=${allowance}&deductions=${deductions}`;
+        const response = await onGetEditAccountDataApi(urlData);
+        if (response.status == 200) {
+          onGetData();
+          setLoading(false);
+          setNewUserVisible(false);
+          showMessage({
+            message: 'Record Edit Successfully',
+            type: 'success',
+            duration: 3000,
+          });
+        }
+      }
+    } catch (err) {
+      setLoading(false);
+      showMessage({
+        message: 'Something want wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Error:', err);
+    }
+  };
+
+  const onGetSpecificDoctor = async id => {
+    try {
+      const response = await onGetSpecificCommonApi(
+        `emplloyee-payroll-edit/${id}`,
+      );
+      if (response.status == 200) {
+        console.log('get ValueLL:::', response.data.data);
+        return response.data.data;
+      } else {
+        return 0;
+      }
+    } catch (err) {
+      console.log('Get Error', err);
+    }
+  };
+
+  const onDeletePayrollData = async id => {
+    try {
+      setLoading(true);
+      const response = await onDeleteCommonApi(
+        `emplloyee-payroll-delete/${id}`,
+      );
+      if (response.status == 200) {
+        onGetData();
+        setLoading(false);
+        setDeleteUser(false);
+        showMessage({
+          message: 'Record Delete Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      }
+    } catch (err) {
+      setLoading(false);
+      setDeleteUser(false);
+      showMessage({
+        message: 'Something want wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Get Error', err);
     }
   };
 
@@ -113,13 +281,50 @@ const PayrollList = ({searchBreak, setSearchBreak, allData}) => {
           </View>
         </View>
         <View style={styles.actionDataView}>
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={async () => {
+              let allDatas = await onGetSpecificDoctor(item.id);
+              setUserId(item.id);
+              setRole(allDatas.employeePayroll.type_string);
+              const matchingKey = Object.entries(allDatas?.types).find(
+                ([key, value]) =>
+                  value === allDatas.employeePayroll.type_string,
+              )?.[0];
+              setRoleId(matchingKey);
+              accountantData = allUserData.filter(
+                user =>
+                  user.department === allDatas.employeePayroll.type_string,
+              );
+              console.log('Get ImageLLLL', accountantData);
+              setEmployeeId(allDatas.employeePayroll.owner_id);
+              setEmployee(item.name);
+              setMonth(item.month);
+              setMonthId(allDatas.employeePayroll.month);
+              setStatus(item.status);
+              setStatusId(allDatas.employeePayroll.status);
+              setSrNo(JSON.stringify(allDatas.employeePayroll.sr_no));
+              setBasicSalary(
+                JSON.stringify(allDatas.employeePayroll.basic_salary),
+              );
+              setAllowance(JSON.stringify(allDatas.employeePayroll.allowance));
+              setDeductions(
+                JSON.stringify(allDatas.employeePayroll.deductions),
+              );
+              setNetSalary(JSON.stringify(allDatas.employeePayroll.net_salary));
+              setYear(JSON.stringify(item.year));
+              setNewUserVisible(true);
+            }}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.blueColor}]}
               source={editing}
             />
           </TouchableOpacity>
-          <TouchableOpacity style={{marginLeft: wp(2)}}>
+          <TouchableOpacity
+            onPress={() => {
+              setUserId(item.id);
+              setDeleteUser(true);
+            }}
+            style={{marginLeft: wp(2)}}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.errorColor}]}
               source={deleteIcon}
@@ -128,6 +333,18 @@ const PayrollList = ({searchBreak, setSearchBreak, allData}) => {
         </View>
       </View>
     );
+  };
+
+  const onSalaryCalculation = async () => {
+    if (basicSalary != '' && allowance != '' && deductions != '') {
+      setNetSalary(
+        JSON.stringify(
+          parseInt(basicSalary) + parseInt(allowance) - parseInt(deductions),
+        ),
+      );
+    } else {
+      setNetSalary('0');
+    }
   };
 
   return (
@@ -150,7 +367,25 @@ const PayrollList = ({searchBreak, setSearchBreak, allData}) => {
               <Image style={styles.filterImage} source={filter} />
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() => setNewUserVisible(true)}
+              onPress={() => {
+                setSrNo('');
+                setRole('');
+                setRoleId('');
+                setEmployee('');
+                setEmployeeId('');
+                setMonth('');
+                setMonthId('');
+                setYear('');
+                setStatus('');
+                setStatusId('');
+                setBasicSalary('');
+                setAllowance('');
+                setDeductions('');
+                setNetSalary('0');
+                setErrorVisible(false);
+                setErrorMessage('');
+                setNewUserVisible(true);
+              }}
               style={styles.actionView}>
               <Text style={styles.actionText}>New Employee Payroll</Text>
             </TouchableOpacity>
@@ -235,222 +470,289 @@ const PayrollList = ({searchBreak, setSearchBreak, allData}) => {
           <View style={styles.profileView}>
             <View style={styles.nameView}>
               <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>FIRST NAME</Text>
+                <Text style={styles.dataHistoryText1}>Sr No</Text>
                 <TextInput
-                  value={firstName}
-                  placeholder={'Enter first name'}
-                  onChangeText={text => setFirstName(text)}
+                  value={srNo}
+                  placeholder={'Sr No'}
+                  onChangeText={text => setSrNo(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
                 />
               </View>
 
               <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>LAST NAME</Text>
-                <TextInput
-                  value={lastName}
-                  placeholder={'Enter last name'}
-                  onChangeText={text => setLastName(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>EMAIL ADDRESS</Text>
-                <TextInput
-                  value={email}
-                  placeholder={'Enter email'}
-                  onChangeText={text => setEmail(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>ROLE</Text>
-                <TextInput
-                  value={role}
-                  placeholder={'Select'}
-                  onChangeText={text => setRole(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>PASSWORD</Text>
-                <TextInput
-                  value={password}
-                  placeholder={'******'}
-                  onChangeText={text => setPassword(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                  secureTextEntry={true}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>CONFIRM PASSWORD</Text>
-                <TextInput
-                  value={confirmPassword}
-                  placeholder={'******'}
-                  onChangeText={text => setConfirmPassword(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                  secureTextEntry={true}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>DATE OF BIRTH</Text>
-                {/* <TextInput
-                  value={firstName}
-                  placeholder={'Enter first name'}
-                  onChangeText={text => setFirstName(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                /> */}
-                <Text
-                  style={[
-                    styles.nameTextView,
-                    {width: '100%', paddingVertical: hp(1)},
-                  ]}
-                  onPress={() => setDateModalVisible(!dateModalVisible)}>
-                  {moment(dateOfBirth).format('DD/MM/YYYY')}
-                </Text>
-                <DatePicker
-                  open={dateModalVisible}
-                  modal={true}
-                  date={dateOfBirth}
-                  mode={'date'}
-                  onConfirm={date => {
-                    console.log('Console Log>>', date);
-                    setDateModalVisible(false);
-                    setDateOfBirth(date);
+                <Text style={styles.dataHistoryText1}>Role:</Text>
+                <SelectDropdown
+                  data={roleData}
+                  onSelect={(selectedItem, index) => {
+                    setRole(selectedItem.name);
+                    setRoleId(selectedItem.id);
+                    console.log('gert Value:::', selectedItem);
                   }}
-                  onCancel={() => {
-                    setDateModalVisible(false);
+                  defaultValue={role}
+                  renderButton={(selectedItem, isOpen) => {
+                    console.log('Get Response>>>', selectedItem);
+                    return (
+                      <View style={styles.dropdown2BtnStyle2}>
+                        {roleId != '' ? (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {roleId == selectedItem?.id
+                              ? selectedItem?.name
+                              : role}
+                          </Text>
+                        ) : (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {selectedItem?.name || 'Select Role'}
+                          </Text>
+                        )}
+                      </View>
+                    );
                   }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(item, index, isSelected) => {
+                    return (
+                      <TouchableOpacity style={styles.dropdownView}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {item.name}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                  dropdownIconPosition={'left'}
+                  dropdownStyle={styles.dropdown2DropdownStyle}
                 />
-              </View>
-
-              <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>GENDER</Text>
-                <View style={[styles.statusView, {paddingVertical: hp(1)}]}>
-                  <View style={[styles.optionView]}>
-                    <TouchableOpacity
-                      onPress={() => setGenderType('female')}
-                      style={[
-                        styles.roundBorder,
-                        {
-                          backgroundColor:
-                            genderType == 'female'
-                              ? COLORS.blueColor
-                              : COLORS.white,
-                          borderWidth: genderType == 'female' ? 0 : 0.5,
-                        },
-                      ]}>
-                      <View style={styles.round} />
-                    </TouchableOpacity>
-                    <Text style={styles.statusText}>Female</Text>
-                  </View>
-                  <View style={[styles.optionView]}>
-                    <TouchableOpacity
-                      onPress={() => setGenderType('male')}
-                      style={[
-                        styles.roundBorder,
-                        {
-                          backgroundColor:
-                            genderType == 'male'
-                              ? COLORS.blueColor
-                              : COLORS.white,
-                          borderWidth: genderType == 'male' ? 0 : 0.5,
-                        },
-                      ]}>
-                      <View style={styles.round} />
-                    </TouchableOpacity>
-                    <Text style={styles.statusText}>Male</Text>
-                  </View>
-                </View>
               </View>
             </View>
 
             <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>ADDRESS</Text>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Employee:</Text>
+                <SelectDropdown
+                  data={accountantData}
+                  disabled={accountantData.length > 0 ? false : true}
+                  onSelect={(selectedItem, index) => {
+                    // setSelectedColor(selectedItem);
+                    setEmployeeId(selectedItem.id);
+                    console.log('gert Value:::', selectedItem);
+                  }}
+                  defaultValue={employee}
+                  renderButton={(selectedItem, isOpen) => {
+                    console.log('Get Response>>>', selectedItem);
+                    return (
+                      <View
+                        style={[
+                          styles.dropdown2BtnStyle2,
+                          {
+                            backgroundColor:
+                              accountantData.length > 0 ? '#fff' : '#c2c2c2',
+                          },
+                        ]}>
+                        {employeeId != '' ? (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {employeeId == selectedItem?.id
+                              ? selectedItem?.name
+                              : employee}
+                          </Text>
+                        ) : (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {selectedItem?.name || 'Select Employee'}
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(item, index, isSelected) => {
+                    return (
+                      <TouchableOpacity style={styles.dropdownView}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {item.name}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                  dropdownIconPosition={'left'}
+                  dropdownStyle={styles.dropdown2DropdownStyle}
+                />
+              </View>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Month:</Text>
+                <SelectDropdown
+                  data={monthData}
+                  onSelect={(selectedItem, index) => {
+                    // setSelectedColor(selectedItem);
+                    setMonthId(selectedItem.id);
+                    console.log('gert Value:::', selectedItem);
+                  }}
+                  defaultValue={month}
+                  renderButton={(selectedItem, isOpen) => {
+                    console.log('Get Response>>>', selectedItem);
+                    return (
+                      <View style={styles.dropdown2BtnStyle2}>
+                        {monthId != '' ? (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {monthId == selectedItem?.id
+                              ? selectedItem?.name
+                              : month}
+                          </Text>
+                        ) : (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {selectedItem?.name || 'Select Month'}
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(item, index, isSelected) => {
+                    return (
+                      <TouchableOpacity style={styles.dropdownView}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {item.name}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                  dropdownIconPosition={'left'}
+                  dropdownStyle={styles.dropdown2DropdownStyle}
+                />
+              </View>
+            </View>
+
+            <View style={styles.nameView}>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Year:</Text>
                 <TextInput
-                  value={address}
-                  placeholder={'******'}
-                  onChangeText={text => setAddress(text)}
+                  value={year}
+                  placeholder={'Year'}
+                  onChangeText={text => setYear(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
                   secureTextEntry={true}
+                  keyboardType={'number-pad'}
+                />
+              </View>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Status:</Text>
+                <SelectDropdown
+                  data={statusData}
+                  onSelect={(selectedItem, index) => {
+                    // setSelectedColor(selectedItem);
+                    setStatusId(selectedItem.id);
+                    console.log('gert Value:::', selectedItem);
+                  }}
+                  defaultValue={status}
+                  renderButton={(selectedItem, isOpen) => {
+                    console.log('Get Response>>>', selectedItem);
+                    return (
+                      <View style={styles.dropdown2BtnStyle2}>
+                        {statusId != '' ? (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {statusId == selectedItem?.id
+                              ? selectedItem?.name
+                              : status}
+                          </Text>
+                        ) : (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {selectedItem?.name || 'Select'}
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(item, index, isSelected) => {
+                    return (
+                      <TouchableOpacity style={styles.dropdownView}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {item.name}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                  dropdownIconPosition={'left'}
+                  dropdownStyle={styles.dropdown2DropdownStyle}
                 />
               </View>
             </View>
 
             <View style={styles.nameView}>
               <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>CITY</Text>
+                <Text style={styles.dataHistoryText1}>Basic Salary:</Text>
                 <TextInput
-                  value={city}
-                  placeholder={'Enter city'}
-                  onChangeText={text => setCity(text)}
+                  value={basicSalary}
+                  placeholder={'Basic Salary'}
+                  onChangeText={text => setBasicSalary(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
+                  onBlur={() => onSalaryCalculation()}
+                  keyboardType={'number-pad'}
                 />
               </View>
-
               <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>COUNTRY</Text>
+                <Text style={styles.dataHistoryText1}>Allowance:</Text>
                 <TextInput
-                  value={country}
-                  placeholder={'Enter country'}
-                  onChangeText={text => setCountry(text)}
+                  value={allowance}
+                  placeholder={'Allowance'}
+                  onChangeText={text => setAllowance(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
+                  onBlur={() => onSalaryCalculation()}
+                  keyboardType={'number-pad'}
                 />
               </View>
             </View>
 
             <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>POSTAL CODE</Text>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Deductions:</Text>
                 <TextInput
-                  value={postalCode}
-                  placeholder={'Postal Code'}
-                  onChangeText={text => setPostalCode(text)}
+                  value={deductions}
+                  placeholder={'Deductions'}
+                  onChangeText={text => setDeductions(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
+                  onBlur={() => onSalaryCalculation()}
+                  keyboardType={'number-pad'}
+                />
+              </View>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Net Salary:</Text>
+                <TextInput
+                  value={netSalary}
+                  placeholder={'Net Salary'}
+                  editable={false}
+                  onChangeText={text => setNetSalary(text)}
+                  style={[styles.nameTextVie1, {width: '100%'}]}
                 />
               </View>
             </View>
 
             <View style={styles.nameView}>
-              <View>
-                <Text style={styles.dataHistoryText1}>PROFILE</Text>
-                <View style={styles.profilePhotoView}>
-                  <TouchableOpacity
-                    style={styles.editView}
-                    onPress={() => openProfileImagePicker()}>
-                    <Image style={styles.editImage1} source={draw} />
-                  </TouchableOpacity>
-                  <Image style={styles.profileImage} source={man} />
-                </View>
-              </View>
+              {errorVisible ? (
+                <Text style={styles.dataHistoryText4}>{errorMessage}</Text>
+              ) : null}
             </View>
           </View>
 
           <View style={styles.buttonView}>
-            <TouchableOpacity onPress={() => {}} style={styles.nextView}>
+            <TouchableOpacity
+              onPress={() => {
+                userId != '' ? onEditPayRollData() : onAddPayRollData();
+              }}
+              style={styles.nextView}>
               <Text style={styles.nextText}>Save</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => {}} style={styles.prevView}>
+            <TouchableOpacity
+              onPress={() => setNewUserVisible(false)}
+              style={styles.prevView}>
               <Text style={styles.prevText}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
       )}
+      <DeletePopup
+        modelVisible={deleteUser}
+        setModelVisible={setDeleteUser}
+        onPress={() => onDeletePayrollData(userId)}
+        setUserId={setUserId}
+        isLoading={loading}
+      />
     </View>
   );
 };
@@ -657,6 +959,19 @@ const styles = StyleSheet.create({
     marginTop: hp(1),
     backgroundColor: COLORS.white,
   },
+  nameTextVie1: {
+    width: '50%',
+    paddingHorizontal: wp(2),
+    paddingVertical: hp(0.5),
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    color: COLORS.black,
+    borderRadius: 5,
+    marginTop: hp(1),
+    backgroundColor: COLORS.lightGrey,
+  },
   nameView: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -678,6 +993,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     alignItems: 'center',
+    marginTop: hp(2),
   },
   nextView: {
     height: hp(4.5),
@@ -829,5 +1145,34 @@ const styles = StyleSheet.create({
     fontSize: hp(2.5),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
+  },
+  dropdown2DropdownStyle: {
+    backgroundColor: COLORS.white,
+    borderRadius: 4,
+    height: hp(25),
+    // borderRadius: 12,
+  },
+  dropdownItemTxtStyle: {
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    marginLeft: wp(2),
+  },
+  dropdownView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: hp(4),
+    borderBottomWidth: 0,
+  },
+  dropdown2BtnStyle2: {
+    width: '100%',
+    height: hp(5),
+    backgroundColor: COLORS.white,
+    borderRadius: 5,
+    alignItems: 'center',
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    marginTop: hp(1),
   },
 });

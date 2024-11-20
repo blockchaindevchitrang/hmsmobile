@@ -30,7 +30,7 @@ import PaymentList from '../../components/BillingComponent/PaymentList';
 import ReportList from '../../components/BillingComponent/ReportList';
 import AdvanceList from '../../components/BillingComponent/AdvanceList';
 import ManualList from '../../components/BillingComponent/ManualList';
-import { onGetAccountListApi, onGetPayrollListApi } from '../../services/Api';
+import {onGetAccountListApi, onGetCommonApi, onGetPayrollListApi} from '../../services/Api';
 
 const allData = [
   {
@@ -299,13 +299,16 @@ export const BillingScreen = ({navigation}) => {
   const [searchPayroll, setSearchPayroll] = useState('');
   const [searchPayment, setSearchPayment] = useState('');
   const [searchInvoice, setSearchInvoice] = useState('');
-  const [searchReceptionist, setSearchReceptionist] = useState('');
-  const [searchLabTechnician, setSearchLabTechnician] = useState('');
-  const [searchPharmacists, setSearchPharmacists] = useState('');
+  const [searchReport, setSearchReport] = useState('');
+  const [searchAdvance, setSearchAdvance] = useState('');
+  const [searchBill, setSearchBill] = useState('');
+  const [searchManualBill, setSearchManualBill] = useState('');
   const [optionModalView, setOptionModalView] = useState(false);
   const [selectedView, setSelectedView] = useState('Accounts');
   const [accountList, setAccountList] = useState([]);
   const [payrollList, setPayrollList] = useState([]);
+  const [paymentList, setPaymentList] = useState([]);
+  const [advancePaymentList, setAdvancePaymentList] = useState([]);
   const [refresh, setRefresh] = useState(false);
 
   const animations = useRef(
@@ -399,6 +402,44 @@ export const BillingScreen = ({navigation}) => {
     }
   };
 
+  useEffect(() => {
+    onGetPaymentData();
+  }, [searchPayment]);
+
+  const onGetPaymentData = async () => {
+    try {
+      const response = await onGetCommonApi(
+        `bill-payment-get?search=${searchPayment}`,
+      );
+      console.log('GetAccountData>>', response.data.data);
+      if (response.status == 200) {
+        setPaymentList(response.data.data.items);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Get AccountError>', err.response.data);
+    }
+  };
+
+  useEffect(() => {
+    onGetAdvancePaymentData();
+  }, [searchAdvance]);
+
+  const onGetAdvancePaymentData = async () => {
+    try {
+      const response = await onGetCommonApi(
+        `advance-payment-get?search=${searchAdvance}`,
+      );
+      console.log('GetAccountData>>', response.data.data);
+      if (response.status == 200) {
+        setAdvancePaymentList(response.data.data.items);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Get AccountError>', err.response.data);
+    }
+  };
+
   return (
     <View style={[styles.container, {backgroundColor: theme.lightColor}]}>
       <View style={styles.headerView}>
@@ -434,31 +475,34 @@ export const BillingScreen = ({navigation}) => {
           <PaymentList
             searchBreak={searchPayment}
             setSearchBreak={setSearchPayment}
-            allData={PaymentData}
+            allData={paymentList}
+            onGetData={onGetPaymentData}
           />
         ) : selectedView == 'Payment Reports' ? (
           <ReportList
-            searchBreak={searchReceptionist}
-            setSearchBreak={setSearchReceptionist}
-            allData={PaymentData}
+            searchBreak={searchReport}
+            setSearchBreak={setSearchReport}
+            allData={paymentList}
+            onGetData={onGetPaymentData}
           />
         ) : selectedView == 'Advance Payments' ? (
           <AdvanceList
-            searchBreak={searchInvoice}
-            setSearchBreak={setSearchInvoice}
-            allData={InvoiceData}
+            searchBreak={searchAdvance}
+            setSearchBreak={setSearchAdvance}
+            allData={advancePaymentList}
+            onGetData={onGetAdvancePaymentData}
           />
         ) : selectedView == 'Bills' ? (
           <PharmacistsList
-            searchBreak={searchPharmacists}
-            setSearchBreak={setSearchPharmacists}
+            searchBreak={searchBill}
+            setSearchBreak={setSearchBill}
             allData={PharmacistsData}
           />
         ) : (
           selectedView == 'Manual Billing Payments' && (
             <ManualList
-              searchBreak={searchPharmacists}
-              setSearchBreak={setSearchPharmacists}
+              searchBreak={searchManualBill}
+              setSearchBreak={setSearchManualBill}
               allData={ManualData}
             />
           )

@@ -7,11 +7,13 @@ import {
   Modal,
   TouchableWithoutFeedback,
   ActivityIndicator,
+  Animated,
 } from 'react-native';
 import {heightPercentageToDP as hp, widthPercentageToDP as wp} from './Pixel';
 import {COLORS, Fonts} from '../utils';
 import {useTranslation} from 'react-i18next';
 import {useTheme} from '../utils/ThemeProvider';
+import danger from '../images/danger.png';
 
 export function DeletePopup({
   modelVisible,
@@ -22,6 +24,45 @@ export function DeletePopup({
 }) {
   const {t} = useTranslation();
   const {theme} = useTheme();
+  const width = new Animated.Value(130);
+  const height = new Animated.Value(80);
+
+  useEffect(() => {
+    // Function to animate width and height in a loop
+    const animateImage = () => {
+      Animated.loop(
+        Animated.parallel([
+          Animated.sequence([
+            Animated.timing(width, {
+              toValue: 220,
+              duration: 1500,
+              useNativeDriver: false,
+            }),
+            Animated.timing(width, {
+              toValue: 130,
+              duration: 1500,
+              useNativeDriver: false,
+            }),
+          ]),
+          Animated.sequence([
+            Animated.timing(height, {
+              toValue: 120,
+              duration: 1500,
+              useNativeDriver: false,
+            }),
+            Animated.timing(height, {
+              toValue: 80,
+              duration: 1500,
+              useNativeDriver: false,
+            }),
+          ]),
+        ]),
+      ).start();
+    };
+
+    animateImage();
+  }, [width, height]);
+
   return (
     <Modal
       animationType="slide"
@@ -37,6 +78,15 @@ export function DeletePopup({
           <View style={styles.modalOverlay} />
         </TouchableWithoutFeedback>
         <View style={styles.container}>
+          <Animated.Image
+            source={danger}
+            style={{
+              width: width,
+              height: height,
+              resizeMode: 'contain',
+              marginVertical: hp(2),
+            }}
+          />
           <Text style={[styles.referralTitleText, {color: theme.headerColor}]}>
             {'Delete Record'}
           </Text>
@@ -75,6 +125,7 @@ const styles = StyleSheet.create({
     paddingVertical: hp(2),
     backgroundColor: COLORS.white,
     borderRadius: 10,
+    alignItems: 'center',
     // marginLeft: -wp(2.5),
     // paddingTop: hp(3),
   },
@@ -96,13 +147,13 @@ const styles = StyleSheet.create({
     fontSize: hp(2.8),
     fontFamily: Fonts.FONTS.PoppinsSemiBold,
     color: COLORS.primary,
-    width: '100%',
-    marginLeft: wp(3),
+    // width: '100%',
+    // marginLeft: wp(3),
   },
   referralTitleText1: {
     color: COLORS.black,
     fontFamily: Fonts.FONTS.PoppinsRegular,
-    fontSize: hp(1.8),
+    fontSize: hp(2),
     marginLeft: wp(5),
     marginTop: hp(2),
   },

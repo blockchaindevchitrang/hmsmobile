@@ -32,6 +32,7 @@ const COLORS = {
   lightBlueColor: '#ccfff0',
   lightColor: '#ccfff0',
   headerGreenColor: '#5eead4',
+  lightGrey: '#c2c2c2',
 };
 
 export default COLORS;

@@ -96,7 +96,7 @@ const BloodDonationList = ({
         setLoading(false);
         setNewAccountVisible(false);
         showMessage({
-          message: 'Record Added Successfully',
+          message: 'Record Edit Successfully',
           type: 'success',
           duration: 3000,
         });

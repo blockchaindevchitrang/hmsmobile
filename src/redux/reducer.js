@@ -7,6 +7,8 @@ export const FETCH_DASHBOARD_DATA = 'FETCH_DASHBOARD_DATA';
 export const FETCH_BED_TYPE_DATA = 'FETCH_BED_TYPE_DATA';
 export const FETCH_BED_DATA = 'FETCH_BED_DATA';
 export const FETCH_BLOOD_DONOR = 'FETCH_BLOOD_DONOR';
+export const FETCH_ALL_USER_DATA = 'FETCH_ALL_USER_DATA';
+export const FETCH_ACCOUNT_DATA = 'FETCH_ACCOUNT_DATA';
 
 export const fetchUserData = user_data => {
   return {
@@ -71,6 +73,20 @@ export const fetchBloodDonorData = bloodDonor => {
   };
 };
 
+export const fetchAllUserData = allUserData => {
+  return {
+    type: FETCH_ALL_USER_DATA,
+    payload: allUserData,
+  };
+};
+
+export const fetchAccountData = accountData => {
+  return {
+    type: FETCH_ACCOUNT_DATA,
+    payload: accountData,
+  };
+};
+
 // Initial State
 const initialState = {
   user_data: [],
@@ -82,6 +98,8 @@ const initialState = {
   bedTypeData: [],
   bedData: [],
   bloodDonor: [],
+  allUserData: [],
+  accountData: [],
 };
 
 // Reducer
@@ -131,6 +149,16 @@ const rootReducer = (state = initialState, action) => {
       return {
         ...state,
         bloodDonor: action.payload,
+      };
+    case FETCH_ALL_USER_DATA:
+      return {
+        ...state,
+        allUserData: action.payload,
+      };
+    case FETCH_ACCOUNT_DATA:
+      return {
+        ...state,
+        accountData: action.payload,
       };
     default:
       return state;

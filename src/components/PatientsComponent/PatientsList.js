@@ -104,8 +104,15 @@ const PatientsList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
       formdata.append('blood_group', bloodGroup);
       formdata.append('password', password);
       formdata.append('password_confirmation', confirmPassword);
-      formdata.append('appointment_charge', charge);
-      formdata.append('description', description);
+      formdata.append('date', charge);
+      formdata.append('cus_field', description);
+      formdata.append('company_org', charge);
+      formdata.append('is_loose', description);
+      formdata.append('neck', charge);
+      formdata.append('id_number', description);
+      formdata.append('your_name', description);
+      formdata.append('family_history', charge);
+      formdata.append('pet_name', description);
       formdata.append('address1', address);
       formdata.append('address2', address1);
       formdata.append('city', city);
@@ -529,7 +536,7 @@ const PatientsList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
 
             <View style={styles.nameView}>
               <View>
-                <Text style={styles.dataHistoryText1}>PROFILE</Text>
+                <Text style={styles.dataHistoryText5}>PROFILE</Text>
                 <View style={styles.profilePhotoView}>
                   <TouchableOpacity
                     style={styles.editView}
@@ -739,6 +746,11 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.FONTS.PoppinsBold,
     color: COLORS.black,
     width: wp(45),
+  },
+  dataHistoryText5: {
+    fontSize: hp(1.7),
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    color: COLORS.black,
   },
   dataHistoryText2: {
     fontSize: hp(1.8),
