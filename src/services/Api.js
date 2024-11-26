@@ -1303,3 +1303,147 @@ export const onGetSpecificCommonApi = async urlData => {
       .catch(err => reject(err));
   });
 };
+
+export const onAddIncomeApi = async requestData => {
+  const token = await AsyncStorage.getItem('accessToken');
+  console.log('Get Login Url:::', Api.baseUrl1);
+  const url = Api.baseUrl1 + 'income-store';
+  return new Promise((resolve, reject) => {
+    axios
+      .post(url, requestData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(res => resolve(res))
+      .catch(err => reject(err));
+  });
+};
+
+export const onUpdateIncomeApi = async (requestData, id) => {
+  const token = await AsyncStorage.getItem('accessToken');
+  const url = Api.baseUrl1 + `income-update/${id}`;
+  console.log('Get onUpdateIncomeApi Url:::', url, requestData);
+  return new Promise((resolve, reject) => {
+    axios
+      .post(url, requestData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(res => resolve(res))
+      .catch(err => reject(err));
+  });
+};
+
+export const onAddExpenseApi = async requestData => {
+  const token = await AsyncStorage.getItem('accessToken');
+  console.log('Get Login Url:::', Api.baseUrl1);
+  const url = Api.baseUrl1 + 'expense-store';
+  return new Promise((resolve, reject) => {
+    axios
+      .post(url, requestData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(res => resolve(res))
+      .catch(err => reject(err));
+  });
+};
+
+export const onUpdateExpenseApi = async (requestData, id) => {
+  const token = await AsyncStorage.getItem('accessToken');
+  const url = Api.baseUrl1 + `expense-update/${id}`;
+  console.log('Get onUpdateIncomeApi Url:::', url, requestData);
+  return new Promise((resolve, reject) => {
+    axios
+      .post(url, requestData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(res => resolve(res))
+      .catch(err => reject(err));
+  });
+};
+
+export const onAddPostalApi = async requestData => {
+  const token = await AsyncStorage.getItem('accessToken');
+  console.log('Get Login Url:::', Api.baseUrl1);
+  const url = Api.baseUrl1 + 'postal-store';
+  return new Promise((resolve, reject) => {
+    axios
+      .post(url, requestData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(res => resolve(res))
+      .catch(err => reject(err));
+  });
+};
+
+export const onUpdatePostalApi = async (requestData, id) => {
+  const token = await AsyncStorage.getItem('accessToken');
+  const url = Api.baseUrl1 + `postal-update/${id}`;
+  console.log('Get onUpdateIncomeApi Url:::', url, requestData);
+  return new Promise((resolve, reject) => {
+    axios
+      .post(url, requestData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(res => resolve(res))
+      .catch(err => reject(err));
+  });
+};
+
+export const onAddDocumentApi = async requestData => {
+  const token = await AsyncStorage.getItem('accessToken');
+  console.log('Get Login Url:::', Api.baseUrl1);
+  const url = Api.baseUrl1 + 'document-store';
+  return new Promise((resolve, reject) => {
+    axios
+      .post(url, requestData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(res => resolve(res))
+      .catch(err => reject(err));
+  });
+};
+
+export const onUpdateDocumentApi = async (requestData, id) => {
+  const token = await AsyncStorage.getItem('accessToken');
+  const url = Api.baseUrl1 + `document-update/${id}`;
+  console.log('Get onUpdateIncomeApi Url:::', url, JSON.stringify(requestData));
+  return new Promise((resolve, reject) => {
+    axios
+      .post(url, requestData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(res => resolve(res))
+      .catch(err => reject(err));
+  });
+};

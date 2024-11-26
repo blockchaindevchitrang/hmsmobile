@@ -173,8 +173,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   editImage: {
-    width: wp(4),
-    height: hp(2.5),
+    width: wp(5),
+    height: hp(3),
     resizeMode: 'contain',
   },
   backButtonView: {
@@ -197,7 +197,6 @@ const styles = StyleSheet.create({
   },
   profileView: {
     width: '94%',
-    backgroundColor: '#eeeeee',
     paddingVertical: hp(1),
     paddingHorizontal: wp(3),
     alignSelf: 'center',
@@ -213,6 +212,16 @@ const styles = StyleSheet.create({
     fontSize: hp(1.8),
     color: COLORS.black,
     borderRadius: 5,
+    marginTop: hp(1),
+    backgroundColor: COLORS.white,
+  },
+  nameTextView1: {
+    width: '100%',
+    paddingVertical: hp(0.5),
+    borderColor: COLORS.greyColor,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    color: COLORS.black,
     marginTop: hp(1),
     backgroundColor: COLORS.white,
   },
@@ -415,6 +424,17 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.FONTS.PoppinsSemiBold,
     color: COLORS.black,
     textAlign: 'left',
+  },
+  ListEmptyView: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: hp(15),
+  },
+  emptyText: {
+    fontSize: hp(2.5),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
   },
 });
 

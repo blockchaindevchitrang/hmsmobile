@@ -9,6 +9,7 @@ import {
   TextInput,
   FlatList,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import React, {useRef, useState} from 'react';
 import {
@@ -32,9 +33,21 @@ import {
   MenuOption,
   MenuTrigger,
 } from 'react-native-popup-menu';
-import { onAddPatientApi } from '../../services/Api';
+import {
+  onAddPatientApi,
+  onDeleteCommonApi,
+  onUpdatePatientApi,
+} from '../../services/Api';
+import FlashMessage, {
+  showMessage,
+  hideMessage,
+} from 'react-native-flash-message';
+import {DeletePopup} from '../DeletePopup';
+import SelectDropdown from 'react-native-select-dropdown';
+import {useSelector} from 'react-redux';
 
 const PatientsList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
+  const bloodData = useSelector(state => state.bloodData);
   const {theme} = useTheme();
   const menuRef = useRef(null);
   const [newUserVisible, setNewUserVisible] = useState(false);
@@ -60,6 +73,20 @@ const PatientsList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
   const [status, setStatus] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [refresh, setRefresh] = useState(false);
+  const [errorVisible, setErrorVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [userId, setUserId] = useState('');
+  const [deleteUser, setDeleteUser] = useState(false);
+  const [date, setDate] = useState('');
+  const [custom, setCustom] = useState('');
+  const [company, setCompany] = useState('');
+  const [loose, setLoose] = useState('');
+  const [neck, setNeck] = useState('');
+  const [idNumber, setIdNumber] = useState('');
+  const [yourName, setYourName] = useState('');
+  const [family, setFamily] = useState('');
+  const [petName, setPetName] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const openProfileImagePicker = async () => {
     try {
@@ -104,22 +131,22 @@ const PatientsList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
       formdata.append('blood_group', bloodGroup);
       formdata.append('password', password);
       formdata.append('password_confirmation', confirmPassword);
-      formdata.append('date', charge);
-      formdata.append('cus_field', description);
-      formdata.append('company_org', charge);
-      formdata.append('is_loose', description);
-      formdata.append('neck', charge);
-      formdata.append('id_number', description);
-      formdata.append('your_name', description);
-      formdata.append('family_history', charge);
-      formdata.append('pet_name', description);
       formdata.append('address1', address);
       formdata.append('address2', address1);
       formdata.append('city', city);
       formdata.append('zip', postalCode);
-      // if (avatar != null) {
-      //   formdata.append('image', avatar);
-      // }
+      formdata.append('date', date);
+      formdata.append('cus_field', custom);
+      formdata.append('company_org', company);
+      formdata.append('is_loose', loose);
+      formdata.append('neck', neck);
+      formdata.append('id_number', idNumber);
+      formdata.append('your_name', yourName);
+      formdata.append('family_history', family);
+      formdata.append('pet_name', petName);
+      if (avatar != null) {
+        formdata.append('image', avatar);
+      }
       const response = await onAddPatientApi(formdata);
       if (response.status == 200) {
         onGetData();
@@ -133,34 +160,39 @@ const PatientsList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
     }
   };
 
-  const onUpdateDoctorData = async id => {
+  const onUpdateDoctorData = async () => {
     try {
       setIsLoading(true);
       const formdata = new FormData();
       formdata.append('first_name', firstName);
       formdata.append('last_name', lastName);
-      formdata.append('email', doctorEmail);
-      formdata.append('doctor_department_id', 1);
+      formdata.append('email', email);
       formdata.append('dob', moment(dateOfBirth).format('YYYY-MM-DD'));
       formdata.append('gender', genderType == 'female' ? 1 : 0);
-      formdata.append('phone', doctorContact);
-      formdata.append('designation', designation);
-      formdata.append('qualification', qualification);
-      formdata.append('specialist', specialist);
-      formdata.append('appointment_charge', charge);
-      formdata.append('description', description);
-      formdata.append('address1', address1);
-      formdata.append('address2', address2);
-      formdata.append('city', doctorCity);
-      formdata.append('zip', doctorZip);
-      formdata.append('blood_group', 1);
-      // if (avatar != null) {
-      //   formdata.append('image', avatar);
-      // }
-      const response = await onUpdateDoctorApi(formdata, id);
+      formdata.append('phone', number);
+      formdata.append('blood_group', bloodGroup);
+      formdata.append('password', password);
+      formdata.append('password_confirmation', confirmPassword);
+      formdata.append('address1', address);
+      formdata.append('address2', address1);
+      formdata.append('city', city);
+      formdata.append('zip', postalCode);
+      formdata.append('date', date);
+      formdata.append('cus_field', custom);
+      formdata.append('company_org', company);
+      formdata.append('is_loose', loose);
+      formdata.append('neck', neck);
+      formdata.append('id_number', idNumber);
+      formdata.append('your_name', yourName);
+      formdata.append('family_history', family);
+      formdata.append('pet_name', petName);
+      if (avatar != null) {
+        formdata.append('image', avatar);
+      }
+      const response = await onUpdatePatientApi(formdata, userId);
       if (response.status == 200) {
-        onGetDoctorData();
-        setAddDoctorVisible(false);
+        onGetData();
+        setNewUserVisible(false);
         setIsLoading(false);
         setRefresh(!refresh);
       }
@@ -218,13 +250,40 @@ const PatientsList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
           />
         </View>
         <View style={styles.actionDataView}>
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              setUserId(item.id);
+              setFirstName(item.patient_user.first_name);
+              setLastName(item.patient_user.last_name);
+              setEmail(item.patient_user.email);
+              setDateOfBirth(new Date(item.patient_user.dob));
+              setPhone(
+                item.patient_user.phone != null ? item.patient_user.phone : '',
+              );
+              setGenderType(item.patient_user.gender == 0 ? 'male' : 'female');
+              setStatus(item.patient_user.status == 0 ? false : true);
+              setBloodGroup(
+                item.patient_user.blood_group != null
+                  ? item.patient_user.blood_group
+                  : '',
+              );
+              setAddress(item?.patient_user?.address1);
+              setAddress1(item?.patient_user?.address2);
+              setCity(item?.patient_user?.city);
+              setPostalCode(item?.patient_user?.postal_code);
+              setNewUserVisible(true);
+            }}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.blueColor}]}
               source={editing}
             />
           </TouchableOpacity>
-          <TouchableOpacity style={{marginLeft: wp(2)}}>
+          <TouchableOpacity
+            onPress={() => {
+              setUserId(item.id);
+              setDeleteUser(true);
+            }}
+            style={{marginLeft: wp(2)}}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.errorColor}]}
               source={deleteIcon}
@@ -233,6 +292,33 @@ const PatientsList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
         </View>
       </View>
     );
+  };
+
+  const onDeleteRecord = async () => {
+    try {
+      setLoading(true);
+      const response = await onDeleteCommonApi(`patient-delete/${userId}`);
+      if (response.status == 200) {
+        onGetData();
+        setLoading(false);
+        setDeleteUser(false);
+        showMessage({
+          message: 'Record Delete Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      }
+    } catch (err) {
+      setLoading(false);
+      setDeleteUser(false);
+      showMessage({
+        message: 'Something want wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Error Delete', err.response.data);
+    }
   };
 
   return (
@@ -266,6 +352,19 @@ const PatientsList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
                 ref={menuRef}
                 onSelect={value => {
                   if (value == 'add') {
+                    setUserId('');
+                    setFirstName('');
+                    setLastName('');
+                    setEmail('');
+                    setDateOfBirth(new Date());
+                    setPhone('');
+                    setGenderType('female');
+                    setStatus('');
+                    setBloodGroup('');
+                    setAddress('');
+                    setAddress1('');
+                    setCity('');
+                    setPostalCode('');
                     setNewUserVisible(true);
                   } else {
                     alert(`Selected number: ${value}`);
@@ -387,12 +486,28 @@ const PatientsList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
 
             <View style={styles.nameView}>
               <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>DESIGNATION:</Text>
-                <TextInput
-                  value={designation}
-                  placeholder={''}
-                  onChangeText={text => setDesignation(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
+                <Text style={styles.dataHistoryText1}>DATE OF BIRTH</Text>
+                <Text
+                  style={[
+                    styles.nameTextView,
+                    {width: '100%', paddingVertical: hp(1)},
+                  ]}
+                  onPress={() => setDateModalVisible(!dateModalVisible)}>
+                  {moment(dateOfBirth).format('DD/MM/YYYY')}
+                </Text>
+                <DatePicker
+                  open={dateModalVisible}
+                  modal={true}
+                  date={dateOfBirth}
+                  mode={'date'}
+                  onConfirm={date => {
+                    console.log('Console Log>>', date);
+                    setDateModalVisible(false);
+                    setDateOfBirth(date);
+                  }}
+                  onCancel={() => {
+                    setDateModalVisible(false);
+                  }}
                 />
               </View>
               <View style={{width: '48%'}}>
@@ -464,7 +579,7 @@ const PatientsList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
               </View>
             </View>
 
-            <View style={styles.nameView}>
+            {/* <View style={styles.nameView}>
               <View style={{width: '48%'}}>
                 <Text style={styles.dataHistoryText1}>QUALIFICATION:</Text>
                 <TextInput
@@ -477,12 +592,6 @@ const PatientsList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
 
               <View style={{width: '48%'}}>
                 <Text style={styles.dataHistoryText1}>DATE OF BIRTH</Text>
-                {/* <TextInput
-                        value={firstName}
-                        placeholder={'Enter first name'}
-                        onChangeText={text => setFirstName(text)}
-                        style={[styles.nameTextView, {width: '100%'}]}
-                      /> */}
                 <Text
                   style={[
                     styles.nameTextView,
@@ -506,7 +615,7 @@ const PatientsList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
                   }}
                 />
               </View>
-            </View>
+            </View> */}
 
             <View style={styles.nameView}>
               <View style={{width: '100%'}}>
@@ -556,7 +665,6 @@ const PatientsList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
                   placeholder={'address 1'}
                   onChangeText={text => setAddress(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
-                  secureTextEntry={true}
                 />
               </View>
             </View>
@@ -569,7 +677,6 @@ const PatientsList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
                   placeholder={'address 2'}
                   onChangeText={text => setAddress1(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
-                  secureTextEntry={true}
                 />
               </View>
             </View>
@@ -577,11 +684,50 @@ const PatientsList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
             <View style={styles.nameView}>
               <View style={{width: '48%'}}>
                 <Text style={styles.dataHistoryText1}>BLOOD GROUP:</Text>
-                <TextInput
+                {/* <TextInput
                   value={bloodGroup}
                   placeholder={'Select'}
                   onChangeText={text => setBloodGroup(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
+                /> */}
+                <SelectDropdown
+                  data={bloodData}
+                  onSelect={(selectedItem, index) => {
+                    // setSelectedColor(selectedItem);
+                    setBloodGroup(selectedItem?.blood_group);
+                    console.log('gert Value:::', selectedItem);
+                  }}
+                  defaultValue={bloodGroup}
+                  renderButton={(selectedItem, isOpen) => {
+                    console.log('Get Response>>>', selectedItem);
+                    return (
+                      <View style={styles.dropdown2BtnStyle2}>
+                        {bloodGroup != '' ? (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {bloodGroup == selectedItem?.blood_group
+                              ? selectedItem?.blood_group
+                              : bloodGroup}
+                          </Text>
+                        ) : (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {selectedItem?.blood_group || 'Select'}
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(item, index, isSelected) => {
+                    return (
+                      <TouchableOpacity style={styles.dropdownView}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {item.blood_group}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                  dropdownIconPosition={'left'}
+                  dropdownStyle={styles.dropdown2DropdownStyle}
                 />
               </View>
               <View style={{width: '48%'}}>
@@ -619,8 +765,16 @@ const PatientsList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
           </View>
 
           <View style={styles.buttonView}>
-            <TouchableOpacity onPress={() => {}} style={styles.nextView}>
-              <Text style={styles.nextText}>Save</Text>
+            <TouchableOpacity
+              onPress={() => {
+                userId != '' ? onUpdateDoctorData() : onAddDoctorData();
+              }}
+              style={styles.nextView}>
+              {loading ? (
+                <ActivityIndicator size={'small'} color={COLORS.white} />
+              ) : (
+                <Text style={styles.nextText}>Save</Text>
+              )}
             </TouchableOpacity>
             <TouchableOpacity onPress={() => {}} style={styles.prevView}>
               <Text style={styles.prevText}>Cancel</Text>
@@ -628,6 +782,13 @@ const PatientsList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
           </View>
         </ScrollView>
       )}
+      <DeletePopup
+        modelVisible={deleteUser}
+        setModelVisible={setDeleteUser}
+        onPress={() => onDeleteRecord()}
+        setUserId={setUserId}
+        isLoading={isLoading}
+      />
     </View>
   );
 };
@@ -1000,5 +1161,34 @@ const styles = StyleSheet.create({
     width: wp(3),
     height: hp(2.5),
     resizeMode: 'contain',
+  },
+  dropdown2DropdownStyle: {
+    backgroundColor: COLORS.white,
+    borderRadius: 4,
+    height: hp(25),
+    // borderRadius: 12,
+  },
+  dropdownItemTxtStyle: {
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    marginLeft: wp(2),
+  },
+  dropdownView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: hp(4),
+    borderBottomWidth: 0,
+  },
+  dropdown2BtnStyle2: {
+    width: '100%',
+    height: hp(4.2),
+    backgroundColor: COLORS.white,
+    borderRadius: 5,
+    alignItems: 'center',
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    marginTop: hp(1),
   },
 });

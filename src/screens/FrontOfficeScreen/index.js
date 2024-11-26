@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -21,11 +21,11 @@ import {
 } from '../../components/Pixel';
 import headerLogo from '../../images/headerLogo.png';
 import {BlurView} from '@react-native-community/blur';
-import DiagnosisList from '../../components/DiagnosisComponent/DiagnosisList';
-import DiagnosisCategoriesList from '../../components/DiagnosisComponent/DiagnosisCategoriesList';
-import DiagnosisTestsList from '../../components/DiagnosisComponent/DiagnosisTestsList';
 import CallLogsList from '../../components/FrontOfficeComponent/CallLogsList';
 import VisitorList from '../../components/FrontOfficeComponent/VisitorList';
+import {onGetCommonApi} from '../../services/Api';
+import PostalReceiveList from '../../components/FrontOfficeComponent/PostalReceiveList';
+import PostalDispatchList from '../../components/FrontOfficeComponent/PostalDispatchList';
 
 const allData = [
   {
@@ -169,12 +169,17 @@ const BloodIssueData = [
 export const FrontOfficeScreen = ({navigation}) => {
   const {t} = useTranslation();
   const {theme} = useTheme();
-  const [searchAccount, setSearchAccount] = useState('');
-  const [searchPayroll, setSearchPayroll] = useState('');
-  const [searchInvoice, setSearchInvoice] = useState('');
-  const [searchPharmacists, setSearchPharmacists] = useState('');
+  const [searchCallLog, setSearchCallLog] = useState('');
+  const [searchVisitor, setSearchVisitor] = useState('');
+  const [searchReceive, setSearchReceive] = useState('');
+  const [searchDispatch, setSearchDispatch] = useState('');
   const [optionModalView, setOptionModalView] = useState(false);
   const [selectedView, setSelectedView] = useState('Call Logs');
+  const [callLogList, setCallLogList] = useState([]);
+  const [visitorList, setVisitorList] = useState([]);
+  const [receiveList, setReceiveList] = useState([]);
+  const [dispatchList, setDispatchList] = useState([]);
+  const [refresh, setRefresh] = useState(false);
 
   const animations = useRef(
     [0, 0, 0, 0, 0].map(() => new Animated.Value(300)),
@@ -233,6 +238,82 @@ export const FrontOfficeScreen = ({navigation}) => {
     }
   };
 
+  useEffect(() => {
+    onGetCallLogData();
+  }, [searchCallLog]);
+
+  const onGetCallLogData = async () => {
+    try {
+      const response = await onGetCommonApi(
+        `call-log-get?search=${searchCallLog}`,
+      );
+      console.log('GetAccountData>>', response.data.data);
+      if (response.status == 200) {
+        setCallLogList(response.data.data.items);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Get AccountError>', err.response.data);
+    }
+  };
+
+  useEffect(() => {
+    onGetVisitorData();
+  }, [searchVisitor]);
+
+  const onGetVisitorData = async () => {
+    try {
+      const response = await onGetCommonApi(
+        `visitor-get?search=${searchVisitor}`,
+      );
+      console.log('GetAccountData>>', response.data.data);
+      if (response.status == 200) {
+        setVisitorList(response.data.data.items);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Get AccountError>', err.response.data);
+    }
+  };
+
+  useEffect(() => {
+    onGetReceiveData();
+  }, [searchReceive]);
+
+  const onGetReceiveData = async () => {
+    try {
+      const response = await onGetCommonApi(
+        `postal-receive-get?search=${searchReceive}`,
+      );
+      console.log('GetAccountData>>', response.data.data);
+      if (response.status == 200) {
+        setReceiveList(response.data.data.items);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Get AccountError>', err.response.data);
+    }
+  };
+
+  useEffect(() => {
+    onGetDispatchData();
+  }, [searchDispatch]);
+
+  const onGetDispatchData = async () => {
+    try {
+      const response = await onGetCommonApi(
+        `postal-diapatch-get?search=${searchDispatch}`,
+      );
+      console.log('GetAccountData>>', response.data.data);
+      if (response.status == 200) {
+        setDispatchList(response.data.data.items);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Get AccountError>', err.response.data);
+    }
+  };
+
   return (
     <View style={[styles.container, {backgroundColor: theme.lightColor}]}>
       <View style={styles.headerView}>
@@ -246,28 +327,32 @@ export const FrontOfficeScreen = ({navigation}) => {
       <View style={styles.mainView}>
         {selectedView == 'Call Logs' ? (
           <CallLogsList
-            searchBreak={searchAccount}
-            setSearchBreak={setSearchAccount}
-            allData={allData}
+            searchBreak={searchCallLog}
+            setSearchBreak={setSearchCallLog}
+            allData={callLogList}
+            onGetData={onGetCallLogData}
           />
         ) : selectedView == 'Visitors' ? (
           <VisitorList
-            searchBreak={searchPayroll}
-            setSearchBreak={setSearchPayroll}
-            allData={VisitorData}
+            searchBreak={searchVisitor}
+            setSearchBreak={setSearchVisitor}
+            allData={visitorList}
+            onGetData={onGetVisitorData}
           />
         ) : selectedView == 'Postal Receives' ? (
-          <VisitorList
-            searchBreak={searchPayroll}
-            setSearchBreak={setSearchPayroll}
-            allData={VisitorData}
+          <PostalReceiveList
+            searchBreak={searchReceive}
+            setSearchBreak={setSearchReceive}
+            allData={receiveList}
+            onGetData={onGetReceiveData}
           />
         ) : (
           selectedView == 'Postal Dispatches' && (
-            <VisitorList
-              searchBreak={searchPayroll}
-              setSearchBreak={setSearchPayroll}
-              allData={VisitorData}
+            <PostalDispatchList
+              searchBreak={searchDispatch}
+              setSearchBreak={setSearchDispatch}
+              allData={dispatchList}
+              onGetData={onGetDispatchData}
             />
           )
         )}

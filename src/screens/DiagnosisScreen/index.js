@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -28,6 +28,7 @@ import BloodIssueList from '../../components/BloodComponent/BloodIssueList';
 import DiagnosisList from '../../components/DiagnosisComponent/DiagnosisList';
 import DiagnosisCategoriesList from '../../components/DiagnosisComponent/DiagnosisCategoriesList';
 import DiagnosisTestsList from '../../components/DiagnosisComponent/DiagnosisTestsList';
+import { onGetCommonApi } from '../../services/Api';
 
 const allData = [
   {
@@ -152,6 +153,8 @@ export const DiagnosisScreen = ({navigation}) => {
   const [searchPharmacists, setSearchPharmacists] = useState('');
   const [optionModalView, setOptionModalView] = useState(false);
   const [selectedView, setSelectedView] = useState('Diagnosis');
+  const [diagnosisCategory, setDiagnosisCategory] = useState([]);
+  const [refresh, setRefresh] = useState(false);
 
   const animations = useRef(
     [0, 0, 0, 0].map(() => new Animated.Value(300)),
@@ -210,6 +213,25 @@ export const DiagnosisScreen = ({navigation}) => {
     }
   };
 
+  useEffect(() => {
+    onGetAdvancePaymentData();
+  }, [searchPayroll]);
+
+  const onGetAdvancePaymentData = async () => {
+    try {
+      const response = await onGetCommonApi(
+        `diagnosis-get?search=${searchPayroll}`,
+      );
+      console.log('GetAccountData>>', response.data.data);
+      if (response.status == 200) {
+        setDiagnosisCategory(response.data.data);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Get AccountError>', err.response.data);
+    }
+  };
+
   return (
     <View style={[styles.container, {backgroundColor: theme.lightColor}]}>
       <View style={styles.headerView}>
@@ -225,13 +247,14 @@ export const DiagnosisScreen = ({navigation}) => {
           <DiagnosisList
             searchBreak={searchAccount}
             setSearchBreak={setSearchAccount}
-            allData={allData}
+            allData={[]}
           />
         ) : selectedView == 'Diagnosis Categories' ? (
           <DiagnosisCategoriesList
             searchBreak={searchPayroll}
             setSearchBreak={setSearchPayroll}
-            allData={DiagnosisCategoriesData}
+            allData={diagnosisCategory}
+            onGetData={onGetAdvancePaymentData}
           />
         ) : (
           selectedView == 'Diagnosis Tests' && (

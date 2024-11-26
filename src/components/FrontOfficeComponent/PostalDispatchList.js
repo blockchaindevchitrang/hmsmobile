@@ -8,32 +8,43 @@ import {
   ScrollView,
   TextInput,
   FlatList,
-  Platform,
-  Modal,
   TouchableWithoutFeedback,
+  Modal,
+  Platform,
   ActivityIndicator,
 } from 'react-native';
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
-} from './../Pixel/index';
+} from '../Pixel/index';
 import {COLORS, Fonts} from '../../utils';
 import {useTheme} from '../../utils/ThemeProvider';
-import ProfilePhoto from './../ProfilePhoto';
-import moment from 'moment';
 import deleteIcon from '../../images/delete.png';
 import editing from '../../images/editing.png';
 import filter from '../../images/filter.png';
+import {
+  Menu,
+  MenuOptions,
+  MenuOption,
+  MenuTrigger,
+} from 'react-native-popup-menu';
 import close from '../../images/close.png';
-import {useSelector} from 'react-redux';
-import SelectDropdown from 'react-native-select-dropdown';
+import moment from 'moment';
 import DatePicker from 'react-native-date-picker';
+import man from '../../images/man.png';
+import draw from '../../images/draw.png';
+import ImagePicker from 'react-native-image-crop-picker';
+import SelectDropdown from 'react-native-select-dropdown';
+import photo from '../../images/photo.png';
 import {
   onAddAccountListApi,
+  onAddPostalApi,
   onDeleteCommonApi,
+  onGetCommonApi,
   onGetEditAccountDataApi,
   onGetSpecificCommonApi,
+  onUpdatePostalApi,
 } from '../../services/Api';
 import FlashMessage, {
   showMessage,
@@ -41,40 +52,121 @@ import FlashMessage, {
 } from 'react-native-flash-message';
 import {DeletePopup} from '../DeletePopup';
 
-const AdvanceList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
-  const user_data = useSelector(state => state.user_data);
+const PostalDispatchList = ({
+  searchBreak,
+  setSearchBreak,
+  allData,
+  onGetData,
+}) => {
   const {theme} = useTheme();
-  const [newAccountVisible, setNewAccountVisible] = useState(false);
-  const [amount, setAmount] = useState('');
-  const [paymentDate, setPaymentDate] = useState(new Date());
+  const menuRef = useRef(null);
+  const [fromTitle, setFromTitle] = useState('');
+  const [reference, setReference] = useState('');
+  const [toTitle, setToTitle] = useState('');
+  const [date, setDate] = useState(new Date());
+  const [description, setDescription] = useState('');
+  const [avatar, setAvatar] = useState(null);
+  const [addCallVisible, setAddCallVisible] = useState(false);
   const [dateModalVisible, setDateModalVisible] = useState(false);
   const [errorVisible, setErrorVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [userId, setUserId] = useState('');
   const [deleteUser, setDeleteUser] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [patient, setPatient] = useState('');
-  const [patientId, setPatientId] = useState('');
+  const [refresh, setRefresh] = useState(false);
+
+  const openProfileImagePicker = async () => {
+    try {
+      const image = await ImagePicker.openPicker({
+        width: 300,
+        height: 400,
+        cropping: false,
+        multiple: false, // Allow selecting only one image
+        compressImageQuality: 0.5,
+      });
+
+      if (image && image.path) {
+        if (image && image.path) {
+          var filename = image.path.substring(image.path.lastIndexOf('/') + 1);
+          let imageData = {
+            uri: Platform.OS === 'ios' ? image.sourceURL : image.path,
+            type: image.mime,
+            name: Platform.OS === 'ios' ? image.filename : filename,
+          };
+          setAvatar(imageData);
+
+          console.log('Selected image:', avatar);
+        }
+      } else {
+        console.log('No image selected');
+      }
+    } catch (error) {
+      console.log('Error selecting image:', error);
+    }
+  };
+
+  const isImageFormat = url => {
+    return (
+      url.endsWith('.png') || url.endsWith('.jpg') || url.endsWith('.jpeg')
+    );
+  };
+
+  function parseFileFromUrl(url) {
+    // Extract the filename from the URL
+    const name = url.split('/').pop();
+
+    // Extract the file extension
+    const extension = name.split('.').pop();
+
+    // Define the MIME type based on the file extension
+    let type;
+    switch (extension) {
+      case 'jpeg':
+      case 'jpg':
+        type = 'image/jpeg';
+        break;
+      case 'png':
+        type = 'image/png';
+        break;
+
+      default:
+        type = 'application/octet-stream'; // Fallback type for unknown extensions
+    }
+
+    // Return the extracted information
+    return {
+      uri: url,
+      type,
+      name,
+    };
+  }
 
   const onAddPayRollData = async () => {
     try {
-      if (patientId == '') {
+      if (fromTitle == '') {
         setErrorVisible(true);
-        setErrorMessage('Please select patient.');
-      } else if (amount == '') {
+        setErrorMessage('Please enter from title.');
+      } else if (toTitle == '') {
         setErrorVisible(true);
-        setErrorMessage('Please enter payment amount.');
+        setErrorMessage('Please enter to title.');
       } else {
         setLoading(true);
         setErrorVisible(false);
-        const urlData = `advance-payment-create?date=${moment(
-          paymentDate,
-        ).format('YYYY-MM-DD')}&patient_id=${patientId}&amount=${amount}`;
-        const response = await onAddAccountListApi(urlData);
+        const formdata = new FormData();
+        formdata.append('from_title', fromTitle);
+        formdata.append('to_title', toTitle);
+        formdata.append('date', moment(date).format('YYYY-MM-DD'));
+        if (avatar != null) {
+          formdata.append('image', avatar);
+        }
+        formdata.append('reference_no', reference);
+        formdata.append('address', description);
+        formdata.append('type', '2');
+        const response = await onAddPostalApi(formdata);
         if (response.status == 200) {
           onGetData();
           setLoading(false);
-          setNewAccountVisible(false);
+          setAddCallVisible(false);
           showMessage({
             message: 'Record Added Successfully',
             type: 'success',
@@ -96,23 +188,30 @@ const AdvanceList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
 
   const onEditPayRollData = async () => {
     try {
-      if (patientId == '') {
+      if (fromTitle == '') {
         setErrorVisible(true);
-        setErrorMessage('Please select patient.');
-      } else if (amount == '') {
+        setErrorMessage('Please enter from title.');
+      } else if (toTitle == '') {
         setErrorVisible(true);
-        setErrorMessage('Please enter payment amount.');
+        setErrorMessage('Please enter to title.');
       } else {
         setLoading(true);
         setErrorVisible(false);
-        const urlData = `advance-payment-update/${userId}?date=${moment(
-          paymentDate,
-        ).format('YYYY-MM-DD')}&patient_id=${patientId}&amount=${amount}`;
-        const response = await onGetEditAccountDataApi(urlData);
+        const formdata = new FormData();
+        formdata.append('from_title', fromTitle);
+        formdata.append('to_title', toTitle);
+        formdata.append('date', moment(date).format('YYYY-MM-DD'));
+        if (avatar != null) {
+          formdata.append('image', avatar);
+        }
+        formdata.append('reference_no', reference);
+        formdata.append('address', description);
+        formdata.append('type', '2');
+        const response = await onUpdatePostalApi(formdata, userId);
         if (response.status == 200) {
           onGetData();
           setLoading(false);
-          setNewAccountVisible(false);
+          setAddCallVisible(false);
           showMessage({
             message: 'Record Edit Successfully',
             type: 'success',
@@ -134,9 +233,7 @@ const AdvanceList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
 
   const onGetSpecificDoctor = async id => {
     try {
-      const response = await onGetSpecificCommonApi(
-        `advance-payment-edit/${id}`,
-      );
+      const response = await onGetSpecificCommonApi(`postal-edit/${id}`);
       if (response.status == 200) {
         console.log('get ValueLL:::', response.data.data);
         return response.data.data;
@@ -151,7 +248,7 @@ const AdvanceList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
   const onDeletePayrollData = async id => {
     try {
       setLoading(true);
-      const response = await onDeleteCommonApi(`advance-payment-delete/${id}`);
+      const response = await onDeleteCommonApi(`postal-delete/${id}`);
       if (response.status == 200) {
         onGetData();
         setLoading(false);
@@ -182,36 +279,36 @@ const AdvanceList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
           styles.dataHistoryView,
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
-        <View style={[styles.switchView, {width: wp(26)}]}>
-          <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataHistoryText1]}>{item.receipt_no}</Text>
-          </View>
-        </View>
-        <View style={[styles.nameDataView]}>
-          <ProfilePhoto username={item.name} />
-          <View>
-            <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
-            <Text style={[styles.dataHistoryText1]}>{item.email}</Text>
-          </View>
-        </View>
-        <View style={[styles.switchView, {width: wp(30)}]}>
-          <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataHistoryText1]}>{item.date}</Text>
-          </View>
-        </View>
-        <Text style={[styles.dataHistoryText, {width: wp(24)}]}>
-          {item.amount}
+        <Text style={[styles.dataHistoryText, {width: wp(35)}]}>
+          {item.reference_no}
         </Text>
-        <View style={styles.actionDataView}>
+        <Text style={[styles.dataHistoryText, {width: wp(28)}]}>
+          {item.from_title}
+        </Text>
+        <Text style={[styles.dataHistoryText1, {width: wp(28)}]}>
+          {item.to_title}
+        </Text>
+        <View style={[styles.switchView, {width: wp(28)}]}>
+          <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
+            <Text style={styles.dataListText1} numberOfLines={2}>
+              {item.date}
+            </Text>
+          </View>
+        </View>
+        <Text style={[styles.dataHistoryText, {width: wp(26)}]}>
+          {item.attachment != '' ? 'Download' : 'N/A'}
+        </Text>
+        <View style={[styles.actionDataView, {width: wp(16)}]}>
           <TouchableOpacity
             onPress={async () => {
               let allDatas = await onGetSpecificDoctor(item.id);
               setUserId(item.id);
-              setPatient(item.name);
-              setPatientId(allDatas.patient_id);
-              setPaymentDate(new Date(allDatas.date));
-              setAmount(JSON.stringify(item.amount));
-              setNewAccountVisible(true);
+              setFromTitle(item.from_title);
+              setReference(item.reference_no);
+              setDate(new Date(allDatas.date));
+              setToTitle(item.to_title);
+              setDescription(allDatas.address);
+              setAddCallVisible(true);
             }}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.blueColor}]}
@@ -235,12 +332,12 @@ const AdvanceList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
   };
 
   return (
-    <>
-      <View style={styles.safeAreaStyle}>
+    <View style={styles.safeAreaStyle}>
+      {!addCallVisible ? (
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{paddingBottom: hp(12)}}>
-          <View style={[styles.subView, {flexWrap: 'wrap'}]}>
+          <View style={styles.subView}>
             <TextInput
               value={searchBreak}
               placeholder={'Search'}
@@ -248,25 +345,41 @@ const AdvanceList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
               onChangeText={text => setSearchBreak(text)}
               style={[styles.searchView, {color: theme.text}]}
             />
-          </View>
-          <View style={styles.filterView}>
-            <TouchableOpacity style={styles.filterView1}>
-              <Image style={styles.filterImage} source={filter} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => {
-                setUserId('');
-                setPatient('');
-                setPatientId('');
-                setErrorVisible(false);
-                setErrorMessage('');
-                setPaymentDate(new Date());
-                setAmount('');
-                setNewAccountVisible(true);
-              }}
-              style={styles.actionView}>
-              <Text style={styles.actionText}>New Advance Payments</Text>
-            </TouchableOpacity>
+            <View style={styles.filterView}>
+              <TouchableOpacity style={styles.filterView1}>
+                <Image style={styles.filterImage} source={filter} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  if (menuRef.current) {
+                    menuRef.current.open(); // Open the menu on button press
+                  }
+                }}
+                style={styles.actionView}>
+                <Text style={styles.actionText}>Action</Text>
+              </TouchableOpacity>
+              <Menu
+                ref={menuRef}
+                onSelect={value => {
+                  if (value == 'add') {
+                    setUserId('');
+                    setDescription('');
+                    setAddCallVisible(true);
+                  } else {
+                    alert(`Selected number: ${value}`);
+                  }
+                }}>
+                <MenuTrigger text={''} />
+                <MenuOptions style={{marginVertical: hp(0.5)}}>
+                  <MenuOption value={'add'}>
+                    <Text style={styles.dataHistoryText3}>New Receive</Text>
+                  </MenuOption>
+                  <MenuOption value={'excel'}>
+                    <Text style={styles.dataHistoryText3}>Export to Excel</Text>
+                  </MenuOption>
+                </MenuOptions>
+              </Menu>
+            </View>
           </View>
           <View
             style={[styles.activeView, {backgroundColor: theme.headerColor}]}>
@@ -277,21 +390,20 @@ const AdvanceList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
                     styles.titleActiveView,
                     {backgroundColor: theme.headerColor},
                   ]}>
-                  <Text style={[styles.titleText, {width: wp(26)}]}>
-                    {'RECEIPT NO'}
+                  <Text style={[styles.titleText, {width: wp(35)}]}>
+                    {'REFERENCE NUMBER'}
                   </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: wp(55), textAlign: 'left'},
-                    ]}>
-                    {'PATIENT'}
+                  <Text style={[styles.titleText, {width: wp(28)}]}>
+                    {'FROM TITLE'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(30)}]}>
+                  <Text style={[styles.titleText, {width: wp(28)}]}>
+                    {'TO TITLE'}
+                  </Text>
+                  <Text style={[styles.titleText, {width: wp(28)}]}>
                     {'DATE'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(24)}]}>
-                    {'AMOUNT'}
+                  <Text style={[styles.titleText, {width: wp(26)}]}>
+                    {'ATTACHMENT'}
                   </Text>
                   <Text style={[styles.titleText, {width: wp(16)}]}>
                     {'ACTION'}
@@ -319,143 +431,143 @@ const AdvanceList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
             </ScrollView>
           </View>
         </ScrollView>
-      </View>
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={newAccountVisible}
-        onRequestClose={() => setNewAccountVisible(false)}>
-        <View style={styles.maneModalView}>
-          <TouchableWithoutFeedback
-            onPress={() => {
-              setNewAccountVisible(false);
-            }}>
-            <View style={styles.modalOverlay} />
-          </TouchableWithoutFeedback>
-          <View style={styles.container}>
-            <View style={styles.headerView}>
-              <Text style={styles.headerText}>New Advance Payment</Text>
-              <TouchableOpacity onPress={() => setNewAccountVisible(false)}>
-                <Image style={styles.closeImage} source={close} />
+      ) : (
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{paddingBottom: hp(12)}}>
+          <View style={styles.subView}>
+            <Text style={[styles.doctorText, {color: theme.text}]}>
+              New Receive
+            </Text>
+            <View style={styles.filterView}>
+              <TouchableOpacity
+                onPress={() => setAddCallVisible(false)}
+                style={styles.backButtonView}>
+                <Text style={styles.backText}>BACK</Text>
               </TouchableOpacity>
             </View>
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
-                  Patient:<Text style={styles.dataHistoryText4}>*</Text>
-                </Text>
-                <SelectDropdown
-                  data={user_data}
-                  onSelect={(selectedItem, index) => {
-                    // setSelectedColor(selectedItem);
-                    setPatientId(selectedItem.id);
-                    console.log('gert Value:::', selectedItem);
-                  }}
-                  defaultValue={patient}
-                  renderButton={(selectedItem, isOpen) => {
-                    console.log('Get Response>>>', selectedItem);
-                    return (
-                      <View style={styles.dropdown2BtnStyle2}>
-                        {patientId != '' ? (
-                          <Text style={styles.dropdownItemTxtStyle}>
-                            {patientId == selectedItem?.id
-                              ? `${selectedItem?.patient_user?.first_name} ${selectedItem?.patient_user?.last_name}`
-                              : patient}
-                          </Text>
-                        ) : (
-                          <Text style={styles.dropdownItemTxtStyle}>
-                            {selectedItem?.patient_user?.first_name || 'Select'}
-                          </Text>
-                        )}
-                      </View>
-                    );
-                  }}
-                  showsVerticalScrollIndicator={false}
-                  renderItem={(item, index, isSelected) => {
-                    return (
-                      <TouchableOpacity style={styles.dropdownView}>
-                        <Text style={styles.dropdownItemTxtStyle}>
-                          {`${item?.patient_user?.first_name} ${item?.patient_user?.last_name}`}
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  }}
-                  dropdownIconPosition={'left'}
-                  dropdownStyle={styles.dropdown2DropdownStyle}
-                />
-              </View>
-            </View>
+          </View>
 
+          <View style={styles.profileView}>
             <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
-                  Amount:<Text style={styles.dataHistoryText4}>*</Text>
-                </Text>
+              <View style={{width: '48%'}}>
+                <Text style={[styles.titleText1]}>{'From Title:'}</Text>
                 <TextInput
-                  value={amount}
-                  placeholder={'Amount'}
-                  onChangeText={text => setAmount(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                  keyboardType={'number-pad'}
+                  value={fromTitle}
+                  placeholder={'From Title'}
+                  onChangeText={text => setFromTitle(text)}
+                  style={[styles.nameTextView]}
+                />
+              </View>
+              <View style={{width: '48%'}}>
+                <Text style={[styles.titleText1]}>{'Reference Number:'}</Text>
+                <TextInput
+                  value={reference}
+                  placeholder={'Reference Number'}
+                  onChangeText={text => setReference(text)}
+                  style={[styles.nameTextView]}
                 />
               </View>
             </View>
 
             <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
-                  Date:<Text style={styles.dataHistoryText4}>*</Text>
-                </Text>
+              <View style={{width: '48%'}}>
+                <Text style={[styles.titleText1]}>{'Date'}</Text>
                 <Text
                   style={[
                     styles.nameTextView,
                     {width: '100%', paddingVertical: hp(1)},
                   ]}
                   onPress={() => setDateModalVisible(!dateModalVisible)}>
-                  {moment(paymentDate).format('DD-MM-YYYY')}
+                  {moment(date).format('DD/MM/YYYY')}
                 </Text>
                 <DatePicker
                   open={dateModalVisible}
                   modal={true}
-                  date={paymentDate}
+                  date={date}
                   mode={'date'}
                   onConfirm={date => {
                     console.log('Console Log>>', date);
                     setDateModalVisible(false);
-                    setPaymentDate(date);
+                    setDate(date);
                   }}
                   onCancel={() => {
                     setDateModalVisible(false);
                   }}
                 />
               </View>
-              <View style={styles.nameView}>
-                {errorVisible ? (
-                  <Text style={styles.dataHistoryText4}>{errorMessage}</Text>
-                ) : null}
+              <View style={{width: '48%'}}>
+                <Text style={[styles.titleText1]}>{'To Title:'}</Text>
+                <TextInput
+                  value={toTitle}
+                  placeholder={'To Title'}
+                  onChangeText={text => setToTitle(text)}
+                  style={[styles.nameTextView]}
+                />
               </View>
             </View>
-            <View style={styles.buttonView}>
-              <TouchableOpacity
-                onPress={() => {
-                  userId != '' ? onEditPayRollData() : onAddPayRollData();
-                }}
-                style={styles.nextView}>
-                {loading ? (
-                  <ActivityIndicator size={'small'} color={COLORS.white} />
-                ) : (
-                  <Text style={styles.nextText}>Save</Text>
-                )}
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => setNewAccountVisible(false)}
-                style={styles.prevView}>
-                <Text style={styles.prevText}>Cancel</Text>
-              </TouchableOpacity>
+
+            <View style={styles.nameView}>
+              <View style={{width: '100%'}}>
+                <Text style={styles.dataHistoryText5}>Attachment</Text>
+                <View style={styles.profilePhotoView}>
+                  <TouchableOpacity
+                    style={styles.editView}
+                    onPress={() => openProfileImagePicker()}>
+                    <Image style={styles.editImage1} source={draw} />
+                  </TouchableOpacity>
+                  <Image
+                    style={
+                      avatar != null
+                        ? styles.profileImage1
+                        : styles.profileImage
+                    }
+                    source={avatar != null ? {uri: avatar?.uri} : photo}
+                  />
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.nameView}>
+              <View style={{width: '100%'}}>
+                <Text style={[styles.titleText1]}>{'Address:'}</Text>
+                <TextInput
+                  value={description}
+                  placeholder={'Address'}
+                  onChangeText={text => setDescription(text)}
+                  style={[styles.commentTextInput]}
+                  multiline
+                  textAlignVertical="top"
+                />
+              </View>
+            </View>
+            <View style={styles.nameView}>
+              {errorVisible ? (
+                <Text style={styles.dataHistoryText4}>{errorMessage}</Text>
+              ) : null}
             </View>
           </View>
-        </View>
-      </Modal>
+
+          <View style={styles.buttonView}>
+            <TouchableOpacity
+              onPress={() => {
+                userId != '' ? onEditPayRollData() : onAddPayRollData();
+              }}
+              style={styles.nextView}>
+              {loading ? (
+                <ActivityIndicator size={'small'} color={COLORS.white} />
+              ) : (
+                <Text style={styles.nextText}>Save</Text>
+              )}
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setAddCallVisible(false)}
+              style={styles.prevView}>
+              <Text style={styles.prevText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      )}
       <DeletePopup
         modelVisible={deleteUser}
         setModelVisible={setDeleteUser}
@@ -463,11 +575,11 @@ const AdvanceList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
         setUserId={setUserId}
         isLoading={loading}
       />
-    </>
+    </View>
   );
 };
 
-export default AdvanceList;
+export default PostalDispatchList;
 
 const styles = StyleSheet.create({
   safeAreaStyle: {
@@ -484,8 +596,8 @@ const styles = StyleSheet.create({
     marginVertical: hp(2),
   },
   searchView: {
-    width: '100%',
-    paddingHorizontal: wp(3),
+    width: '50%',
+    paddingHorizontal: wp(2),
     paddingVertical: hp(0.5),
     borderWidth: 1,
     borderColor: COLORS.greyColor,
@@ -497,9 +609,6 @@ const styles = StyleSheet.create({
   filterView: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-end',
-    paddingHorizontal: wp(3),
-    paddingBottom: hp(1),
   },
   filterView1: {
     height: hp(5),
@@ -561,7 +670,6 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.FONTS.PoppinsSemiBold,
     color: COLORS.white,
     marginHorizontal: wp(2),
-    textAlign: 'center',
   },
   dataHistoryView: {
     width: '100%',
@@ -571,21 +679,27 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   dataHistoryText: {
+    fontSize: hp(1.7),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+    marginHorizontal: wp(2),
+    // textAlign: 'center',
+  },
+  dataHistoryText1: {
     fontSize: hp(1.8),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
     marginHorizontal: wp(2),
-    textAlign: 'center',
-  },
-  dataHistoryText1: {
-    fontSize: hp(1.7),
-    fontFamily: Fonts.FONTS.PoppinsBold,
-    color: COLORS.black,
   },
   dataHistoryText2: {
     fontSize: hp(1.8),
     fontFamily: Fonts.FONTS.PoppinsBold,
     color: COLORS.blueColor,
+  },
+  statusView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
   },
   dataHistoryText3: {
     fontSize: hp(1.8),
@@ -617,10 +731,10 @@ const styles = StyleSheet.create({
     width: wp(24),
     justifyContent: 'center',
     marginHorizontal: wp(2),
-    alignItems: 'center',
+    alignItems: 'flex-start',
   },
   actionDataView: {
-    width: wp(16),
+    width: wp(20),
     alignItems: 'center',
     justifyContent: 'center',
     marginHorizontal: wp(2),
@@ -657,7 +771,7 @@ const styles = StyleSheet.create({
     borderRadius: wp(2),
   },
   nameTextView: {
-    width: '50%',
+    width: '100%',
     paddingHorizontal: wp(2),
     paddingVertical: hp(0.5),
     borderWidth: 1,
@@ -673,7 +787,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    width: '92%',
+    width: '100%',
+    marginVertical: hp(1.5),
+    alignSelf: 'center',
+  },
+  nameView1: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    width: '100%',
     marginVertical: hp(1),
     alignSelf: 'center',
   },
@@ -686,12 +808,10 @@ const styles = StyleSheet.create({
   },
   buttonView: {
     width: '94%',
-    paddingHorizontal: wp(3),
     alignSelf: 'center',
     flexDirection: 'row',
     justifyContent: 'flex-end',
     alignItems: 'center',
-    marginTop: hp(2),
   },
   nextView: {
     height: hp(4.5),
@@ -725,7 +845,7 @@ const styles = StyleSheet.create({
     fontSize: hp(1.7),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
-    textAlign: 'left',
+    textAlign: 'center',
   },
   dateBox1: {
     alignItems: 'center',
@@ -801,44 +921,11 @@ const styles = StyleSheet.create({
     borderRadius: wp(1.5),
     backgroundColor: COLORS.white,
   },
-  statusView: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: hp(1.5),
-    width: '92%',
-    alignSelf: 'center',
-  },
-  profilePhotoView: {
-    borderWidth: 0.5,
-    marginTop: hp(1),
-  },
-  profileImage: {
-    width: wp(28),
-    height: hp(13.5),
-    resizeMode: 'contain',
-  },
-  editView: {
-    width: wp(7),
-    height: wp(7),
-    borderRadius: wp(7),
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 0.5,
-    position: 'absolute',
-    zIndex: 1,
-    right: -wp(3),
-    top: -hp(2),
-    backgroundColor: COLORS.white,
-  },
-  editImage1: {
-    width: wp(3),
-    height: hp(2.5),
-    resizeMode: 'contain',
-  },
-  invoiceId: {
-    fontSize: hp(2),
-    fontFamily: Fonts.FONTS.PoppinsMedium,
-    color: COLORS.greyColor,
+  titleText1: {
+    fontSize: hp(1.8),
+    fontFamily: Fonts.FONTS.PoppinsSemiBold,
+    color: COLORS.black,
+    textAlign: 'left',
   },
   container: {
     width: '94%',
@@ -888,10 +975,11 @@ const styles = StyleSheet.create({
     color: COLORS.black,
     borderRadius: 5,
     alignSelf: 'center',
-    marginVertical: hp(3),
+    marginBottom: hp(3),
+    marginTop: hp(1),
   },
   commentTextInput: {
-    width: '92%',
+    width: '100%',
     paddingHorizontal: wp(3),
     paddingVertical: hp(1),
     borderWidth: 1,
@@ -902,6 +990,47 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     alignSelf: 'center',
     height: hp(14),
+    marginTop: hp(1),
+  },
+  dataHistoryText5: {
+    fontSize: hp(1.7),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+  },
+  profilePhotoView: {
+    borderWidth: 0.5,
+    width: wp(26),
+    height: hp(10),
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: hp(1),
+  },
+  profileImage: {
+    width: wp(10),
+    height: hp(5),
+    resizeMode: 'contain',
+  },
+  profileImage1: {
+    width: wp(26),
+    height: hp(10),
+  },
+  editView: {
+    width: wp(7),
+    height: wp(7),
+    borderRadius: wp(7),
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 0.5,
+    position: 'absolute',
+    zIndex: 1,
+    right: -wp(3),
+    top: -hp(2),
+    backgroundColor: COLORS.white,
+  },
+  editImage1: {
+    width: wp(3),
+    height: hp(2.5),
+    resizeMode: 'contain',
   },
   ListEmptyView: {
     width: '100%',
@@ -934,7 +1063,7 @@ const styles = StyleSheet.create({
   },
   dropdown2BtnStyle2: {
     width: '100%',
-    height: hp(5),
+    height: hp(4.2),
     backgroundColor: COLORS.white,
     borderRadius: 5,
     alignItems: 'center',

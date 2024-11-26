@@ -11,6 +11,7 @@ import {
   Platform,
   TouchableWithoutFeedback,
   Modal,
+  ActivityIndicator,
 } from 'react-native';
 import React, {useRef, useState} from 'react';
 import {
@@ -25,13 +26,164 @@ import deleteIcon from '../../images/delete.png';
 import editing from '../../images/editing.png';
 import DatePicker from 'react-native-date-picker';
 import close from '../../images/close.png';
+import SelectDropdown from 'react-native-select-dropdown';
+import {useSelector} from 'react-redux';
+import {
+  onAddAccountListApi,
+  onDeleteCommonApi,
+  onGetEditAccountDataApi,
+  onGetSpecificCommonApi,
+} from '../../services/Api';
+import FlashMessage, {
+  showMessage,
+  hideMessage,
+} from 'react-native-flash-message';
+import {DeletePopup} from '../DeletePopup';
 
-const DoctorChargesList = ({searchBreak, setSearchBreak, allData}) => {
+const DoctorChargesList = ({
+  searchBreak,
+  setSearchBreak,
+  allData,
+  onGetData,
+}) => {
+  const doctorData = useSelector(state => state.doctorData);
   const {theme} = useTheme();
   const menuRef = useRef(null);
   const [addDonorVisible, setAddDonorVisible] = useState(false);
-  const [eventTitle, setEventTitle] = useState('');
+  const [charge, setCharge] = useState('');
   const [doctorSelect, setDoctorSelect] = useState('');
+  const [doctorId, setDoctorId] = useState('');
+  const [errorVisible, setErrorVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [userId, setUserId] = useState('');
+  const [deleteUser, setDeleteUser] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const onAddPayRollData = async () => {
+    try {
+      if (doctorId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select doctor.');
+      } else if (charge == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter doctor OPD charge.');
+      } else {
+        setLoading(true);
+        setErrorVisible(false);
+        const urlData = `doctor-opd-charge-store?doctor_id=${doctorId}&standard_charge=${charge}`;
+        const response = await onAddAccountListApi(urlData);
+        if (response.status == 200) {
+          onGetData();
+          setLoading(false);
+          setAddDonorVisible(false);
+          showMessage({
+            message: 'Record Added Successfully',
+            type: 'success',
+            duration: 3000,
+          });
+        }
+      }
+    } catch (err) {
+      showMessage({
+        message: 'Something want wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      setLoading(false);
+      console.log('Error:', err);
+    }
+  };
+
+  const onEditPayRollData = async () => {
+    try {
+      if (doctorId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select doctor.');
+      } else if (charge == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter doctor OPD charge.');
+      } else {
+        setLoading(true);
+        setErrorVisible(false);
+        const urlData = `doctor-opd-charge-update/${userId}?doctor_id=${doctorId}&standard_charge=${charge}`;
+        const response = await onGetEditAccountDataApi(urlData);
+        if (response.status == 200) {
+          onGetData();
+          setLoading(false);
+          setAddDonorVisible(false);
+          showMessage({
+            message: 'Record Edit Successfully',
+            type: 'success',
+            duration: 3000,
+          });
+        }
+      }
+    } catch (err) {
+      setLoading(false);
+      if (err.response.data) {
+        showMessage({
+          message: err.response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      } else {
+        showMessage({
+          message: 'Something want wrong.',
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
+      console.log('Error:', err.response.data);
+    }
+  };
+
+  const onDeletePayrollData = async id => {
+    try {
+      setLoading(true);
+      const response = await onDeleteCommonApi(
+        `doctor-opd-charge-delete/${id}`,
+      );
+      if (response.status == 200) {
+        onGetData();
+        setLoading(false);
+        setDeleteUser(false);
+        showMessage({
+          message: 'Record Delete Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      }
+    } catch (err) {
+      setLoading(false);
+      setDeleteUser(false);
+      showMessage({
+        message: 'Something want wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Get Error', err.response.data);
+    }
+  };
+
+  const onGetSpecificDoctor = async id => {
+    try {
+      const response = await onGetSpecificCommonApi(
+        `doctor-opd-charge-edit/${id}`,
+      );
+      if (response.status == 200) {
+        console.log('get ValueLL:::', response.data.data);
+        return response.data.data;
+      } else {
+        return 0;
+      }
+    } catch (err) {
+      console.log('Get Error', err);
+    }
+  };
 
   const renderItem = ({item, index}) => {
     return (
@@ -41,23 +193,36 @@ const DoctorChargesList = ({searchBreak, setSearchBreak, allData}) => {
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
         <View style={styles.nameDataView}>
-          <ProfilePhoto username={item.name} />
+          <ProfilePhoto username={item.doctor_name} />
           <View>
-            <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
-            <Text style={[styles.dataHistoryText1]}>{item.mail}</Text>
+            <Text style={[styles.dataHistoryText2]}>{item.doctor_name}</Text>
+            <Text style={[styles.dataHistoryText5]}>{item.doctor_email}</Text>
           </View>
         </View>
-        <View style={[styles.switchView, {width: wp(35)}]}>
+        <View style={[styles.switchView, {width: wp(45)}]}>
           <Text style={[styles.dataHistoryText1]}>{item.standard_charge}</Text>
         </View>
         <View style={styles.actionDataView}>
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={async () => {
+              let allDatas = await onGetSpecificDoctor(item.id);
+              setUserId(item.id);
+              setDoctorId(allDatas.doctor_id);
+              setDoctorSelect(item.doctor_name);
+              setCharge(JSON.stringify(item.standard_charge));
+              setAddDonorVisible(true);
+            }}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.blueColor}]}
               source={editing}
             />
           </TouchableOpacity>
-          <TouchableOpacity style={{marginLeft: wp(2)}}>
+          <TouchableOpacity
+            onPress={() => {
+              setUserId(item.id);
+              setDeleteUser(true);
+            }}
+            style={{marginLeft: wp(2)}}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.errorColor}]}
               source={deleteIcon}
@@ -84,7 +249,15 @@ const DoctorChargesList = ({searchBreak, setSearchBreak, allData}) => {
             />
             <View style={styles.filterView}>
               <TouchableOpacity
-                onPress={() => setAddDonorVisible(true)}
+                onPress={() => {
+                  setUserId('');
+                  setDoctorId('');
+                  setDoctorSelect('');
+                  setCharge('');
+                  setErrorVisible(false);
+                  setErrorMessage('');
+                  setAddDonorVisible(true);
+                }}
                 style={styles.actionView}>
                 <Text style={styles.actionText}>New Charge</Text>
               </TouchableOpacity>
@@ -106,7 +279,7 @@ const DoctorChargesList = ({searchBreak, setSearchBreak, allData}) => {
                     ]}>
                     {'DOCTORS'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(35)}]}>
+                  <Text style={[styles.titleText, {width: wp(45)}]}>
                     {'DOCTOR OPD CHARGES'}
                   </Text>
                   <Text style={[styles.titleText, {width: wp(16)}]}>
@@ -158,24 +331,66 @@ const DoctorChargesList = ({searchBreak, setSearchBreak, allData}) => {
             <Text style={[styles.titleText1, {marginTop: hp(1.5)}]}>
               {'Doctor:'}
             </Text>
-            <TextInput
-              value={doctorSelect}
-              placeholder={'Select an option'}
-              onChangeText={text => setDoctorSelect(text)}
-              style={[styles.eventTextInput]}
+            <SelectDropdown
+              data={doctorData}
+              onSelect={(selectedItem, index) => {
+                // setSelectedColor(selectedItem);
+                setDoctorId(selectedItem.id);
+                console.log('gert Value:::', selectedItem);
+              }}
+              defaultValue={doctorSelect}
+              renderButton={(selectedItem, isOpen) => {
+                console.log('Get Response>>>', selectedItem);
+                return (
+                  <View style={styles.dropdown2BtnStyle2}>
+                    {doctorId != '' ? (
+                      <Text style={styles.dropdownItemTxtStyle}>
+                        {doctorId == selectedItem?.id
+                          ? selectedItem?.name
+                          : doctorSelect}
+                      </Text>
+                    ) : (
+                      <Text style={styles.dropdownItemTxtStyle}>
+                        {selectedItem?.name || 'Select Doctor'}
+                      </Text>
+                    )}
+                  </View>
+                );
+              }}
+              showsVerticalScrollIndicator={false}
+              renderItem={(item, index, isSelected) => {
+                return (
+                  <TouchableOpacity style={styles.dropdownView}>
+                    <Text style={styles.dropdownItemTxtStyle}>{item.name}</Text>
+                  </TouchableOpacity>
+                );
+              }}
+              dropdownIconPosition={'left'}
+              dropdownStyle={styles.dropdown2DropdownStyle}
             />
 
             <Text style={[styles.titleText1]}>{'Doctor OPD Charge:'}</Text>
             <TextInput
-              value={eventTitle}
-              placeholder={'Name'}
-              onChangeText={text => setEventTitle(text)}
+              value={charge}
+              placeholder={'Doctor OPD Charge'}
+              onChangeText={text => setCharge(text)}
               style={[styles.eventTextInput]}
+              keyboardType={'number-pad'}
             />
-
+            {errorVisible ? (
+              <Text style={styles.dataHistoryText4}>{errorMessage}</Text>
+            ) : null}
             <View style={styles.buttonView}>
-              <TouchableOpacity onPress={() => {}} style={styles.nextView}>
-                <Text style={styles.nextText}>Save</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  userId != '' ? onEditPayRollData() : onAddPayRollData();
+                }}
+                style={styles.nextView}>
+                {loading ? (
+                  <ActivityIndicator size={'small'} color={COLORS.white} />
+                ) : (
+                  <Text style={styles.nextText}>Save</Text>
+                )}
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => setAddDonorVisible(false)}
@@ -186,6 +401,13 @@ const DoctorChargesList = ({searchBreak, setSearchBreak, allData}) => {
           </View>
         </View>
       </Modal>
+      <DeletePopup
+        modelVisible={deleteUser}
+        setModelVisible={setDeleteUser}
+        onPress={() => onDeletePayrollData(userId)}
+        setUserId={setUserId}
+        isLoading={loading}
+      />
     </>
   );
 };
@@ -286,7 +508,7 @@ const styles = StyleSheet.create({
   },
   dataHistoryView: {
     width: '100%',
-    height: hp(8),
+    paddingVertical: hp(1),
     alignItems: 'center',
     flexDirection: 'row',
     alignSelf: 'flex-start',
@@ -302,6 +524,12 @@ const styles = StyleSheet.create({
     fontSize: hp(1.7),
     fontFamily: Fonts.FONTS.PoppinsBold,
     color: COLORS.black,
+  },
+  dataHistoryText5: {
+    fontSize: hp(1.7),
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    color: COLORS.black,
+    width: wp(45),
   },
   dataHistoryText2: {
     fontSize: hp(1.8),
@@ -338,6 +566,7 @@ const styles = StyleSheet.create({
     width: wp(24),
     justifyContent: 'center',
     marginHorizontal: wp(2),
+    alignItems: 'center',
   },
   actionDataView: {
     width: wp(16),
@@ -630,6 +859,7 @@ const styles = StyleSheet.create({
     color: COLORS.black,
     marginHorizontal: wp(3),
     textAlign: 'left',
+    marginTop: hp(3),
   },
   ListEmptyView: {
     width: '100%',
@@ -641,5 +871,35 @@ const styles = StyleSheet.create({
     fontSize: hp(2.5),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
+  },
+  dropdown2DropdownStyle: {
+    backgroundColor: COLORS.white,
+    borderRadius: 4,
+    height: hp(25),
+    // borderRadius: 12,
+  },
+  dropdownItemTxtStyle: {
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    marginLeft: wp(2),
+  },
+  dropdownView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: hp(4),
+    borderBottomWidth: 0,
+  },
+  dropdown2BtnStyle2: {
+    width: '92%',
+    height: hp(5),
+    backgroundColor: COLORS.white,
+    borderRadius: 5,
+    alignItems: 'center',
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    marginTop: hp(1),
+    alignSelf: 'center',
   },
 });

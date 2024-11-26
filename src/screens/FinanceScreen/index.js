@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -21,15 +21,9 @@ import {
 } from '../../components/Pixel';
 import headerLogo from '../../images/headerLogo.png';
 import {BlurView} from '@react-native-community/blur';
-import BloodBanksList from '../../components/BloodComponent/BloodBanksList';
-import BloodDonorList from '../../components/BloodComponent/BloodDonorList';
-import BloodDonationList from '../../components/BloodComponent/BloodDonationList';
-import BloodIssueList from '../../components/BloodComponent/BloodIssueList';
-import DiagnosisList from '../../components/DiagnosisComponent/DiagnosisList';
-import DiagnosisCategoriesList from '../../components/DiagnosisComponent/DiagnosisCategoriesList';
-import DiagnosisTestsList from '../../components/DiagnosisComponent/DiagnosisTestsList';
 import IncomeList from '../../components/FinanceComponent/IncomeList';
 import ExpensesList from '../../components/FinanceComponent/ExpensesList';
+import { onGetCommonApi } from '../../services/Api';
 
 const allData = [
   {
@@ -125,12 +119,13 @@ const BloodIssueData = [
 export const FinanceScreen = ({navigation}) => {
   const {t} = useTranslation();
   const {theme} = useTheme();
-  const [searchAccount, setSearchAccount] = useState('');
-  const [searchPayroll, setSearchPayroll] = useState('');
-  const [searchInvoice, setSearchInvoice] = useState('');
-  const [searchPharmacists, setSearchPharmacists] = useState('');
+  const [searchIncome, setSearchIncome] = useState('');
+  const [searchExpense, setSearchExpense] = useState('');
   const [optionModalView, setOptionModalView] = useState(false);
   const [selectedView, setSelectedView] = useState('Incomes');
+  const [incomeList, setIncomeList] = useState([]);
+  const [expensesList, setExpensesList] = useState([]);
+  const [refresh, setRefresh] = useState(false);
 
   const animations = useRef(
     [0, 0, 0].map(() => new Animated.Value(300)),
@@ -187,6 +182,44 @@ export const FinanceScreen = ({navigation}) => {
     }
   };
 
+  useEffect(() => {
+    onGetIncomeData();
+  }, [searchIncome]);
+
+  const onGetIncomeData = async () => {
+    try {
+      const response = await onGetCommonApi(
+        `income-get?search=${searchIncome}`,
+      );
+      console.log('GetAccountData>>', response.data.data);
+      if (response.status == 200) {
+        setIncomeList(response.data.data.items);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Get AccountError>', err.response.data);
+    }
+  };
+
+  useEffect(() => {
+    onGetExpenseData();
+  }, [searchExpense]);
+
+  const onGetExpenseData = async () => {
+    try {
+      const response = await onGetCommonApi(
+        `expense-get?search=${searchExpense}`,
+      );
+      console.log('GetAccountData>>', response.data.data);
+      if (response.status == 200) {
+        setExpensesList(response.data.data.items);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Get AccountError>', err.response.data);
+    }
+  };
+
   return (
     <View style={[styles.container, {backgroundColor: theme.lightColor}]}>
       <View style={styles.headerView}>
@@ -200,16 +233,18 @@ export const FinanceScreen = ({navigation}) => {
       <View style={styles.mainView}>
         {selectedView == 'Incomes' ? (
           <IncomeList
-            searchBreak={searchAccount}
-            setSearchBreak={setSearchAccount}
-            allData={allData}
+            searchBreak={searchIncome}
+            setSearchBreak={setSearchIncome}
+            allData={incomeList}
+            getData={onGetIncomeData}
           />
         ) : (
           selectedView == 'Expenses' && (
             <ExpensesList
-              searchBreak={searchPharmacists}
-              setSearchBreak={setSearchPharmacists}
-              allData={allData}
+              searchBreak={searchExpense}
+              setSearchBreak={setSearchExpense}
+              allData={expensesList}
+              getData={onGetExpenseData}
             />
           )
         )}

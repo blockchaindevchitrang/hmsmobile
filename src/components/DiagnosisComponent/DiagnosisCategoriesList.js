@@ -11,6 +11,7 @@ import {
   Platform,
   Modal,
   TouchableWithoutFeedback,
+  ActivityIndicator,
 } from 'react-native';
 import React, {useRef, useState} from 'react';
 import {
@@ -35,15 +36,126 @@ import {
   MenuTrigger,
 } from 'react-native-popup-menu';
 import close from '../../images/close.png';
+import {
+  onAddAccountListApi,
+  onDeleteCommonApi,
+  onGetEditAccountDataApi,
+} from '../../services/Api';
+import FlashMessage, {
+  showMessage,
+  hideMessage,
+} from 'react-native-flash-message';
+import {DeletePopup} from '../DeletePopup';
 
-const DiagnosisCategoriesList = ({searchBreak, setSearchBreak, allData}) => {
+const DiagnosisCategoriesList = ({
+  searchBreak,
+  setSearchBreak,
+  allData,
+  onGetData,
+}) => {
   const {theme} = useTheme();
   const menuRef = useRef(null);
   const [newAccountVisible, setNewAccountVisible] = useState(false);
   const [eventTitle, setEventTitle] = useState('');
   const [departmentComment, setDepartmentComment] = useState('');
-  const [statusVisible, setStatusVisible] = useState(false);
-  const [departmentType, setDepartmentType] = useState('debit');
+  const [errorVisible, setErrorVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [userId, setUserId] = useState('');
+  const [deleteUser, setDeleteUser] = useState(false);
+
+  const onAddPayRollData = async () => {
+    try {
+      if (eventTitle == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter diagnosis category.');
+      } else {
+        setLoading(true);
+        setErrorVisible(false);
+        const urlData = `diagnosis-store?name=${eventTitle}&description=${departmentComment}`;
+        const response = await onAddAccountListApi(urlData);
+        if (response.status == 200) {
+          onGetData();
+          setLoading(false);
+          setNewAccountVisible(false);
+          showMessage({
+            message: 'Record Added Successfully',
+            type: 'success',
+            duration: 3000,
+          });
+        }
+      }
+    } catch (err) {
+      showMessage({
+        message: 'Something want wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      setLoading(false);
+      console.log('Error:', err);
+    }
+  };
+
+  const onEditPayRollData = async () => {
+    try {
+      if (eventTitle == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter diagnosis category.');
+      } else {
+        setLoading(true);
+        setErrorVisible(false);
+        const urlData = `diagnosis-update/${userId}?name=${eventTitle}&description=${departmentComment}`;
+        const response = await onGetEditAccountDataApi(urlData);
+        if (response.status == 200) {
+          onGetData();
+          setLoading(false);
+          setNewAccountVisible(false);
+          showMessage({
+            message: 'Record Edit Successfully',
+            type: 'success',
+            duration: 3000,
+          });
+        }
+      }
+    } catch (err) {
+      setLoading(false);
+      showMessage({
+        message: 'Something want wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Error:', err);
+    }
+  };
+
+  const onDeletePayrollData = async id => {
+    try {
+      setLoading(true);
+      const response = await onDeleteCommonApi(`diagnosis-delete/${id}`);
+      if (response.status == 200) {
+        onGetData();
+        setLoading(false);
+        setDeleteUser(false);
+        showMessage({
+          message: 'Record Delete Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      }
+    } catch (err) {
+      setLoading(false);
+      setDeleteUser(false);
+      showMessage({
+        message: 'Something want wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Get Error', err);
+    }
+  };
 
   const renderItem = ({item, index}) => {
     return (
@@ -57,13 +169,24 @@ const DiagnosisCategoriesList = ({searchBreak, setSearchBreak, allData}) => {
         </View>
 
         <View style={styles.actionDataView}>
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={async () => {
+              setUserId(item.id);
+              setEventTitle(item.name);
+              setDepartmentComment(item.description);
+              setNewAccountVisible(true);
+            }}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.blueColor}]}
               source={editing}
             />
           </TouchableOpacity>
-          <TouchableOpacity style={{marginLeft: wp(2)}}>
+          <TouchableOpacity
+            onPress={() => {
+              setUserId(item.id);
+              setDeleteUser(true);
+            }}
+            style={{marginLeft: wp(2)}}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.errorColor}]}
               source={deleteIcon}
@@ -91,7 +214,12 @@ const DiagnosisCategoriesList = ({searchBreak, setSearchBreak, allData}) => {
           </View>
           <View style={styles.filterView}>
             <TouchableOpacity
-              onPress={() => setNewAccountVisible(true)}
+              onPress={() => {
+                setUserId('');
+                setEventTitle('');
+                setDepartmentComment('');
+                setNewAccountVisible(true);
+              }}
               style={styles.actionView}>
               <Text style={styles.actionText}>New Diagnosis Categories</Text>
             </TouchableOpacity>
@@ -151,7 +279,7 @@ const DiagnosisCategoriesList = ({searchBreak, setSearchBreak, allData}) => {
             </View>
             <TextInput
               value={eventTitle}
-              placeholder={'Event title'}
+              placeholder={'Diagnosis Category'}
               onChangeText={text => setEventTitle(text)}
               style={[styles.eventTextInput]}
             />
@@ -164,10 +292,20 @@ const DiagnosisCategoriesList = ({searchBreak, setSearchBreak, allData}) => {
               multiline
               textAlignVertical="top"
             />
-
+            {errorVisible ? (
+              <Text style={styles.dataHistoryText4}>{errorMessage}</Text>
+            ) : null}
             <View style={styles.buttonView}>
-              <TouchableOpacity onPress={() => {}} style={styles.nextView}>
-                <Text style={styles.nextText}>Save</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  userId != '' ? onEditPayRollData() : onAddPayRollData();
+                }}
+                style={styles.nextView}>
+                {loading ? (
+                  <ActivityIndicator size={'small'} color={COLORS.white} />
+                ) : (
+                  <Text style={styles.nextText}>Save</Text>
+                )}
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => setNewAccountVisible(false)}
@@ -178,6 +316,13 @@ const DiagnosisCategoriesList = ({searchBreak, setSearchBreak, allData}) => {
           </View>
         </View>
       </Modal>
+      <DeletePopup
+        modelVisible={deleteUser}
+        setModelVisible={setDeleteUser}
+        onPress={() => onDeletePayrollData(userId)}
+        setUserId={setUserId}
+        isLoading={loading}
+      />
     </>
   );
 };

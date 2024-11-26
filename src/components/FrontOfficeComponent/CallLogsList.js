@@ -10,6 +10,7 @@ import {
   FlatList,
   TouchableWithoutFeedback,
   Modal,
+  ActivityIndicator,
 } from 'react-native';
 import React, {useRef, useState} from 'react';
 import {
@@ -28,18 +29,164 @@ import {
   MenuTrigger,
 } from 'react-native-popup-menu';
 import close from '../../images/close.png';
+import {useSelector} from 'react-redux';
+import SelectDropdown from 'react-native-select-dropdown';
+import DatePicker from 'react-native-date-picker';
+import {
+  onAddAccountListApi,
+  onDeleteCommonApi,
+  onGetEditAccountDataApi,
+  onGetSpecificCommonApi,
+} from '../../services/Api';
+import FlashMessage, {
+  showMessage,
+  hideMessage,
+} from 'react-native-flash-message';
+import {DeletePopup} from '../DeletePopup';
+import moment from 'moment';
 
-const CallLogsList = ({searchBreak, setSearchBreak, allData}) => {
+const CallLogsList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
   const {theme} = useTheme();
   const menuRef = useRef(null);
-  const [issueDate, setIssueDate] = useState('');
-  const [doctorName, setDoctorName] = useState('');
-  const [patientName, setPatientName] = useState('');
-  const [bloodGroup, setBloodGroup] = useState('');
-  const [Amount, setAmount] = useState('');
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [receivedOn, setReceivedOn] = useState(new Date());
+  const [followDate, setFollowDate] = useState(new Date());
   const [departmentType, setDepartmentType] = useState('Incoming');
   const [addCallVisible, setAddCallVisible] = useState(false);
   const [departmentComment, setDepartmentComment] = useState('');
+  const [dateModalVisible, setDateModalVisible] = useState(false);
+  const [dateModalVisible1, setDateModalVisible1] = useState(false);
+  const [errorVisible, setErrorVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [userId, setUserId] = useState('');
+  const [deleteUser, setDeleteUser] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const onAddPayRollData = async () => {
+    try {
+      if (name == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter name.');
+      } else if (phone == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter phone number.');
+      } else {
+        setLoading(true);
+        setErrorVisible(false);
+        const urlData = `call-log-store?name=${name}&phone=${phone}&date=${moment(
+          receivedOn,
+        ).format('YYYY-MM-DD')}&follow_up_date=${moment(followDate).format(
+          'YYYY-MM-DD',
+        )}&note=${departmentComment}&call_type=${
+          departmentType == 'Incoming' ? 1 : 2
+        }&prefix_code=91`;
+        const response = await onAddAccountListApi(urlData);
+        if (response.status == 200) {
+          onGetData();
+          setLoading(false);
+          setAddCallVisible(false);
+          showMessage({
+            message: 'Record Added Successfully',
+            type: 'success',
+            duration: 3000,
+          });
+        }
+      }
+    } catch (err) {
+      showMessage({
+        message: 'Something want wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      setLoading(false);
+      console.log('Error:', err);
+    }
+  };
+
+  const onEditPayRollData = async () => {
+    try {
+      if (name == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter name.');
+      } else if (phone == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter phone number.');
+      } else {
+        setLoading(true);
+        setErrorVisible(false);
+        const urlData = `call-log-update/${userId}?name=${name}&phone=${phone}&date=${moment(
+          receivedOn,
+        ).format('YYYY-MM-DD')}&follow_up_date=${moment(followDate).format(
+          'YYYY-MM-DD',
+        )}&note=${departmentComment}&call_type=${
+          departmentType == 'Incoming' ? 1 : 2
+        }&prefix_code=91`;
+        const response = await onGetEditAccountDataApi(urlData);
+        if (response.status == 200) {
+          onGetData();
+          setLoading(false);
+          setAddCallVisible(false);
+          showMessage({
+            message: 'Record Edit Successfully',
+            type: 'success',
+            duration: 3000,
+          });
+        }
+      }
+    } catch (err) {
+      setLoading(false);
+      showMessage({
+        message: 'Something want wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Error:', err);
+    }
+  };
+
+  const onGetSpecificDoctor = async id => {
+    try {
+      const response = await onGetSpecificCommonApi(`call-log-edit/${id}`);
+      if (response.status == 200) {
+        console.log('get ValueLL:::', response.data.data);
+        return response.data.data;
+      } else {
+        return 0;
+      }
+    } catch (err) {
+      console.log('Get Error', err);
+    }
+  };
+
+  const onDeletePayrollData = async id => {
+    try {
+      setLoading(true);
+      const response = await onDeleteCommonApi(`call-log-delete/${id}`);
+      if (response.status == 200) {
+        onGetData();
+        setLoading(false);
+        setDeleteUser(false);
+        showMessage({
+          message: 'Record Delete Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      }
+    } catch (err) {
+      setLoading(false);
+      setDeleteUser(false);
+      showMessage({
+        message: 'Something want wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Get Error', err);
+    }
+  };
 
   const renderItem = ({item, index}) => {
     return (
@@ -52,7 +199,7 @@ const CallLogsList = ({searchBreak, setSearchBreak, allData}) => {
           {item.name}
         </Text>
         <Text style={[styles.dataHistoryText1, {width: wp(33)}]}>
-          {item.number}
+          {item.phone}
         </Text>
         <View style={[styles.switchView, {width: wp(28)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
@@ -64,7 +211,7 @@ const CallLogsList = ({searchBreak, setSearchBreak, allData}) => {
         <View style={[styles.switchView, {width: wp(40)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
             <Text style={styles.dataListText1} numberOfLines={2}>
-              {item.follow_type}
+              {item.follow_up_date}
             </Text>
           </View>
         </View>
@@ -73,13 +220,29 @@ const CallLogsList = ({searchBreak, setSearchBreak, allData}) => {
           {item.call_type}
         </Text>
         <View style={[styles.actionDataView, {width: wp(16)}]}>
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={async () => {
+              let allDatas = await onGetSpecificDoctor(item.id);
+              setUserId(item.id);
+              setName(item.name);
+              setPhone(item.phone);
+              setReceivedOn(new Date(item.date));
+              setFollowDate(new Date(item.follow_up_date));
+              setDepartmentComment(allDatas.description);
+              setDepartmentType(item.call_type);
+              setAddCallVisible(true);
+            }}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.blueColor}]}
               source={editing}
             />
           </TouchableOpacity>
-          <TouchableOpacity style={{marginLeft: wp(2)}}>
+          <TouchableOpacity
+            onPress={() => {
+              setUserId(item.id);
+              setDeleteUser(true);
+            }}
+            style={{marginLeft: wp(2)}}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.errorColor}]}
               source={deleteIcon}
@@ -121,6 +284,13 @@ const CallLogsList = ({searchBreak, setSearchBreak, allData}) => {
                 ref={menuRef}
                 onSelect={value => {
                   if (value == 'add') {
+                    setUserId('');
+                    setName('');
+                    setPhone('');
+                    setReceivedOn(new Date());
+                    setFollowDate(new Date());
+                    setDepartmentComment('');
+                    setDepartmentType('Incoming');
                     setAddCallVisible(true);
                   } else {
                     alert(`Selected number: ${value}`);
@@ -214,9 +384,9 @@ const CallLogsList = ({searchBreak, setSearchBreak, allData}) => {
               <View style={{width: '48%'}}>
                 <Text style={styles.dataHistoryText1}>NAME:</Text>
                 <TextInput
-                  value={issueDate}
+                  value={name}
                   placeholder={'NAME'}
-                  onChangeText={text => setIssueDate(text)}
+                  onChangeText={text => setName(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
                 />
               </View>
@@ -224,10 +394,11 @@ const CallLogsList = ({searchBreak, setSearchBreak, allData}) => {
               <View style={{width: '48%'}}>
                 <Text style={styles.dataHistoryText1}>PHONE NUMBER:</Text>
                 <TextInput
-                  value={doctorName}
+                  value={phone}
                   placeholder={'Phone Number'}
-                  onChangeText={text => setDoctorName(text)}
+                  onChangeText={text => setPhone(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
+                  keyboardType={'number-pad'}
                 />
               </View>
             </View>
@@ -235,20 +406,58 @@ const CallLogsList = ({searchBreak, setSearchBreak, allData}) => {
             <View style={styles.nameView}>
               <View style={{width: '48%'}}>
                 <Text style={styles.dataHistoryText1}>RECEIVED ON:</Text>
-                <TextInput
+                {/* <TextInput
                   value={patientName}
                   placeholder={'received on'}
                   onChangeText={text => setPatientName(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
+                /> */}
+                <Text
+                  style={[
+                    styles.nameTextView,
+                    {width: '100%', paddingVertical: hp(1)},
+                  ]}
+                  onPress={() => setDateModalVisible(!dateModalVisible)}>
+                  {moment(receivedOn).format('DD-MM-YYYY')}
+                </Text>
+                <DatePicker
+                  open={dateModalVisible}
+                  modal={true}
+                  date={receivedOn}
+                  mode={'date'}
+                  onConfirm={date => {
+                    console.log('Console Log>>', date);
+                    setDateModalVisible(false);
+                    setReceivedOn(date);
+                  }}
+                  onCancel={() => {
+                    setDateModalVisible(false);
+                  }}
                 />
               </View>
               <View style={{width: '48%'}}>
                 <Text style={styles.dataHistoryText1}>FOLLOW-UP DATE</Text>
-                <TextInput
-                  value={bloodGroup}
-                  placeholder={'follow-up date'}
-                  onChangeText={text => setBloodGroup(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
+                <Text
+                  style={[
+                    styles.nameTextView,
+                    {width: '100%', paddingVertical: hp(1)},
+                  ]}
+                  onPress={() => setDateModalVisible1(!dateModalVisible1)}>
+                  {moment(followDate).format('DD-MM-YYYY')}
+                </Text>
+                <DatePicker
+                  open={dateModalVisible1}
+                  modal={true}
+                  date={followDate}
+                  mode={'date'}
+                  onConfirm={date => {
+                    console.log('Console Log>>', date);
+                    setDateModalVisible1(false);
+                    setFollowDate(date);
+                  }}
+                  onCancel={() => {
+                    setDateModalVisible1(false);
+                  }}
                 />
               </View>
             </View>
@@ -307,17 +516,38 @@ const CallLogsList = ({searchBreak, setSearchBreak, allData}) => {
               </View>
             </View>
           </View>
-
+          <View style={styles.nameView}>
+            {errorVisible ? (
+              <Text style={styles.dataHistoryText4}>{errorMessage}</Text>
+            ) : null}
+          </View>
           <View style={styles.buttonView}>
-            <TouchableOpacity onPress={() => {}} style={styles.nextView}>
-              <Text style={styles.nextText}>Save</Text>
+            <TouchableOpacity
+              onPress={() => {
+                userId != '' ? onEditPayRollData() : onAddPayRollData();
+              }}
+              style={styles.nextView}>
+              {loading ? (
+                <ActivityIndicator size={'small'} color={COLORS.white} />
+              ) : (
+                <Text style={styles.nextText}>Save</Text>
+              )}
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => {}} style={styles.prevView}>
+            <TouchableOpacity
+              onPress={() => setAddCallVisible(false)}
+              style={styles.prevView}>
               <Text style={styles.prevText}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
       )}
+      <DeletePopup
+        modelVisible={deleteUser}
+        setModelVisible={setDeleteUser}
+        onPress={() => onDeletePayrollData(userId)}
+        setUserId={setUserId}
+        isLoading={loading}
+      />
     </View>
   );
 };

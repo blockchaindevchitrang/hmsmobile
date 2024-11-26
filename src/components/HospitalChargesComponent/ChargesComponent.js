@@ -11,6 +11,7 @@ import {
   Platform,
   Modal,
   TouchableWithoutFeedback,
+  ActivityIndicator,
 } from 'react-native';
 import React, {useRef, useState} from 'react';
 import {
@@ -24,15 +25,168 @@ import moment from 'moment';
 import deleteIcon from '../../images/delete.png';
 import editing from '../../images/editing.png';
 import close from '../../images/close.png';
+import SelectDropdown from 'react-native-select-dropdown';
+import {
+  onAddAccountListApi,
+  onDeleteCommonApi,
+  onGetEditAccountDataApi,
+  onGetSpecificCommonApi,
+} from '../../services/Api';
+import FlashMessage, {
+  showMessage,
+  hideMessage,
+} from 'react-native-flash-message';
+import {DeletePopup} from '../DeletePopup';
 
-const ChargesComponent = ({searchBreak, setSearchBreak, allData}) => {
+const ChargesComponent = ({
+  searchBreak,
+  setSearchBreak,
+  allData,
+  categoryType,
+  onGetData,
+  chargeCategory,
+}) => {
   const {theme} = useTheme();
   const menuRef = useRef(null);
   const [newAccountVisible, setNewAccountVisible] = useState(false);
-  const [eventTitle, setEventTitle] = useState('');
-  const [departmentComment, setDepartmentComment] = useState('');
-  const [statusVisible, setStatusVisible] = useState(false);
   const [chargeType, setChargeType] = useState('');
+  const [chargeTypeId, setChargeTypeId] = useState('');
+  const [categoryName, setCategoryName] = useState('');
+  const [categoryId, setCategoryId] = useState('');
+  const [code, setCode] = useState('');
+  const [standard, setStandard] = useState('');
+  const [description, setDescription] = useState('');
+  const [statusVisible, setStatusVisible] = useState(false);
+  const [errorVisible, setErrorVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [userId, setUserId] = useState('');
+  const [deleteUser, setDeleteUser] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const onAddPayRollData = async () => {
+    try {
+      if (chargeTypeId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select charge type.');
+      } else if (categoryId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select charge category.');
+      } else if (code == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter code.');
+      } else if (standard == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter standard charge.');
+      } else {
+        setLoading(true);
+        setErrorVisible(false);
+        const urlData = `charge-store?charge_type=${chargeTypeId}&charge_category_id=${categoryId}&code=${code}&standard_charge=${standard}&description=${description}`;
+        const response = await onAddAccountListApi(urlData);
+        if (response.status == 200) {
+          onGetData();
+          setLoading(false);
+          setNewAccountVisible(false);
+          showMessage({
+            message: 'Record Added Successfully',
+            type: 'success',
+            duration: 3000,
+          });
+        }
+      }
+    } catch (err) {
+      showMessage({
+        message: 'Something want wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      setLoading(false);
+      console.log('Error:', err);
+    }
+  };
+
+  const onEditPayRollData = async () => {
+    try {
+      if (chargeTypeId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select charge type.');
+      } else if (categoryId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select charge category.');
+      } else if (code == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter code.');
+      } else if (standard == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter standard charge.');
+      } else {
+        setLoading(true);
+        setErrorVisible(false);
+        const urlData = `charge-update/${userId}?charge_type=${chargeTypeId}&charge_category_id=${categoryId}&code=${code}&standard_charge=${standard}&description=${description}`;
+        const response = await onGetEditAccountDataApi(urlData);
+        if (response.status == 200) {
+          onGetData();
+          setLoading(false);
+          setNewAccountVisible(false);
+          showMessage({
+            message: 'Record Edit Successfully',
+            type: 'success',
+            duration: 3000,
+          });
+        }
+      }
+    } catch (err) {
+      setLoading(false);
+      showMessage({
+        message: 'Something want wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Error:', err);
+    }
+  };
+
+  const onDeletePayrollData = async id => {
+    try {
+      setLoading(true);
+      const response = await onDeleteCommonApi(`charge-delete/${id}`);
+      if (response.status == 200) {
+        onGetData();
+        setLoading(false);
+        setDeleteUser(false);
+        showMessage({
+          message: 'Record Delete Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      }
+    } catch (err) {
+      setLoading(false);
+      setDeleteUser(false);
+      showMessage({
+        message: 'Something want wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Get Error', err);
+    }
+  };
+
+  const onGetSpecificDoctor = async id => {
+    try {
+      const response = await onGetSpecificCommonApi(`charge-edit/${id}`);
+      if (response.status == 200) {
+        console.log('get ValueLL:::', response.data.data);
+        return response.data.data;
+      } else {
+        return 0;
+      }
+    } catch (err) {
+      console.log('Get Error', err);
+    }
+  };
 
   const renderItem = ({item, index}) => {
     return (
@@ -45,22 +199,41 @@ const ChargesComponent = ({searchBreak, setSearchBreak, allData}) => {
           <Text style={[styles.dataHistoryText1]}>{item.code}</Text>
         </View>
         <View style={[styles.nameDataView, {width: wp(37)}]}>
-          <Text style={[styles.dataHistoryText2]}>{item.chargeCategory}</Text>
+          <Text style={[styles.dataHistoryText2]}>
+            {item.charge_category_id}
+          </Text>
         </View>
         <View style={[styles.nameDataView]}>
-          <Text style={[styles.dataHistoryText1]}>{item.chargeType}</Text>
+          <Text style={[styles.dataHistoryText1]}>{item.charge_type}</Text>
         </View>
         <View style={[styles.nameDataView]}>
           <Text style={[styles.dataHistoryText1]}>{item.standard_charge}</Text>
         </View>
         <View style={styles.actionDataView}>
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={async () => {
+              let allDatas = await onGetSpecificDoctor(item.id);
+              setUserId(item.id);
+              setCategoryId(allDatas.charge_category_id);
+              setCategoryName(item.charge_category_id);
+              setChargeType(item.charge_type);
+              setChargeTypeId(allDatas.charge_type);
+              setCode(item.code);
+              setDescription(item.description);
+              setStandard(JSON.stringify(item.standard_charge));
+              setNewAccountVisible(true);
+            }}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.blueColor}]}
               source={editing}
             />
           </TouchableOpacity>
-          <TouchableOpacity style={{marginLeft: wp(2)}}>
+          <TouchableOpacity
+            onPress={() => {
+              setUserId(item.id);
+              setDeleteUser(true);
+            }}
+            style={{marginLeft: wp(2)}}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.errorColor}]}
               source={deleteIcon}
@@ -87,7 +260,19 @@ const ChargesComponent = ({searchBreak, setSearchBreak, allData}) => {
             />
             <View style={styles.filterView}>
               <TouchableOpacity
-                onPress={() => setNewAccountVisible(true)}
+                onPress={() => {
+                  setUserId('');
+                  setCategoryId('');
+                  setCategoryName('');
+                  setChargeType('');
+                  setChargeTypeId('');
+                  setCode('');
+                  setStandard('');
+                  setDescription('');
+                  setErrorVisible(false);
+                  setErrorMessage('');
+                  setNewAccountVisible(true);
+                }}
                 style={styles.actionView}>
                 <Text style={styles.actionText}>New Charge</Text>
               </TouchableOpacity>
@@ -155,39 +340,149 @@ const ChargesComponent = ({searchBreak, setSearchBreak, allData}) => {
           </TouchableWithoutFeedback>
           <View style={styles.container}>
             <View style={styles.headerView}>
-              <Text style={styles.headerText}>Create Charge</Text>
+              <Text style={styles.headerText}>New Charge</Text>
               <TouchableOpacity onPress={() => setNewAccountVisible(false)}>
                 <Image style={styles.closeImage} source={close} />
               </TouchableOpacity>
             </View>
-            <Text style={[styles.titleText1, {marginTop: hp(1.5)}]}>
-              {'Charge Category'}
-            </Text>
-            <TextInput
-              value={eventTitle}
-              placeholder={''}
-              onChangeText={text => setEventTitle(text)}
-              style={[styles.eventTextInput]}
-            />
-            <Text style={[styles.titleText1]}>{'Description'}</Text>
-            <TextInput
-              value={departmentComment}
-              placeholder={'Leave a comment...'}
-              onChangeText={text => setDepartmentComment(text)}
-              style={[styles.commentTextInput]}
-              multiline
-              textAlignVertical="top"
-            />
-            <Text style={[styles.titleText1]}>{'Charge Type'}</Text>
-            <TextInput
-              value={chargeType}
-              placeholder={''}
-              onChangeText={text => setChargeType(text)}
-              style={[styles.eventTextInput]}
-            />
+            <View style={styles.nameView}>
+              <View style={{width: '48%'}}>
+                <Text style={[styles.titleText1, {marginTop: hp(1.5)}]}>
+                  {'Charge Type'}
+                </Text>
+                <SelectDropdown
+                  data={categoryType}
+                  onSelect={(selectedItem, index) => {
+                    // setSelectedColor(selectedItem);
+                    setChargeTypeId(selectedItem.id);
+                    console.log('gert Value:::', selectedItem);
+                  }}
+                  defaultValue={chargeType}
+                  renderButton={(selectedItem, isOpen) => {
+                    console.log('Get Response>>>', selectedItem);
+                    return (
+                      <View style={styles.dropdown2BtnStyle2}>
+                        {chargeTypeId != '' ? (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {chargeTypeId == selectedItem?.id
+                              ? selectedItem?.name
+                              : chargeType}
+                          </Text>
+                        ) : (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {selectedItem?.name || 'Select Charge Type'}
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(item, index, isSelected) => {
+                    return (
+                      <TouchableOpacity style={styles.dropdownView}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {item.name}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                  dropdownIconPosition={'left'}
+                  dropdownStyle={styles.dropdown2DropdownStyle}
+                />
+              </View>
+
+              <View style={{width: '48%'}}>
+                <Text style={[styles.titleText1, {marginTop: hp(1.5)}]}>
+                  {'Charge Category'}
+                </Text>
+                <SelectDropdown
+                  data={chargeCategory}
+                  onSelect={(selectedItem, index) => {
+                    // setSelectedColor(selectedItem);
+                    setCategoryId(selectedItem.id);
+                    console.log('gert Value:::', selectedItem);
+                  }}
+                  defaultValue={categoryName}
+                  renderButton={(selectedItem, isOpen) => {
+                    console.log('Get Response>>>', selectedItem);
+                    return (
+                      <View style={styles.dropdown2BtnStyle2}>
+                        {categoryId != '' ? (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {categoryId == selectedItem?.id
+                              ? selectedItem?.name
+                              : categoryName}
+                          </Text>
+                        ) : (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {selectedItem?.name || 'Select Category'}
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(item, index, isSelected) => {
+                    return (
+                      <TouchableOpacity style={styles.dropdownView}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {item.name}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                  dropdownIconPosition={'left'}
+                  dropdownStyle={styles.dropdown2DropdownStyle}
+                />
+              </View>
+            </View>
+            <View style={styles.nameView}>
+              <View style={{width: '48%'}}>
+                <Text style={[styles.titleText1]}>{'Code:'}</Text>
+                <TextInput
+                  value={code}
+                  placeholder={''}
+                  onChangeText={text => setCode(text)}
+                  style={[styles.eventTextInput]}
+                />
+              </View>
+              <View style={{width: '48%'}}>
+                <Text style={[styles.titleText1]}>{'Standard Charge'}</Text>
+                <TextInput
+                  value={standard}
+                  placeholder={''}
+                  onChangeText={text => setStandard(text)}
+                  style={[styles.eventTextInput]}
+                />
+              </View>
+            </View>
+            <View style={[styles.nameView]}>
+              <View style={{width: '100%'}}>
+                <Text style={[styles.titleText1]}>{'Description'}</Text>
+                <TextInput
+                  value={description}
+                  placeholder={'Description'}
+                  onChangeText={text => setDescription(text)}
+                  style={[styles.commentTextInput]}
+                  multiline
+                  textAlignVertical="top"
+                />
+              </View>
+            </View>
+            {errorVisible ? (
+              <Text style={styles.dataHistoryText4}>{errorMessage}</Text>
+            ) : null}
             <View style={styles.buttonView}>
-              <TouchableOpacity onPress={() => {}} style={styles.nextView}>
-                <Text style={styles.nextText}>Save</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  userId != '' ? onEditPayRollData() : onAddPayRollData();
+                }}
+                style={styles.nextView}>
+                {loading ? (
+                  <ActivityIndicator size={'small'} color={COLORS.white} />
+                ) : (
+                  <Text style={styles.nextText}>Save</Text>
+                )}
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => setNewAccountVisible(false)}
@@ -198,6 +493,13 @@ const ChargesComponent = ({searchBreak, setSearchBreak, allData}) => {
           </View>
         </View>
       </Modal>
+      <DeletePopup
+        modelVisible={deleteUser}
+        setModelVisible={setDeleteUser}
+        onPress={() => onDeletePayrollData(userId)}
+        setUserId={setUserId}
+        isLoading={loading}
+      />
     </>
   );
 };
@@ -340,6 +642,8 @@ const styles = StyleSheet.create({
     fontSize: hp(1.8),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.errorColor,
+    paddingHorizontal: wp(3),
+    marginBottom: hp(2),
   },
   mainDataView: {
     minHeight: hp(29),
@@ -619,7 +923,7 @@ const styles = StyleSheet.create({
   eventTextInput: {
     width: '92%',
     paddingHorizontal: wp(3),
-    paddingVertical: hp(1),
+    paddingVertical: hp(0.5),
     borderWidth: 1,
     borderColor: COLORS.greyColor,
     fontFamily: Fonts.FONTS.PoppinsMedium,
@@ -627,7 +931,6 @@ const styles = StyleSheet.create({
     color: COLORS.black,
     borderRadius: 5,
     alignSelf: 'center',
-    marginBottom: hp(3),
     marginTop: hp(1),
   },
   commentTextInput: {
@@ -643,7 +946,6 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     height: hp(14),
     marginTop: hp(1),
-    marginBottom: hp(3),
   },
   ListEmptyView: {
     width: '100%',
@@ -655,5 +957,35 @@ const styles = StyleSheet.create({
     fontSize: hp(2.5),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
+  },
+  dropdown2DropdownStyle: {
+    backgroundColor: COLORS.white,
+    borderRadius: 4,
+    height: hp(25),
+    // borderRadius: 12,
+  },
+  dropdownItemTxtStyle: {
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    marginLeft: wp(2),
+  },
+  dropdownView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: hp(4),
+    borderBottomWidth: 0,
+  },
+  dropdown2BtnStyle2: {
+    width: '92%',
+    height: hp(5),
+    backgroundColor: COLORS.white,
+    borderRadius: 5,
+    alignItems: 'center',
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    marginTop: hp(1),
+    alignSelf: 'center',
   },
 });

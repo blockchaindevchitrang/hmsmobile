@@ -11,6 +11,7 @@ import {
   Platform,
   Modal,
   TouchableWithoutFeedback,
+  ActivityIndicator,
 } from 'react-native';
 import React, {useRef, useState} from 'react';
 import {
@@ -24,15 +25,126 @@ import moment from 'moment';
 import deleteIcon from '../../images/delete.png';
 import editing from '../../images/editing.png';
 import close from '../../images/close.png';
+import {
+  onAddAccountListApi,
+  onDeleteCommonApi,
+  onGetEditAccountDataApi,
+  onGetSpecificCommonApi,
+} from '../../services/Api';
+import FlashMessage, {
+  showMessage,
+  hideMessage,
+} from 'react-native-flash-message';
+import {DeletePopup} from '../DeletePopup';
 
-const DocumentTypeList = ({searchBreak, setSearchBreak, allData}) => {
+const DocumentTypeList = ({
+  searchBreak,
+  setSearchBreak,
+  allData,
+  onGetData,
+}) => {
   const {theme} = useTheme();
   const menuRef = useRef(null);
   const [newAccountVisible, setNewAccountVisible] = useState(false);
   const [eventTitle, setEventTitle] = useState('');
-  const [departmentComment, setDepartmentComment] = useState('');
-  const [statusVisible, setStatusVisible] = useState(false);
-  const [departmentType, setDepartmentType] = useState('debit');
+  const [errorVisible, setErrorVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [userId, setUserId] = useState('');
+  const [deleteUser, setDeleteUser] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const onAddPayRollData = async () => {
+    try {
+      if (eventTitle == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter document type.');
+      } else {
+        setLoading(true);
+        setErrorVisible(false);
+        const urlData = `document-type-store?name=${eventTitle}`;
+        const response = await onAddAccountListApi(urlData);
+        if (response.status == 200) {
+          onGetData();
+          setLoading(false);
+          setNewAccountVisible(false);
+          showMessage({
+            message: 'Record Added Successfully',
+            type: 'success',
+            duration: 3000,
+          });
+        }
+      }
+    } catch (err) {
+      showMessage({
+        message: 'Something want wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      setLoading(false);
+      console.log('Error:', err);
+    }
+  };
+
+  const onEditPayRollData = async () => {
+    try {
+      if (eventTitle == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter document type.');
+      } else {
+        setLoading(true);
+        setErrorVisible(false);
+        const urlData = `document-type-update/${userId}?name=${eventTitle}`;
+        const response = await onGetEditAccountDataApi(urlData);
+        if (response.status == 200) {
+          onGetData();
+          setLoading(false);
+          setNewAccountVisible(false);
+          showMessage({
+            message: 'Record Edit Successfully',
+            type: 'success',
+            duration: 3000,
+          });
+        }
+      }
+    } catch (err) {
+      setLoading(false);
+      showMessage({
+        message: 'Something want wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Error:', err);
+    }
+  };
+
+  const onDeletePayrollData = async id => {
+    try {
+      setLoading(true);
+      const response = await onDeleteCommonApi(`document-type-delete/${id}`);
+      if (response.status == 200) {
+        onGetData();
+        setLoading(false);
+        setDeleteUser(false);
+        showMessage({
+          message: 'Record Delete Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      }
+    } catch (err) {
+      setLoading(false);
+      setDeleteUser(false);
+      showMessage({
+        message: 'Something want wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Get Error', err);
+    }
+  };
 
   const renderItem = ({item, index}) => {
     return (
@@ -42,16 +154,26 @@ const DocumentTypeList = ({searchBreak, setSearchBreak, allData}) => {
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
         <View style={[styles.nameDataView]}>
-          <Text style={[styles.dataHistoryText2]}>{item.blood}</Text>
+          <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
         </View>
         <View style={styles.actionDataView}>
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              setUserId(item.id);
+              setEventTitle(item.name);
+              setNewAccountVisible(true);
+            }}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.blueColor}]}
               source={editing}
             />
           </TouchableOpacity>
-          <TouchableOpacity style={{marginLeft: wp(2)}}>
+          <TouchableOpacity
+            onPress={() => {
+              setUserId(item.id);
+              setDeleteUser(true);
+            }}
+            style={{marginLeft: wp(2)}}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.errorColor}]}
               source={deleteIcon}
@@ -79,7 +201,13 @@ const DocumentTypeList = ({searchBreak, setSearchBreak, allData}) => {
           </View>
           <View style={styles.filterView}>
             <TouchableOpacity
-              onPress={() => setNewAccountVisible(true)}
+              onPress={() => {
+                setEventTitle('');
+                setUserId('');
+                setErrorVisible(false);
+                setErrorMessage('');
+                setNewAccountVisible(true);
+              }}
               style={styles.actionView}>
               <Text style={styles.actionText}>New Document Types</Text>
             </TouchableOpacity>
@@ -145,17 +273,20 @@ const DocumentTypeList = ({searchBreak, setSearchBreak, allData}) => {
               onChangeText={text => setEventTitle(text)}
               style={[styles.eventTextInput]}
             />
-            <Text style={[styles.titleText1]}>{'Remained Bags:'}</Text>
-            <TextInput
-              value={departmentComment}
-              placeholder={''}
-              onChangeText={text => setDepartmentComment(text)}
-              style={[styles.eventTextInput]}
-            />
-
+            {errorVisible ? (
+              <Text style={styles.dataHistoryText4}>{errorMessage}</Text>
+            ) : null}
             <View style={styles.buttonView}>
-              <TouchableOpacity onPress={() => {}} style={styles.nextView}>
-                <Text style={styles.nextText}>Save</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  userId != '' ? onEditPayRollData() : onAddPayRollData();
+                }}
+                style={styles.nextView}>
+                {loading ? (
+                  <ActivityIndicator size={'small'} color={COLORS.white} />
+                ) : (
+                  <Text style={styles.nextText}>Save</Text>
+                )}
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => setNewAccountVisible(false)}
@@ -166,6 +297,13 @@ const DocumentTypeList = ({searchBreak, setSearchBreak, allData}) => {
           </View>
         </View>
       </Modal>
+      <DeletePopup
+        modelVisible={deleteUser}
+        setModelVisible={setDeleteUser}
+        onPress={() => onDeletePayrollData(userId)}
+        setUserId={setUserId}
+        isLoading={loading}
+      />
     </>
   );
 };

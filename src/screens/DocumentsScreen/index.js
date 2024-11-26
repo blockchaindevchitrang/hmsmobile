@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -23,6 +23,7 @@ import headerLogo from '../../images/headerLogo.png';
 import {BlurView} from '@react-native-community/blur';
 import DocumentList from '../../components/DocumentComponent/DocumentList';
 import DocumentTypeList from '../../components/DocumentComponent/DocumentTypeList';
+import {onGetCommonApi} from '../../services/Api';
 
 const allData = [
   {
@@ -132,10 +133,12 @@ export const DocumentsScreen = ({navigation}) => {
   const {t} = useTranslation();
   const {theme} = useTheme();
   const [searchAccount, setSearchAccount] = useState('');
-  const [searchPayroll, setSearchPayroll] = useState('');
   const [searchPharmacists, setSearchPharmacists] = useState('');
   const [optionModalView, setOptionModalView] = useState(false);
   const [selectedView, setSelectedView] = useState('Documents');
+  const [documentList, setDocumentList] = useState([]);
+  const [documentTypeList, setDocumentTypeList] = useState([]);
+  const [refresh, setRefresh] = useState(false);
 
   const animations = useRef(
     [0, 0, 0].map(() => new Animated.Value(300)),
@@ -192,6 +195,44 @@ export const DocumentsScreen = ({navigation}) => {
     }
   };
 
+  useEffect(() => {
+    onGetDocumentData();
+  }, [searchAccount]);
+
+  const onGetDocumentData = async () => {
+    try {
+      const response = await onGetCommonApi(
+        `document-get?search=${searchAccount}`,
+      );
+      console.log('GetAccountData>>', response.data.data);
+      if (response.status == 200) {
+        setDocumentList(response.data.data.items);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Get AccountError>', err.response.data);
+    }
+  };
+
+  useEffect(() => {
+    onGetDocumentTypeData();
+  }, [searchPharmacists]);
+
+  const onGetDocumentTypeData = async () => {
+    try {
+      const response = await onGetCommonApi(
+        `document-type-get?search=${searchPharmacists}`,
+      );
+      console.log('GetAccountData>>', response.data.data);
+      if (response.status == 200) {
+        setDocumentTypeList(response.data.data.items);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Get AccountError>', err.response.data);
+    }
+  };
+
   return (
     <View style={[styles.container, {backgroundColor: theme.lightColor}]}>
       <View style={styles.headerView}>
@@ -207,14 +248,16 @@ export const DocumentsScreen = ({navigation}) => {
           <DocumentList
             searchBreak={searchAccount}
             setSearchBreak={setSearchAccount}
-            allData={[]}
+            allData={documentList}
+            onGetData={onGetDocumentData}
           />
         ) : (
           selectedView == 'Document Types' && (
             <DocumentTypeList
               searchBreak={searchPharmacists}
               setSearchBreak={setSearchPharmacists}
-              allData={[]}
+              allData={documentTypeList}
+              onGetData={onGetDocumentTypeData}
             />
           )
         )}

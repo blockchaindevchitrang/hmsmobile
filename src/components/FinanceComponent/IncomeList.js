@@ -10,8 +10,10 @@ import {
   FlatList,
   TouchableWithoutFeedback,
   Modal,
+  Platform,
+  ActivityIndicator,
 } from 'react-native';
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -28,18 +30,276 @@ import {
   MenuTrigger,
 } from 'react-native-popup-menu';
 import close from '../../images/close.png';
+import SelectDropdown from 'react-native-select-dropdown';
+import DatePicker from 'react-native-date-picker';
+import FlashMessage, {
+  showMessage,
+  hideMessage,
+} from 'react-native-flash-message';
+import {DeletePopup} from '../DeletePopup';
+import ImagePicker from 'react-native-image-crop-picker';
+import {
+  onAddIncomeApi,
+  onDeleteCommonApi,
+  onGetCommonApi,
+  onGetSpecificCommonApi,
+  onUpdateIncomeApi,
+} from '../../services/Api';
+import moment from 'moment';
+import photo from '../../images/photo.png';
+import draw from '../../images/draw.png';
 
-const IncomeList = ({searchBreak, setSearchBreak, allData}) => {
+const IncomeList = ({searchBreak, setSearchBreak, allData, getData}) => {
   const {theme} = useTheme();
   const menuRef = useRef(null);
-  const [issueDate, setIssueDate] = useState('');
-  const [doctorName, setDoctorName] = useState('');
-  const [patientName, setPatientName] = useState('');
-  const [bloodGroup, setBloodGroup] = useState('');
-  const [Amount, setAmount] = useState('');
-  const [Remarks, setRemarks] = useState('');
+  const [incomeHead, setIncomeHead] = useState('');
+  const [incomeHeadId, setIncomeHeadId] = useState('');
+  const [name, setName] = useState('');
+  const [date, setDate] = useState(new Date());
+  const [invoiceNumber, setInvoiceNumber] = useState('');
+  const [amount, setAmount] = useState('');
+  const [description, setDescription] = useState('');
+  const [avatar, setAvatar] = useState(null);
   const [addIncomeVisible, setAddIncomeVisible] = useState(false);
-  const [departmentComment, setDepartmentComment] = useState('');
+  const [dateModalVisible, setDateModalVisible] = useState(false);
+  const [errorVisible, setErrorVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [userId, setUserId] = useState('');
+  const [deleteUser, setDeleteUser] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [refresh, setRefresh] = useState(false);
+  const [incomeHeadList, setIncomeHeadList] = useState([]);
+
+  useEffect(() => {
+    onIncomeHeadGet();
+  }, []);
+
+  const onIncomeHeadGet = async () => {
+    try {
+      const response = await onGetCommonApi(`income-head-get`);
+      console.log('GetAccountData>>', response.data.data);
+      if (response.status == 200) {
+        const matchingKey = [];
+        Object.entries(response.data.data).find(([key, value]) => {
+          matchingKey.push({id: key, name: value});
+        });
+        setIncomeHeadList(matchingKey);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Get AccountError>', err.response.data);
+    }
+  };
+
+  const openProfileImagePicker = async () => {
+    try {
+      const image = await ImagePicker.openPicker({
+        width: 300,
+        height: 400,
+        cropping: false,
+        multiple: false, // Allow selecting only one image
+        compressImageQuality: 0.5,
+      });
+
+      if (image && image.path) {
+        if (image && image.path) {
+          var filename = image.path.substring(image.path.lastIndexOf('/') + 1);
+          let imageData = {
+            uri: Platform.OS === 'ios' ? image.sourceURL : image.path,
+            type: image.mime,
+            name: Platform.OS === 'ios' ? image.filename : filename,
+          };
+          setAvatar(imageData);
+
+          console.log('Selected image:', avatar);
+        }
+      } else {
+        console.log('No image selected');
+      }
+    } catch (error) {
+      console.log('Error selecting image:', error);
+    }
+  };
+
+  const isImageFormat = url => {
+    return (
+      url.endsWith('.png') || url.endsWith('.jpg') || url.endsWith('.jpeg')
+    );
+  };
+
+  function parseFileFromUrl(url) {
+    // Extract the filename from the URL
+    const name = url.split('/').pop();
+
+    // Extract the file extension
+    const extension = name.split('.').pop();
+
+    // Define the MIME type based on the file extension
+    let type;
+    switch (extension) {
+      case 'jpeg':
+      case 'jpg':
+        type = 'image/jpeg';
+        break;
+      case 'png':
+        type = 'image/png';
+        break;
+
+      default:
+        type = 'application/octet-stream'; // Fallback type for unknown extensions
+    }
+
+    // Return the extracted information
+    return {
+      uri: url,
+      type,
+      name,
+    };
+  }
+
+  const onAddUsers = async () => {
+    try {
+      if (incomeHeadId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select income head.');
+      } else if (name == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter name.');
+      } else if (invoiceNumber == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter invoice number.');
+      } else if (amount == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter amount.');
+      } else {
+        setLoading(true);
+        const formdata = new FormData();
+        formdata.append('income_head', incomeHeadId);
+        formdata.append('name', name);
+        formdata.append('date', moment(date).format('YYYY-MM-DD'));
+        formdata.append('amount', amount);
+        formdata.append('description', description);
+        formdata.append('invoice_number', invoiceNumber);
+        if (avatar != null) {
+          formdata.append('image', avatar);
+        }
+        const response = await onAddIncomeApi(formdata);
+
+        if (response.status === 200) {
+          getData();
+          setLoading(false);
+          setAddIncomeVisible(false);
+          showMessage({
+            message: 'Record Added Successfully',
+            type: 'success',
+            duration: 3000,
+          });
+        }
+      }
+    } catch (err) {
+      showMessage({
+        message: 'Something want wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      setLoading(false);
+      console.log('Add User Error:', err);
+    }
+  };
+
+  const onEditUsers = async () => {
+    try {
+      if (incomeHeadId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select income head.');
+      } else if (name == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter name.');
+      } else if (invoiceNumber == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter invoice number.');
+      } else if (amount == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter amount.');
+      } else {
+        setLoading(true);
+        setErrorVisible(false);
+        const formdata = new FormData();
+        formdata.append('income_head', incomeHeadId);
+        formdata.append('name', name);
+        formdata.append('date', moment(date).format('YYYY-MM-DD'));
+        formdata.append('amount', amount);
+        formdata.append('description', description);
+        formdata.append('invoice_number', invoiceNumber);
+        if (avatar != null) {
+          formdata.append('image', avatar);
+        }
+        const response = await onUpdateIncomeApi(formdata, userId);
+
+        if (response.status === 200) {
+          getData();
+          setLoading(false);
+          setAddIncomeVisible(false);
+          showMessage({
+            message: 'Record Edit Successfully',
+            type: 'success',
+            duration: 3000,
+          });
+        }
+      }
+    } catch (err) {
+      setLoading(false);
+      showMessage({
+        message: 'Something want wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Add User Error:', err.response.data);
+    }
+  };
+
+  const onDeletePayrollData = async id => {
+    try {
+      setLoading(true);
+      const response = await onDeleteCommonApi(`income-delete/${id}`);
+      if (response.status == 200) {
+        getData();
+        setLoading(false);
+        setDeleteUser(false);
+        showMessage({
+          message: 'Record Delete Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      }
+    } catch (err) {
+      setLoading(false);
+      setDeleteUser(false);
+      showMessage({
+        message: 'Something want wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Get Error', err);
+    }
+  };
+
+  const onGetSpecificDoctor = async id => {
+    try {
+      const response = await onGetSpecificCommonApi(`income-edit/${id}`);
+      if (response.status == 200) {
+        console.log('get ValueLL:::', response.data.data);
+        return response.data.data;
+      } else {
+        return 0;
+      }
+    } catch (err) {
+      console.log('Get Error', err);
+    }
+  };
 
   const renderItem = ({item, index}) => {
     return (
@@ -49,13 +309,13 @@ const IncomeList = ({searchBreak, setSearchBreak, allData}) => {
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
         <Text style={[styles.dataHistoryText1, {width: wp(33)}]}>
-          {item.opo_no}
+          {item.invoice_number}
         </Text>
         <Text style={[styles.dataHistoryText, {width: wp(28)}]}>
           {item.name}
         </Text>
         <Text style={[styles.dataHistoryText, {width: wp(28)}]}>
-          {item.head}
+          {item.income_head}
         </Text>
         <View style={[styles.switchView, {width: wp(28)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
@@ -69,16 +329,38 @@ const IncomeList = ({searchBreak, setSearchBreak, allData}) => {
           {item.amount}
         </Text>
         <Text style={[styles.dataHistoryText, {width: wp(26)}]}>
-          {item.attach}
+          {item.document != '' ? 'Download' : 'N/A'}
         </Text>
         <View style={[styles.actionDataView, {width: wp(16)}]}>
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={async () => {
+              setUserId(item.id);
+              let allDatas = await onGetSpecificDoctor(item.id);
+              setInvoiceNumber(item?.invoice_number);
+              setName(item?.name);
+              setDate(new Date(allDatas?.date));
+              setAmount(JSON.stringify(item?.amount));
+              setIncomeHead(item?.income_head);
+              setIncomeHeadId(allDatas?.income_head);
+              setDescription(allDatas?.description);
+              if (item.document != '') {
+                if (isImageFormat(item?.document)) {
+                  setAvatar(parseFileFromUrl(item?.document));
+                }
+              }
+              setAddIncomeVisible(true);
+            }}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.blueColor}]}
               source={editing}
             />
           </TouchableOpacity>
-          <TouchableOpacity style={{marginLeft: wp(2)}}>
+          <TouchableOpacity
+            onPress={() => {
+              setUserId(item.id);
+              setDeleteUser(true);
+            }}
+            style={{marginLeft: wp(2)}}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.errorColor}]}
               source={deleteIcon}
@@ -120,6 +402,15 @@ const IncomeList = ({searchBreak, setSearchBreak, allData}) => {
                 ref={menuRef}
                 onSelect={value => {
                   if (value == 'add') {
+                    setUserId('');
+                    setIncomeHead('');
+                    setIncomeHeadId('');
+                    setAmount('');
+                    setDate(new Date());
+                    setDescription('');
+                    setName('');
+                    setInvoiceNumber('');
+                    setAvatar(null);
                     setAddIncomeVisible(true);
                   } else {
                     alert(`Selected number: ${value}`);
@@ -220,11 +511,44 @@ const IncomeList = ({searchBreak, setSearchBreak, allData}) => {
                   {'Income Head'}
                   <Text style={styles.dataHistoryText4}>*</Text>
                 </Text>
-                <TextInput
-                  value={issueDate}
-                  placeholder={''}
-                  onChangeText={text => setIssueDate(text)}
-                  style={[styles.nameTextView]}
+                <SelectDropdown
+                  data={incomeHeadList}
+                  onSelect={(selectedItem, index) => {
+                    // setSelectedColor(selectedItem);
+                    setIncomeHeadId(selectedItem.id);
+                    console.log('gert Value:::', selectedItem);
+                  }}
+                  defaultValue={incomeHead}
+                  renderButton={(selectedItem, isOpen) => {
+                    console.log('Get Response>>>', selectedItem);
+                    return (
+                      <View style={styles.dropdown2BtnStyle2}>
+                        {incomeHeadId != '' ? (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {incomeHeadId == selectedItem?.id
+                              ? selectedItem?.name
+                              : incomeHead}
+                          </Text>
+                        ) : (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {selectedItem?.name || 'Select Income Head'}
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(item, index, isSelected) => {
+                    return (
+                      <TouchableOpacity style={styles.dropdownView}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {item.name}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                  dropdownIconPosition={'left'}
+                  dropdownStyle={styles.dropdown2DropdownStyle}
                 />
               </View>
               <View style={{width: '48%'}}>
@@ -233,9 +557,9 @@ const IncomeList = ({searchBreak, setSearchBreak, allData}) => {
                   <Text style={styles.dataHistoryText4}>*</Text>
                 </Text>
                 <TextInput
-                  value={doctorName}
+                  value={name}
                   placeholder={''}
-                  onChangeText={text => setDoctorName(text)}
+                  onChangeText={text => setName(text)}
                   style={[styles.nameTextView]}
                 />
               </View>
@@ -247,11 +571,27 @@ const IncomeList = ({searchBreak, setSearchBreak, allData}) => {
                   {'Date'}
                   <Text style={styles.dataHistoryText4}>*</Text>
                 </Text>
-                <TextInput
-                  value={patientName}
-                  placeholder={''}
-                  onChangeText={text => setPatientName(text)}
-                  style={[styles.nameTextView]}
+                <Text
+                  style={[
+                    styles.nameTextView,
+                    {width: '100%', paddingVertical: hp(1)},
+                  ]}
+                  onPress={() => setDateModalVisible(!dateModalVisible)}>
+                  {moment(date).format('DD/MM/YYYY')}
+                </Text>
+                <DatePicker
+                  open={dateModalVisible}
+                  modal={true}
+                  date={date}
+                  mode={'date'}
+                  onConfirm={date => {
+                    console.log('Console Log>>', date);
+                    setDateModalVisible(false);
+                    setDate(date);
+                  }}
+                  onCancel={() => {
+                    setDateModalVisible(false);
+                  }}
                 />
               </View>
               <View style={{width: '48%'}}>
@@ -260,9 +600,9 @@ const IncomeList = ({searchBreak, setSearchBreak, allData}) => {
                   <Text style={styles.dataHistoryText4}>*</Text>
                 </Text>
                 <TextInput
-                  value={doctorName}
+                  value={invoiceNumber}
                   placeholder={''}
-                  onChangeText={text => setDoctorName(text)}
+                  onChangeText={text => setInvoiceNumber(text)}
                   style={[styles.nameTextView]}
                 />
               </View>
@@ -275,13 +615,30 @@ const IncomeList = ({searchBreak, setSearchBreak, allData}) => {
                   <Text style={styles.dataHistoryText4}>*</Text>
                 </Text>
                 <TextInput
-                  value={bloodGroup}
+                  value={amount}
                   placeholder={''}
-                  onChangeText={text => setBloodGroup(text)}
+                  onChangeText={text => setAmount(text)}
                   style={[styles.nameTextView]}
                 />
               </View>
-              <View style={{width: '48%'}}></View>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText5}>Attachment</Text>
+                <View style={styles.profilePhotoView}>
+                  <TouchableOpacity
+                    style={styles.editView}
+                    onPress={() => openProfileImagePicker()}>
+                    <Image style={styles.editImage1} source={draw} />
+                  </TouchableOpacity>
+                  <Image
+                    style={
+                      avatar != null
+                        ? styles.profileImage1
+                        : styles.profileImage
+                    }
+                    source={avatar != null ? {uri: avatar?.uri} : photo}
+                  />
+                </View>
+              </View>
             </View>
 
             <View style={styles.nameView}>
@@ -291,18 +648,31 @@ const IncomeList = ({searchBreak, setSearchBreak, allData}) => {
                   <Text style={styles.dataHistoryText4}>*</Text>
                 </Text>
                 <TextInput
-                  value={departmentComment}
+                  value={description}
                   placeholder={'Leave a comment...'}
-                  onChangeText={text => setDepartmentComment(text)}
+                  onChangeText={text => setDescription(text)}
                   style={[styles.commentTextInput]}
                   multiline
                   textAlignVertical="top"
                 />
               </View>
             </View>
+            <View style={styles.nameView}>
+              {errorVisible ? (
+                <Text style={styles.dataHistoryText4}>{errorMessage}</Text>
+              ) : null}
+            </View>
             <View style={styles.buttonView}>
-              <TouchableOpacity onPress={() => {}} style={styles.nextView}>
-                <Text style={styles.nextText}>Save</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  userId != '' ? onEditUsers() : onAddUsers();
+                }}
+                style={styles.nextView}>
+                {loading ? (
+                  <ActivityIndicator size={'small'} color={COLORS.white} />
+                ) : (
+                  <Text style={styles.nextText}>Save</Text>
+                )}
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => setAddIncomeVisible(false)}
@@ -313,6 +683,13 @@ const IncomeList = ({searchBreak, setSearchBreak, allData}) => {
           </View>
         </View>
       </Modal>
+      <DeletePopup
+        modelVisible={deleteUser}
+        setModelVisible={setDeleteUser}
+        onPress={() => onDeletePayrollData(userId)}
+        setUserId={setUserId}
+        isLoading={loading}
+      />
     </>
   );
 };
@@ -375,6 +752,46 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.FONTS.PoppinsBold,
     fontSize: hp(2.2),
     color: COLORS.white,
+  },
+  dataHistoryText5: {
+    fontSize: hp(1.7),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+  },
+  profilePhotoView: {
+    borderWidth: 0.5,
+    width: wp(26),
+    height: hp(10),
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: hp(1),
+  },
+  profileImage: {
+    width: wp(10),
+    height: hp(5),
+    resizeMode: 'contain',
+  },
+  profileImage1: {
+    width: wp(26),
+    height: hp(10),
+  },
+  editView: {
+    width: wp(7),
+    height: wp(7),
+    borderRadius: wp(7),
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 0.5,
+    position: 'absolute',
+    zIndex: 1,
+    right: -wp(3),
+    top: -hp(2),
+    backgroundColor: COLORS.white,
+  },
+  editImage1: {
+    width: wp(3),
+    height: hp(2.5),
+    resizeMode: 'contain',
   },
   activeView: {
     width: '92%',
@@ -727,5 +1144,34 @@ const styles = StyleSheet.create({
     fontSize: hp(2.5),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
+  },
+  dropdown2DropdownStyle: {
+    backgroundColor: COLORS.white,
+    borderRadius: 4,
+    height: hp(25),
+    // borderRadius: 12,
+  },
+  dropdownItemTxtStyle: {
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    marginLeft: wp(2),
+  },
+  dropdownView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: hp(4),
+    borderBottomWidth: 0,
+  },
+  dropdown2BtnStyle2: {
+    width: '100%',
+    height: hp(4.2),
+    backgroundColor: COLORS.white,
+    borderRadius: 5,
+    alignItems: 'center',
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    marginTop: hp(1),
   },
 });

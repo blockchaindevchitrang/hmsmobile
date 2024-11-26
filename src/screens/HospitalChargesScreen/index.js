@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -21,13 +21,10 @@ import {
 } from '../../components/Pixel';
 import headerLogo from '../../images/headerLogo.png';
 import {BlurView} from '@react-native-community/blur';
-import BloodBanksList from '../../components/BloodComponent/BloodBanksList';
-import BloodDonorList from '../../components/BloodComponent/BloodDonorList';
-import BloodDonationList from '../../components/BloodComponent/BloodDonationList';
-import BloodIssueList from '../../components/BloodComponent/BloodIssueList';
 import ChargeCategoriesList from '../../components/HospitalChargesComponent/ChargeCategoriesList';
 import ChargesComponent from '../../components/HospitalChargesComponent/ChargesComponent';
 import DoctorChargesList from '../../components/HospitalChargesComponent/DoctorChargesList';
+import { onGetCommonApi } from '../../services/Api';
 
 const allData = [
   {
@@ -141,6 +138,11 @@ export const HospitalChargesScreen = ({navigation}) => {
   const [searchPharmacists, setSearchPharmacists] = useState('');
   const [optionModalView, setOptionModalView] = useState(false);
   const [selectedView, setSelectedView] = useState('Charge Categories');
+  const [chargeCategory, setChargeCategory] = useState([]);
+  const [categoryType, setCategoryType] = useState([]);
+  const [chargeList, setChargeList] = useState([]);
+  const [chargeOPDList, setChargeOPDList] = useState([]);
+  const [refresh, setRefresh] = useState(false);
 
   const animations = useRef(
     [0, 0, 0, 0].map(() => new Animated.Value(300)),
@@ -199,6 +201,84 @@ export const HospitalChargesScreen = ({navigation}) => {
     }
   };
 
+  useEffect(() => {
+    onIncomeHeadGet();
+  }, []);
+
+  const onIncomeHeadGet = async () => {
+    try {
+      const response = await onGetCommonApi('charge-type-get');
+      console.log('GetAccountData>>', response.data.data);
+      if (response.status == 200) {
+        const matchingKey = [];
+        Object.entries(response.data.data).find(([key, value]) => {
+          matchingKey.push({id: key, name: value});
+        });
+        setCategoryType(matchingKey);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Get AccountError>', err.response.data);
+    }
+  };
+
+  useEffect(() => {
+    onGetDocumentData();
+  }, [searchAccount]);
+
+  const onGetDocumentData = async () => {
+    try {
+      const response = await onGetCommonApi(
+        `charge-category-get?search=${searchAccount}`,
+      );
+      console.log('GetAccountData>>', response.data.data);
+      if (response.status == 200) {
+        setChargeCategory(response.data.data.items);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Get AccountError>', err.response.data);
+    }
+  };
+
+  useEffect(() => {
+    onGetChargeData();
+  }, [searchPayroll]);
+
+  const onGetChargeData = async () => {
+    try {
+      const response = await onGetCommonApi(
+        `charge-get?search=${searchPayroll}`,
+      );
+      console.log('GetAccountData>>', response.data.data);
+      if (response.status == 200) {
+        setChargeList(response.data.data.items);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Get AccountError>', err.response.data);
+    }
+  };
+
+  useEffect(() => {
+    onGetOPDChargeData();
+  }, [searchPharmacists]);
+
+  const onGetOPDChargeData = async () => {
+    try {
+      const response = await onGetCommonApi(
+        `doctor-opd-charge-get?search=${searchPharmacists}`,
+      );
+      console.log('GetAccountData>>', response.data.data);
+      if (response.status == 200) {
+        setChargeOPDList(response.data.data.items);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Get AccountError>', err.response.data);
+    }
+  };
+
   return (
     <View style={[styles.container, {backgroundColor: theme.lightColor}]}>
       <View style={styles.headerView}>
@@ -214,20 +294,26 @@ export const HospitalChargesScreen = ({navigation}) => {
           <ChargeCategoriesList
             searchBreak={searchAccount}
             setSearchBreak={setSearchAccount}
-            allData={allData}
+            allData={chargeCategory}
+            categoryType={categoryType}
+            onGetData={onGetDocumentData}
           />
         ) : selectedView == 'Charges' ? (
           <ChargesComponent
             searchBreak={searchPayroll}
             setSearchBreak={setSearchPayroll}
-            allData={BloodDonorData}
+            allData={chargeList}
+            categoryType={categoryType}
+            onGetData={onGetChargeData}
+            chargeCategory={chargeCategory}
           />
         ) : (
           selectedView == 'Doctor OPD Charges' && (
             <DoctorChargesList
               searchBreak={searchPharmacists}
               setSearchBreak={setSearchPharmacists}
-              allData={BloodIssueData}
+              allData={chargeOPDList}
+              onGetData={onGetOPDChargeData}
             />
           )
         )}

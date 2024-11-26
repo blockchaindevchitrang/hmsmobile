@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -37,6 +37,7 @@ import editing from '../../images/editing.png';
 import view from '../../images/view.png';
 import printing from '../../images/printing.png';
 import ProfilePhoto from '../../components/ProfilePhoto';
+import {onGetCommonApi, onGetSpecificCommonApi} from '../../services/Api';
 
 const BloodIssueData = [
   {
@@ -92,12 +93,49 @@ export const EnquiriesScreen = ({navigation}) => {
   const menuRef = useRef(null);
   const [searchAccount, setSearchAccount] = useState('');
   const [newBloodIssueVisible, setNewBloodIssueVisible] = useState(false);
-  const [issueDate, setIssueDate] = useState('');
-  const [doctorName, setDoctorName] = useState('');
-  const [patientName, setPatientName] = useState('');
-  const [bloodGroup, setBloodGroup] = useState('');
-  const [Amount, setAmount] = useState('');
-  const [Remarks, setRemarks] = useState('');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [contact, setContact] = useState('');
+  const [type, setType] = useState('');
+  const [viewBy, setViewBy] = useState('');
+  const [status, setStatus] = useState('');
+  const [message, setMessage] = useState('');
+  const [enquiryList, setEnquiryList] = useState([]);
+  const [refresh, setRefresh] = useState(false);
+  const [singleDataShow, setSingleDataShow] = useState(null);
+
+  useEffect(() => {
+    onGetCallLogData();
+  }, [searchAccount]);
+
+  const onGetCallLogData = async () => {
+    try {
+      const response = await onGetCommonApi(
+        `enquiry-get?search=${searchAccount}`,
+      );
+      console.log('GetAccountData>>', response.data.data);
+      if (response.status == 200) {
+        setEnquiryList(response.data.data.items);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Get AccountError>', err.response.data);
+    }
+  };
+
+  const onGetSingleData = async id => {
+    try {
+      const response = await onGetSpecificCommonApi(`enquiry-view/${id}`);
+      if (response.status == 200) {
+        console.log('get ValueLL:::', response.data.data);
+        return response.data.data;
+      } else {
+        return 0;
+      }
+    } catch (err) {
+      console.log('Get AccountError>', err.response.data);
+    }
+  };
 
   const renderItem = ({item, index}) => {
     return (
@@ -107,10 +145,10 @@ export const EnquiriesScreen = ({navigation}) => {
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
         <View style={styles.nameDataView}>
-          <ProfilePhoto username={item.name} />
+          <ProfilePhoto username={item.full_name} />
           <View>
-            <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
-            <Text style={[styles.dataHistoryText1]}>{item.mail}</Text>
+            <Text style={[styles.dataHistoryText2]}>{item.full_name}</Text>
+            <Text style={[styles.dataHistoryText1]}>{item.email}</Text>
           </View>
         </View>
         <View style={[styles.switchView, {width: wp(45)}]}>
@@ -120,26 +158,39 @@ export const EnquiriesScreen = ({navigation}) => {
         </View>
         <View style={[styles.switchView, {width: wp(35)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataHistoryText1]}>{item.date}</Text>
+            <Text style={[styles.dataHistoryText1]}>{item.created_at}</Text>
           </View>
         </View>
         <Text style={[styles.dataHistoryText, {width: wp(30)}]}>
-          {item.view}
+          {item.viewed_by}
         </Text>
         <View style={[styles.switchView, {width: wp(16)}]}>
           <Switch
             trackColor={{
-              false: item.status ? COLORS.greenColor : COLORS.errorColor,
-              true: item.status ? COLORS.greenColor : COLORS.errorColor,
+              false:
+                item.status == 'Read' ? COLORS.greenColor : COLORS.errorColor,
+              true:
+                item.status == 'Read' ? COLORS.greenColor : COLORS.errorColor,
             }}
-            thumbColor={item.status ? '#f4f3f4' : '#f4f3f4'}
+            thumbColor={item.status == 'Read' ? '#f4f3f4' : '#f4f3f4'}
             ios_backgroundColor={COLORS.errorColor}
             onValueChange={() => {}}
-            value={item.status}
+            value={item.status == 'Read'}
           />
         </View>
         <View style={styles.actionDataView}>
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={async () => {
+              let forData = await onGetSingleData(item.id);
+              setName(item.full_name);
+              setEmail(item.email);
+              setContact(forData.enquiry.contact_no);
+              setType(item.type);
+              setViewBy(item.viewed_by == null ? '' : item.viewed_by);
+              setStatus(item.status);
+              setMessage(forData.enquiry.message);
+              setNewBloodIssueVisible(true);
+            }}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.greenColor}]}
               source={view}
@@ -161,97 +212,161 @@ export const EnquiriesScreen = ({navigation}) => {
         />
       </View>
       <View style={styles.mainView}>
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{paddingBottom: hp(12)}}>
-          <View style={styles.subView}>
-            <TextInput
-              value={searchAccount}
-              placeholder={'Search'}
-              placeholderTextColor={theme.text}
-              onChangeText={text => setSearchAccount(text)}
-              style={[styles.searchView, {color: theme.text}]}
-            />
-            <View style={styles.filterView}>
-              <TouchableOpacity style={styles.filterView1}>
-                <Image style={styles.filterImage} source={filter} />
-              </TouchableOpacity>
+        {!newBloodIssueVisible ? (
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{paddingBottom: hp(12)}}>
+            <View style={styles.subView}>
+              <TextInput
+                value={searchAccount}
+                placeholder={'Search'}
+                placeholderTextColor={theme.text}
+                onChangeText={text => setSearchAccount(text)}
+                style={[styles.searchView, {color: theme.text}]}
+              />
+              <View style={styles.filterView}>
+                <TouchableOpacity style={styles.filterView1}>
+                  <Image style={styles.filterImage} source={filter} />
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
-          <View
-            style={[styles.activeView, {backgroundColor: theme.headerColor}]}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <View>
-                <View
-                  style={[
-                    styles.titleActiveView,
-                    {backgroundColor: theme.headerColor},
-                  ]}>
-                  <Text
+            <View
+              style={[styles.activeView, {backgroundColor: theme.headerColor}]}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                <View>
+                  <View
                     style={[
-                      styles.titleText,
-                      {width: wp(55), textAlign: 'left'},
+                      styles.titleActiveView,
+                      {backgroundColor: theme.headerColor},
                     ]}>
-                    {'FULL NAME'}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: wp(45), textAlign: 'left'},
-                    ]}>
-                    {'TYPE'}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: wp(35), textAlign: 'left'},
-                    ]}>
-                    {'CREATED ON'}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: wp(30), textAlign: 'left'},
-                    ]}>
-                    {'VIEWED BY'}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: wp(16), textAlign: 'left'},
-                    ]}>
-                    {'STATUS'}
-                  </Text>
-                  <Text style={[styles.titleText, {width: wp(16)}]}>
-                    {'ACTION'}
-                  </Text>
-                </View>
-                <View style={styles.mainDataView}>
-                  <FlatList
-                    data={BloodIssueData}
-                    renderItem={renderItem}
-                    bounces={false}
-                    showsHorizontalScrollIndicator={false}
-                    initialNumToRender={BloodIssueData.length}
-                    nestedScrollEnabled
-                    virtualized
-                    ListEmptyComponent={() => (
-                      <View key={0} style={styles.ListEmptyView}>
-                        <View style={styles.subEmptyView}>
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: wp(55), textAlign: 'left'},
+                      ]}>
+                      {'FULL NAME'}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: wp(45), textAlign: 'left'},
+                      ]}>
+                      {'TYPE'}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: wp(35), textAlign: 'left'},
+                      ]}>
+                      {'CREATED ON'}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: wp(30), textAlign: 'left'},
+                      ]}>
+                      {'VIEWED BY'}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: wp(16), textAlign: 'left'},
+                      ]}>
+                      {'STATUS'}
+                    </Text>
+                    <Text style={[styles.titleText, {width: wp(16)}]}>
+                      {'ACTION'}
+                    </Text>
+                  </View>
+                  <View style={styles.mainDataView}>
+                    <FlatList
+                      data={enquiryList}
+                      renderItem={renderItem}
+                      bounces={false}
+                      showsHorizontalScrollIndicator={false}
+                      initialNumToRender={enquiryList.length}
+                      nestedScrollEnabled
+                      virtualized
+                      ListEmptyComponent={() => (
+                        <View key={0} style={styles.ListEmptyView}>
                           <Text style={styles.emptyText}>
                             {'No record found'}
                           </Text>
                         </View>
-                      </View>
-                    )}
-                  />
+                      )}
+                    />
+                  </View>
+                </View>
+              </ScrollView>
+            </View>
+          </ScrollView>
+        ) : (
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{paddingBottom: hp(12)}}>
+            <View style={styles.subView}>
+              <Text style={[styles.doctorText, {color: theme.text}]}>
+                Enquiry Details
+              </Text>
+              <View style={styles.filterView}>
+                <TouchableOpacity
+                  onPress={() => setNewBloodIssueVisible(false)}
+                  style={styles.backButtonView}>
+                  <Text style={styles.backText}>BACK</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+            <View style={styles.profileView}>
+              <View style={styles.nameView}>
+                <View style={{width: '48%'}}>
+                  <Text style={[styles.titleText1]}>{'Name:'}</Text>
+                  <Text style={[styles.nameTextView1]}>{name}</Text>
+                </View>
+                <View style={{width: '48%'}}>
+                  <Text style={[styles.titleText1]}>{'Email:'}</Text>
+                  <Text style={[styles.nameTextView1]}>{email}</Text>
                 </View>
               </View>
-            </ScrollView>
-          </View>
-        </ScrollView>
+
+              <View style={styles.nameView}>
+                <View style={{width: '48%'}}>
+                  <Text style={[styles.titleText1]}>{'Contact:'}</Text>
+                  <Text style={[styles.nameTextView1]}>{contact}</Text>
+                </View>
+                <View style={{width: '48%'}}>
+                  <Text style={[styles.titleText1]}>{'Type:'}</Text>
+                  <Text style={[styles.nameTextView1]}>{type}</Text>
+                </View>
+              </View>
+
+              <View style={styles.nameView}>
+                <View style={{width: '48%'}}>
+                  <Text style={[styles.titleText1]}>{'Viewed By:'}</Text>
+                  <Text style={[styles.nameTextView1]}>{viewBy}</Text>
+                </View>
+                <View style={{width: '48%'}}>
+                  <Text style={[styles.titleText1]}>{'Status:'}</Text>
+                  <View
+                    style={[
+                      styles.dateBox1,
+                      {backgroundColor: theme.lightColor},
+                    ]}>
+                    <Text style={[styles.dataHistoryText1]}>{status}</Text>
+                  </View>
+                </View>
+              </View>
+
+              <View style={styles.nameView}>
+                <View style={{width: '100%'}}>
+                  <Text style={[styles.titleText1]}>{'Message:'}</Text>
+                  <Text style={[styles.nameTextView1]}>{message}</Text>
+                </View>
+              </View>
+            </View>
+          </ScrollView>
+        )}
       </View>
-      <Modal
+      {/* <Modal
         animationType="fade"
         transparent={true}
         visible={newBloodIssueVisible}
@@ -272,99 +387,47 @@ export const EnquiriesScreen = ({navigation}) => {
             </View>
             <View style={styles.nameView}>
               <View style={{width: '48%'}}>
-                <Text style={[styles.titleText1]}>
-                  {'Issue Date:'}
-                  <Text style={styles.dataHistoryText4}>*</Text>
-                </Text>
-                <TextInput
-                  value={issueDate}
-                  placeholder={'Issue Date'}
-                  onChangeText={text => setIssueDate(text)}
-                  style={[styles.nameTextView]}
-                />
+                <Text style={[styles.titleText1]}>{'Name:'}</Text>
+                <Text style={[styles.nameTextView1]}>{name}</Text>
               </View>
               <View style={{width: '48%'}}>
-                <Text style={[styles.titleText1]}>
-                  {'Doctor Name:'}
-                  <Text style={styles.dataHistoryText4}>*</Text>
-                </Text>
-                <TextInput
-                  value={doctorName}
-                  placeholder={'Doctor Name'}
-                  onChangeText={text => setDoctorName(text)}
-                  style={[styles.nameTextView]}
-                />
+                <Text style={[styles.titleText1]}>{'Email:'}</Text>
+                <Text style={[styles.nameTextView1]}>{email}</Text>
               </View>
             </View>
 
             <View style={styles.nameView}>
               <View style={{width: '48%'}}>
-                <Text style={[styles.titleText1]}>
-                  {'Patient Name:'}
-                  <Text style={styles.dataHistoryText4}>*</Text>
-                </Text>
-                <TextInput
-                  value={patientName}
-                  placeholder={'Patient Name'}
-                  onChangeText={text => setPatientName(text)}
-                  style={[styles.nameTextView]}
-                />
+                <Text style={[styles.titleText1]}>{'Contact:'}</Text>
+                <Text style={[styles.nameTextView1]}>{contact}</Text>
               </View>
               <View style={{width: '48%'}}>
-                <Text style={[styles.titleText1]}>
-                  {'Doctor Name:'}
-                  <Text style={styles.dataHistoryText4}>*</Text>
-                </Text>
-                <TextInput
-                  value={doctorName}
-                  placeholder={'Doctor Name'}
-                  onChangeText={text => setDoctorName(text)}
-                  style={[styles.nameTextView]}
-                />
+                <Text style={[styles.titleText1]}>{'Type:'}</Text>
+                <Text style={[styles.nameTextView1]}>{type}</Text>
               </View>
             </View>
 
             <View style={styles.nameView}>
               <View style={{width: '48%'}}>
-                <Text style={[styles.titleText1]}>
-                  {'Blood Group:'}
-                  <Text style={styles.dataHistoryText4}>*</Text>
-                </Text>
-                <TextInput
-                  value={bloodGroup}
-                  placeholder={'Blood Group'}
-                  onChangeText={text => setBloodGroup(text)}
-                  style={[styles.nameTextView]}
-                />
+                <Text style={[styles.titleText1]}>{'Viewed By:'}</Text>
+                <Text style={[styles.nameTextView1]}>{viewBy}</Text>
               </View>
               <View style={{width: '48%'}}>
-                <Text style={[styles.titleText1]}>
-                  {'Amount:'}
-                  <Text style={styles.dataHistoryText4}>*</Text>
-                </Text>
-                <TextInput
-                  value={Amount}
-                  placeholder={'Amount'}
-                  onChangeText={text => setAmount(text)}
-                  style={[styles.nameTextView]}
-                />
+                <Text style={[styles.titleText1]}>{'Status:'}</Text>
+                <View
+                  style={[
+                    styles.dateBox1,
+                    {backgroundColor: theme.lightColor},
+                  ]}>
+                  <Text style={[styles.dataHistoryText1]}>{status}</Text>
+                </View>
               </View>
             </View>
 
             <View style={styles.nameView}>
               <View style={{width: '100%'}}>
-                <Text style={[styles.titleText1]}>
-                  {'Remarks:'}
-                  <Text style={styles.dataHistoryText4}>*</Text>
-                </Text>
-                <TextInput
-                  value={Remarks}
-                  placeholder={'Enter Remarks'}
-                  onChangeText={text => setRemarks(text)}
-                  style={[styles.commentTextInput]}
-                  multiline
-                  textAlignVertical="top"
-                />
+                <Text style={[styles.titleText1]}>{'Message:'}</Text>
+                <Text style={[styles.nameTextView1]}>{message}</Text>
               </View>
             </View>
             <View style={styles.buttonView}>
@@ -379,7 +442,7 @@ export const EnquiriesScreen = ({navigation}) => {
             </View>
           </View>
         </View>
-      </Modal>
+      </Modal> */}
     </View>
   );
 };
