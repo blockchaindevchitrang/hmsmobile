@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -24,6 +24,7 @@ import {BlurView} from '@react-native-community/blur';
 import DoctorChargesList from '../../components/HospitalChargesComponent/DoctorChargesList';
 import VaccinatedPatients from '../../components/VaccinationComponent/VaccinatedPatients';
 import VaccinationList from '../../components/VaccinationComponent/VaccinationList';
+import { onGetCommonApi } from '../../services/Api';
 
 const allData = [
   {
@@ -114,6 +115,9 @@ export const VaccinationScreen = ({navigation}) => {
   const [searchPharmacists, setSearchPharmacists] = useState('');
   const [optionModalView, setOptionModalView] = useState(false);
   const [selectedView, setSelectedView] = useState('Vaccinated Patients');
+  const [vaccinatedPatient, setVaccinatedPatient] = useState([]);
+  const [vaccinated, setVaccinated] = useState([]);
+  const [refresh, setRefresh] = useState(false);
 
   const animations = useRef(
     [0, 0, 0].map(() => new Animated.Value(300)),
@@ -170,6 +174,44 @@ export const VaccinationScreen = ({navigation}) => {
     }
   };
 
+  useEffect(() => {
+    onGetVaccinatedPatientData();
+  }, [searchAccount]);
+
+  const onGetVaccinatedPatientData = async () => {
+    try {
+      const response = await onGetCommonApi(
+        `vaccinated-patient-get?search=${searchAccount}`,
+      );
+      console.log('get Response:', response.data.data);
+      if (response.data.flag == 1) {
+        setVaccinatedPatient(response.data.data.items);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Error>>', err);
+    }
+  };
+
+  useEffect(() => {
+    onGetVaccinatedData();
+  }, [searchPharmacists]);
+
+  const onGetVaccinatedData = async () => {
+    try {
+      const response = await onGetCommonApi(
+        `vaccination-get?search=${searchPharmacists}`,
+      );
+      console.log('get Response:', response.data.data);
+      if (response.data.flag == 1) {
+        setVaccinated(response.data.data.items);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Error>>', err);
+    }
+  };
+
   return (
     <View style={[styles.container, {backgroundColor: theme.lightColor}]}>
       <View style={styles.headerView}>
@@ -185,14 +227,17 @@ export const VaccinationScreen = ({navigation}) => {
           <VaccinatedPatients
             searchBreak={searchAccount}
             setSearchBreak={setSearchAccount}
-            allData={allData}
+            allData={vaccinatedPatient}
+            onGetData={onGetVaccinatedPatientData}
+            vaccinated={vaccinated}
           />
         ) : (
           selectedView == 'Vaccinations' && (
             <VaccinationList
               searchBreak={searchPharmacists}
               setSearchBreak={setSearchPharmacists}
-              allData={BloodIssueData}
+              allData={vaccinated}
+              onGetData={onGetVaccinatedData}
             />
           )
         )}

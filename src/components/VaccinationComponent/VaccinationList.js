@@ -11,6 +11,7 @@ import {
   Platform,
   Modal,
   TouchableWithoutFeedback,
+  ActivityIndicator,
 } from 'react-native';
 import React, {useRef, useState} from 'react';
 import {
@@ -30,8 +31,20 @@ import {
   MenuOption,
   MenuTrigger,
 } from 'react-native-popup-menu';
+import SelectDropdown from 'react-native-select-dropdown';
+import {
+  onAddAccountListApi,
+  onDeleteCommonApi,
+  onGetEditAccountDataApi,
+  onGetSpecificCommonApi,
+} from '../../services/Api';
+import FlashMessage, {
+  showMessage,
+  hideMessage,
+} from 'react-native-flash-message';
+import {DeletePopup} from '../DeletePopup';
 
-const VaccinationList = ({searchBreak, setSearchBreak, allData}) => {
+const VaccinationList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
   const {theme} = useTheme();
   const menuRef = useRef(null);
   const [newAccountVisible, setNewAccountVisible] = useState(false);
@@ -39,6 +52,130 @@ const VaccinationList = ({searchBreak, setSearchBreak, allData}) => {
   const [departmentComment, setDepartmentComment] = useState('');
   const [statusVisible, setStatusVisible] = useState(false);
   const [chargeType, setChargeType] = useState('');
+  const [errorVisible, setErrorVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [userId, setUserId] = useState('');
+  const [deleteUser, setDeleteUser] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const onAddPayRollData = async () => {
+    try {
+      if (eventTitle == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter vaccination name.');
+      } else if (departmentComment == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter manufactured name.');
+      } else if (chargeType == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter brand name.');
+      } else {
+        setLoading(true);
+        setErrorVisible(false);
+        const urlData = `vaccination-store?name=${eventTitle}&manufactured_by=${departmentComment}&brand=${chargeType}`;
+        const response = await onAddAccountListApi(urlData);
+        if (response.status == 200) {
+          onGetData();
+          setLoading(false);
+          setNewAccountVisible(false);
+          showMessage({
+            message: 'Record Added Successfully',
+            type: 'success',
+            duration: 3000,
+          });
+        }
+      }
+    } catch (err) {
+      showMessage({
+        message: 'Something want wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      setLoading(false);
+      console.log('Error:', err);
+    }
+  };
+
+  const onEditPayRollData = async () => {
+    try {
+      if (eventTitle == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter vaccination name.');
+      } else if (departmentComment == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter manufactured name.');
+      } else if (chargeType == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter brand name.');
+      } else {
+        setLoading(true);
+        setErrorVisible(false);
+        const urlData = `vaccination-update/${userId}?name=${eventTitle}&manufactured_by=${departmentComment}&brand=${chargeType}`;
+        const response = await onGetEditAccountDataApi(urlData);
+        if (response.status == 200) {
+          onGetData();
+          setLoading(false);
+          setNewAccountVisible(false);
+          showMessage({
+            message: 'Record Edit Successfully',
+            type: 'success',
+            duration: 3000,
+          });
+        }
+      }
+    } catch (err) {
+      setLoading(false);
+      showMessage({
+        message: 'Something want wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Error:', err);
+    }
+  };
+
+  const onDeletePayrollData = async id => {
+    try {
+      setLoading(true);
+      const response = await onDeleteCommonApi(`vaccination-delete/${id}`);
+      if (response.status == 200) {
+        onGetData();
+        setLoading(false);
+        setDeleteUser(false);
+        showMessage({
+          message: 'Record Delete Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      }
+    } catch (err) {
+      setLoading(false);
+      setDeleteUser(false);
+      showMessage({
+        message: 'Something want wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Get Error', err);
+    }
+  };
+
+  const onGetSpecificDoctor = async id => {
+    try {
+      const response = await onGetSpecificCommonApi(`vaccination-edit/${id}`);
+      if (response.status == 200) {
+        console.log('get ValueLL:::', response.data.data);
+        return response.data.data;
+      } else {
+        return 0;
+      }
+    } catch (err) {
+      console.log('Get Error', err);
+    }
+  };
 
   const renderItem = ({item, index}) => {
     return (
@@ -51,19 +188,31 @@ const VaccinationList = ({searchBreak, setSearchBreak, allData}) => {
           <Text style={[styles.dataHistoryText1]}>{item.name}</Text>
         </View>
         <View style={[styles.nameDataView, {width: wp(37)}]}>
-          <Text style={[styles.dataHistoryText1]}>{item.manufacture}</Text>
+          <Text style={[styles.dataHistoryText1]}>{item.manufactured_by}</Text>
         </View>
         <View style={[styles.nameDataView, {width: wp(20)}]}>
           <Text style={[styles.dataHistoryText1]}>{item.brand}</Text>
         </View>
         <View style={styles.actionDataView}>
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={async () => {
+              setUserId(item.id);
+              setEventTitle(item.name);
+              setDepartmentComment(item.manufactured_by);
+              setChargeType(item.brand);
+              setNewAccountVisible(true);
+            }}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.blueColor}]}
               source={editing}
             />
           </TouchableOpacity>
-          <TouchableOpacity style={{marginLeft: wp(2)}}>
+          <TouchableOpacity
+            onPress={() => {
+              setUserId(item.id);
+              setDeleteUser(true);
+            }}
+            style={{marginLeft: wp(2)}}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.errorColor}]}
               source={deleteIcon}
@@ -102,6 +251,12 @@ const VaccinationList = ({searchBreak, setSearchBreak, allData}) => {
                 ref={menuRef}
                 onSelect={value => {
                   if (value == 'add') {
+                    setUserId('');
+                    setEventTitle('');
+                    setDepartmentComment('');
+                    setChargeType('');
+                    setErrorVisible(false);
+                    setErrorMessage('');
                     setNewAccountVisible(true);
                   } else {
                     alert(`Selected number: ${value}`);
@@ -178,13 +333,13 @@ const VaccinationList = ({searchBreak, setSearchBreak, allData}) => {
           </TouchableWithoutFeedback>
           <View style={styles.container}>
             <View style={styles.headerView}>
-              <Text style={styles.headerText}>Create Charge Category</Text>
+              <Text style={styles.headerText}>New Vaccination</Text>
               <TouchableOpacity onPress={() => setNewAccountVisible(false)}>
                 <Image style={styles.closeImage} source={close} />
               </TouchableOpacity>
             </View>
             <Text style={[styles.titleText1, {marginTop: hp(1.5)}]}>
-              {'Charge Category'}
+              {'Name:'}
             </Text>
             <TextInput
               value={eventTitle}
@@ -192,25 +347,34 @@ const VaccinationList = ({searchBreak, setSearchBreak, allData}) => {
               onChangeText={text => setEventTitle(text)}
               style={[styles.eventTextInput]}
             />
-            <Text style={[styles.titleText1]}>{'Description'}</Text>
+            <Text style={[styles.titleText1]}>{'Manufactured By:'}</Text>
             <TextInput
               value={departmentComment}
-              placeholder={'Leave a comment...'}
+              placeholder={''}
               onChangeText={text => setDepartmentComment(text)}
-              style={[styles.commentTextInput]}
-              multiline
-              textAlignVertical="top"
+              style={[styles.eventTextInput]}
             />
-            <Text style={[styles.titleText1]}>{'Charge Type'}</Text>
+            <Text style={[styles.titleText1]}>{'Brand:'}</Text>
             <TextInput
               value={chargeType}
               placeholder={''}
               onChangeText={text => setChargeType(text)}
-              style={[styles.eventTextInput]}
+              style={[styles.eventTextInput, {marginBottom: hp(0)}]}
             />
+            {errorVisible ? (
+              <Text style={styles.dataHistoryText4}>{errorMessage}</Text>
+            ) : null}
             <View style={styles.buttonView}>
-              <TouchableOpacity onPress={() => {}} style={styles.nextView}>
-                <Text style={styles.nextText}>Save</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  userId != '' ? onEditPayRollData() : onAddPayRollData();
+                }}
+                style={styles.nextView}>
+                {loading ? (
+                  <ActivityIndicator size={'small'} color={COLORS.white} />
+                ) : (
+                  <Text style={styles.nextText}>Save</Text>
+                )}
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => setNewAccountVisible(false)}
@@ -221,6 +385,13 @@ const VaccinationList = ({searchBreak, setSearchBreak, allData}) => {
           </View>
         </View>
       </Modal>
+      <DeletePopup
+        modelVisible={deleteUser}
+        setModelVisible={setDeleteUser}
+        onPress={() => onDeletePayrollData(userId)}
+        setUserId={setUserId}
+        isLoading={loading}
+      />
     </>
   );
 };
@@ -365,6 +536,8 @@ const styles = StyleSheet.create({
     fontSize: hp(1.8),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.errorColor,
+    marginHorizontal: wp(3),
+    marginTop: hp(1),
   },
   mainDataView: {
     minHeight: hp(29),
@@ -460,7 +633,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     alignItems: 'center',
-    marginTop: hp(2),
+    marginTop: hp(4),
   },
   nextView: {
     height: hp(4.5),

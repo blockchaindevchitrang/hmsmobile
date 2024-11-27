@@ -9,6 +9,7 @@ import {
   TextInput,
   FlatList,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import React, {useRef, useState} from 'react';
 import {
@@ -32,25 +33,50 @@ import {
   MenuOption,
   MenuTrigger,
 } from 'react-native-popup-menu';
+import {
+  onAddUsersApi,
+  onDeleteUserDataApi,
+  onGetSpecificUsersDataApi,
+  onUpdateUserDataApi,
+} from '../../services/Api';
+import {DeletePopup} from '../DeletePopup';
+import SelectDropdown from 'react-native-select-dropdown';
+import {useSelector} from 'react-redux';
+import FlashMessage, {
+  showMessage,
+  hideMessage,
+} from 'react-native-flash-message';
 
-const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
+const CaseHandlerList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
+  const bloodData = useSelector(state => state.bloodData);
   const {theme} = useTheme();
   const menuRef = useRef(null);
   const [newUserVisible, setNewUserVisible] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState('');
+  const [number, setNumber] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [address, setAddress] = useState('');
+  const [address1, setAddress1] = useState('');
   const [city, setCity] = useState('');
   const [country, setCountry] = useState('');
+  const [bloodGroup, setBloodGroup] = useState('');
+  const [designation, setDesignation] = useState('');
+  const [qualification, setQualification] = useState('');
   const [postalCode, setPostalCode] = useState('');
   const [genderType, setGenderType] = useState('female');
   const [dateOfBirth, setDateOfBirth] = useState(new Date());
   const [dateModalVisible, setDateModalVisible] = useState(false);
   const [avatar, setAvatar] = useState(null);
+  const [status, setStatus] = useState(false);
+  const [userId, setUserId] = useState('');
+  const [deleteUser, setDeleteUser] = useState(false);
+  const [bloodSelected, setBloodSelected] = useState('');
+  const [errorVisible, setErrorVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const openProfileImagePicker = async () => {
     try {
@@ -82,6 +108,263 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
     }
   };
 
+  const validateEmail = email => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email); // Returns true if valid
+  };
+
+  const onAddUsers = async () => {
+    try {
+      if (firstName == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter first name.');
+      } else if (lastName == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter last name.');
+      } else if (email == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter email address.');
+      } else if (!validateEmail(email)) {
+        setErrorVisible(true);
+        setErrorMessage('Please enter valid email address.');
+      } else if (designation == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter user designation.');
+      } else if (qualification == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter user qualification.');
+      } else if (bloodSelected == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select blood group.');
+      } else if (password == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter password.');
+      } else if (confirmPassword == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter confirm password.');
+      } else {
+        setLoading(true);
+        setErrorVisible(false);
+        const formdata = new FormData();
+        formdata.append('first_name', firstName);
+        formdata.append('last_name', lastName);
+        formdata.append('email', email);
+        formdata.append('department_id', '8');
+        formdata.append('phone', number);
+        if (avatar != null) {
+          formdata.append('image', avatar);
+        }
+        formdata.append('blood_group', bloodSelected);
+        formdata.append('designation', designation);
+        formdata.append('qualification', qualification);
+        formdata.append('status', status ? 1 : 2);
+        formdata.append('password', password);
+        formdata.append('password_confirmation', confirmPassword);
+        formdata.append('country', country);
+        formdata.append('city', city);
+        formdata.append('postal_code', postalCode);
+        formdata.append('address1', address);
+        formdata.append('address2', address1);
+        formdata.append('gender', genderType == 'female' ? 1 : 0);
+        const response = await onAddUsersApi(formdata);
+
+        if (response.status === 200) {
+          onGetData();
+          showMessage({
+            message: 'Record Added Successfully',
+            type: 'success',
+            duration: 3000,
+          });
+          setLoading(false);
+          setNewUserVisible(false);
+        }
+      }
+    } catch (err) {
+      if (err.response.data) {
+        // showMessage({
+        //   message: err.response.data.message,
+        //   type: 'danger',
+        //   duration: 6000,
+        //   icon: 'danger',
+        // });
+        setErrorVisible(true);
+        setErrorMessage(err.response.data.message);
+      } else {
+        showMessage({
+          message: 'Something want wrong.',
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
+      setLoading(false);
+      console.log('Add User Error:', err.response.data);
+    }
+  };
+
+  const onEditUsers = async () => {
+    try {
+      if (firstName == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter first name.');
+      } else if (lastName == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter last name.');
+      } else if (email == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter email address.');
+      } else if (!validateEmail(email)) {
+        setErrorVisible(true);
+        setErrorMessage('Please enter valid email address.');
+      } else if (designation == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter user designation.');
+      } else if (qualification == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter user qualification.');
+      } else if (bloodSelected == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select blood group.');
+      } else if (password == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter password.');
+      } else if (confirmPassword == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter confirm password.');
+      } else {
+        setLoading(true);
+        setErrorVisible(false);
+        const formdata = new FormData();
+        formdata.append('first_name', firstName);
+        formdata.append('last_name', lastName);
+        formdata.append('email', email);
+        formdata.append('phone', number);
+        if (avatar != null) {
+          formdata.append('image', avatar);
+        }
+        formdata.append('designation', designation);
+        formdata.append('qualification', qualification);
+        formdata.append('status', status ? 1 : 2);
+        formdata.append('department_id', '8');
+        formdata.append('address2', address1);
+        formdata.append('country', country);
+        formdata.append('city', city);
+        formdata.append('postal_code', postalCode);
+        formdata.append('address1', address);
+        formdata.append('gender', genderType == 'female' ? 1 : 0);
+        const response = await onUpdateUserDataApi(userId, formdata);
+
+        if (response.status === 200) {
+          onGetData();
+          setNewUserVisible(false);
+          showMessage({
+            message: 'Record Edit Successfully',
+            type: 'success',
+            duration: 3000,
+          });
+          setLoading(false);
+        }
+      }
+    } catch (err) {
+      setLoading(false);
+      if (err.response.data) {
+        // showMessage({
+        //   message: err.response.data.message,
+        //   type: 'danger',
+        //   duration: 6000,
+        //   icon: 'danger',
+        // });
+        setErrorVisible(true);
+        setErrorMessage(err.response.data.message);
+      } else {
+        showMessage({
+          message: 'Something want wrong.',
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
+      console.log('Add User Error:', err);
+    }
+  };
+
+  const onDeleteRecord = async () => {
+    try {
+      setLoading(true);
+      const response = await onDeleteUserDataApi(userId);
+      if (response.status == 200) {
+        onGetData();
+        setLoading(false);
+        setDeleteUser(false);
+        showMessage({
+          message: 'Record Delete Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      }
+    } catch (err) {
+      setLoading(false);
+      setDeleteUser(false);
+      showMessage({
+        message: 'Something want wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Error Delete', err);
+    }
+  };
+
+  const onGetSpecificDoctor = async id => {
+    try {
+      const response = await onGetSpecificUsersDataApi(id);
+      if (response.status == 200) {
+        console.log('get ValueLL:::', response.data.message);
+        return response.data.message;
+      } else {
+        return 0;
+      }
+    } catch (err) {
+      console.log('Get Error', err);
+    }
+  };
+
+  const isImageFormat = url => {
+    return (
+      url.endsWith('.png') || url.endsWith('.jpg') || url.endsWith('.jpeg')
+    );
+  };
+
+  function parseFileFromUrl(url) {
+    // Extract the filename from the URL
+    const name = url.split('/').pop();
+
+    // Extract the file extension
+    const extension = name.split('.').pop();
+
+    // Define the MIME type based on the file extension
+    let type;
+    switch (extension) {
+      case 'jpeg':
+      case 'jpg':
+        type = 'image/jpeg';
+        break;
+      case 'png':
+        type = 'image/png';
+        break;
+
+      default:
+        type = 'application/octet-stream'; // Fallback type for unknown extensions
+    }
+
+    // Return the extracted information
+    return {
+      uri: url,
+      type,
+      name,
+    };
+  }
+
   const renderItem = ({item, index}) => {
     return (
       <View
@@ -89,11 +372,11 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
           styles.dataHistoryView,
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
-        <View style={styles.nameDataView}>
+        <View style={[styles.nameDataView]}>
           <ProfilePhoto username={item.name} />
           <View>
             <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
-            <Text style={[styles.dataHistoryText1]}>{item.mail}</Text>
+            <Text style={[styles.dataHistoryText5]}>{item.email}</Text>
           </View>
         </View>
         <Text style={[styles.dataHistoryText1, {width: wp(32)}]}>
@@ -118,13 +401,46 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
           />
         </View>
         <View style={styles.actionDataView}>
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={async () => {
+              let allData = await onGetSpecificDoctor(item.id);
+              setUserId(item.id);
+              const [first, last] = item.name.split(',');
+              setFirstName(first);
+              setLastName(last);
+              if (isImageFormat(item?.image_url)) {
+                setAvatar(parseFileFromUrl(item?.image_url));
+              }
+              setEmail(item.email);
+              setDesignation(allData.designation);
+              if (allData.dob != null) {
+                setDateOfBirth(new Date(allData.dob));
+              }
+              setGenderType(item.gender == 0 ? 'male' : 'female');
+              setAddress(item.address1);
+              setCity(item.city);
+              setCountry(item.country);
+              setPostalCode(item.postal_code);
+              setAddress1(allData.address2);
+              setQualification(allData.qualification);
+              setNumber(allData.phone);
+              setStatus(allData.status == 'Active' ? true : false);
+              if (allData?.blood_group != null) {
+                setBloodSelected(allData?.blood_group);
+              }
+              setNewUserVisible(true);
+            }}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.blueColor}]}
               source={editing}
             />
           </TouchableOpacity>
-          <TouchableOpacity style={{marginLeft: wp(2)}}>
+          <TouchableOpacity
+            onPress={() => {
+              setUserId(item.id);
+              setDeleteUser(true);
+            }}
+            style={{marginLeft: wp(2)}}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.errorColor}]}
               source={deleteIcon}
@@ -166,6 +482,23 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
                 ref={menuRef}
                 onSelect={value => {
                   if (value == 'add') {
+                    setUserId('');
+                    setFirstName('');
+                    setLastName('');
+                    setEmail('');
+                    setDesignation('');
+                    setDateOfBirth(new Date());
+                    setGenderType('female');
+                    setAddress('');
+                    setCity('');
+                    setCountry('');
+                    setPostalCode('');
+                    setAvatar(null);
+                    setAddress1('');
+                    setPassword('');
+                    setConfirmPassword('');
+                    setBloodSelected('');
+                    setQualification('');
                     setNewUserVisible(true);
                   } else {
                     alert(`Selected number: ${value}`);
@@ -228,11 +561,9 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
                     virtualized
                     ListEmptyComponent={() => (
                       <View key={0} style={styles.ListEmptyView}>
-                        <View style={styles.subEmptyView}>
-                          <Text style={styles.emptyText}>
-                            {'No record found'}
-                          </Text>
-                        </View>
+                        <Text style={styles.emptyText}>
+                          {'No record found'}
+                        </Text>
                       </View>
                     )}
                   />
@@ -294,76 +625,28 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
             </View>
 
             <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>ROLE</Text>
-                <TextInput
-                  value={role}
-                  placeholder={'Select'}
-                  onChangeText={text => setRole(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>PASSWORD</Text>
-                <TextInput
-                  value={password}
-                  placeholder={'******'}
-                  onChangeText={text => setPassword(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                  secureTextEntry={true}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>CONFIRM PASSWORD</Text>
-                <TextInput
-                  value={confirmPassword}
-                  placeholder={'******'}
-                  onChangeText={text => setConfirmPassword(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                  secureTextEntry={true}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
               <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>DATE OF BIRTH</Text>
-                {/* <TextInput
-                      value={firstName}
-                      placeholder={'Enter first name'}
-                      onChangeText={text => setFirstName(text)}
-                      style={[styles.nameTextView, {width: '100%'}]}
-                    /> */}
-                <Text
-                  style={[
-                    styles.nameTextView,
-                    {width: '100%', paddingVertical: hp(1)},
-                  ]}
-                  onPress={() => setDateModalVisible(!dateModalVisible)}>
-                  {moment(dateOfBirth).format('DD/MM/YYYY')}
-                </Text>
-                <DatePicker
-                  open={dateModalVisible}
-                  modal={true}
-                  date={dateOfBirth}
-                  mode={'date'}
-                  onConfirm={date => {
-                    console.log('Console Log>>', date);
-                    setDateModalVisible(false);
-                    setDateOfBirth(date);
-                  }}
-                  onCancel={() => {
-                    setDateModalVisible(false);
-                  }}
+                <Text style={styles.dataHistoryText1}>DESIGNATION:</Text>
+                <TextInput
+                  value={designation}
+                  placeholder={''}
+                  onChangeText={text => setDesignation(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
                 />
               </View>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>PHONE NUMBER</Text>
+                <TextInput
+                  value={number}
+                  placeholder={'9903618823'}
+                  onChangeText={text => setNumber(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                  keyboardType={'number-pad'}
+                />
+              </View>
+            </View>
 
+            <View style={styles.nameView}>
               <View style={{width: '48%'}}>
                 <Text style={styles.dataHistoryText1}>GENDER</Text>
                 <View style={[styles.statusView, {paddingVertical: hp(1)}]}>
@@ -403,22 +686,189 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
                   </View>
                 </View>
               </View>
+
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>STATUS</Text>
+                <View style={styles.statusView}>
+                  <Switch
+                    trackColor={{
+                      false: status ? COLORS.greenColor : COLORS.errorColor,
+                      true: status ? COLORS.greenColor : COLORS.errorColor,
+                    }}
+                    thumbColor={status ? '#f4f3f4' : '#f4f3f4'}
+                    ios_backgroundColor={COLORS.errorColor}
+                    onValueChange={() => setStatus(!status)}
+                    value={status}
+                  />
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.nameView}>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>QUALIFICATION:</Text>
+                <TextInput
+                  value={qualification}
+                  placeholder={''}
+                  onChangeText={text => setQualification(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                />
+              </View>
+
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>DATE OF BIRTH</Text>
+                {/* <TextInput
+                      value={firstName}
+                      placeholder={'Enter first name'}
+                      onChangeText={text => setFirstName(text)}
+                      style={[styles.nameTextView, {width: '100%'}]}
+                    /> */}
+                <Text
+                  style={[
+                    styles.nameTextView,
+                    {width: '100%', paddingVertical: hp(1)},
+                  ]}
+                  onPress={() => setDateModalVisible(!dateModalVisible)}>
+                  {moment(dateOfBirth).format('DD/MM/YYYY')}
+                </Text>
+                <DatePicker
+                  open={dateModalVisible}
+                  modal={true}
+                  date={dateOfBirth}
+                  mode={'date'}
+                  onConfirm={date => {
+                    console.log('Console Log>>', date);
+                    setDateModalVisible(false);
+                    setDateOfBirth(date);
+                  }}
+                  onCancel={() => {
+                    setDateModalVisible(false);
+                  }}
+                />
+              </View>
+            </View>
+
+            {userId == '' && (
+              <View style={styles.nameView}>
+                <View style={{width: '100%'}}>
+                  <Text style={styles.dataHistoryText1}>PASSWORD</Text>
+                  <TextInput
+                    value={password}
+                    placeholder={'******'}
+                    onChangeText={text => setPassword(text)}
+                    style={[styles.nameTextView, {width: '100%'}]}
+                    secureTextEntry={true}
+                  />
+                </View>
+              </View>
+            )}
+
+            {userId == '' && (
+              <View style={styles.nameView}>
+                <View style={{width: '100%'}}>
+                  <Text style={styles.dataHistoryText1}>CONFIRM PASSWORD</Text>
+                  <TextInput
+                    value={confirmPassword}
+                    placeholder={'******'}
+                    onChangeText={text => setConfirmPassword(text)}
+                    style={[styles.nameTextView, {width: '100%'}]}
+                    secureTextEntry={true}
+                  />
+                </View>
+              </View>
+            )}
+
+            <View style={styles.nameView}>
+              <View>
+                <Text style={styles.dataHistoryText5}>PROFILE</Text>
+                <View style={styles.profilePhotoView}>
+                  <TouchableOpacity
+                    style={styles.editView}
+                    onPress={() => openProfileImagePicker()}>
+                    <Image style={styles.editImage1} source={draw} />
+                  </TouchableOpacity>
+                  <Image
+                    style={styles.profileImage}
+                    source={avatar != null ? {uri: avatar?.uri} : man}
+                  />
+                </View>
+              </View>
             </View>
 
             <View style={styles.nameView}>
               <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>ADDRESS</Text>
+                <Text style={styles.dataHistoryText1}>ADDRESS 1</Text>
                 <TextInput
                   value={address}
-                  placeholder={'******'}
+                  placeholder={'address 1'}
                   onChangeText={text => setAddress(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
-                  secureTextEntry={true}
                 />
               </View>
             </View>
 
             <View style={styles.nameView}>
+              <View style={{width: '100%'}}>
+                <Text style={styles.dataHistoryText1}>ADDRESS 2</Text>
+                <TextInput
+                  value={address1}
+                  placeholder={'address 2'}
+                  onChangeText={text => setAddress1(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                />
+              </View>
+            </View>
+
+            <View style={styles.nameView}>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>BLOOD GROUP:</Text>
+                {/* <TextInput
+                  value={bloodGroup}
+                  placeholder={'Select'}
+                  onChangeText={text => setBloodGroup(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                /> */}
+                <SelectDropdown
+                  data={bloodData}
+                  onSelect={(selectedItem, index) => {
+                    // setSelectedColor(selectedItem);
+                    setBloodGroup(selectedItem.id);
+                    setBloodSelected(selectedItem.blood_group);
+                    console.log('gert Value:::', selectedItem);
+                  }}
+                  defaultValue={bloodSelected}
+                  renderButton={(selectedItem, isOpen) => {
+                    console.log('Get Response>>>', selectedItem);
+                    return (
+                      <View style={styles.dropdown2BtnStyle2}>
+                        {bloodSelected != '' ? (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {bloodSelected == selectedItem?.blood_group
+                              ? selectedItem?.blood_group
+                              : bloodSelected}
+                          </Text>
+                        ) : (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {selectedItem?.blood_group || 'Select'}
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(item, index, isSelected) => {
+                    return (
+                      <TouchableOpacity style={styles.dropdownView}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {item.blood_group}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                  dropdownIconPosition={'left'}
+                  dropdownStyle={styles.dropdown2DropdownStyle}
+                />
+              </View>
               <View style={{width: '48%'}}>
                 <Text style={styles.dataHistoryText1}>CITY</Text>
                 <TextInput
@@ -428,7 +878,9 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
                   style={[styles.nameTextView, {width: '100%'}]}
                 />
               </View>
+            </View>
 
+            <View style={styles.nameView}>
               <View style={{width: '48%'}}>
                 <Text style={styles.dataHistoryText1}>COUNTRY</Text>
                 <TextInput
@@ -438,45 +890,52 @@ const CaseHandlerList = ({searchBreak, setSearchBreak, allData}) => {
                   style={[styles.nameTextView, {width: '100%'}]}
                 />
               </View>
-            </View>
 
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>POSTAL CODE</Text>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>ZIP</Text>
                 <TextInput
                   value={postalCode}
-                  placeholder={'Postal Code'}
+                  placeholder={'Zip'}
                   onChangeText={text => setPostalCode(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
+                  keyboardType={'number-pad'}
                 />
               </View>
             </View>
-
             <View style={styles.nameView}>
-              <View>
-                <Text style={styles.dataHistoryText1}>PROFILE</Text>
-                <View style={styles.profilePhotoView}>
-                  <TouchableOpacity
-                    style={styles.editView}
-                    onPress={() => openProfileImagePicker()}>
-                    <Image style={styles.editImage1} source={draw} />
-                  </TouchableOpacity>
-                  <Image style={styles.profileImage} source={man} />
-                </View>
-              </View>
+              {errorVisible ? (
+                <Text style={styles.dataHistoryText4}>{errorMessage}</Text>
+              ) : null}
             </View>
           </View>
 
           <View style={styles.buttonView}>
-            <TouchableOpacity onPress={() => {}} style={styles.nextView}>
-              <Text style={styles.nextText}>Save</Text>
+            <TouchableOpacity
+              onPress={() => {
+                userId ? onEditUsers() : onAddUsers();
+              }}
+              style={styles.nextView}>
+              {loading ? (
+                <ActivityIndicator size={'small'} color={COLORS.white} />
+              ) : (
+                <Text style={styles.nextText}>Save</Text>
+              )}
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => {}} style={styles.prevView}>
+            <TouchableOpacity
+              onPress={() => setNewUserVisible(false)}
+              style={styles.prevView}>
               <Text style={styles.prevText}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
       )}
+      <DeletePopup
+        modelVisible={deleteUser}
+        setModelVisible={setDeleteUser}
+        onPress={() => onDeleteRecord()}
+        setUserId={setUserId}
+        isLoading={loading}
+      />
     </View>
   );
 };
@@ -572,11 +1031,11 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.FONTS.PoppinsSemiBold,
     color: COLORS.white,
     marginHorizontal: wp(2),
-    textAlign: 'left',
+    // textAlign: 'left',
   },
   dataHistoryView: {
     width: '100%',
-    height: hp(8),
+    paddingVertical: hp(1),
     alignItems: 'center',
     flexDirection: 'row',
     alignSelf: 'flex-start',
@@ -609,6 +1068,12 @@ const styles = StyleSheet.create({
     fontSize: hp(1.8),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.errorColor,
+  },
+  dataHistoryText5: {
+    fontSize: hp(1.7),
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    color: COLORS.black,
+    width: wp(45),
   },
   mainDataView: {
     minHeight: hp(29),
@@ -842,5 +1307,45 @@ const styles = StyleSheet.create({
     width: wp(3),
     height: hp(2.5),
     resizeMode: 'contain',
+  },
+  ListEmptyView: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: hp(15),
+  },
+  emptyText: {
+    fontSize: hp(2.5),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+  },
+  dropdown2DropdownStyle: {
+    backgroundColor: COLORS.white,
+    borderRadius: 4,
+    height: hp(25),
+    // borderRadius: 12,
+  },
+  dropdownItemTxtStyle: {
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    marginLeft: wp(2),
+  },
+  dropdownView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: hp(4),
+    borderBottomWidth: 0,
+  },
+  dropdown2BtnStyle2: {
+    width: '100%',
+    height: hp(4.2),
+    backgroundColor: COLORS.white,
+    borderRadius: 5,
+    alignItems: 'center',
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    marginTop: hp(1),
   },
 });

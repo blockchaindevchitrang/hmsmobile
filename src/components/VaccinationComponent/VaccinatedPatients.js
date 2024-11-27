@@ -11,6 +11,7 @@ import {
   Platform,
   Modal,
   TouchableWithoutFeedback,
+  ActivityIndicator,
 } from 'react-native';
 import React, {useRef, useState} from 'react';
 import {
@@ -30,15 +31,179 @@ import {
   MenuOption,
   MenuTrigger,
 } from 'react-native-popup-menu';
+import SelectDropdown from 'react-native-select-dropdown';
+import {
+  onAddAccountListApi,
+  onDeleteCommonApi,
+  onGetEditAccountDataApi,
+  onGetSpecificCommonApi,
+} from '../../services/Api';
+import FlashMessage, {
+  showMessage,
+  hideMessage,
+} from 'react-native-flash-message';
+import {DeletePopup} from '../DeletePopup';
+import {useSelector} from 'react-redux';
+import DatePicker from 'react-native-date-picker';
 
-const VaccinatedPatients = ({searchBreak, setSearchBreak, allData}) => {
+const VaccinatedPatients = ({
+  searchBreak,
+  setSearchBreak,
+  allData,
+  onGetData,
+  vaccinated,
+}) => {
+  const user_data = useSelector(state => state.user_data);
   const {theme} = useTheme();
   const menuRef = useRef(null);
   const [newAccountVisible, setNewAccountVisible] = useState(false);
-  const [eventTitle, setEventTitle] = useState('');
-  const [departmentComment, setDepartmentComment] = useState('');
-  const [statusVisible, setStatusVisible] = useState(false);
-  const [chargeType, setChargeType] = useState('');
+  const [patientId, setPatientId] = useState('');
+  const [patientName, setPatientName] = useState('');
+  const [vaccinatedId, setVaccinatedId] = useState('');
+  const [vaccinatedName, setVaccinatedName] = useState('');
+  const [serialNo, setSerialNo] = useState('');
+  const [doseNo, setDoseNo] = useState('');
+  const [doseDate, setDoseDate] = useState(new Date());
+  const [dateModalVisible, setDateModalVisible] = useState(false);
+  const [note, setNote] = useState('');
+  const [errorVisible, setErrorVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [userId, setUserId] = useState('');
+  const [deleteUser, setDeleteUser] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const onAddPayRollData = async () => {
+    try {
+      if (patientId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select patient.');
+      } else if (vaccinatedId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select vaccination.');
+      } else if (serialNo == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter serial number.');
+      } else if (doseNo == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter dose number.');
+      } else {
+        setLoading(true);
+        setErrorVisible(false);
+        const urlData = `vaccinated-patient-store?patient_id=${patientId}&vaccination_id=${vaccinatedId}&vaccination_serial_number=${serialNo}&dose_number=${doseNo}&dose_given_date=${moment(
+          doseDate,
+        ).format('YYYY-MM-DD')}&description=${note}`;
+        const response = await onAddAccountListApi(urlData);
+        if (response.status == 200) {
+          onGetData();
+          setLoading(false);
+          setNewAccountVisible(false);
+          showMessage({
+            message: 'Record Added Successfully',
+            type: 'success',
+            duration: 3000,
+          });
+        }
+      }
+    } catch (err) {
+      showMessage({
+        message: 'Something want wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      setLoading(false);
+      console.log('Error:', err);
+    }
+  };
+
+  const onEditPayRollData = async () => {
+    try {
+      if (patientId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select patient.');
+      } else if (vaccinatedId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select vaccination.');
+      } else if (serialNo == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter serial number.');
+      } else if (doseNo == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter dose number.');
+      } else {
+        setLoading(true);
+        setErrorVisible(false);
+        const urlData = `vaccinated-patient-update/${userId}?patient_id=${patientId}&vaccination_id=${vaccinatedId}&vaccination_serial_number=${serialNo}&dose_number=${doseNo}&dose_given_date=${moment(
+          doseDate,
+        ).format('YYYY-MM-DD')}&description=${note}`;
+        const response = await onGetEditAccountDataApi(urlData);
+        if (response.status == 200) {
+          onGetData();
+          setLoading(false);
+          setNewAccountVisible(false);
+          showMessage({
+            message: 'Record Edit Successfully',
+            type: 'success',
+            duration: 3000,
+          });
+        }
+      }
+    } catch (err) {
+      setLoading(false);
+      showMessage({
+        message: 'Something want wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Error:', err);
+    }
+  };
+
+  const onDeletePayrollData = async id => {
+    try {
+      setLoading(true);
+      const response = await onDeleteCommonApi(
+        `vaccinated-patient-delete/${id}`,
+      );
+      if (response.status == 200) {
+        onGetData();
+        setLoading(false);
+        setDeleteUser(false);
+        showMessage({
+          message: 'Record Delete Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      }
+    } catch (err) {
+      setLoading(false);
+      setDeleteUser(false);
+      showMessage({
+        message: 'Something want wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Get Error', err);
+    }
+  };
+
+  const onGetSpecificDoctor = async id => {
+    try {
+      const response = await onGetSpecificCommonApi(
+        `vaccinated-patient-edit/${id}`,
+      );
+      if (response.status == 200) {
+        console.log('get ValueLL:::', response.data.data.vaccinatedPatient);
+        return response.data.data.vaccinatedPatient;
+      } else {
+        return 0;
+      }
+    } catch (err) {
+      console.log('Get Error', err);
+    }
+  };
 
   const renderItem = ({item, index}) => {
     return (
@@ -48,20 +213,20 @@ const VaccinatedPatients = ({searchBreak, setSearchBreak, allData}) => {
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
         <View style={styles.nameDataView}>
-          <ProfilePhoto username={item.name} />
+          <ProfilePhoto username={item.patient_name} />
           <View>
-            <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
-            <Text style={[styles.dataHistoryText1]}>{item.mail}</Text>
+            <Text style={[styles.dataHistoryText2]}>{item.patient_name}</Text>
+            <Text style={[styles.dataHistoryText1]}>{item.patient_email}</Text>
           </View>
         </View>
         <View style={[styles.switchView, {width: wp(32)}]}>
-          <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataHistoryText1]}>{item.vaccination}</Text>
-          </View>
+          <Text style={[styles.dataHistoryText1]}>{item.vaccine_name}</Text>
         </View>
         <View style={[styles.switchView, {width: wp(35)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataHistoryText1]}>{item.serial_number}</Text>
+            <Text style={[styles.dataHistoryText1]}>
+              {item.vaccination_serial_number}
+            </Text>
           </View>
         </View>
         <View style={[styles.switchView, {width: wp(35)}]}>
@@ -77,13 +242,31 @@ const VaccinatedPatients = ({searchBreak, setSearchBreak, allData}) => {
           </View>
         </View>
         <View style={styles.actionDataView}>
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={async () => {
+              let allDatas = await onGetSpecificDoctor(item.id);
+              setUserId(item.id);
+              setPatientId(allDatas.patient_id);
+              setPatientName(item.patient_name);
+              setVaccinatedId(allDatas.vaccination_id);
+              setVaccinatedName(item.vaccine_name);
+              setDoseDate(new Date(allDatas.dose_given_date));
+              setSerialNo(item.vaccination_serial_number);
+              setDoseNo(item.dose_number);
+              setNote(allDatas.description);
+              setNewAccountVisible(true);
+            }}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.blueColor}]}
               source={editing}
             />
           </TouchableOpacity>
-          <TouchableOpacity style={{marginLeft: wp(2)}}>
+          <TouchableOpacity
+            onPress={() => {
+              setUserId(item.id);
+              setDeleteUser(true);
+            }}
+            style={{marginLeft: wp(2)}}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.errorColor}]}
               source={deleteIcon}
@@ -122,6 +305,17 @@ const VaccinatedPatients = ({searchBreak, setSearchBreak, allData}) => {
                 ref={menuRef}
                 onSelect={value => {
                   if (value == 'add') {
+                    setUserId('');
+                    setPatientId('');
+                    setPatientName('');
+                    setVaccinatedId('');
+                    setVaccinatedName('');
+                    setDoseDate(new Date());
+                    setSerialNo('');
+                    setDoseNo('');
+                    setNote('');
+                    setErrorMessage('');
+                    setErrorVisible(false);
                     setNewAccountVisible(true);
                   } else {
                     alert(`Selected number: ${value}`);
@@ -216,34 +410,163 @@ const VaccinatedPatients = ({searchBreak, setSearchBreak, allData}) => {
                 <Image style={styles.closeImage} source={close} />
               </TouchableOpacity>
             </View>
-            <Text style={[styles.titleText1, {marginTop: hp(1.5)}]}>
-              {'Charge Category'}
-            </Text>
-            <TextInput
-              value={eventTitle}
-              placeholder={''}
-              onChangeText={text => setEventTitle(text)}
-              style={[styles.eventTextInput]}
-            />
-            <Text style={[styles.titleText1]}>{'Description'}</Text>
-            <TextInput
-              value={departmentComment}
-              placeholder={'Leave a comment...'}
-              onChangeText={text => setDepartmentComment(text)}
-              style={[styles.commentTextInput]}
-              multiline
-              textAlignVertical="top"
-            />
-            <Text style={[styles.titleText1]}>{'Charge Type'}</Text>
-            <TextInput
-              value={chargeType}
-              placeholder={''}
-              onChangeText={text => setChargeType(text)}
-              style={[styles.eventTextInput]}
-            />
+            <View style={[styles.nameView]}>
+              <View style={{width: '48%'}}>
+                <Text style={[styles.titleText1]}>{'Patient:'}</Text>
+                <SelectDropdown
+                  data={user_data}
+                  onSelect={(selectedItem, index) => {
+                    // setSelectedColor(selectedItem);
+                    setPatientId(selectedItem.id);
+                    console.log('gert Value:::', selectedItem);
+                  }}
+                  defaultValue={patientName}
+                  renderButton={(selectedItem, isOpen) => {
+                    console.log('Get Response>>>', selectedItem);
+                    return (
+                      <View style={styles.dropdown2BtnStyle2}>
+                        {patientId != '' ? (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {patientId == selectedItem?.id
+                              ? `${selectedItem?.patient_user?.first_name} ${selectedItem?.patient_user?.last_name}`
+                              : patientName}
+                          </Text>
+                        ) : (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {selectedItem?.patient_user?.first_name || 'Select'}
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(item, index, isSelected) => {
+                    return (
+                      <TouchableOpacity style={styles.dropdownView}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {`${item?.patient_user?.first_name} ${item?.patient_user?.last_name}`}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                  dropdownIconPosition={'left'}
+                  dropdownStyle={styles.dropdown2DropdownStyle}
+                />
+              </View>
+              <View style={{width: '48%'}}>
+                <Text style={[styles.titleText1]}>{'Vaccine:'}</Text>
+                <SelectDropdown
+                  data={vaccinated}
+                  onSelect={(selectedItem, index) => {
+                    // setSelectedColor(selectedItem);
+                    setVaccinatedId(selectedItem.id);
+                    console.log('gert Value:::', selectedItem);
+                  }}
+                  defaultValue={vaccinatedName}
+                  renderButton={(selectedItem, isOpen) => {
+                    console.log('Get Response>>>', selectedItem);
+                    return (
+                      <View style={styles.dropdown2BtnStyle2}>
+                        {vaccinatedId != '' ? (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {vaccinatedId == selectedItem?.id
+                              ? selectedItem?.name
+                              : vaccinatedName}
+                          </Text>
+                        ) : (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {selectedItem?.name || 'Select Doctor'}
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(item, index, isSelected) => {
+                    return (
+                      <TouchableOpacity style={styles.dropdownView}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {item.name}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                  dropdownIconPosition={'left'}
+                  dropdownStyle={styles.dropdown2DropdownStyle}
+                />
+              </View>
+            </View>
+            <View style={[styles.nameView]}>
+              <View style={{width: '100%'}}>
+                <Text style={[styles.titleText1]}>{'Serial No:'}</Text>
+                <TextInput
+                  value={serialNo}
+                  placeholder={''}
+                  onChangeText={text => setSerialNo(text)}
+                  style={[styles.eventTextInput]}
+                />
+              </View>
+            </View>
+            <View style={[styles.nameView]}>
+              <View style={{width: '48%'}}>
+                <Text style={[styles.titleText1]}>{'Dose No:'}</Text>
+                <TextInput
+                  value={doseNo}
+                  placeholder={'Dose No'}
+                  onChangeText={text => setDoseNo(text)}
+                  style={[styles.eventTextInput]}
+                />
+              </View>
+              <View style={{width: '48%'}}>
+                <Text style={[styles.titleText1]}>{'Dose Given Date:'}</Text>
+                <Text
+                  style={[styles.nameTextView, {width: '100%'}]}
+                  onPress={() => setDateModalVisible(!dateModalVisible)}>
+                  {moment(doseDate).format('DD-MM-YYYY')}
+                </Text>
+                <DatePicker
+                  open={dateModalVisible}
+                  modal={true}
+                  date={doseDate}
+                  mode={'date'}
+                  onConfirm={date => {
+                    console.log('Console Log>>', date);
+                    setDateModalVisible(false);
+                    setDoseDate(date);
+                  }}
+                  onCancel={() => {
+                    setDateModalVisible(false);
+                  }}
+                />
+              </View>
+            </View>
+            <View style={[styles.nameView]}>
+              <View style={{width: '100%'}}>
+                <Text style={[styles.titleText1]}>{'Notes'}</Text>
+                <TextInput
+                  value={note}
+                  placeholder={'Notes'}
+                  onChangeText={text => setNote(text)}
+                  style={[styles.commentTextInput]}
+                  multiline
+                  textAlignVertical="top"
+                />
+              </View>
+            </View>
+            {errorVisible ? (
+              <Text style={styles.dataHistoryText4}>{errorMessage}</Text>
+            ) : null}
             <View style={styles.buttonView}>
-              <TouchableOpacity onPress={() => {}} style={styles.nextView}>
-                <Text style={styles.nextText}>Save</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  userId != '' ? onEditPayRollData() : onAddPayRollData();
+                }}
+                style={styles.nextView}>
+                {loading ? (
+                  <ActivityIndicator size={'small'} color={COLORS.white} />
+                ) : (
+                  <Text style={styles.nextText}>Save</Text>
+                )}
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => setNewAccountVisible(false)}
@@ -254,6 +577,13 @@ const VaccinatedPatients = ({searchBreak, setSearchBreak, allData}) => {
           </View>
         </View>
       </Modal>
+      <DeletePopup
+        modelVisible={deleteUser}
+        setModelVisible={setDeleteUser}
+        onPress={() => onDeletePayrollData(userId)}
+        setUserId={setUserId}
+        isLoading={loading}
+      />
     </>
   );
 };
@@ -359,7 +689,7 @@ const styles = StyleSheet.create({
     fontSize: hp(1.8),
     fontFamily: Fonts.FONTS.PoppinsSemiBold,
     color: COLORS.black,
-    marginHorizontal: wp(3),
+    // marginHorizontal: wp(1),
     textAlign: 'left',
   },
   dataHistoryView: {
@@ -398,6 +728,8 @@ const styles = StyleSheet.create({
     fontSize: hp(1.8),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.errorColor,
+    width: '92%',
+    alignSelf: 'center',
   },
   mainDataView: {
     minHeight: hp(29),
@@ -461,7 +793,7 @@ const styles = StyleSheet.create({
   nameTextView: {
     width: '50%',
     paddingHorizontal: wp(2),
-    paddingVertical: hp(0.5),
+    paddingVertical: hp(1),
     borderWidth: 1,
     borderColor: COLORS.greyColor,
     fontFamily: Fonts.FONTS.PoppinsMedium,
@@ -475,7 +807,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    width: '100%',
+    width: '92%',
     marginVertical: hp(1),
     alignSelf: 'center',
   },
@@ -675,9 +1007,9 @@ const styles = StyleSheet.create({
     color: COLORS.black,
   },
   eventTextInput: {
-    width: '92%',
+    width: '100%',
     paddingHorizontal: wp(3),
-    paddingVertical: hp(1),
+    paddingVertical: hp(0.5),
     borderWidth: 1,
     borderColor: COLORS.greyColor,
     fontFamily: Fonts.FONTS.PoppinsMedium,
@@ -685,11 +1017,10 @@ const styles = StyleSheet.create({
     color: COLORS.black,
     borderRadius: 5,
     alignSelf: 'center',
-    marginBottom: hp(3),
     marginTop: hp(1),
   },
   commentTextInput: {
-    width: '92%',
+    width: '100%',
     paddingHorizontal: wp(3),
     paddingVertical: hp(1),
     borderWidth: 1,
@@ -701,7 +1032,6 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     height: hp(14),
     marginTop: hp(1),
-    marginBottom: hp(3),
   },
   ListEmptyView: {
     width: '100%',
@@ -713,5 +1043,35 @@ const styles = StyleSheet.create({
     fontSize: hp(2.5),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
+  },
+  dropdown2DropdownStyle: {
+    backgroundColor: COLORS.white,
+    borderRadius: 4,
+    height: hp(25),
+    // borderRadius: 12,
+  },
+  dropdownItemTxtStyle: {
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    marginLeft: wp(2),
+  },
+  dropdownView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: hp(4),
+    borderBottomWidth: 0,
+  },
+  dropdown2BtnStyle2: {
+    width: '100%',
+    height: hp(5),
+    backgroundColor: COLORS.white,
+    borderRadius: 5,
+    alignItems: 'center',
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    marginTop: hp(1),
+    alignSelf: 'center',
   },
 });

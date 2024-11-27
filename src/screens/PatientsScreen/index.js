@@ -35,7 +35,7 @@ import CaseHandlerList from '../../components/PatientsComponent/CaseHandlerList'
 import PatientAdmissionList from '../../components/PatientsComponent/PatientAdmissionList';
 import SmartCardTemplates from '../../components/PatientsComponent/SmartCardTemplates';
 import GeneratePatient from '../../components/PatientsComponent/GeneratePatient';
-import { onGetCommonApi, onGetPatientApi, onGetPatientCasesApi } from '../../services/Api';
+import { onGetAllUsersDataApi, onGetCommonApi, onGetPatientApi, onGetPatientCasesApi } from '../../services/Api';
 
 const allData = [
   {
@@ -499,10 +499,15 @@ export const PatientsScreen = ({navigation}) => {
 
   const onGetCasesHandlerData = async () => {
     try {
-      const response = await onGetCommonApi(`patient-admissions-get?search=${searchCasesHandler}`);
-      console.log('get Response:', response.data.data);
-      if (response.status) {
-        setCaseHandlerList(response.data.data);
+      const response = await onGetAllUsersDataApi();
+      console.log('Response User Data', response.data);
+      if (response.status === 200) {
+        const usersData = response.data.data;
+        const accountantData = usersData.filter(
+          user => user.department === 'Case Manager',
+        );
+        console.log('get Response:', response.data.data);
+        setCaseHandlerList(accountantData);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -583,14 +588,14 @@ export const PatientsScreen = ({navigation}) => {
           <CasesList
             searchBreak={searchCases}
             setSearchBreak={setSearchCases}
-            allData={accountantData}
+            allData={casesList}
             onGetData={onGetPatientCasesData}
           />
         ) : selectedView == 'Case Handlers' ? (
           <CaseHandlerList
             searchBreak={caseHandlerList}
             setSearchBreak={setCaseHandlerList}
-            allData={CaseHandlerData}
+            allData={caseHandlerList}
             onGetData={onGetCasesHandlerData}
           />
         ) : selectedView == 'Patient Admissions' ? (
