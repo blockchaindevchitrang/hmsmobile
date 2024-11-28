@@ -40,7 +40,7 @@ import FlashMessage, {
 import {DeletePopup} from '../DeletePopup';
 import SelectDropdown from 'react-native-select-dropdown';
 
-const MedicineList = ({
+const BillList = ({
   searchBreak,
   setSearchBreak,
   allData,
@@ -238,22 +238,31 @@ const MedicineList = ({
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
         <View style={[styles.nameDataView, {width: wp(26)}]}>
-          <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
+          <Text style={[styles.dataHistoryText2]}>{item.bill_id}</Text>
         </View>
-        <Text
-          style={[styles.dataHistoryText, {width: wp(35), textAlign: 'left'}]}>
-          {item.brand_name}
-        </Text>
-        <Text style={[styles.dataHistoryText, {width: wp(38)}]}>
-          {item.available_quantity != null ? item.available_quantity : '0'}
-        </Text>
-        <Text
-          style={[styles.dataHistoryText, {width: wp(33), textAlign: 'right'}]}>
-          {item.selling_price}
-        </Text>
-        <Text
-          style={[styles.dataHistoryText, {width: wp(33), textAlign: 'right'}]}>
-          {item.buying_price}
+        <View style={styles.nameDataView}>
+          <ProfilePhoto username={item.name} />
+          <View>
+            <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
+            <Text numberOfLines={2} style={[styles.dataHistoryText5]}>
+              {item.email}
+            </Text>
+          </View>
+        </View>
+        <View style={[styles.switchView, {width: wp(24)}]}>
+          <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
+            <Text style={styles.dataListText1}>{item.status}</Text>
+          </View>
+        </View>
+        <View style={[styles.switchView, {width: wp(28)}]}>
+          <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
+            <Text style={styles.dataListText1} numberOfLines={2}>
+              {item.date}
+            </Text>
+          </View>
+        </View>
+        <Text style={[styles.dataHistoryText, {width: wp(24)}]}>
+          {item.amount}
         </Text>
         <View style={styles.actionDataView}>
           <TouchableOpacity
@@ -344,29 +353,21 @@ const MedicineList = ({
                     {backgroundColor: theme.headerColor},
                   ]}>
                   <Text style={[styles.titleText, {width: wp(26)}]}>
-                    {'MEDICINES'}
+                    {'Bill ID'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(35)}]}>
-                    {'BRAND'}
+                  <Text style={[styles.titleText, {width: wp(55)}]}>
+                    {'Patient'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(38)}]}>
-                    {'AVAILABLE QUANTITY'}
+                  <Text style={[styles.titleText, {width: wp(24)}]}>
+                    {'Status'}
                   </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: wp(33), textAlign: 'right'},
-                    ]}>
-                    {'SELLING PRICE'}
+                  <Text style={[styles.titleText, {width: wp(28)}]}>
+                    {'Bill Date'}
                   </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: wp(33), textAlign: 'right'},
-                    ]}>
-                    {'BUYING PRICE'}
+                  <Text style={[styles.titleText, {width: wp(24)}]}>
+                    {'AMOUNT'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(16)}]}>
+                  <Text style={[styles.titleText, {width: wp(18)}]}>
                     {'ACTION'}
                   </Text>
                 </View>
@@ -605,7 +606,7 @@ const MedicineList = ({
   );
 };
 
-export default MedicineList;
+export default BillList;
 
 const styles = StyleSheet.create({
   safeAreaStyle: {
@@ -732,6 +733,12 @@ const styles = StyleSheet.create({
     fontSize: hp(1.8),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.errorColor,
+  },
+  dataHistoryText5: {
+    fontSize: hp(1.7),
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    color: COLORS.black,
+    width: wp(45),
   },
   mainDataView: {
     minHeight: hp(29),

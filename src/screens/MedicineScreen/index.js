@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -31,6 +31,7 @@ import MedicineList from '../../components/MedicineComponent/MedicineList';
 import PurchaseMedicineList from '../../components/MedicineComponent/PurchaseMedicineList';
 import UsedMedicineList from '../../components/MedicineComponent/UsedMedicineList';
 import MedicineBillList from '../../components/MedicineComponent/MedicineBillList';
+import { onGetCommonApi } from '../../services/Api';
 
 const allData = [
   {
@@ -273,12 +274,21 @@ const BloodIssueData = [
 export const MedicineScreen = ({navigation}) => {
   const {t} = useTranslation();
   const {theme} = useTheme();
-  const [searchAccount, setSearchAccount] = useState('');
-  const [searchPayroll, setSearchPayroll] = useState('');
-  const [searchInvoice, setSearchInvoice] = useState('');
-  const [searchPharmacists, setSearchPharmacists] = useState('');
+  const [searchCategory, setSearchCategory] = useState('');
+  const [searchBrand, setSearchBrand] = useState('');
+  const [searchMedicine, setSearchMedicine] = useState('');
+  const [searchPurchase, setSearchPurchase] = useState('');
+  const [searchUsed, setSearchUsed] = useState('');
+  const [searchBill, setSearchBill] = useState('');
   const [optionModalView, setOptionModalView] = useState(false);
   const [selectedView, setSelectedView] = useState('Medicines Categories');
+  const [medicineCategory, setMedicineCategory] = useState([]);
+  const [medicineBrand, setMedicineBrand] = useState([]);
+  const [medicine, setMedicine] = useState([]);
+  const [medicinePurchase, setMedicinePurchase] = useState([]);
+  const [medicineUsed, setMedicineUsed] = useState([]);
+  const [medicineBill, setMedicineBill] = useState([]);
+  const [refresh, setRefresh] = useState(false);
 
   const animations = useRef(
     [0, 0, 0, 0, 0, 0, 0].map(() => new Animated.Value(300)),
@@ -337,6 +347,101 @@ export const MedicineScreen = ({navigation}) => {
     }
   };
 
+  useEffect(() => {
+    onGetMedicineCategoryData();
+  }, [searchCategory]);
+
+  const onGetMedicineCategoryData = async () => {
+    try {
+      const response = await onGetCommonApi(
+        `medicine-category-get?search=${searchCategory}`,
+      );
+      console.log('Response User Data', response.data);
+      if (response.data.flag === 1) {
+        setMedicineCategory(response.data.data.items);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Error>>', err);
+    }
+  };
+
+  useEffect(() => {
+    onGetMedicineBrandData();
+  }, [searchBrand]);
+
+  const onGetMedicineBrandData = async () => {
+    try {
+      const response = await onGetCommonApi(
+        `medicine-brand-get?search=${searchBrand}`,
+      );
+      console.log('Response User Data', response.data);
+      if (response.data.flag === 1) {
+        setMedicineBrand(response.data.data.items);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Error>>', err);
+    }
+  };
+
+  useEffect(() => {
+    onGetMedicineData();
+  }, [searchMedicine]);
+
+  const onGetMedicineData = async () => {
+    try {
+      const response = await onGetCommonApi(
+        `medicine-get?search=${searchMedicine}`,
+      );
+      console.log('Response User Data', response.data);
+      if (response.data.flag === 1) {
+        setMedicine(response.data.data.items);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Error>>', err);
+    }
+  };
+
+  useEffect(() => {
+    onGetPurchaseMedicineData();
+  }, [searchPurchase]);
+
+  const onGetPurchaseMedicineData = async () => {
+    try {
+      const response = await onGetCommonApi(
+        `purchase-medicine-get?search=${searchPurchase}`,
+      );
+      console.log('Response User Data', response.data);
+      if (response.data.flag === 1) {
+        setMedicinePurchase(response.data.data.items);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Error>>', err);
+    }
+  };
+
+  useEffect(() => {
+    onGetMedicineBillData();
+  }, [searchBill]);
+
+  const onGetMedicineBillData = async () => {
+    try {
+      const response = await onGetCommonApi(
+        `medicine-bill-get?search=${searchBill}`,
+      );
+      console.log('Response User Data', response.data);
+      if (response.data.flag === 1) {
+        setMedicineBill(response.data.data.items);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Error>>', err);
+    }
+  };
+
   return (
     <View style={[styles.container, {backgroundColor: theme.lightColor}]}>
       <View style={styles.headerView}>
@@ -350,40 +455,48 @@ export const MedicineScreen = ({navigation}) => {
       <View style={styles.mainView}>
         {selectedView == 'Medicines Categories' ? (
           <MedicineCategoryList
-            searchBreak={searchAccount}
-            setSearchBreak={setSearchAccount}
-            allData={allData}
+            searchBreak={searchCategory}
+            setSearchBreak={setSearchCategory}
+            allData={medicineCategory}
+            onGetData={onGetMedicineCategoryData}
           />
         ) : selectedView == 'Medicines Brands' ? (
           <MedicinesBrandList
-            searchBreak={searchPayroll}
-            setSearchBreak={setSearchPayroll}
-            allData={medicineBrandData}
+            searchBreak={searchBrand}
+            setSearchBreak={setSearchBrand}
+            allData={medicineBrand}
+            onGetData={onGetMedicineBrandData}
           />
         ) : selectedView == 'Medicines' ? (
           <MedicineList
-            searchBreak={searchInvoice}
-            setSearchBreak={setSearchInvoice}
-            allData={MedicinesData}
+            searchBreak={searchMedicine}
+            setSearchBreak={setSearchMedicine}
+            allData={medicine}
+            onGetData={onGetMedicineData}
+            medicineCategory={medicineCategory}
+            medicineBrand={medicineBrand}
           />
         ) : selectedView == 'Purchase Medicine' ? (
           <PurchaseMedicineList
-            searchBreak={searchInvoice}
-            setSearchBreak={setSearchInvoice}
-            allData={PurchaseData}
+            searchBreak={searchPurchase}
+            setSearchBreak={setSearchPurchase}
+            allData={medicinePurchase}
+            onGetData={onGetPurchaseMedicineData}
           />
         ) : selectedView == 'Used Medicine' ? (
           <UsedMedicineList
-            searchBreak={searchInvoice}
-            setSearchBreak={setSearchInvoice}
-            allData={BloodDonationData}
+            searchBreak={searchUsed}
+            setSearchBreak={setSearchUsed}
+            allData={medicineUsed}
+            onGetData={onGetPurchaseMedicineData}
           />
         ) : (
           selectedView == 'Medicine Bills' && (
             <MedicineBillList
-              searchBreak={searchPharmacists}
-              setSearchBreak={setSearchPharmacists}
-              allData={BloodIssueData}
+              searchBreak={searchBill}
+              setSearchBreak={setSearchBill}
+              allData={medicineBill}
+              onGetData={onGetMedicineBillData}
             />
           )
         )}

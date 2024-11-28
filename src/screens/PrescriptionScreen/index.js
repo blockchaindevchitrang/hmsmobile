@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -36,6 +36,8 @@ import editing from '../../images/editing.png';
 import view from '../../images/view.png';
 import printing from '../../images/printing.png';
 import ProfilePhoto from '../../components/ProfilePhoto';
+import { onGetCommonApi } from '../../services/Api';
+import moment from 'moment';
 
 const BloodIssueData = [
   {
@@ -87,6 +89,27 @@ export const PrescriptionScreen = ({navigation}) => {
   const [bloodGroup, setBloodGroup] = useState('');
   const [Amount, setAmount] = useState('');
   const [Remarks, setRemarks] = useState('');
+  const [prescription, setPrescription] = useState([]);
+  const [refresh, setRefresh] = useState(false);
+
+  useEffect(() => {
+    onGetMedicineCategoryData();
+  }, [searchAccount]);
+
+  const onGetMedicineCategoryData = async () => {
+    try {
+      const response = await onGetCommonApi(
+        `prescription-get?search=${searchAccount}`,
+      );
+      console.log('Response User Data', response.data);
+      if (response.data.flag === 1) {
+        setPrescription(response.data.data.items);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Error>>', err);
+    }
+  };
 
   const renderItem = ({item, index}) => {
     return (
@@ -96,31 +119,26 @@ export const PrescriptionScreen = ({navigation}) => {
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
         <View style={styles.nameDataView}>
-          <ProfilePhoto username={item.name} />
+          <ProfilePhoto username={item.patient_name} />
           <View>
-            <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
-            <Text style={[styles.dataHistoryText1]}>{item.mail}</Text>
+            <Text style={[styles.dataHistoryText2]}>{item.patient_name}</Text>
+            <Text style={[styles.dataHistoryText5]}>{item.patient_email}</Text>
           </View>
         </View>
         <View style={styles.nameDataView}>
-          <ProfilePhoto username={item.name} />
+          <ProfilePhoto username={item.doctor_name} />
           <View>
-            <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
-            <Text style={[styles.dataHistoryText1]}>{item.mail}</Text>
+            <Text style={[styles.dataHistoryText2]}>{item.doctor_name}</Text>
+            <Text style={[styles.dataHistoryText5]}>{item.doctor_email}</Text>
           </View>
         </View>
-        {item.date == 'N/A' ? (
-          <Text style={[styles.dataHistoryText, {width: wp(35)}]}>
-            {item.date}
-          </Text>
-        ) : (
-          <View style={[styles.switchView, {width: wp(35)}]}>
-            <View
-              style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-              <Text style={[styles.dataHistoryText1]}>{item.date}</Text>
-            </View>
+        <View style={[styles.switchView, {width: wp(35)}]}>
+          <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
+            <Text style={[styles.dataHistoryText1]}>
+              {moment(item.added_at).format('DD MMM, YYYY')}
+            </Text>
           </View>
-        )}
+        </View>
         <View style={[styles.switchView, {width: wp(16)}]}>
           <Switch
             trackColor={{
@@ -251,20 +269,18 @@ export const PrescriptionScreen = ({navigation}) => {
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList
-                    data={BloodIssueData}
+                    data={prescription}
                     renderItem={renderItem}
                     bounces={false}
                     showsHorizontalScrollIndicator={false}
-                    initialNumToRender={BloodIssueData.length}
+                    initialNumToRender={prescription.length}
                     nestedScrollEnabled
                     virtualized
                     ListEmptyComponent={() => (
                       <View key={0} style={styles.ListEmptyView}>
-                        <View style={styles.subEmptyView}>
-                          <Text style={styles.emptyText}>
-                            {'No record found'}
-                          </Text>
-                        </View>
+                        <Text style={styles.emptyText}>
+                          {'No record found'}
+                        </Text>
                       </View>
                     )}
                   />

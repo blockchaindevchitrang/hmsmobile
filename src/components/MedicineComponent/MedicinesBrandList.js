@@ -10,6 +10,7 @@ import {
   FlatList,
   TouchableWithoutFeedback,
   Modal,
+  ActivityIndicator,
 } from 'react-native';
 import React, {useRef, useState} from 'react';
 import {
@@ -20,26 +21,233 @@ import {COLORS, Fonts} from '../../utils';
 import {useTheme} from '../../utils/ThemeProvider';
 import deleteIcon from '../../images/delete.png';
 import editing from '../../images/editing.png';
-import filter from '../../images/filter.png';
-import {
-  Menu,
-  MenuOptions,
-  MenuOption,
-  MenuTrigger,
-} from 'react-native-popup-menu';
 import close from '../../images/close.png';
+import {
+  onAddAccountListApi,
+  onDeleteCommonApi,
+  onGetEditAccountDataApi,
+  onGetSpecificCommonApi,
+} from '../../services/Api';
+import FlashMessage, {
+  showMessage,
+  hideMessage,
+} from 'react-native-flash-message';
+import {DeletePopup} from '../DeletePopup';
+import CountryPicker from 'react-native-country-picker-modal';
 
-const MedicinesBrandList = ({searchBreak, setSearchBreak, allData}) => {
+const MedicinesBrandList = ({
+  searchBreak,
+  setSearchBreak,
+  allData,
+  onGetData,
+}) => {
   const {theme} = useTheme();
   const menuRef = useRef(null);
   const [issueDate, setIssueDate] = useState('');
   const [doctorName, setDoctorName] = useState('');
-  const [patientName, setPatientName] = useState('');
-  const [bloodGroup, setBloodGroup] = useState('');
-  const [Amount, setAmount] = useState('');
-  const [departmentType, setDepartmentType] = useState('Incoming');
   const [addCallVisible, setAddCallVisible] = useState(false);
   const [departmentComment, setDepartmentComment] = useState('');
+  const [errorVisible, setErrorVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [userId, setUserId] = useState('');
+  const [deleteUser, setDeleteUser] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [isCountryPickerVisible, setCountryPickerVisibility] = useState(false);
+  const [countryCode, setCountryCode] = useState('91');
+  const [country, setCountry] = useState(null);
+
+  const onSelect = country => {
+    console.log('Get Selected Country', country);
+    setCountryCode(country.callingCode[0]);
+    setCountry(country);
+  };
+
+  const validateEmail = email => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email); // Returns true if valid
+  };
+
+  const onAddPayRollData = async () => {
+    try {
+      if (issueDate == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter medicine brand.');
+      } else {
+        if (departmentComment != '') {
+          if (!validateEmail(departmentComment)) {
+            setErrorVisible(true);
+            setErrorMessage('Please enter valid email address.');
+          } else {
+            setLoading(true);
+            setErrorVisible(false);
+            const urlData = `medicine-brand-store?name=${issueDate}&email=${departmentComment}&phone=${doctorName}&region_code=91`;
+            const response = await onAddAccountListApi(urlData);
+            if (response.data.flag == 1) {
+              onGetData();
+              setLoading(false);
+              setAddCallVisible(false);
+              showMessage({
+                message: 'Record Added Successfully',
+                type: 'success',
+                duration: 3000,
+              });
+            } else {
+              setLoading(false);
+              setAddCallVisible(false);
+              showMessage({
+                message: response.data.message,
+                type: 'danger',
+                duration: 6000,
+                icon: 'danger',
+              });
+            }
+          }
+        } else {
+          setLoading(true);
+          setErrorVisible(false);
+          const urlData = `medicine-brand-store?name=${issueDate}&email=${departmentComment}&phone=${doctorName}&region_code=91`;
+          const response = await onAddAccountListApi(urlData);
+          if (response.data.flag == 1) {
+            onGetData();
+            setLoading(false);
+            setAddCallVisible(false);
+            showMessage({
+              message: 'Record Added Successfully',
+              type: 'success',
+              duration: 3000,
+            });
+          } else {
+            setLoading(false);
+            setAddCallVisible(false);
+            showMessage({
+              message: response.data.message,
+              type: 'danger',
+              duration: 6000,
+              icon: 'danger',
+            });
+          }
+        }
+      }
+    } catch (err) {
+      showMessage({
+        message: 'Something want wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      setLoading(false);
+      console.log('Error:', err);
+    }
+  };
+
+  const onEditPayRollData = async () => {
+    try {
+      if (issueDate == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter medicine brand.');
+      } else {
+        if (departmentComment != '') {
+          if (!validateEmail(departmentComment)) {
+            setErrorVisible(true);
+            setErrorMessage('Please enter valid email address.');
+          } else {
+            setLoading(true);
+            setErrorVisible(false);
+            const urlData = `medicine-brand-update/${userId}?name=${issueDate}&email=${departmentComment}&phone=${doctorName}&region_code=${countryCode}`;
+            const response = await onGetEditAccountDataApi(urlData);
+            if (response.data.flag == 1) {
+              onGetData();
+              setLoading(false);
+              setAddCallVisible(false);
+              showMessage({
+                message: 'Record Edit Successfully',
+                type: 'success',
+                duration: 3000,
+              });
+            } else {
+              setLoading(false);
+              setAddCallVisible(false);
+              showMessage({
+                message: response.data.message,
+                type: 'danger',
+                duration: 6000,
+                icon: 'danger',
+              });
+            }
+          }
+        } else {
+          setLoading(true);
+          setErrorVisible(false);
+          const urlData = `medicine-brand-update/${userId}?name=${issueDate}&email=${departmentComment}&phone=${doctorName}&region_code=${countryCode}`;
+          const response = await onGetEditAccountDataApi(urlData);
+          if (response.data.flag == 1) {
+            onGetData();
+            setLoading(false);
+            setAddCallVisible(false);
+            showMessage({
+              message: 'Record Edit Successfully',
+              type: 'success',
+              duration: 3000,
+            });
+          } else {
+            setLoading(false);
+            setAddCallVisible(false);
+            showMessage({
+              message: response.data.message,
+              type: 'danger',
+              duration: 6000,
+              icon: 'danger',
+            });
+          }
+        }
+      }
+    } catch (err) {
+      setLoading(false);
+      showMessage({
+        message: 'Something want wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Error:', err);
+    }
+  };
+
+  const onDeletePayrollData = async id => {
+    try {
+      setLoading(true);
+      const response = await onDeleteCommonApi(`medicine-brand-delete/${id}`);
+      if (response.data.flag == 1) {
+        onGetData();
+        setLoading(false);
+        setDeleteUser(false);
+        showMessage({
+          message: 'Record Delete Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      } else {
+        setLoading(false);
+        setDeleteUser(false);
+        showMessage({
+          message: response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
+    } catch (err) {
+      setLoading(false);
+      setDeleteUser(false);
+      showMessage({
+        message: 'Something want wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Get Error', err);
+    }
+  };
 
   const renderItem = ({item, index}) => {
     return (
@@ -58,13 +266,26 @@ const MedicinesBrandList = ({searchBreak, setSearchBreak, allData}) => {
           {item.phone}
         </Text>
         <View style={[styles.actionDataView, {width: wp(16)}]}>
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={async () => {
+              setUserId(item.id);
+              setIssueDate(item.name);
+              setDoctorName(item.phone);
+              setDepartmentComment(item.email);
+              setCountryCode(item.region_code);
+              setAddCallVisible(true);
+            }}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.blueColor}]}
               source={editing}
             />
           </TouchableOpacity>
-          <TouchableOpacity style={{marginLeft: wp(2)}}>
+          <TouchableOpacity
+            onPress={() => {
+              setUserId(item.id);
+              setDeleteUser(true);
+            }}
+            style={{marginLeft: wp(2)}}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.errorColor}]}
               source={deleteIcon}
@@ -92,7 +313,15 @@ const MedicinesBrandList = ({searchBreak, setSearchBreak, allData}) => {
           </View>
           <View style={styles.filterView}>
             <TouchableOpacity
-              onPress={() => setAddCallVisible(true)}
+              onPress={() => {
+                setUserId('');
+                setIssueDate('');
+                setDoctorName('');
+                setDepartmentComment('');
+                setErrorMessage('');
+                setErrorVisible(false);
+                setAddCallVisible(true);
+              }}
               style={styles.actionView}>
               <Text style={styles.actionText}>New Medicine Brand</Text>
             </TouchableOpacity>
@@ -170,14 +399,37 @@ const MedicinesBrandList = ({searchBreak, setSearchBreak, allData}) => {
                 />
               </View>
 
-              <View style={{width: '48%'}}>
+              <View style={{width: '50%'}}>
                 <Text style={styles.dataHistoryText1}>PHONE NUMBER:</Text>
-                <TextInput
-                  value={doctorName}
-                  placeholder={'Phone Number'}
-                  onChangeText={text => setDoctorName(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
+                <View style={styles.countryCodeStyle}>
+                  <TouchableOpacity
+                    onPress={() =>
+                      setCountryPickerVisibility(!isCountryPickerVisible)
+                    }
+                    style={styles.countryCodeText}>
+                    <Text style={styles.textInput}>
+                      {`+${countryCode}` || 'Select Country'}
+                    </Text>
+                  </TouchableOpacity>
+
+                  {isCountryPickerVisible && ( // Render CountryPicker conditionally based on isCountryPickerVisible
+                    <CountryPicker
+                      visible={isCountryPickerVisible}
+                      onClose={() => setCountryPickerVisibility(false)}
+                      onSelect={onSelect}
+                      withCloseButton
+                      withCallingCode
+                      withFilter
+                      containerButtonStyle={{backgroundColor: COLORS.white}}
+                    />
+                  )}
+                  <TextInput
+                    value={doctorName}
+                    placeholder={'Phone Number'}
+                    onChangeText={text => setDoctorName(text)}
+                    style={[styles.numberTextView, {width: '75%'}]}
+                  />
+                </View>
               </View>
             </View>
 
@@ -192,18 +444,38 @@ const MedicinesBrandList = ({searchBreak, setSearchBreak, allData}) => {
                 />
               </View>
             </View>
+            {errorVisible ? (
+              <Text style={styles.dataHistoryText4}>{errorMessage}</Text>
+            ) : null}
           </View>
 
           <View style={styles.buttonView}>
-            <TouchableOpacity onPress={() => {}} style={styles.nextView}>
-              <Text style={styles.nextText}>Save</Text>
+            <TouchableOpacity
+              onPress={() => {
+                userId != '' ? onEditPayRollData() : onAddPayRollData();
+              }}
+              style={styles.nextView}>
+              {loading ? (
+                <ActivityIndicator size={'small'} color={COLORS.white} />
+              ) : (
+                <Text style={styles.nextText}>Save</Text>
+              )}
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => {}} style={styles.prevView}>
+            <TouchableOpacity
+              onPress={() => setAddCallVisible(false)}
+              style={styles.prevView}>
               <Text style={styles.prevText}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
       )}
+      <DeletePopup
+        modelVisible={deleteUser}
+        setModelVisible={setDeleteUser}
+        onPress={() => onDeletePayrollData(userId)}
+        setUserId={setUserId}
+        isLoading={loading}
+      />
     </View>
   );
 };
@@ -445,6 +717,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     alignItems: 'center',
+    marginTop: hp(3),
   },
   nextView: {
     height: hp(4.5),
@@ -635,5 +908,43 @@ const styles = StyleSheet.create({
     fontSize: hp(2.5),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
+  },
+  countryCodeStyle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+  },
+  textInput: {
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+    fontSize: hp(1.8),
+    // width: '20%',
+    // paddingHorizontal: wp(1)
+  },
+  countryCodeText: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '25%',
+    paddingVertical: hp(1.2),
+    backgroundColor: COLORS.lightGreyColor,
+    marginTop: hp(1),
+    borderTopLeftRadius: 5,
+    borderBottomLeftRadius: 5,
+  },
+  numberTextView: {
+    width: '100%',
+    paddingHorizontal: wp(2),
+    paddingVertical: hp(0.5),
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    color: COLORS.black,
+    borderTopRightRadius: 5,
+    borderBottomRightRadius: 5,
+    marginTop: hp(1),
+    backgroundColor: COLORS.white,
   },
 });
