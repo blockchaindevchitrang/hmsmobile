@@ -23,9 +23,11 @@ import {
   onGetBedTypeApi,
   onGetBloodBankApi,
   onGetBloodDonorApi,
+  onGetCommonApi,
   onGetDoctorApi,
   onGetDoctorDepartmentApi,
   onGetPatientApi,
+  onGetPatientCasesApi,
   onGetRoleDataApi,
 } from '../../services/Api';
 import {
@@ -35,6 +37,9 @@ import {
   fetchBedTypeData,
   fetchBloodData,
   fetchBloodDonorData,
+  fetchCaseData,
+  fetchChargeCategoryData,
+  fetchChargeData,
   fetchDashboardData,
   fetchDepartmentData,
   fetchDoctorData,
@@ -60,7 +65,6 @@ export const SplashScreen = ({navigation}) => {
       if (DashboardData.data.data) {
         dispatch(fetchDashboardData(DashboardData.data.data));
       }
-      navigation.replace('TabStack');
       const DoctorData = await onGetDoctorApi('doctor-get');
       console.log('Get Doctor Response::', DoctorData.data.data);
       if (DoctorData.data.data) {
@@ -78,6 +82,7 @@ export const SplashScreen = ({navigation}) => {
       if (bloodData.data.data) {
         dispatch(fetchBloodData(bloodData.data.data));
       }
+      navigation.replace('TabStack');
 
       const userData = await onGetPatientApi();
       console.log('Get Department Response::', userData.data.data);
@@ -123,6 +128,24 @@ export const SplashScreen = ({navigation}) => {
       console.log('Get accountData Response::', accountData.data.data);
       if (accountData.data.data) {
         dispatch(fetchAccountData(accountData.data.data));
+      }
+
+      const caseData = await onGetPatientCasesApi('');
+      console.log('Get Department Response::', caseData.data.data);
+      if (caseData.data.data) {
+        dispatch(fetchCaseData(caseData.data.data));
+      }
+
+      const categoryData = await onGetCommonApi('charge-category-get');
+      console.log('Get Department Response::', categoryData.data.data.items);
+      if (categoryData.data.data.items) {
+        dispatch(fetchChargeCategoryData(categoryData.data.data.items));
+      }
+
+      const chargeData = await onGetCommonApi('charge-get');
+      console.log('Get Department Response::', chargeData.data.data.items);
+      if (chargeData.data.data.items) {
+        dispatch(fetchChargeData(chargeData.data.data.items));
       }
     } else {
       navigation.replace('LoginScreen');

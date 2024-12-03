@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -32,6 +32,7 @@ import PathologyCategories from '../../components/PathologyComponent/PathologyCa
 import PathologyParameter from '../../components/PathologyComponent/PathologyParameter';
 import PathologyTest from '../../components/PathologyComponent/PathologyTest';
 import PathologyUnit from '../../components/PathologyComponent/PathologyUnit';
+import { onGetCommonApi } from '../../services/Api';
 
 const allData = [
   {
@@ -142,9 +143,15 @@ export const PathologyScreen = ({navigation}) => {
   const {theme} = useTheme();
   const [searchAccount, setSearchAccount] = useState('');
   const [searchPayroll, setSearchPayroll] = useState('');
+  const [searchUnit, setSearchUnit] = useState('');
   const [searchPharmacists, setSearchPharmacists] = useState('');
   const [optionModalView, setOptionModalView] = useState(false);
   const [selectedView, setSelectedView] = useState('PathologyCategories');
+  const [pathologyCategories, setPathologyCategories] = useState([]);
+  const [parameter, setParameter] = useState([]);
+  const [unit, setUnit] = useState([]);
+  const [test, setTest] = useState([]);
+  const [refresh, setRefresh] = useState(false);
 
   const animations = useRef(
     [0, 0, 0, 0, 0].map(() => new Animated.Value(300)),
@@ -203,6 +210,74 @@ export const PathologyScreen = ({navigation}) => {
     }
   };
 
+  useEffect(() => {
+    onGetPathologyCategoriesData();
+  }, [searchAccount]);
+
+  const onGetPathologyCategoriesData = async () => {
+    try {
+      const response = await onGetCommonApi(`pathology-category-get?search=${searchAccount}`);
+      console.log('get Response:', response.data.data);
+      if (response.data.flag === 1) {
+        setPathologyCategories(response.data.data.items);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Error>>', err);
+    }
+  };
+
+  useEffect(() => {
+    onGetParameterData();
+  }, [searchPayroll]);
+
+  const onGetParameterData = async () => {
+    try {
+      const response = await onGetCommonApi(`pathology-parameter-get?search=${searchPayroll}`);
+      console.log('get Response:', response.data.data);
+      if (response.data.flag === 1) {
+        setParameter(response.data.data.items);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Error>>', err);
+    }
+  };
+
+  useEffect(() => {
+    onGetUnitData();
+  }, [searchUnit]);
+
+  const onGetUnitData = async () => {
+    try {
+      const response = await onGetCommonApi(`pathology-unit-get?search=${searchUnit}`);
+      console.log('get Response:', response.data.data);
+      if (response.data.flag === 1) {
+        setUnit(response.data.data.items);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Error>>', err);
+    }
+  };
+
+  useEffect(() => {
+    onGetTestData();
+  }, [searchPharmacists]);
+
+  const onGetTestData = async () => {
+    try {
+      const response = await onGetCommonApi(`pathology-test-get?search=${searchPharmacists}`);
+      console.log('get Response:', response.data.data);
+      if (response.data.flag === 1) {
+        setTest(response.data.data.items);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Error>>', err);
+    }
+  };
+
   return (
     <View style={[styles.container, {backgroundColor: theme.lightColor}]}>
       <View style={styles.headerView}>
@@ -218,26 +293,33 @@ export const PathologyScreen = ({navigation}) => {
           <PathologyCategories
             searchBreak={searchAccount}
             setSearchBreak={setSearchAccount}
-            allData={[]}
-          />
-        ) : selectedView == 'PathologyParameter' ? (
-          <PathologyParameter
-            searchBreak={searchPayroll}
-            setSearchBreak={setSearchPayroll}
-            allData={[]}
+            allData={pathologyCategories}
+            onGetData={onGetPathologyCategoriesData}
           />
         ) : selectedView == 'PathologyUnit' ? (
           <PathologyUnit
             searchBreak={searchPayroll}
             setSearchBreak={setSearchPayroll}
-            allData={[]}
+            allData={unit}
+            onGetData={onGetUnitData}
+          />
+        ) : selectedView == 'PathologyParameter' ? (
+          <PathologyParameter
+            searchBreak={searchPayroll}
+            setSearchBreak={setSearchPayroll}
+            allData={parameter}
+            onGetData={onGetParameterData}
+            unitData={unit}
           />
         ) : (
           selectedView == 'PathologyTest' && (
             <PathologyTest
               searchBreak={searchPharmacists}
               setSearchBreak={setSearchPharmacists}
-              allData={[]}
+              allData={test}
+              onGetData={onGetTestData}
+              category={pathologyCategories}
+              parameter={parameter}
             />
           )
         )}
@@ -260,8 +342,8 @@ export const PathologyScreen = ({navigation}) => {
             {[
               'Logo',
               'PathologyCategories',
-              'PathologyParameter',
               'PathologyUnit',
+              'PathologyParameter',
               'PathologyTest',
             ].map((option, index) => (
               <>

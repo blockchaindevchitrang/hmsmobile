@@ -467,7 +467,7 @@ export const PatientsScreen = ({navigation}) => {
     try {
       const response = await onGetPatientApi();
       console.log('get Response:', response.data.data);
-      if (response.status) {
+      if (response.data.flag === 1) {
         setPatientsList(response.data.data);
         setRefresh(!refresh);
       }
@@ -484,7 +484,7 @@ export const PatientsScreen = ({navigation}) => {
     try {
       const response = await onGetPatientCasesApi(searchUser);
       console.log('get Response:', response.data.data);
-      if (response.status) {
+      if (response.data.flag === 1) {
         setCasesList(response.data.data);
         setRefresh(!refresh);
       }
@@ -523,7 +523,7 @@ export const PatientsScreen = ({navigation}) => {
     try {
       const response = await onGetCommonApi(`patient-admissions-get?search=${searchAdmission}`);
       console.log('get Response:', response.data.data);
-      if (response.status) {
+      if (response.data.flag === 1) {
         setAdmissionList(response.data.data);
         setRefresh(!refresh);
       }
@@ -540,7 +540,7 @@ export const PatientsScreen = ({navigation}) => {
     try {
       const response = await onGetCommonApi(`patient-smart-card-get?search=${searchTemplate}`);
       console.log('get Response:', response.data.data);
-      if (response.status) {
+      if (response.data.flag === 1) {
         setSmartCardTempList(response.data.data);
         setRefresh(!refresh);
       }
@@ -557,7 +557,7 @@ export const PatientsScreen = ({navigation}) => {
     try {
       const response = await onGetCommonApi(`patient-smart-cards?search=${searchSmartCard}`);
       console.log('get Response:', response.data.data);
-      if (response.status) {
+      if (response.data.flag === 1) {
         setPatientSmartCardList(response.data.data);
         setRefresh(!refresh);
       }

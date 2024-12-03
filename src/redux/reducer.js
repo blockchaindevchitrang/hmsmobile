@@ -9,6 +9,9 @@ export const FETCH_BED_DATA = 'FETCH_BED_DATA';
 export const FETCH_BLOOD_DONOR = 'FETCH_BLOOD_DONOR';
 export const FETCH_ALL_USER_DATA = 'FETCH_ALL_USER_DATA';
 export const FETCH_ACCOUNT_DATA = 'FETCH_ACCOUNT_DATA';
+export const FETCH_CASE_DATA = 'FETCH_CASE_DATA';
+export const FETCH_CHARGE_CATEGORY_DATA = 'FETCH_CHARGE_CATEGORY_DATA';
+export const FETCH_CHARGE_DATA = 'FETCH_CHARGE_DATA';
 
 export const fetchUserData = user_data => {
   return {
@@ -87,6 +90,27 @@ export const fetchAccountData = accountData => {
   };
 };
 
+export const fetchCaseData = caseData => {
+  return {
+    type: FETCH_CASE_DATA,
+    payload: caseData,
+  };
+};
+
+export const fetchChargeCategoryData = chargeCategoryData => {
+  return {
+    type: FETCH_CHARGE_CATEGORY_DATA,
+    payload: chargeCategoryData,
+  };
+};
+
+export const fetchChargeData = chargeData => {
+  return {
+    type: FETCH_CHARGE_DATA,
+    payload: chargeData,
+  };
+};
+
 // Initial State
 const initialState = {
   user_data: [],
@@ -100,6 +124,9 @@ const initialState = {
   bloodDonor: [],
   allUserData: [],
   accountData: [],
+  caseData: [],
+  chargeCategoryData: [],
+  chargeData: [],
 };
 
 // Reducer
@@ -159,6 +186,21 @@ const rootReducer = (state = initialState, action) => {
       return {
         ...state,
         accountData: action.payload,
+      };
+    case FETCH_CASE_DATA:
+      return {
+        ...state,
+        caseData: action.payload,
+      };
+    case FETCH_CHARGE_CATEGORY_DATA:
+      return {
+        ...state,
+        chargeCategoryData: action.payload,
+      };
+    case FETCH_CHARGE_DATA:
+      return {
+        ...state,
+        chargeData: action.payload,
       };
     default:
       return state;

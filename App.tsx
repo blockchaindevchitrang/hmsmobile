@@ -49,6 +49,7 @@ import ForgotPassword from './src/screens/ForgotPassword';
 import FlashMessage from 'react-native-flash-message';
 import {Provider} from 'react-redux';
 import store from './src/redux/store';
+import RadiologyScreen from './src/screens/RadiologyScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -259,6 +260,11 @@ function SettingStack() {
       <Stack.Screen
         name="PathologyScreen"
         component={PathologyScreen}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="RadiologyScreen"
+        component={RadiologyScreen}
         options={{headerShown: false}}
       />
       <Stack.Screen

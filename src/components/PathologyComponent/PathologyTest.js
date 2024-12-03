@@ -21,57 +21,237 @@ import ProfilePhoto from './../ProfilePhoto';
 import moment from 'moment';
 import deleteIcon from '../../images/delete.png';
 import editing from '../../images/editing.png';
-import filter from '../../images/filter.png';
-import man from '../../images/man.png';
-import draw from '../../images/draw.png';
 import DatePicker from 'react-native-date-picker';
-import ImagePicker from 'react-native-image-crop-picker';
+import SelectDropdown from 'react-native-select-dropdown';
+import {useSelector} from 'react-redux';
+import {
+  onAddAccountListApi,
+  onDeleteCommonApi,
+  onGetEditAccountDataApi,
+  onGetSpecificCommonApi,
+} from '../../services/Api';
+import {DeletePopup} from '../DeletePopup';
+import FlashMessage, {
+  showMessage,
+  hideMessage,
+} from 'react-native-flash-message';
 
-const PathologyTest = ({searchBreak, setSearchBreak, allData}) => {
+const PathologyTest = ({
+  searchBreak,
+  setSearchBreak,
+  allData,
+  onGetData,
+  category,
+  parameter,
+}) => {
+  const user_data = useSelector(state => state.user_data);
+  const chargeCategoryData = useSelector(state => state.chargeCategoryData);
+  const chargeData = useSelector(state => state.chargeData);
   const {theme} = useTheme();
   const [newUserVisible, setNewUserVisible] = useState(false);
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [role, setRole] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [address, setAddress] = useState('');
-  const [city, setCity] = useState('');
-  const [country, setCountry] = useState('');
-  const [postalCode, setPostalCode] = useState('');
-  const [genderType, setGenderType] = useState('female');
-  const [dateOfBirth, setDateOfBirth] = useState(new Date());
-  const [dateModalVisible, setDateModalVisible] = useState(false);
-  const [avatar, setAvatar] = useState(null);
+  const [patientId, setPatientId] = useState('');
+  const [patientName, setPatientName] = useState('');
+  const [testName, setTestName] = useState('');
+  const [sortName, setSortName] = useState('');
+  const [testType, setTestType] = useState('');
+  const [categoryId, setCategoryId] = useState('');
+  const [categoryName, setCategoryName] = useState('');
+  const [unit, setUnit] = useState('');
+  const [subCategory, setSubCategory] = useState('');
+  const [method, setMethod] = useState('');
+  const [reportDay, setReportDay] = useState('');
+  const [chargeId, setChargeId] = useState('');
+  const [chargeName, setChargeName] = useState('');
+  const [standardCharge, setStandardCharge] = useState('');
+  const [refresh, setRefresh] = useState(false);
+  const [parameterArray, setParameterArray] = useState([
+    {
+      parameter_id: '',
+      parameter_name: '',
+      patient_result: '',
+      range: '',
+      unit: '',
+    },
+  ]);
+  const [errorVisible, setErrorVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [userId, setUserId] = useState('');
+  const [deleteUser, setDeleteUser] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const openProfileImagePicker = async () => {
+  const onAddPayRollData = async () => {
     try {
-      const image = await ImagePicker.openPicker({
-        width: 300,
-        height: 400,
-        cropping: false,
-        multiple: false, // Allow selecting only one image
-        compressImageQuality: 0.5,
-      });
-
-      if (image && image.path) {
-        if (image && image.path) {
-          var filename = image.path.substring(image.path.lastIndexOf('/') + 1);
-          let imageData = {
-            uri: Platform.OS === 'ios' ? image.sourceURL : image.path,
-            type: image.mime,
-            name: Platform.OS === 'ios' ? image.filename : filename,
-          };
-          setAvatar(imageData);
-
-          console.log('Selected image:', avatar);
-        }
+      if (parameterName == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter parameter name.');
+      } else if (range == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter reference range.');
+      } else if (unitId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter unit.');
       } else {
-        console.log('No image selected');
+        setLoading(true);
+        setErrorVisible(false);
+        const urlData = `pathology-parameter-store?parameter_name=${parameterName}&reference_range=${range}&unit_id=${unitId}&description=${description}`;
+        const response = await onAddAccountListApi(urlData);
+        if (response.data.flag == 1) {
+          onGetData();
+          setLoading(false);
+          setNewUserVisible(false);
+          showMessage({
+            message: 'Record Added Successfully',
+            type: 'success',
+            duration: 3000,
+          });
+        } else {
+          setLoading(false);
+          showMessage({
+            message: response.data.message,
+            type: 'danger',
+            duration: 6000,
+            icon: 'danger',
+          });
+        }
       }
-    } catch (error) {
-      console.log('Error selecting image:', error);
+    } catch (err) {
+      if (err.response.data.message) {
+        showMessage({
+          message: err.response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      } else {
+        showMessage({
+          message: 'Something want wrong.',
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
+      setLoading(false);
+      console.log('Error:', err);
+    }
+  };
+
+  const onEditPayRollData = async () => {
+    try {
+      if (parameterName == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter parameter name.');
+      } else if (range == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter reference range.');
+      } else if (unitId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter unit.');
+      } else {
+        setLoading(true);
+        setErrorVisible(false);
+        const urlData = `pathology-parameter-update/${userId}?parameter_name=${parameterName}&reference_range=${range}&unit_id=${unitId}&description=${description}`;
+        const response = await onGetEditAccountDataApi(urlData);
+        console.log('Get Error::', response.data);
+        if (response.data.flag == 1) {
+          onGetData();
+          setLoading(false);
+          setNewUserVisible(false);
+          showMessage({
+            message: 'Record Edit Successfully',
+            type: 'success',
+            duration: 3000,
+          });
+        } else {
+          setLoading(false);
+          showMessage({
+            message: response.data.message,
+            type: 'danger',
+            duration: 6000,
+            icon: 'danger',
+          });
+        }
+      }
+    } catch (err) {
+      setLoading(false);
+      if (err.response.data.message) {
+        showMessage({
+          message: err.response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      } else {
+        showMessage({
+          message: 'Something want wrong.',
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
+      console.log('Error:', err);
+    }
+  };
+
+  const onDeletePayrollData = async id => {
+    try {
+      setLoading(true);
+      const response = await onDeleteCommonApi(
+        `pathology-parameter-delete/${id}`,
+      );
+      if (response.data.flag == 1) {
+        onGetData();
+        setLoading(false);
+        setDeleteUser(false);
+        showMessage({
+          message: 'Record Delete Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      } else {
+        setLoading(false);
+        setDeleteUser(false);
+        showMessage({
+          message: response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
+    } catch (err) {
+      setLoading(false);
+      setDeleteUser(false);
+      if (err.response.data.message) {
+        showMessage({
+          message: err.response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      } else {
+        showMessage({
+          message: 'Something want wrong.',
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
+      console.log('Get Error', err);
+    }
+  };
+
+  const onGetSpecificDoctor = async id => {
+    try {
+      const response = await onGetSpecificCommonApi(
+        `pathology-parameter-edit/${id}`,
+      );
+      if (response.status == 200) {
+        console.log('get ValueLL:::', response.data.data);
+        return response.data.data;
+      } else {
+        return 0;
+      }
+    } catch (err) {
+      console.log('Get Error', err);
     }
   };
 
@@ -82,45 +262,30 @@ const PathologyTest = ({searchBreak, setSearchBreak, allData}) => {
           styles.dataHistoryView,
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
-        <View style={[styles.switchView, {width: wp(32)}]}>
-          <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataHistoryText1]}>{item.admission}</Text>
-          </View>
-        </View>
-        <View style={styles.nameDataView}>
-          <ProfilePhoto username={item.name} />
-          <View>
-            <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
-            <Text style={[styles.dataHistoryText1]}>{item.mail}</Text>
-          </View>
-        </View>
-        <View style={styles.nameDataView}>
-          <ProfilePhoto username={item.name} />
-          <View>
-            <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
-            <Text style={[styles.dataHistoryText1]}>{item.mail}</Text>
-          </View>
-        </View>
         <View style={[styles.switchView, {width: wp(30)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataHistoryText1]}>{item.date}</Text>
+            <Text style={[styles.dataHistoryText1]}>{item.test_name}</Text>
           </View>
         </View>
-        <Text style={[styles.dataHistoryText1, {width: wp(26)}]}>
-          {item.amount}
-        </Text>
-        <View style={[styles.switchView, {width: wp(20)}]}>
-          <Switch
-            trackColor={{
-              false: item.status ? COLORS.greenColor : COLORS.errorColor,
-              true: item.status ? COLORS.greenColor : COLORS.errorColor,
-            }}
-            thumbColor={item.status ? '#f4f3f4' : '#f4f3f4'}
-            ios_backgroundColor={COLORS.errorColor}
-            onValueChange={() => {}}
-            value={item.status}
-          />
+        <View style={styles.nameDataView}>
+          <ProfilePhoto username={item.patient_name} />
+          <View>
+            <Text style={[styles.dataHistoryText2]}>{item.patient_name}</Text>
+            <Text style={[styles.dataHistoryText5]}>{item.patient_email}</Text>
+          </View>
         </View>
+        <Text style={[styles.dataHistoryText1, {width: wp(30)}]}>
+          {item.short_name}
+        </Text>
+        <Text style={[styles.dataHistoryText1, {width: wp(30)}]}>
+          {item.test_type}
+        </Text>
+        <Text style={[styles.dataHistoryText1, {width: wp(35)}]}>
+          {item.category_name}
+        </Text>
+        <Text style={[styles.dataHistoryText1, {width: wp(35)}]}>
+          {item.charge_category}
+        </Text>
         <View style={styles.actionDataView}>
           <TouchableOpacity>
             <Image
@@ -170,10 +335,10 @@ const PathologyTest = ({searchBreak, setSearchBreak, allData}) => {
                     styles.titleActiveView,
                     {backgroundColor: theme.headerColor},
                   ]}>
-                  <Text style={[styles.titleText, {width: wp(25)}]}>
+                  <Text style={[styles.titleText, {width: wp(30)}]}>
                     {'TEST NAME'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(30)}]}>
+                  <Text style={[styles.titleText, {width: wp(55)}]}>
                     {'PATIENT'}
                   </Text>
                   <Text style={[styles.titleText, {width: wp(30)}]}>
@@ -234,210 +399,372 @@ const PathologyTest = ({searchBreak, setSearchBreak, allData}) => {
           <View style={styles.profileView}>
             <View style={styles.nameView}>
               <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>FIRST NAME</Text>
-                <TextInput
-                  value={firstName}
-                  placeholder={'Enter first name'}
-                  onChangeText={text => setFirstName(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-
-              <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>LAST NAME</Text>
-                <TextInput
-                  value={lastName}
-                  placeholder={'Enter last name'}
-                  onChangeText={text => setLastName(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>EMAIL ADDRESS</Text>
-                <TextInput
-                  value={email}
-                  placeholder={'Enter email'}
-                  onChangeText={text => setEmail(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>ROLE</Text>
-                <TextInput
-                  value={role}
-                  placeholder={'Select'}
-                  onChangeText={text => setRole(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>PASSWORD</Text>
-                <TextInput
-                  value={password}
-                  placeholder={'******'}
-                  onChangeText={text => setPassword(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                  secureTextEntry={true}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>CONFIRM PASSWORD</Text>
-                <TextInput
-                  value={confirmPassword}
-                  placeholder={'******'}
-                  onChangeText={text => setConfirmPassword(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                  secureTextEntry={true}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>DATE OF BIRTH</Text>
-                {/* <TextInput
-                        value={firstName}
-                        placeholder={'Enter first name'}
-                        onChangeText={text => setFirstName(text)}
-                        style={[styles.nameTextView, {width: '100%'}]}
-                      /> */}
-                <Text
-                  style={[
-                    styles.nameTextView,
-                    {width: '100%', paddingVertical: hp(1)},
-                  ]}
-                  onPress={() => setDateModalVisible(!dateModalVisible)}>
-                  {moment(dateOfBirth).format('DD/MM/YYYY')}
-                </Text>
-                <DatePicker
-                  open={dateModalVisible}
-                  modal={true}
-                  date={dateOfBirth}
-                  mode={'date'}
-                  onConfirm={date => {
-                    console.log('Console Log>>', date);
-                    setDateModalVisible(false);
-                    setDateOfBirth(date);
+                <Text style={styles.dataHistoryText1}>Patient:</Text>
+                <SelectDropdown
+                  data={user_data}
+                  onSelect={(selectedItem, index) => {
+                    // setSelectedColor(selectedItem);
+                    setPatientId(selectedItem.id);
+                    console.log('gert Value:::', selectedItem);
                   }}
-                  onCancel={() => {
-                    setDateModalVisible(false);
+                  defaultValue={patientName}
+                  renderButton={(selectedItem, isOpen) => {
+                    console.log('Get Response>>>', selectedItem);
+                    return (
+                      <View style={styles.dropdown2BtnStyle2}>
+                        {patientId != '' ? (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {patientId == selectedItem?.id
+                              ? `${selectedItem?.patient_user?.first_name} ${selectedItem?.patient_user?.last_name}`
+                              : patientName}
+                          </Text>
+                        ) : (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {selectedItem?.patient_user?.first_name ||
+                              'Select Patient'}
+                          </Text>
+                        )}
+                      </View>
+                    );
                   }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(item, index, isSelected) => {
+                    return (
+                      <TouchableOpacity style={styles.dropdownView}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {`${item?.patient_user?.first_name} ${item?.patient_user?.last_name}`}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                  dropdownIconPosition={'left'}
+                  dropdownStyle={styles.dropdown2DropdownStyle}
                 />
               </View>
 
               <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>GENDER</Text>
-                <View style={[styles.statusView, {paddingVertical: hp(1)}]}>
-                  <View style={[styles.optionView]}>
-                    <TouchableOpacity
-                      onPress={() => setGenderType('female')}
-                      style={[
-                        styles.roundBorder,
-                        {
-                          backgroundColor:
-                            genderType == 'female'
-                              ? COLORS.blueColor
-                              : COLORS.white,
-                          borderWidth: genderType == 'female' ? 0 : 0.5,
-                        },
-                      ]}>
-                      <View style={styles.round} />
-                    </TouchableOpacity>
-                    <Text style={styles.statusText}>Female</Text>
-                  </View>
-                  <View style={[styles.optionView]}>
-                    <TouchableOpacity
-                      onPress={() => setGenderType('male')}
-                      style={[
-                        styles.roundBorder,
-                        {
-                          backgroundColor:
-                            genderType == 'male'
-                              ? COLORS.blueColor
-                              : COLORS.white,
-                          borderWidth: genderType == 'male' ? 0 : 0.5,
-                        },
-                      ]}>
-                      <View style={styles.round} />
-                    </TouchableOpacity>
-                    <Text style={styles.statusText}>Male</Text>
-                  </View>
-                </View>
+                <Text style={styles.dataHistoryText1}>Test Name:</Text>
+                <TextInput
+                  value={testName}
+                  placeholder={'Test name'}
+                  onChangeText={text => setTestName(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                />
+              </View>
+            </View>
+
+            <View style={styles.nameView}>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Short Name:</Text>
+                <TextInput
+                  value={sortName}
+                  placeholder={'Short Name'}
+                  onChangeText={text => setSortName(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                />
+              </View>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Test Type:</Text>
+                <TextInput
+                  value={testType}
+                  placeholder={'Test Type'}
+                  onChangeText={text => setTestType(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                />
+              </View>
+            </View>
+
+            <View style={styles.nameView}>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Category Name:</Text>
+                <SelectDropdown
+                  data={category}
+                  onSelect={(selectedItem, index) => {
+                    // setSelectedColor(selectedItem);
+                    setCategoryId(selectedItem.id);
+                    console.log('gert Value:::', selectedItem);
+                  }}
+                  defaultValue={categoryName}
+                  renderButton={(selectedItem, isOpen) => {
+                    console.log('Get Response>>>', selectedItem);
+                    return (
+                      <View style={styles.dropdown2BtnStyle2}>
+                        {categoryId != '' ? (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {categoryId == selectedItem?.id
+                              ? selectedItem?.name
+                              : categoryName}
+                          </Text>
+                        ) : (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {selectedItem?.name || 'Select Category'}
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(item, index, isSelected) => {
+                    return (
+                      <TouchableOpacity style={styles.dropdownView}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {item?.name}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                  dropdownIconPosition={'left'}
+                  dropdownStyle={styles.dropdown2DropdownStyle}
+                />
+              </View>
+
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Unit:</Text>
+                <TextInput
+                  value={unit}
+                  placeholder={'Unit'}
+                  onChangeText={text => setUnit(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                  keyboardType={'number-pad'}
+                />
+              </View>
+            </View>
+
+            <View style={styles.nameView}>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Sub Category:</Text>
+                <TextInput
+                  value={subCategory}
+                  placeholder={'Sub Category'}
+                  onChangeText={text => setSubCategory(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                />
+              </View>
+
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Method:</Text>
+                <TextInput
+                  value={method}
+                  placeholder={'Method'}
+                  onChangeText={text => setMethod(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                />
+              </View>
+            </View>
+
+            <View style={styles.nameView}>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Report Days:</Text>
+                <TextInput
+                  value={reportDay}
+                  placeholder={'Report Days'}
+                  onChangeText={text => setReportDay(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                  keyboardType={'number-pad'}
+                />
+              </View>
+
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Charge Category:</Text>
+                <SelectDropdown
+                  data={chargeCategoryData}
+                  onSelect={(selectedItem, index) => {
+                    // setSelectedColor(selectedItem);
+                    setChargeId(selectedItem.id);
+                    for (const item of chargeData) {
+                      if (item.charge_category_id == selectedItem.name) {
+                        console.log('Get Value:::', item.standard_charge);
+                        setStandardCharge(JSON.stringify(item.standard_charge));
+                        setRefresh(!refresh);
+                        break; // Exit the loop immediately after finding the match
+                      }
+                    }
+                    console.log('gert Value:::', selectedItem);
+                  }}
+                  defaultValue={chargeName}
+                  renderButton={(selectedItem, isOpen) => {
+                    console.log('Get Response>>>', selectedItem);
+                    return (
+                      <View style={styles.dropdown2BtnStyle2}>
+                        {chargeId != '' ? (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {chargeId == selectedItem?.id
+                              ? selectedItem?.name
+                              : chargeName}
+                          </Text>
+                        ) : (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {selectedItem?.name || 'Select Charge'}
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(item, index, isSelected) => {
+                    return (
+                      <TouchableOpacity style={styles.dropdownView}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {item?.name}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                  dropdownIconPosition={'left'}
+                  dropdownStyle={styles.dropdown2DropdownStyle}
+                />
               </View>
             </View>
 
             <View style={styles.nameView}>
               <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>ADDRESS</Text>
+                <Text style={styles.dataHistoryText1}>Standard Charge:</Text>
                 <TextInput
-                  value={address}
-                  placeholder={'******'}
-                  onChangeText={text => setAddress(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                  secureTextEntry={true}
+                  value={standardCharge}
+                  placeholder={'Standard Charge'}
+                  onChangeText={text => setStandardCharge(text)}
+                  style={[styles.nameTextVie1, {width: '100%'}]}
+                  editable={false}
                 />
               </View>
             </View>
+            <Text style={styles.parameterView}>Parameter</Text>
+            <FlatList
+              data={parameterArray}
+              renderItem={({item, index}) => {
+                return (
+                  <View
+                    style={{
+                      backgroundColor:
+                        index % 2 == 0 ? '#eeeeee' : COLORS.white,
+                      paddingBottom: hp(1),
+                      marginVertical: hp(1),
+                    }}>
+                    <View style={styles.nameView}>
+                      <View style={{width: '48%'}}>
+                        <SelectDropdown
+                          data={parameter}
+                          onSelect={(selectedItem, index1) => {
+                            // setSelectedColor(selectedItem);
+                            // setCategoryId(selectedItem.id);
+                            parameterArray[index].parameter_id =
+                              selectedItem.id;
+                            parameterArray[index].parameter_name =
+                              selectedItem.parameter_name;
+                            parameterArray[index].range =
+                              selectedItem.reference_range;
+                            parameterArray[index].unit = selectedItem.unit;
+                            console.log('gert Value:::', parameterArray);
+                            setRefresh(!refresh);
+                          }}
+                          defaultValue={item.parameter_name}
+                          renderButton={(selectedItem, isOpen) => {
+                            console.log('Get Response>>>', selectedItem);
+                            return (
+                              <View style={styles.dropdown2BtnStyle2}>
+                                {item.parameter_id != '' ? (
+                                  <Text style={styles.dropdownItemTxtStyle}>
+                                    {item.parameter_id == selectedItem?.id
+                                      ? selectedItem?.parameter_name
+                                      : item.parameter_name}
+                                  </Text>
+                                ) : (
+                                  <Text style={styles.dropdownItemTxtStyle}>
+                                    {selectedItem?.parameter_name || 'Select Parameter'}
+                                  </Text>
+                                )}
+                              </View>
+                            );
+                          }}
+                          showsVerticalScrollIndicator={false}
+                          renderItem={(item, index, isSelected) => {
+                            return (
+                              <TouchableOpacity style={styles.dropdownView}>
+                                <Text style={styles.dropdownItemTxtStyle}>
+                                  {item?.parameter_name}
+                                </Text>
+                              </TouchableOpacity>
+                            );
+                          }}
+                          dropdownIconPosition={'left'}
+                          dropdownStyle={styles.dropdown2DropdownStyle}
+                        />
+                      </View>
 
-            <View style={styles.nameView}>
-              <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>CITY</Text>
-                <TextInput
-                  value={city}
-                  placeholder={'Enter city'}
-                  onChangeText={text => setCity(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
+                      <View style={{width: '48%'}}>
+                        <TextInput
+                          value={item.patient_result}
+                          placeholder={'Patient Result'}
+                          onChangeText={text =>
+                            (parameterArray[index].parameter_id = text)
+                          }
+                          style={[styles.nameTextView, {width: '100%'}]}
+                          keyboardType={'number-pad'}
+                        />
+                      </View>
+                    </View>
 
-              <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>COUNTRY</Text>
-                <TextInput
-                  value={country}
-                  placeholder={'Enter country'}
-                  onChangeText={text => setCountry(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-            </View>
+                    <View style={styles.nameView}>
+                      <View style={{width: '48%'}}>
+                        <TextInput
+                          editable={false}
+                          value={item.range}
+                          placeholder={'Reference Range'}
+                          style={[styles.nameTextVie1, {width: '100%'}]}
+                        />
+                      </View>
 
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>POSTAL CODE</Text>
-                <TextInput
-                  value={postalCode}
-                  placeholder={'Postal Code'}
-                  onChangeText={text => setPostalCode(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View>
-                <Text style={styles.dataHistoryText1}>PROFILE</Text>
-                <View style={styles.profilePhotoView}>
-                  <TouchableOpacity
-                    style={styles.editView}
-                    onPress={() => openProfileImagePicker()}>
-                    <Image style={styles.editImage1} source={draw} />
-                  </TouchableOpacity>
-                  <Image style={styles.profileImage} source={man} />
-                </View>
-              </View>
-            </View>
+                      <View style={{width: '48%'}}>
+                        <TextInput
+                          editable={false}
+                          value={item.unit}
+                          placeholder={'Unit'}
+                          style={[styles.nameTextVie1, {width: '100%'}]}
+                        />
+                      </View>
+                    </View>
+                    {index <= 0 ? (
+                      <View style={styles.buttonView}>
+                        <TouchableOpacity
+                          onPress={() => {
+                            let NewItemAdd = {
+                              parameter_id: '',
+                              parameter_name: '',
+                              patient_result: '',
+                              range: '',
+                              unit: '',
+                            };
+                            setParameterArray(modifierAdd => [...modifierAdd, NewItemAdd]);
+                          }}
+                          style={styles.nextView}>
+                          <Text style={styles.nextText}>Add</Text>
+                        </TouchableOpacity>
+                      </View>
+                    ) : (
+                      <View style={styles.buttonView}>
+                        <TouchableOpacity
+                          onPress={() => {
+                            const existDataValue = parameterArray;
+                            const filterData = existDataValue.filter(
+                              (dataValue, index1) => index1 !== index,
+                            );
+                            console.log(' =====>', filterData);
+                            setParameterArray(filterData);
+                          }}
+                          style={{marginLeft: wp(2)}}>
+                          <Image
+                            style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                            source={deleteIcon}
+                          />
+                        </TouchableOpacity>
+                      </View>
+                    )}
+                  </View>
+                );
+              }}
+              keyExtractor={(item, index) => index.toString()}
+              contentContainerStyle={{paddingBottom: hp(3)}}
+            />
           </View>
 
           <View style={styles.buttonView}>
@@ -552,7 +879,7 @@ const styles = StyleSheet.create({
   },
   dataHistoryView: {
     width: '100%',
-    height: hp(8),
+    paddingVertical: hp(1),
     alignItems: 'center',
     flexDirection: 'row',
     alignSelf: 'flex-start',
@@ -585,6 +912,12 @@ const styles = StyleSheet.create({
     fontSize: hp(1.8),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.errorColor,
+  },
+  dataHistoryText5: {
+    fontSize: hp(1.7),
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    color: COLORS.black,
+    width: wp(45),
   },
   mainDataView: {
     minHeight: hp(29),
@@ -656,6 +989,19 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginTop: hp(1),
     backgroundColor: COLORS.white,
+  },
+  nameTextVie1: {
+    width: '50%',
+    paddingHorizontal: wp(2),
+    paddingVertical: hp(0.5),
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    color: COLORS.black,
+    borderRadius: 5,
+    marginTop: hp(1),
+    backgroundColor: COLORS.lightGrey,
   },
   nameView: {
     flexDirection: 'row',
@@ -829,5 +1175,44 @@ const styles = StyleSheet.create({
     fontSize: hp(2.5),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
+  },
+  dropdown2DropdownStyle: {
+    backgroundColor: COLORS.white,
+    borderRadius: 4,
+    height: hp(25),
+    // borderRadius: 12,
+  },
+  dropdownItemTxtStyle: {
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    marginLeft: wp(2),
+  },
+  dropdownView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: hp(4),
+    borderBottomWidth: 0,
+  },
+  dropdown2BtnStyle2: {
+    width: '100%',
+    height: hp(4.2),
+    backgroundColor: COLORS.white,
+    borderRadius: 5,
+    alignItems: 'center',
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    marginTop: hp(1),
+  },
+  parameterView: {
+    width: '100%',
+    fontSize: hp(2.2),
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    color: COLORS.black,
+    backgroundColor: COLORS.lightGreyColor,
+    paddingVertical: hp(1),
+    marginTop: hp(3),
+    paddingLeft: wp(3),
   },
 });

@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -23,6 +23,7 @@ import headerLogo from '../../images/headerLogo.png';
 import {BlurView} from '@react-native-community/blur';
 import IPDList from '../../components/IPDComponent/IPDList';
 import OPDList from '../../components/IPDComponent/OPDList';
+import { onGetCommonApi } from '../../services/Api';
 
 const BloodIssueData = [
   {
@@ -124,11 +125,12 @@ export const IPDScreen = ({navigation}) => {
   const {t} = useTranslation();
   const {theme} = useTheme();
   const [searchAccount, setSearchAccount] = useState('');
-  const [searchPayroll, setSearchPayroll] = useState('');
-  const [searchInvoice, setSearchInvoice] = useState('');
   const [searchPharmacists, setSearchPharmacists] = useState('');
   const [optionModalView, setOptionModalView] = useState(false);
   const [selectedView, setSelectedView] = useState('IPD Patients');
+  const [IPDData, setIPDData] = useState([]);
+  const [OPDData, setOPDData] = useState([]);
+  const [refresh, setRefresh] = useState(false);
 
   const animations = useRef(
     [0, 0, 0].map(() => new Animated.Value(300)),
@@ -185,6 +187,40 @@ export const IPDScreen = ({navigation}) => {
     }
   };
 
+  useEffect(() => {
+    onGetIPDData();
+  }, [searchAccount]);
+
+  const onGetIPDData = async () => {
+    try {
+      const response = await onGetCommonApi(`ipd-patient-department-get?search=${searchAccount}`);
+      console.log('get Response:', response.data.data);
+      if (response.data.flag === 1) {
+        setIPDData(response.data.data.items);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Error>>', err);
+    }
+  };
+
+  useEffect(() => {
+    onGetOPDData();
+  }, [searchPharmacists]);
+
+  const onGetOPDData = async () => {
+    try {
+      const response = await onGetCommonApi(`opd-patient-department-get?search=${searchPharmacists}`);
+      console.log('get Response:', response.data.data);
+      if (response.data.flag === 1) {
+        setOPDData(response.data.data.items);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Error>>', err);
+    }
+  };
+
   return (
     <View style={[styles.container, {backgroundColor: theme.lightColor}]}>
       <View style={styles.headerView}>
@@ -200,14 +236,16 @@ export const IPDScreen = ({navigation}) => {
           <IPDList
             searchBreak={searchAccount}
             setSearchBreak={setSearchAccount}
-            allData={BloodIssueData}
+            allData={IPDData}
+            onGetData={onGetIPDData}
           />
         ) : (
           selectedView == 'OPD Patients' && (
             <OPDList
               searchBreak={searchPharmacists}
               setSearchBreak={setSearchPharmacists}
-              allData={ODPData}
+              allData={OPDData}
+              onGetData={onGetOPDData}
             />
           )
         )}
