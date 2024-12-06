@@ -73,5 +73,6 @@
   "pathology": "Pathology",
   "radiology": "Radiology",
   "reports": "Reports",
-  "transactions": "Transactions"
+  "transactions": "Transactions",
+  "service": "Service"
 }

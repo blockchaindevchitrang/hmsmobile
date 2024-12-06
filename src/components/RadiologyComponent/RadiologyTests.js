@@ -9,6 +9,7 @@ import {
   TextInput,
   FlatList,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import React, {useRef, useState} from 'react';
 import {
@@ -21,57 +22,255 @@ import ProfilePhoto from './../ProfilePhoto';
 import moment from 'moment';
 import deleteIcon from '../../images/delete.png';
 import editing from '../../images/editing.png';
-import filter from '../../images/filter.png';
-import man from '../../images/man.png';
-import draw from '../../images/draw.png';
 import DatePicker from 'react-native-date-picker';
-import ImagePicker from 'react-native-image-crop-picker';
+import SelectDropdown from 'react-native-select-dropdown';
+import {useSelector} from 'react-redux';
+import {
+  onAddAccountListApi,
+  onAddCommonJsonApi,
+  onDeleteCommonApi,
+  onGetEditAccountDataApi,
+  onGetEditCommonJsonApi,
+  onGetSpecificCommonApi,
+} from '../../services/Api';
+import {DeletePopup} from '../DeletePopup';
+import FlashMessage, {
+  showMessage,
+  hideMessage,
+} from 'react-native-flash-message';
 
-const RadiologyTests = ({searchBreak, setSearchBreak, allData}) => {
+const RadiologyTests = ({
+  searchBreak,
+  setSearchBreak,
+  allData,
+  onGetData,
+  category,
+}) => {
+  const chargeCategoryData = useSelector(state => state.chargeCategoryData);
+  const chargeData = useSelector(state => state.chargeData);
   const {theme} = useTheme();
   const [newUserVisible, setNewUserVisible] = useState(false);
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [role, setRole] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [address, setAddress] = useState('');
-  const [city, setCity] = useState('');
-  const [country, setCountry] = useState('');
-  const [postalCode, setPostalCode] = useState('');
-  const [genderType, setGenderType] = useState('female');
-  const [dateOfBirth, setDateOfBirth] = useState(new Date());
-  const [dateModalVisible, setDateModalVisible] = useState(false);
-  const [avatar, setAvatar] = useState(null);
+  const [patientId, setPatientId] = useState('');
+  const [patientName, setPatientName] = useState('');
+  const [testName, setTestName] = useState('');
+  const [sortName, setSortName] = useState('');
+  const [testType, setTestType] = useState('');
+  const [categoryId, setCategoryId] = useState('');
+  const [categoryName, setCategoryName] = useState('');
+  const [unit, setUnit] = useState('');
+  const [subCategory, setSubCategory] = useState('');
+  const [method, setMethod] = useState('');
+  const [reportDay, setReportDay] = useState('');
+  const [chargeCategoryId, setChargeCategoryId] = useState('');
+  const [chargeCategoryName, setChargeCategoryName] = useState('');
+  const [chargeId, setChargeId] = useState('');
+  const [chargeName, setChargeName] = useState('');
+  const [standardCharge, setStandardCharge] = useState('');
+  const [refresh, setRefresh] = useState(false);
+  const [chargeArray, setChargeArray] = useState([]);
+  const [errorVisible, setErrorVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [userId, setUserId] = useState('');
+  const [deleteUser, setDeleteUser] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const openProfileImagePicker = async () => {
+  const onAddPayRollData = async () => {
     try {
-      const image = await ImagePicker.openPicker({
-        width: 300,
-        height: 400,
-        cropping: false,
-        multiple: false, // Allow selecting only one image
-        compressImageQuality: 0.5,
-      });
-
-      if (image && image.path) {
-        if (image && image.path) {
-          var filename = image.path.substring(image.path.lastIndexOf('/') + 1);
-          let imageData = {
-            uri: Platform.OS === 'ios' ? image.sourceURL : image.path,
-            type: image.mime,
-            name: Platform.OS === 'ios' ? image.filename : filename,
-          };
-          setAvatar(imageData);
-
-          console.log('Selected image:', avatar);
-        }
+      if (testName == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter test name.');
+      } else if (sortName == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter short name.');
+      } else if (testType == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter test type.');
+      } else if (categoryId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select category name.');
+      } else if (chargeCategoryId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select charge category.');
+      } else if (chargeId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select charge.');
+      } else if (standardCharge == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select charge category with standard charge.');
       } else {
-        console.log('No image selected');
+        setLoading(true);
+        setErrorVisible(false);
+
+        const urlData = `radiology-test-store?test_name=${testName}&short_name=${sortName}&test_type=${testType}&category_id=${categoryId}&subcategory=${subCategory}&report_days=${reportDay}&charge_category_id=${chargeCategoryId}&charge_id=${chargeId}&standard_charge=${standardCharge}`;
+        const response = await onAddAccountListApi(urlData);
+        if (response.data.flag == 1) {
+          onGetData();
+          setLoading(false);
+          setNewUserVisible(false);
+          showMessage({
+            message: 'Record Added Successfully',
+            type: 'success',
+            duration: 3000,
+          });
+        } else {
+          setLoading(false);
+          showMessage({
+            message: response.data.message,
+            type: 'danger',
+            duration: 6000,
+            icon: 'danger',
+          });
+        }
       }
-    } catch (error) {
-      console.log('Error selecting image:', error);
+    } catch (err) {
+      if (err.response.data.message) {
+        showMessage({
+          message: err.response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      } else {
+        showMessage({
+          message: 'Something want wrong.',
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
+      setLoading(false);
+      console.log('Error:', err);
+    }
+  };
+
+  const onEditPayRollData = async () => {
+    try {
+      if (testName == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter test name.');
+      } else if (sortName == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter short name.');
+      } else if (testType == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter test type.');
+      } else if (categoryId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select category name.');
+      } else if (chargeCategoryId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select charge category.');
+      } else if (chargeId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select charge.');
+      } else if (standardCharge == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select charge category with standard charge.');
+      } else {
+        setLoading(true);
+        setErrorVisible(false);
+        const urlData = `radiology-test-update/${userId}?test_name=${testName}&short_name=${sortName}&test_type=${testType}&category_id=${categoryId}&subcategory=${subCategory}&report_days=${reportDay}&charge_category_id=${chargeCategoryId}&charge_id=${chargeId}&standard_charge=${standardCharge}`;
+        const response = await onGetEditAccountDataApi(urlData);
+        // const response = await onGetEditCommonJsonApi(urlData, raw);
+        console.log('Get Error::', response.data);
+        if (response.data.flag == 1) {
+          onGetData();
+          setLoading(false);
+          setNewUserVisible(false);
+          showMessage({
+            message: 'Record Edit Successfully',
+            type: 'success',
+            duration: 3000,
+          });
+        } else {
+          setLoading(false);
+          showMessage({
+            message: response.data.message,
+            type: 'danger',
+            duration: 6000,
+            icon: 'danger',
+          });
+        }
+      }
+    } catch (err) {
+      setLoading(false);
+      if (err.response.data.message) {
+        showMessage({
+          message: err.response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      } else {
+        showMessage({
+          message: 'Something want wrong.',
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
+      console.log('Error:', err);
+    }
+  };
+
+  const onDeletePayrollData = async id => {
+    try {
+      setLoading(true);
+      const response = await onDeleteCommonApi(`radiology-test-delete/${id}`);
+      if (response.data.flag == 1) {
+        onGetData();
+        setLoading(false);
+        setDeleteUser(false);
+        showMessage({
+          message: 'Record Delete Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      } else {
+        setLoading(false);
+        setDeleteUser(false);
+        showMessage({
+          message: response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
+    } catch (err) {
+      setLoading(false);
+      setDeleteUser(false);
+      if (err.response.data.message) {
+        showMessage({
+          message: err.response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      } else {
+        showMessage({
+          message: 'Something want wrong.',
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
+      console.log('Get Error', err);
+    }
+  };
+
+  const onGetSpecificDoctor = async id => {
+    try {
+      const response = await onGetSpecificCommonApi(
+        `radiology-test-edit/${id}`,
+      );
+      if (response.status == 200) {
+        console.log('get ValueLL:::', response.data.data);
+        return response.data.data;
+      } else {
+        return 0;
+      }
+    } catch (err) {
+      console.log('Get Error', err);
     }
   };
 
@@ -82,53 +281,65 @@ const RadiologyTests = ({searchBreak, setSearchBreak, allData}) => {
           styles.dataHistoryView,
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
-        <View style={[styles.switchView, {width: wp(32)}]}>
-          <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataHistoryText1]}>{item.admission}</Text>
-          </View>
-        </View>
-        <View style={styles.nameDataView}>
-          <ProfilePhoto username={item.name} />
-          <View>
-            <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
-            <Text style={[styles.dataHistoryText1]}>{item.mail}</Text>
-          </View>
-        </View>
-        <View style={styles.nameDataView}>
-          <ProfilePhoto username={item.name} />
-          <View>
-            <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
-            <Text style={[styles.dataHistoryText1]}>{item.mail}</Text>
-          </View>
-        </View>
         <View style={[styles.switchView, {width: wp(30)}]}>
-          <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataHistoryText1]}>{item.date}</Text>
-          </View>
+          <Text style={[styles.dataHistoryText1]}>{item.test_name}</Text>
         </View>
-        <Text style={[styles.dataHistoryText1, {width: wp(26)}]}>
-          {item.amount}
+        <Text style={[styles.dataHistoryText1, {width: wp(30)}]}>
+          {item.short_name}
         </Text>
-        <View style={[styles.switchView, {width: wp(20)}]}>
-          <Switch
-            trackColor={{
-              false: item.status ? COLORS.greenColor : COLORS.errorColor,
-              true: item.status ? COLORS.greenColor : COLORS.errorColor,
-            }}
-            thumbColor={item.status ? '#f4f3f4' : '#f4f3f4'}
-            ios_backgroundColor={COLORS.errorColor}
-            onValueChange={() => {}}
-            value={item.status}
-          />
-        </View>
+        <Text style={[styles.dataHistoryText1, {width: wp(30)}]}>
+          {item.test_type}
+        </Text>
+        <Text style={[styles.dataHistoryText1, {width: wp(30)}]}>
+          {item.category_name}
+        </Text>
+        <Text style={[styles.dataHistoryText1, {width: wp(35)}]}>
+          {item.charge_category}
+        </Text>
         <View style={styles.actionDataView}>
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={async () => {
+              let allDatas = await onGetSpecificDoctor(item.id);
+              setUserId(item.id);
+              setTestName(item.test_name);
+              setTestType(item.test_type);
+              setSortName(item.short_name);
+              setCategoryId(allDatas.radiologyTest.category_id);
+              setCategoryName(item.category_name);
+              setSubCategory(allDatas.radiologyTest.subcategory);
+              setReportDay(JSON.stringify(allDatas.radiologyTest.report_days));
+              setChargeCategoryId(allDatas.radiologyTest.charge_category_id);
+              setChargeCategoryName(item.charge_category);
+              let array = [];
+              for (const item1 of chargeData) {
+                if (item1.charge_category_id == item.charge_category) {
+                  array.push(item1);
+                }
+                if (item1.id == allDatas.radiologyTest.charge_id) {
+                  setChargeName(item1.code);
+                }
+              }
+              console.log('Array:', array);
+              setChargeArray(array);
+              setRefresh(!refresh);
+              setChargeId(allDatas.radiologyTest.charge_id);
+              // setChargeName(item.charge_category);
+              setStandardCharge(
+                JSON.stringify(allDatas.radiologyTest.standard_charge),
+              );
+              setNewUserVisible(true);
+            }}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.blueColor}]}
               source={editing}
             />
           </TouchableOpacity>
-          <TouchableOpacity style={{marginLeft: wp(2)}}>
+          <TouchableOpacity
+            onPress={() => {
+              setUserId(item.id);
+              setDeleteUser(true);
+            }}
+            style={{marginLeft: wp(2)}}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.errorColor}]}
               source={deleteIcon}
@@ -156,7 +367,24 @@ const RadiologyTests = ({searchBreak, setSearchBreak, allData}) => {
           </View>
           <View style={styles.filterView}>
             <TouchableOpacity
-              onPress={() => setNewUserVisible(true)}
+              onPress={() => {
+                setUserId('');
+                setTestName('');
+                setTestType('');
+                setSortName('');
+                setCategoryId('');
+                setCategoryName('');
+                setSubCategory('');
+                setReportDay('');
+                setChargeId('');
+                setChargeName('');
+                setChargeCategoryId('');
+                setChargeCategoryName('');
+                setStandardCharge('');
+                setErrorMessage('');
+                setErrorVisible(false);
+                setNewUserVisible(true);
+              }}
               style={styles.actionView}>
               <Text style={styles.actionText}>New Radiology Test</Text>
             </TouchableOpacity>
@@ -170,13 +398,16 @@ const RadiologyTests = ({searchBreak, setSearchBreak, allData}) => {
                     styles.titleActiveView,
                     {backgroundColor: theme.headerColor},
                   ]}>
-                  <Text style={[styles.titleText, {width: wp(25)}]}>
+                  <Text style={[styles.titleText, {width: wp(30)}]}>
                     {'TEST NAME'}
                   </Text>
                   <Text style={[styles.titleText, {width: wp(30)}]}>
                     {'SHORT NAME'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(35)}]}>
+                  <Text style={[styles.titleText, {width: wp(30)}]}>
+                    {'TEST TYPE'}
+                  </Text>
+                  <Text style={[styles.titleText, {width: wp(30)}]}>
                     {'CATEGORY'}
                   </Text>
                   <Text style={[styles.titleText, {width: wp(35)}]}>
@@ -218,7 +449,9 @@ const RadiologyTests = ({searchBreak, setSearchBreak, allData}) => {
             </Text>
             <View style={styles.filterView}>
               <TouchableOpacity
-                onPress={() => setNewUserVisible(false)}
+                onPress={() => {
+                  setNewUserVisible(false);
+                }}
                 style={styles.backButtonView}>
                 <Text style={styles.backText}>BACK</Text>
               </TouchableOpacity>
@@ -228,222 +461,256 @@ const RadiologyTests = ({searchBreak, setSearchBreak, allData}) => {
           <View style={styles.profileView}>
             <View style={styles.nameView}>
               <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>FIRST NAME</Text>
+                <Text style={styles.dataHistoryText1}>Test Name:</Text>
                 <TextInput
-                  value={firstName}
-                  placeholder={'Enter first name'}
-                  onChangeText={text => setFirstName(text)}
+                  value={testName}
+                  placeholder={'Test name'}
+                  onChangeText={text => setTestName(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
                 />
               </View>
-
               <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>LAST NAME</Text>
+                <Text style={styles.dataHistoryText1}>Short Name:</Text>
                 <TextInput
-                  value={lastName}
-                  placeholder={'Enter last name'}
-                  onChangeText={text => setLastName(text)}
+                  value={sortName}
+                  placeholder={'Short Name'}
+                  onChangeText={text => setSortName(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>EMAIL ADDRESS</Text>
-                <TextInput
-                  value={email}
-                  placeholder={'Enter email'}
-                  onChangeText={text => setEmail(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>ROLE</Text>
-                <TextInput
-                  value={role}
-                  placeholder={'Select'}
-                  onChangeText={text => setRole(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>PASSWORD</Text>
-                <TextInput
-                  value={password}
-                  placeholder={'******'}
-                  onChangeText={text => setPassword(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                  secureTextEntry={true}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>CONFIRM PASSWORD</Text>
-                <TextInput
-                  value={confirmPassword}
-                  placeholder={'******'}
-                  onChangeText={text => setConfirmPassword(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                  secureTextEntry={true}
                 />
               </View>
             </View>
 
             <View style={styles.nameView}>
               <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>DATE OF BIRTH</Text>
-                {/* <TextInput
-                          value={firstName}
-                          placeholder={'Enter first name'}
-                          onChangeText={text => setFirstName(text)}
-                          style={[styles.nameTextView, {width: '100%'}]}
-                        /> */}
-                <Text
-                  style={[
-                    styles.nameTextView,
-                    {width: '100%', paddingVertical: hp(1)},
-                  ]}
-                  onPress={() => setDateModalVisible(!dateModalVisible)}>
-                  {moment(dateOfBirth).format('DD/MM/YYYY')}
-                </Text>
-                <DatePicker
-                  open={dateModalVisible}
-                  modal={true}
-                  date={dateOfBirth}
-                  mode={'date'}
-                  onConfirm={date => {
-                    console.log('Console Log>>', date);
-                    setDateModalVisible(false);
-                    setDateOfBirth(date);
+                <Text style={styles.dataHistoryText1}>Test Type:</Text>
+                <TextInput
+                  value={testType}
+                  placeholder={'Test Type'}
+                  onChangeText={text => setTestType(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                />
+              </View>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Category Name:</Text>
+                <SelectDropdown
+                  data={category}
+                  onSelect={(selectedItem, index) => {
+                    // setSelectedColor(selectedItem);
+                    setCategoryId(selectedItem.id);
+                    console.log('gert Value:::', selectedItem);
                   }}
-                  onCancel={() => {
-                    setDateModalVisible(false);
+                  defaultValue={categoryName}
+                  renderButton={(selectedItem, isOpen) => {
+                    console.log('Get Response>>>', selectedItem);
+                    return (
+                      <View style={styles.dropdown2BtnStyle2}>
+                        {categoryId != '' ? (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {categoryId == selectedItem?.id
+                              ? selectedItem?.name
+                              : categoryName}
+                          </Text>
+                        ) : (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {selectedItem?.name || 'Select Category'}
+                          </Text>
+                        )}
+                      </View>
+                    );
                   }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(item, index, isSelected) => {
+                    return (
+                      <TouchableOpacity style={styles.dropdownView}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {item?.name}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                  dropdownIconPosition={'left'}
+                  dropdownStyle={styles.dropdown2DropdownStyle}
+                />
+              </View>
+            </View>
+
+            <View style={styles.nameView}>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Sub Category:</Text>
+                <TextInput
+                  value={subCategory}
+                  placeholder={'Sub Category'}
+                  onChangeText={text => setSubCategory(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
                 />
               </View>
 
               <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>GENDER</Text>
-                <View style={[styles.statusView, {paddingVertical: hp(1)}]}>
-                  <View style={[styles.optionView]}>
-                    <TouchableOpacity
-                      onPress={() => setGenderType('female')}
-                      style={[
-                        styles.roundBorder,
-                        {
-                          backgroundColor:
-                            genderType == 'female'
-                              ? COLORS.blueColor
-                              : COLORS.white,
-                          borderWidth: genderType == 'female' ? 0 : 0.5,
-                        },
-                      ]}>
-                      <View style={styles.round} />
-                    </TouchableOpacity>
-                    <Text style={styles.statusText}>Female</Text>
-                  </View>
-                  <View style={[styles.optionView]}>
-                    <TouchableOpacity
-                      onPress={() => setGenderType('male')}
-                      style={[
-                        styles.roundBorder,
-                        {
-                          backgroundColor:
-                            genderType == 'male'
-                              ? COLORS.blueColor
-                              : COLORS.white,
-                          borderWidth: genderType == 'male' ? 0 : 0.5,
-                        },
-                      ]}>
-                      <View style={styles.round} />
-                    </TouchableOpacity>
-                    <Text style={styles.statusText}>Male</Text>
-                  </View>
-                </View>
+                <Text style={styles.dataHistoryText1}>Report Days:</Text>
+                <TextInput
+                  value={reportDay}
+                  placeholder={'Report Days'}
+                  onChangeText={text => setReportDay(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                  keyboardType={'number-pad'}
+                />
+              </View>
+            </View>
+
+            <View style={styles.nameView}>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Charge Category:</Text>
+                <SelectDropdown
+                  data={chargeCategoryData}
+                  onSelect={(selectedItem, index) => {
+                    // setSelectedColor(selectedItem);
+                    setChargeCategoryId(selectedItem.id);
+                    let array = [];
+                    for (const item of chargeData) {
+                      if (item.charge_category_id == selectedItem.name) {
+                        array.push(item);
+                      }
+                    }
+                    console.log('Array:', array);
+                    setRefresh(!refresh);
+                    setChargeArray(array);
+                    setRefresh(!refresh);
+                    console.log('gert Value:::', selectedItem);
+                  }}
+                  defaultValue={chargeCategoryName}
+                  renderButton={(selectedItem, isOpen) => {
+                    console.log('Get Response>>>', selectedItem);
+                    return (
+                      <View style={styles.dropdown2BtnStyle2}>
+                        {chargeCategoryId != '' ? (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {chargeCategoryId == selectedItem?.id
+                              ? selectedItem?.name
+                              : chargeCategoryName}
+                          </Text>
+                        ) : (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {selectedItem?.name || 'Select Charge Category'}
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(item, index, isSelected) => {
+                    return (
+                      <TouchableOpacity style={styles.dropdownView}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {item?.name}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                  dropdownIconPosition={'left'}
+                  dropdownStyle={styles.dropdown2DropdownStyle}
+                />
+              </View>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Charge:</Text>
+                <SelectDropdown
+                  data={chargeArray}
+                  disabled={chargeArray.length > 0 ? false : true}
+                  onSelect={(selectedItem, index) => {
+                    // setSelectedColor(selectedItem);
+                    setChargeId(selectedItem.id);
+                    setStandardCharge(
+                      JSON.stringify(selectedItem.standard_charge),
+                    );
+                    console.log('gert Value:::', selectedItem);
+                  }}
+                  defaultValue={chargeName}
+                  renderButton={(selectedItem, isOpen) => {
+                    console.log('Get Response>>>', selectedItem);
+                    return (
+                      <View
+                        style={[
+                          styles.dropdown2BtnStyle2,
+                          {
+                            backgroundColor:
+                              chargeArray.length > 0 ? '#fff' : '#c2c2c2',
+                          },
+                        ]}>
+                        {chargeId != '' ? (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {chargeId == selectedItem?.id
+                              ? selectedItem?.code
+                              : chargeName}
+                          </Text>
+                        ) : (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {selectedItem?.code || 'Select Charge'}
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(item, index, isSelected) => {
+                    return (
+                      <TouchableOpacity style={styles.dropdownView}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {item?.code}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                  dropdownIconPosition={'left'}
+                  dropdownStyle={styles.dropdown2DropdownStyle}
+                />
               </View>
             </View>
 
             <View style={styles.nameView}>
               <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>ADDRESS</Text>
+                <Text style={styles.dataHistoryText1}>Standard Charge:</Text>
                 <TextInput
-                  value={address}
-                  placeholder={'******'}
-                  onChangeText={text => setAddress(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                  secureTextEntry={true}
+                  value={standardCharge}
+                  placeholder={'Standard Charge'}
+                  onChangeText={text => setStandardCharge(text)}
+                  style={[styles.nameTextVie1, {width: '100%'}]}
+                  editable={false}
                 />
               </View>
             </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>CITY</Text>
-                <TextInput
-                  value={city}
-                  placeholder={'Enter city'}
-                  onChangeText={text => setCity(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-
-              <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>COUNTRY</Text>
-                <TextInput
-                  value={country}
-                  placeholder={'Enter country'}
-                  onChangeText={text => setCountry(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>POSTAL CODE</Text>
-                <TextInput
-                  value={postalCode}
-                  placeholder={'Postal Code'}
-                  onChangeText={text => setPostalCode(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View>
-                <Text style={styles.dataHistoryText1}>PROFILE</Text>
-                <View style={styles.profilePhotoView}>
-                  <TouchableOpacity
-                    style={styles.editView}
-                    onPress={() => openProfileImagePicker()}>
-                    <Image style={styles.editImage1} source={draw} />
-                  </TouchableOpacity>
-                  <Image style={styles.profileImage} source={man} />
-                </View>
-              </View>
-            </View>
+            {errorVisible ? (
+              <Text style={styles.dataHistoryText4}>{errorMessage}</Text>
+            ) : null}
           </View>
 
           <View style={styles.buttonView}>
-            <TouchableOpacity onPress={() => {}} style={styles.nextView}>
-              <Text style={styles.nextText}>Save</Text>
+            <TouchableOpacity
+              onPress={() => {
+                userId != '' ? onEditPayRollData() : onAddPayRollData();
+              }}
+              style={styles.nextView}>
+              {loading ? (
+                <ActivityIndicator size={'small'} color={COLORS.white} />
+              ) : (
+                <Text style={styles.nextText}>Save</Text>
+              )}
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => {}} style={styles.prevView}>
+            <TouchableOpacity
+              onPress={() => {
+                setNewUserVisible(false);
+              }}
+              style={styles.prevView}>
               <Text style={styles.prevText}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
       )}
+      <DeletePopup
+        modelVisible={deleteUser}
+        setModelVisible={setDeleteUser}
+        onPress={() => onDeletePayrollData(userId)}
+        setUserId={setUserId}
+        isLoading={loading}
+      />
     </View>
   );
 };
@@ -580,6 +847,12 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.errorColor,
   },
+  dataHistoryText5: {
+    fontSize: hp(1.7),
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    color: COLORS.black,
+    width: wp(45),
+  },
   mainDataView: {
     minHeight: hp(29),
     maxHeight: hp(74),
@@ -650,6 +923,19 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginTop: hp(1),
     backgroundColor: COLORS.white,
+  },
+  nameTextVie1: {
+    width: '50%',
+    paddingHorizontal: wp(2),
+    paddingVertical: hp(0.5),
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    color: COLORS.black,
+    borderRadius: 5,
+    marginTop: hp(1),
+    backgroundColor: COLORS.lightGrey,
   },
   nameView: {
     flexDirection: 'row',
@@ -823,5 +1109,44 @@ const styles = StyleSheet.create({
     fontSize: hp(2.5),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
+  },
+  dropdown2DropdownStyle: {
+    backgroundColor: COLORS.white,
+    borderRadius: 4,
+    height: hp(25),
+    // borderRadius: 12,
+  },
+  dropdownItemTxtStyle: {
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    marginLeft: wp(2),
+  },
+  dropdownView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: hp(4),
+    borderBottomWidth: 0,
+  },
+  dropdown2BtnStyle2: {
+    width: '100%',
+    height: hp(4.2),
+    backgroundColor: COLORS.white,
+    borderRadius: 5,
+    alignItems: 'center',
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    marginTop: hp(1),
+  },
+  parameterView: {
+    width: '100%',
+    fontSize: hp(2.2),
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    color: COLORS.black,
+    backgroundColor: COLORS.lightGreyColor,
+    paddingVertical: hp(1),
+    marginTop: hp(3),
+    paddingLeft: wp(3),
   },
 });

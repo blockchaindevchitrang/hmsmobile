@@ -11,6 +11,7 @@ import {
   Platform,
   Modal,
   TouchableWithoutFeedback,
+  ActivityIndicator,
 } from 'react-native';
 import React, {useRef, useState} from 'react';
 import {
@@ -23,22 +24,213 @@ import ProfilePhoto from '../ProfilePhoto';
 import moment from 'moment';
 import deleteIcon from '../../images/delete.png';
 import editing from '../../images/editing.png';
-import close from '../../images/close.png';
+import SelectDropdown from 'react-native-select-dropdown';
 import {
-  Menu,
-  MenuOptions,
-  MenuOption,
-  MenuTrigger,
-} from 'react-native-popup-menu';
+  onAddAccountListApi,
+  onDeleteCommonApi,
+  onGetEditAccountDataApi,
+  onGetSpecificCommonApi,
+} from '../../services/Api';
+import {DeletePopup} from '../DeletePopup';
+import FlashMessage, {
+  showMessage,
+  hideMessage,
+} from 'react-native-flash-message';
 
-const ItemsList = ({searchBreak, setSearchBreak, allData}) => {
+const ItemsList = ({
+  searchBreak,
+  setSearchBreak,
+  allData,
+  onGetData,
+  itemCategory,
+}) => {
   const {theme} = useTheme();
   const menuRef = useRef(null);
   const [newAccountVisible, setNewAccountVisible] = useState(false);
-  const [eventTitle, setEventTitle] = useState('');
-  const [departmentComment, setDepartmentComment] = useState('');
-  const [statusVisible, setStatusVisible] = useState(false);
-  const [chargeType, setChargeType] = useState('');
+  const [name, setName] = useState('');
+  const [categoryId, setCategoryId] = useState('');
+  const [categoryName, setCategoryName] = useState('');
+  const [unit, setUnit] = useState('');
+  const [description, setDescription] = useState('');
+  const [errorVisible, setErrorVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [userId, setUserId] = useState('');
+  const [deleteUser, setDeleteUser] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const onAddPayRollData = async () => {
+    try {
+      if (name == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter item name.');
+      } else if (categoryId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select item category.');
+      } else if (unit == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter item unit.');
+      } else {
+        setLoading(true);
+        setErrorVisible(false);
+
+        const urlData = `item-store?name=${name}&item_category_id=${categoryId}&unit=${unit}&description=${description}`;
+        const response = await onAddAccountListApi(urlData);
+        if (response.data.flag == 1) {
+          onGetData();
+          setLoading(false);
+          setNewAccountVisible(false);
+          showMessage({
+            message: 'Record Added Successfully',
+            type: 'success',
+            duration: 3000,
+          });
+        } else {
+          setLoading(false);
+          showMessage({
+            message: response.data.message,
+            type: 'danger',
+            duration: 6000,
+            icon: 'danger',
+          });
+        }
+      }
+    } catch (err) {
+      if (err.response.data.message) {
+        showMessage({
+          message: err.response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      } else {
+        showMessage({
+          message: 'Something want wrong.',
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
+      setLoading(false);
+      console.log('Error:', err);
+    }
+  };
+
+  const onEditPayRollData = async () => {
+    try {
+      if (name == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter item name.');
+      } else if (categoryId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select item category.');
+      } else if (unit == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter item unit.');
+      } else {
+        setLoading(true);
+        setErrorVisible(false);
+        const urlData = `item-update/${userId}?name=${name}&item_category_id=${categoryId}&unit=${unit}&description=${description}`;
+        const response = await onGetEditAccountDataApi(urlData);
+        // const response = await onGetEditCommonJsonApi(urlData, raw);
+        console.log('Get Error::', response.data);
+        if (response.data.flag == 1) {
+          onGetData();
+          setLoading(false);
+          setNewAccountVisible(false);
+          showMessage({
+            message: 'Record Edit Successfully',
+            type: 'success',
+            duration: 3000,
+          });
+        } else {
+          setLoading(false);
+          showMessage({
+            message: response.data.message,
+            type: 'danger',
+            duration: 6000,
+            icon: 'danger',
+          });
+        }
+      }
+    } catch (err) {
+      setLoading(false);
+      if (err.response.data.message) {
+        showMessage({
+          message: err.response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      } else {
+        showMessage({
+          message: 'Something want wrong.',
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
+      console.log('Error:', err);
+    }
+  };
+
+  const onDeletePayrollData = async id => {
+    try {
+      setLoading(true);
+      const response = await onDeleteCommonApi(`item-delete/${id}`);
+      if (response.data.flag == 1) {
+        onGetData();
+        setLoading(false);
+        setDeleteUser(false);
+        showMessage({
+          message: 'Record Delete Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      } else {
+        setLoading(false);
+        setDeleteUser(false);
+        showMessage({
+          message: response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
+    } catch (err) {
+      setLoading(false);
+      setDeleteUser(false);
+      if (err.response.data.message) {
+        showMessage({
+          message: err.response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      } else {
+        showMessage({
+          message: 'Something want wrong.',
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
+      console.log('Get Error', err);
+    }
+  };
+
+  const onGetSpecificDoctor = async id => {
+    try {
+      const response = await onGetSpecificCommonApi(`item-edit/${id}`);
+      if (response.status == 200) {
+        console.log('get ValueLL:::', response.data.data.item);
+        return response.data.data.item;
+      } else {
+        return 0;
+      }
+    } catch (err) {
+      console.log('Get Error', err);
+    }
+  };
 
   const renderItem = ({item, index}) => {
     return (
@@ -51,23 +243,43 @@ const ItemsList = ({searchBreak, setSearchBreak, allData}) => {
           <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
         </View>
         <View style={[styles.switchView, {width: wp(35)}]}>
+          <Text style={[styles.dataHistoryText1]}>{item.itemcategory}</Text>
+        </View>
+        <View style={[styles.switchView, {width: wp(22)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataHistoryText1]}>{item.serial_number}</Text>
+            <Text style={[styles.dataHistoryText1]}>{item.unit}</Text>
           </View>
         </View>
-        <View style={[styles.switchView, {width: wp(35)}]}>
+        <View style={[styles.switchView, {width: wp(40)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataHistoryText1]}>{item.dose_number}</Text>
+            <Text style={[styles.dataHistoryText1]}>
+              {item.available_quantity}
+            </Text>
           </View>
         </View>
         <View style={styles.actionDataView}>
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={async () => {
+              let allDatas = await onGetSpecificDoctor(item.id);
+              setUserId(item.id);
+              setName(item.name);
+              setCategoryName(item.itemcategory);
+              setCategoryId(allDatas.item_category_id);
+              setUnit(JSON.stringify(item.unit));
+              setDescription(item.description);
+              setNewAccountVisible(true);
+            }}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.blueColor}]}
               source={editing}
             />
           </TouchableOpacity>
-          <TouchableOpacity style={{marginLeft: wp(2)}}>
+          <TouchableOpacity
+            onPress={() => {
+              setUserId(item.id);
+              setDeleteUser(true);
+            }}
+            style={{marginLeft: wp(2)}}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.errorColor}]}
               source={deleteIcon}
@@ -79,8 +291,8 @@ const ItemsList = ({searchBreak, setSearchBreak, allData}) => {
   };
 
   return (
-    <>
-      <View style={styles.safeAreaStyle}>
+    <View style={styles.safeAreaStyle}>
+      {!newAccountVisible ? (
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{paddingBottom: hp(12)}}>
@@ -93,7 +305,19 @@ const ItemsList = ({searchBreak, setSearchBreak, allData}) => {
               style={[styles.searchView, {color: theme.text}]}
             />
             <View style={styles.filterView}>
-              <TouchableOpacity onPress={() => {}} style={styles.actionView}>
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId('');
+                  setName('');
+                  setCategoryId('');
+                  setCategoryName('');
+                  setUnit('');
+                  setDescription('');
+                  setErrorMessage('');
+                  setErrorVisible(false);
+                  setNewAccountVisible(true);
+                }}
+                style={styles.actionView}>
                 <Text style={styles.actionText}>New Item</Text>
               </TouchableOpacity>
             </View>
@@ -113,13 +337,16 @@ const ItemsList = ({searchBreak, setSearchBreak, allData}) => {
                       styles.titleText,
                       {width: wp(35), textAlign: 'left'},
                     ]}>
-                    {'FILE NAME'}
+                    {'NAME'}
                   </Text>
                   <Text style={[styles.titleText, {width: wp(35)}]}>
-                    {'DOCUMENT TYPE'}
+                    {'ITEM CATEGORY'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(35)}]}>
-                    {'ACCOUNTANTS'}
+                  <Text style={[styles.titleText, {width: wp(22)}]}>
+                    {'UNIT'}
+                  </Text>
+                  <Text style={[styles.titleText, {width: wp(40)}]}>
+                    {'AVAILABLE QUANTITY'}
                   </Text>
                   <Text style={[styles.titleText, {width: wp(16)}]}>
                     {'ACTION'}
@@ -147,65 +374,135 @@ const ItemsList = ({searchBreak, setSearchBreak, allData}) => {
             </ScrollView>
           </View>
         </ScrollView>
-      </View>
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={newAccountVisible}
-        onRequestClose={() => setNewAccountVisible(false)}>
-        <View style={styles.maneModalView}>
-          <TouchableWithoutFeedback
-            onPress={() => {
-              setNewAccountVisible(false);
-            }}>
-            <View style={styles.modalOverlay} />
-          </TouchableWithoutFeedback>
-          <View style={styles.container}>
-            <View style={styles.headerView}>
-              <Text style={styles.headerText}>New Item</Text>
-              <TouchableOpacity onPress={() => setNewAccountVisible(false)}>
-                <Image style={styles.closeImage} source={close} />
-              </TouchableOpacity>
-            </View>
-            <Text style={[styles.titleText1, {marginTop: hp(1.5)}]}>
-              {'Charge Category'}
+      ) : (
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{paddingBottom: hp(12)}}>
+          <View style={styles.subView}>
+            <Text style={[styles.doctorText, {color: theme.text}]}>
+              New Item
             </Text>
-            <TextInput
-              value={eventTitle}
-              placeholder={''}
-              onChangeText={text => setEventTitle(text)}
-              style={[styles.eventTextInput]}
-            />
-            <Text style={[styles.titleText1]}>{'Description'}</Text>
-            <TextInput
-              value={departmentComment}
-              placeholder={'Leave a comment...'}
-              onChangeText={text => setDepartmentComment(text)}
-              style={[styles.commentTextInput]}
-              multiline
-              textAlignVertical="top"
-            />
-            <Text style={[styles.titleText1]}>{'Charge Type'}</Text>
-            <TextInput
-              value={chargeType}
-              placeholder={''}
-              onChangeText={text => setChargeType(text)}
-              style={[styles.eventTextInput]}
-            />
-            <View style={styles.buttonView}>
-              <TouchableOpacity onPress={() => {}} style={styles.nextView}>
-                <Text style={styles.nextText}>Save</Text>
-              </TouchableOpacity>
+            <View style={styles.filterView}>
               <TouchableOpacity
                 onPress={() => setNewAccountVisible(false)}
-                style={styles.prevView}>
-                <Text style={styles.prevText}>Cancel</Text>
+                style={styles.backButtonView}>
+                <Text style={styles.backText}>BACK</Text>
               </TouchableOpacity>
             </View>
           </View>
-        </View>
-      </Modal>
-    </>
+
+          <View style={styles.profileView}>
+            <View style={styles.nameView}>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Name:</Text>
+                <TextInput
+                  value={name}
+                  placeholder={'Name'}
+                  onChangeText={text => setName(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                />
+              </View>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Item Category:</Text>
+                <SelectDropdown
+                  data={itemCategory}
+                  onSelect={(selectedItem, index) => {
+                    // setSelectedColor(selectedItem);
+                    setCategoryId(selectedItem.id);
+                    console.log('gert Value:::', selectedItem);
+                  }}
+                  defaultValue={categoryName}
+                  renderButton={(selectedItem, isOpen) => {
+                    console.log('Get Response>>>', selectedItem);
+                    return (
+                      <View style={styles.dropdown2BtnStyle2}>
+                        {categoryId != '' ? (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {categoryId == selectedItem?.id
+                              ? selectedItem?.name
+                              : categoryName}
+                          </Text>
+                        ) : (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {selectedItem?.name || 'Select Item Category'}
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(item, index, isSelected) => {
+                    return (
+                      <TouchableOpacity style={styles.dropdownView}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {item.name}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                  dropdownIconPosition={'left'}
+                  dropdownStyle={styles.dropdown2DropdownStyle}
+                />
+              </View>
+            </View>
+
+            <View style={styles.nameView}>
+              <View style={{width: '100%'}}>
+                <Text style={styles.dataHistoryText1}>Unit:</Text>
+                <TextInput
+                  value={unit}
+                  placeholder={'Unit'}
+                  onChangeText={text => setUnit(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                />
+              </View>
+            </View>
+            <View style={styles.nameView}>
+              <View style={{width: '100%'}}>
+                <Text style={styles.dataHistoryText1}>Description:</Text>
+                <TextInput
+                  value={description}
+                  placeholder={'Description'}
+                  onChangeText={text => setDescription(text)}
+                  style={[styles.commentTextInput]}
+                  multiline
+                  textAlignVertical="top"
+                />
+              </View>
+            </View>
+            {errorVisible ? (
+              <Text style={styles.dataHistoryText4}>{errorMessage}</Text>
+            ) : null}
+          </View>
+
+          <View style={styles.buttonView}>
+            <TouchableOpacity
+              onPress={() => {
+                userId != '' ? onEditPayRollData() : onAddPayRollData();
+              }}
+              style={styles.nextView}>
+              {loading ? (
+                <ActivityIndicator size={'small'} color={COLORS.white} />
+              ) : (
+                <Text style={styles.nextText}>Save</Text>
+              )}
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setNewAccountVisible(false)}
+              style={styles.prevView}>
+              <Text style={styles.prevText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      )}
+      <DeletePopup
+        modelVisible={deleteUser}
+        setModelVisible={setDeleteUser}
+        onPress={() => onDeletePayrollData(userId)}
+        setUserId={setUserId}
+        isLoading={loading}
+      />
+    </View>
   );
 };
 
@@ -226,7 +523,7 @@ const styles = StyleSheet.create({
     marginVertical: hp(2),
   },
   searchView: {
-    width: '50%',
+    width: '60%',
     paddingHorizontal: wp(2),
     paddingVertical: hp(0.5),
     borderWidth: 1,
@@ -239,9 +536,9 @@ const styles = StyleSheet.create({
   filterView: {
     flexDirection: 'row',
     alignItems: 'center',
-    // justifyContent: 'flex-end',
-    // paddingHorizontal: wp(3),
-    // paddingBottom: hp(1),
+    justifyContent: 'flex-end',
+    paddingHorizontal: wp(3),
+    marginBottom: hp(1),
   },
   filterView1: {
     height: hp(5),
@@ -297,7 +594,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginTop: hp(1),
     paddingBottom: hp(0.5),
-    justifyContent: 'space-between',
   },
   titleText: {
     fontSize: hp(1.8),
@@ -306,20 +602,12 @@ const styles = StyleSheet.create({
     marginHorizontal: wp(2),
     textAlign: 'left',
   },
-  titleText1: {
-    fontSize: hp(1.8),
-    fontFamily: Fonts.FONTS.PoppinsSemiBold,
-    color: COLORS.black,
-    marginHorizontal: wp(3),
-    textAlign: 'left',
-  },
   dataHistoryView: {
     width: '100%',
     height: hp(8),
     alignItems: 'center',
     flexDirection: 'row',
     alignSelf: 'flex-start',
-    justifyContent: 'space-between',
   },
   dataHistoryText: {
     fontSize: hp(1.8),
@@ -332,12 +620,12 @@ const styles = StyleSheet.create({
     fontSize: hp(1.7),
     fontFamily: Fonts.FONTS.PoppinsBold,
     color: COLORS.black,
+    marginHorizontal: wp(2),
   },
   dataHistoryText2: {
     fontSize: hp(1.8),
     fontFamily: Fonts.FONTS.PoppinsBold,
     color: COLORS.blueColor,
-    textAlign: 'center',
   },
   dataHistoryText3: {
     fontSize: hp(1.8),
@@ -350,6 +638,12 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.errorColor,
   },
+  dataHistoryText5: {
+    fontSize: hp(1.7),
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    color: COLORS.black,
+    width: wp(45),
+  },
   mainDataView: {
     minHeight: hp(29),
     maxHeight: hp(74),
@@ -359,15 +653,28 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: wp(3),
     borderBottomRightRadius: wp(3),
   },
+  commentTextInput: {
+    width: '100%',
+    paddingHorizontal: wp(3),
+    paddingVertical: hp(1),
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(2),
+    color: COLORS.black,
+    borderRadius: 5,
+    alignSelf: 'center',
+    height: hp(14),
+    marginTop: hp(1),
+  },
   nameDataView: {
     flexDirection: 'row',
     alignItems: 'center',
     width: wp(35),
     marginHorizontal: wp(2),
-    // justifyContent: 'center',
   },
   switchView: {
-    width: wp(20),
+    width: wp(24),
     justifyContent: 'center',
     marginHorizontal: wp(2),
     alignItems: 'flex-start',
@@ -422,6 +729,19 @@ const styles = StyleSheet.create({
     marginTop: hp(1),
     backgroundColor: COLORS.white,
   },
+  nameTextVie1: {
+    width: '50%',
+    paddingHorizontal: wp(2),
+    paddingVertical: hp(0.5),
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    color: COLORS.black,
+    borderRadius: 5,
+    marginTop: hp(1),
+    backgroundColor: COLORS.lightGrey,
+  },
   nameView: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -439,12 +759,10 @@ const styles = StyleSheet.create({
   },
   buttonView: {
     width: '94%',
-    paddingHorizontal: wp(3),
     alignSelf: 'center',
     flexDirection: 'row',
     justifyContent: 'flex-end',
     alignItems: 'center',
-    marginTop: hp(2),
   },
   nextView: {
     height: hp(4.5),
@@ -484,7 +802,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 5,
-    padding: 8,
+    padding: 5,
   },
   startDateText: {
     fontSize: hp(2),
@@ -557,9 +875,7 @@ const styles = StyleSheet.create({
   statusView: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: hp(1.5),
-    width: '92%',
-    alignSelf: 'center',
+    justifyContent: 'flex-start',
   },
   profilePhotoView: {
     borderWidth: 0.5,
@@ -588,72 +904,6 @@ const styles = StyleSheet.create({
     height: hp(2.5),
     resizeMode: 'contain',
   },
-  container: {
-    width: '94%',
-    // height: hp(22),
-    paddingVertical: hp(2),
-    backgroundColor: COLORS.white,
-    borderRadius: 10,
-    // marginLeft: -wp(2.5),
-    // paddingTop: hp(3),
-  },
-  modalOverlay: {
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-  },
-  maneModalView: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '100%',
-    height: '100%',
-  },
-  headerView: {
-    width: '96%',
-    alignSelf: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginVertical: hp(1),
-    paddingHorizontal: wp(2),
-  },
-  headerText: {
-    fontFamily: Fonts.FONTS.PoppinsBold,
-    fontSize: hp(2.2),
-    color: COLORS.black,
-  },
-  eventTextInput: {
-    width: '92%',
-    paddingHorizontal: wp(3),
-    paddingVertical: hp(1),
-    borderWidth: 1,
-    borderColor: COLORS.greyColor,
-    fontFamily: Fonts.FONTS.PoppinsMedium,
-    fontSize: hp(2),
-    color: COLORS.black,
-    borderRadius: 5,
-    alignSelf: 'center',
-    marginBottom: hp(3),
-    marginTop: hp(1),
-  },
-  commentTextInput: {
-    width: '92%',
-    paddingHorizontal: wp(3),
-    paddingVertical: hp(1),
-    borderWidth: 1,
-    borderColor: COLORS.greyColor,
-    fontFamily: Fonts.FONTS.PoppinsMedium,
-    fontSize: hp(2),
-    color: COLORS.black,
-    borderRadius: 5,
-    alignSelf: 'center',
-    height: hp(14),
-    marginTop: hp(1),
-    marginBottom: hp(3),
-  },
   ListEmptyView: {
     width: '100%',
     alignItems: 'center',
@@ -664,5 +914,44 @@ const styles = StyleSheet.create({
     fontSize: hp(2.5),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
+  },
+  dropdown2DropdownStyle: {
+    backgroundColor: COLORS.white,
+    borderRadius: 4,
+    height: hp(25),
+    // borderRadius: 12,
+  },
+  dropdownItemTxtStyle: {
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    marginLeft: wp(2),
+  },
+  dropdownView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: hp(4),
+    borderBottomWidth: 0,
+  },
+  dropdown2BtnStyle2: {
+    width: '100%',
+    height: hp(4.2),
+    backgroundColor: COLORS.white,
+    borderRadius: 5,
+    alignItems: 'center',
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    marginTop: hp(1),
+  },
+  parameterView: {
+    width: '100%',
+    fontSize: hp(2.2),
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    color: COLORS.black,
+    backgroundColor: COLORS.lightGreyColor,
+    paddingVertical: hp(1),
+    marginTop: hp(3),
+    paddingLeft: wp(3),
   },
 });

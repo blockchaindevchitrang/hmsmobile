@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -21,13 +21,11 @@ import {
 } from '../../components/Pixel';
 import headerLogo from '../../images/headerLogo.png';
 import {BlurView} from '@react-native-community/blur';
-import ChargeCategoriesList from '../../components/HospitalChargesComponent/ChargeCategoriesList';
-import ChargesComponent from '../../components/HospitalChargesComponent/ChargesComponent';
-import DoctorChargesList from '../../components/HospitalChargesComponent/DoctorChargesList';
 import ItemCategoriesList from '../../components/InventoryComponent/ItemCategoriesList';
 import ItemsList from '../../components/InventoryComponent/ItemsList';
 import IssuedItemsList from '../../components/InventoryComponent/IssuedItemsList';
 import ItemStocksList from '../../components/InventoryComponent/ItemStocksList';
+import { onGetCommonApi } from '../../services/Api';
 
 const allData = [
   {
@@ -138,9 +136,15 @@ export const InventoryScreen = ({navigation}) => {
   const {theme} = useTheme();
   const [searchAccount, setSearchAccount] = useState('');
   const [searchPayroll, setSearchPayroll] = useState('');
+  const [searchItemStock, setSearchItemStock] = useState('');
   const [searchPharmacists, setSearchPharmacists] = useState('');
   const [optionModalView, setOptionModalView] = useState(false);
   const [selectedView, setSelectedView] = useState('Item Categories');
+  const [itemCategory, setItemCategory] = useState([]);
+  const [itemList, setItemList] = useState([]);
+  const [itemStockList, setItemStockList] = useState([]);
+  const [issueItemList, setIssueItemList] = useState([]);
+  const [refresh, setRefresh] = useState(false);
 
   const animations = useRef(
     [0, 0, 0, 0, 0].map(() => new Animated.Value(300)),
@@ -199,6 +203,80 @@ export const InventoryScreen = ({navigation}) => {
     }
   };
 
+  useEffect(() => {
+    onGetItemCategoriesData();
+  }, [searchAccount]);
+
+  const onGetItemCategoriesData = async () => {
+    try {
+      const response = await onGetCommonApi(
+        `item-category-get?search=${searchAccount}`,
+      );
+      console.log('get Response:', response.data.data);
+      if (response.data.flag === 1) {
+        setItemCategory(response.data.data.items);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Error>>', err);
+    }
+  };
+
+  useEffect(() => {
+    onGetItemData();
+  }, [searchPayroll]);
+
+  const onGetItemData = async () => {
+    try {
+      const response = await onGetCommonApi(`item-get?search=${searchPayroll}`);
+      console.log('get Response:', response.data.data);
+      if (response.data.flag === 1) {
+        setItemList(response.data.data.items);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Error>>', err);
+    }
+  };
+
+  useEffect(() => {
+    onGetItemStockData();
+  }, [searchItemStock]);
+
+  const onGetItemStockData = async () => {
+    try {
+      const response = await onGetCommonApi(
+        `item-stock-get?search=${searchItemStock}`,
+      );
+      console.log('get Response:', response.data.data);
+      if (response.data.flag === 1) {
+        setItemStockList(response.data.data.items);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Error>>', err);
+    }
+  };
+
+  useEffect(() => {
+    onGetIssueItemData();
+  }, [searchPharmacists]);
+
+  const onGetIssueItemData = async () => {
+    try {
+      const response = await onGetCommonApi(
+        `issue-item-get?search=${searchPharmacists}`,
+      );
+      console.log('get Response:', response.data.data);
+      if (response.data.flag === 1) {
+        setIssueItemList(response.data.data.items);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Error>>', err);
+    }
+  };
+
   return (
     <View style={[styles.container, {backgroundColor: theme.lightColor}]}>
       <View style={styles.headerView}>
@@ -214,26 +292,35 @@ export const InventoryScreen = ({navigation}) => {
           <ItemCategoriesList
             searchBreak={searchAccount}
             setSearchBreak={setSearchAccount}
-            allData={[]}
+            allData={itemCategory}
+            onGetData={onGetItemCategoriesData}
           />
         ) : selectedView == 'Items' ? (
           <ItemsList
             searchBreak={searchPayroll}
             setSearchBreak={setSearchPayroll}
-            allData={[]}
+            allData={itemList}
+            onGetData={onGetItemData}
+            itemCategory={itemCategory}
           />
         ) : selectedView == 'Item Stocks' ? (
           <ItemStocksList
-            searchBreak={searchPayroll}
-            setSearchBreak={setSearchPayroll}
-            allData={[]}
+            searchBreak={searchItemStock}
+            setSearchBreak={setSearchItemStock}
+            allData={itemStockList}
+            onGetData={onGetItemStockData}
+            itemCategory={itemCategory}
+            itemList={itemList}
           />
         ) : (
           selectedView == 'Issued Items' && (
             <IssuedItemsList
               searchBreak={searchPharmacists}
               setSearchBreak={setSearchPharmacists}
-              allData={[]}
+              allData={issueItemList}
+              onGetData={onGetIssueItemData}
+              itemCategory={itemCategory}
+              itemList={itemList}
             />
           )
         )}

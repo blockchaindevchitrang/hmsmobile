@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -27,6 +27,7 @@ import PatientsList from '../../components/PatientsComponent/PatientsList';
 import GeneratePatient from '../../components/PatientsComponent/GeneratePatient';
 import RadiologyTests from '../../components/RadiologyComponent/RadiologyTests';
 import RadiologyCategories from '../../components/RadiologyComponent/RadiologyCategories';
+import { onGetCommonApi } from '../../services/Api';
 
 const allData = [
   {
@@ -113,15 +114,12 @@ export const RadiologyScreen = ({navigation}) => {
   const {t} = useTranslation();
   const {theme} = useTheme();
   const [searchUser, setSearchUser] = useState('');
-  const [searchRole, setSearchRole] = useState('');
-  const [searchAccountant, setSearchAccountant] = useState('');
-  const [searchBreak, setSearchBreak] = useState('');
-  const [searchNurse, setSearchNurse] = useState('');
-  const [searchReceptionist, setSearchReceptionist] = useState('');
-  const [searchLabTechnician, setSearchLabTechnician] = useState('');
   const [searchPharmacists, setSearchPharmacists] = useState('');
+  const [refresh, setRefresh] = useState(false);
   const [optionModalView, setOptionModalView] = useState(false);
-  const [selectedView, setSelectedView] = useState('Patients');
+  const [selectedView, setSelectedView] = useState('Radiology Categories');
+  const [radiologyCategory, setRadiologyCategory] = useState([]);
+  const [radiologyTest, setRadiologyTest] = useState([]);
 
   const animations = useRef(
     [0, 0, 0].map(() => new Animated.Value(300)),
@@ -178,6 +176,44 @@ export const RadiologyScreen = ({navigation}) => {
     }
   };
 
+  useEffect(() => {
+    onGetCategoriesData();
+  }, [searchUser]);
+
+  const onGetCategoriesData = async () => {
+    try {
+      const response = await onGetCommonApi(
+        `radiology-category-get?search=${searchUser}`,
+      );
+      console.log('get Response:', response.data.data);
+      if (response.data.flag === 1) {
+        setRadiologyCategory(response.data.data.items);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Error>>', err);
+    }
+  };
+
+  useEffect(() => {
+    onGetTestData();
+  }, [searchPharmacists]);
+
+  const onGetTestData = async () => {
+    try {
+      const response = await onGetCommonApi(
+        `radiology-test-get?search=${searchPharmacists}`,
+      );
+      console.log('get Response:', response.data.data);
+      if (response.data.flag === 1) {
+        setRadiologyTest(response.data.data.items);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Error>>', err);
+    }
+  };
+
   return (
     <View style={[styles.container, {backgroundColor: theme.lightColor}]}>
       <View style={styles.headerView}>
@@ -193,14 +229,17 @@ export const RadiologyScreen = ({navigation}) => {
           <RadiologyCategories
             searchBreak={searchUser}
             setSearchBreak={setSearchUser}
-            allData={[]}
+            allData={radiologyCategory}
+            onGetData={onGetCategoriesData}
           />
         ) : (
           selectedView == 'Radiology Tests' && (
             <RadiologyTests
               searchBreak={searchPharmacists}
               setSearchBreak={setSearchPharmacists}
-              allData={[]}
+              allData={radiologyTest}
+              onGetData={onGetTestData}
+              category={radiologyCategory}
             />
           )
         )}

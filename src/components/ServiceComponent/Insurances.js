@@ -9,148 +9,138 @@ import {
   TextInput,
   FlatList,
   Platform,
-  Modal,
-  TouchableWithoutFeedback,
   ActivityIndicator,
 } from 'react-native';
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useRef, useState} from 'react';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
-} from '../Pixel/index';
+} from './../Pixel/index';
 import {COLORS, Fonts} from '../../utils';
 import {useTheme} from '../../utils/ThemeProvider';
-import ProfilePhoto from '../ProfilePhoto';
+import ProfilePhoto from './../ProfilePhoto';
 import moment from 'moment';
 import deleteIcon from '../../images/delete.png';
 import editing from '../../images/editing.png';
-import close from '../../images/close.png';
-import photo from '../../images/photo.png';
-import draw from '../../images/draw.png';
+import DatePicker from 'react-native-date-picker';
 import SelectDropdown from 'react-native-select-dropdown';
 import {useSelector} from 'react-redux';
 import {
   onAddAccountListApi,
-  onAddCommonFormDataApi,
-  onAddInvestigationApi,
+  onAddCommonJsonApi,
   onDeleteCommonApi,
   onGetEditAccountDataApi,
+  onGetEditCommonJsonApi,
   onGetSpecificCommonApi,
-  onUpdateCommonFormDataApi,
-  onUpdateInvestigationApi,
 } from '../../services/Api';
 import {DeletePopup} from '../DeletePopup';
 import FlashMessage, {
   showMessage,
   hideMessage,
 } from 'react-native-flash-message';
-import ImagePicker from 'react-native-image-crop-picker';
 
-const ItemStocksList = ({
-  searchBreak,
-  setSearchBreak,
-  allData,
-  onGetData,
-  itemCategory,
-  itemList,
-}) => {
+const Insurances = ({searchBreak, setSearchBreak, allData, onGetData}) => {
+  const user_data = useSelector(state => state.user_data);
+  const chargeCategoryData = useSelector(state => state.chargeCategoryData);
+  const chargeData = useSelector(state => state.chargeData);
   const {theme} = useTheme();
-  const menuRef = useRef(null);
-  const [newAccountVisible, setNewAccountVisible] = useState(false);
+  const [newUserVisible, setNewUserVisible] = useState(false);
+  const [patientId, setPatientId] = useState('');
+  const [patientName, setPatientName] = useState('');
+  const [testName, setTestName] = useState('');
+  const [sortName, setSortName] = useState('');
+  const [testType, setTestType] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [categoryName, setCategoryName] = useState('');
-  const [itemId, setItemId] = useState('');
-  const [itemName, setItemName] = useState('');
-  const [supplier, setSupplier] = useState('');
-  const [storeName, setStoreName] = useState('');
-  const [quantity, setQuantity] = useState('');
-  const [price, setPrice] = useState('');
-  const [description, setDescription] = useState('');
-  const [avatar, setAvatar] = useState(null);
+  const [unit, setUnit] = useState('');
+  const [subCategory, setSubCategory] = useState('');
+  const [method, setMethod] = useState('');
+  const [reportDay, setReportDay] = useState('');
+  const [chargeId, setChargeId] = useState('');
+  const [chargeName, setChargeName] = useState('');
+  const [standardCharge, setStandardCharge] = useState('');
+  const [refresh, setRefresh] = useState(false);
+  const [parameterArray, setParameterArray] = useState([]);
   const [errorVisible, setErrorVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [userId, setUserId] = useState('');
   const [deleteUser, setDeleteUser] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  let accountantData = itemList.filter(
-    user => user.itemcategory === categoryName,
-  );
-  useEffect(() => {
-    if (accountantData.length > 0) {
-      setItemId(accountantData[0].id);
-      setItemName(accountantData[0].name);
-    } else {
-      setItemId('');
-      setItemName('');
-    }
-  }, [accountantData]);
-
-  const openProfileImagePicker = async () => {
-    try {
-      const image = await ImagePicker.openPicker({
-        width: 300,
-        height: 400,
-        cropping: false,
-        multiple: false, // Allow selecting only one image
-        compressImageQuality: 0.5,
-      });
-
-      if (image && image.path) {
-        if (image && image.path) {
-          var filename = image.path.substring(image.path.lastIndexOf('/') + 1);
-          let imageData = {
-            uri: Platform.OS === 'ios' ? image.sourceURL : image.path,
-            type: image.mime,
-            name: Platform.OS === 'ios' ? image.filename : filename,
-          };
-          setAvatar(imageData);
-
-          console.log('Selected image:', avatar);
-        }
-      } else {
-        console.log('No image selected');
-      }
-    } catch (error) {
-      console.log('Error selecting image:', error);
-    }
-  };
-
   const onAddPayRollData = async () => {
     try {
-      if (categoryId == '') {
+      if (patientId == '') {
         setErrorVisible(true);
-        setErrorMessage('Please select item category.');
-      } else if (itemId == '') {
+        setErrorMessage('Please select patient.');
+      } else if (testName == '') {
         setErrorVisible(true);
-        setErrorMessage('Please select item name.');
-      } else if (quantity == '') {
+        setErrorMessage('Please enter test name.');
+      } else if (sortName == '') {
         setErrorVisible(true);
-        setErrorMessage('Please enter quantity.');
-      } else if (price == '') {
+        setErrorMessage('Please enter short name.');
+      } else if (testType == '') {
         setErrorVisible(true);
-        setErrorMessage('Please enter purchase price.');
+        setErrorMessage('Please enter test type.');
+      } else if (categoryId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select category name.');
+      } else if (chargeId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select charge category.');
+      } else if (standardCharge == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select charge category with standard charge.');
       } else {
         setLoading(true);
         setErrorVisible(false);
+        let parameterId = [];
+        let parameterResult = [];
+        let hasEmptyFields = false;
+        parameterArray.map(item => {
+          if (!item.parameter_id || !item.patient_result) {
+            hasEmptyFields = true;
+          } else {
+            parameterId.push(item.parameter_id);
+            parameterResult.push(item.patient_result);
+          }
+        });
 
-        const formdata = new FormData();
-        formdata.append('item_category_id', categoryId);
-        formdata.append('item_id', itemId);
-        formdata.append('supplier_name', supplier);
-        formdata.append('store_name', storeName);
-        formdata.append('quantity', quantity);
-        formdata.append('purchase_price', price);
-        formdata.append('description', description);
-        // if (avatar != null) {
-        //   formdata.append('attachment', avatar);
-        // }
-        const dataUrl = 'item-stock-store';
-        const response = await onAddCommonFormDataApi(dataUrl, formdata);
+        if (hasEmptyFields) {
+          setErrorVisible(true);
+          setErrorMessage(
+            'Please fill in all parameter IDs and patient results.',
+          );
+          showMessage({
+            message: 'Please fill in all parameter IDs and patient results.',
+            type: 'danger',
+            duration: 3000,
+          });
+          return; // Exit the function without calling the API
+        }
+
+        const urlData = 'pathology-test-store';
+        let raw = JSON.stringify({
+          test_name: testName,
+          short_name: sortName,
+          test_type: testType,
+          category_id: categoryId,
+          unit: unit,
+          subcategory: subCategory,
+          method: method,
+          report_days: reportDay,
+          charge_category_id: chargeId,
+          patient_id: patientId,
+          standard_charge: standardCharge,
+          parameter_id: parameterId,
+          patient_result: parameterResult,
+        });
+        console.log('Get Login Url:::', raw);
+        const response = await onAddCommonJsonApi(urlData, raw);
+        // const response = await onAddAccountListApi(urlData);
         if (response.data.flag == 1) {
           onGetData();
           setLoading(false);
-          setNewAccountVisible(false);
+          setNewUserVisible(false);
           showMessage({
             message: 'Record Added Successfully',
             type: 'success',
@@ -189,40 +179,77 @@ const ItemStocksList = ({
 
   const onEditPayRollData = async () => {
     try {
-      if (categoryId == '') {
+      if (patientId == '') {
         setErrorVisible(true);
-        setErrorMessage('Please select item category.');
-      } else if (itemId == '') {
+        setErrorMessage('Please select patient.');
+      } else if (testName == '') {
         setErrorVisible(true);
-        setErrorMessage('Please select item name.');
-      } else if (quantity == '') {
+        setErrorMessage('Please enter test name.');
+      } else if (sortName == '') {
         setErrorVisible(true);
-        setErrorMessage('Please enter quantity.');
-      } else if (price == '') {
+        setErrorMessage('Please enter short name.');
+      } else if (testType == '') {
         setErrorVisible(true);
-        setErrorMessage('Please enter purchase price.');
+        setErrorMessage('Please enter test type.');
+      } else if (categoryId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select category name.');
+      } else if (chargeId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select charge category.');
+      } else if (standardCharge == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select charge category with standard charge.');
       } else {
         setLoading(true);
         setErrorVisible(false);
-        const formdata = new FormData();
-        formdata.append('item_category_id', categoryId);
-        formdata.append('item_id', itemId);
-        formdata.append('supplier_name', supplier);
-        formdata.append('store_name', storeName);
-        formdata.append('quantity', quantity);
-        formdata.append('purchase_price', price);
-        formdata.append('description', description);
-        // if (avatar != null) {
-        //   formdata.append('attachment', avatar);
-        // }
-        const dataUrl = `item-stock-update/${userId}`;
-        const response = await onUpdateCommonFormDataApi(dataUrl, formdata);
-        // const response = await onGetEditCommonJsonApi(urlData, raw);
+        let parameterId = [];
+        let parameterResult = [];
+        let hasEmptyFields = false;
+        parameterArray.map(item => {
+          if (!item.parameter_id || !item.patient_result) {
+            hasEmptyFields = true;
+          } else {
+            parameterId.push(item.parameter_id);
+            parameterResult.push(item.patient_result);
+          }
+        });
+
+        if (hasEmptyFields) {
+          setErrorVisible(true);
+          setErrorMessage(
+            'Please fill in all parameter IDs and patient results.',
+          );
+          showMessage({
+            message: 'Please fill in all parameter IDs and patient results.',
+            type: 'danger',
+            duration: 3000,
+          });
+          return; // Exit the function without calling the API
+        }
+        let raw = JSON.stringify({
+          test_name: testName,
+          short_name: sortName,
+          test_type: testType,
+          category_id: categoryId,
+          unit: unit,
+          subcategory: subCategory,
+          method: method,
+          report_days: reportDay,
+          charge_category_id: chargeId,
+          patient_id: patientId,
+          standard_charge: standardCharge,
+          parameter_id: parameterId,
+          patient_result: parameterResult,
+        });
+        const urlData = `pathology-parameter-update/${userId}`;
+        // const response = await onGetEditAccountDataApi(urlData);
+        const response = await onGetEditCommonJsonApi(urlData, raw);
         console.log('Get Error::', response.data);
         if (response.data.flag == 1) {
           onGetData();
           setLoading(false);
-          setNewAccountVisible(false);
+          setNewUserVisible(false);
           showMessage({
             message: 'Record Edit Successfully',
             type: 'success',
@@ -240,7 +267,6 @@ const ItemStocksList = ({
       }
     } catch (err) {
       setLoading(false);
-      console.log('Error:', err);
       if (err.response.data.message) {
         showMessage({
           message: err.response.data.message,
@@ -256,13 +282,14 @@ const ItemStocksList = ({
           icon: 'danger',
         });
       }
+      console.log('Error:', err);
     }
   };
 
   const onDeletePayrollData = async id => {
     try {
       setLoading(true);
-      const response = await onDeleteCommonApi(`item-stock-delete/${id}`);
+      const response = await onDeleteCommonApi(`pathology-test-delete/${id}`);
       if (response.data.flag == 1) {
         onGetData();
         setLoading(false);
@@ -306,10 +333,12 @@ const ItemStocksList = ({
 
   const onGetSpecificDoctor = async id => {
     try {
-      const response = await onGetSpecificCommonApi(`item-stock-edit/${id}`);
+      const response = await onGetSpecificCommonApi(
+        `pathology-test-edit/${id}`,
+      );
       if (response.status == 200) {
         console.log('get ValueLL:::', response.data.data);
-        return response.data.data.itemStock;
+        return response.data.data;
       } else {
         return 0;
       }
@@ -318,42 +347,6 @@ const ItemStocksList = ({
     }
   };
 
-  const isImageFormat = url => {
-    return (
-      url.endsWith('.png') || url.endsWith('.jpg') || url.endsWith('.jpeg')
-    );
-  };
-
-  function parseFileFromUrl(url) {
-    // Extract the filename from the URL
-    const name = url.split('/').pop();
-
-    // Extract the file extension
-    const extension = name.split('.').pop();
-
-    // Define the MIME type based on the file extension
-    let type;
-    switch (extension) {
-      case 'jpeg':
-      case 'jpg':
-        type = 'image/jpeg';
-        break;
-      case 'png':
-        type = 'image/png';
-        break;
-
-      default:
-        type = 'application/octet-stream'; // Fallback type for unknown extensions
-    }
-
-    // Return the extracted information
-    return {
-      uri: url,
-      type,
-      name,
-    };
-  }
-
   const renderItem = ({item, index}) => {
     return (
       <View
@@ -361,49 +354,85 @@ const ItemStocksList = ({
           styles.dataHistoryView,
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
-        <View style={styles.nameDataView}>
-          <Text style={[styles.dataHistoryText2]}>{item.item}</Text>
-        </View>
-        <View style={[styles.switchView, {width: wp(35)}]}>
-          <Text style={[styles.dataHistoryText1]}>{item.itemcategory}</Text>
-        </View>
-        <View style={[styles.switchView, {width: wp(26)}]}>
-          <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataHistoryText1]}>{item.quantity}</Text>
-          </View>
-        </View>
-        <View style={[styles.nameDataView, {width: wp(30)}]}>
-          <Text style={[styles.dataHistoryText1]}>{item.purchase_price}</Text>
-        </View>
-        <View style={styles.nameDataView}>
-          <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataHistoryText1]}>
-              {moment(item.created_at).format('DD MMM, YYYY')}
-            </Text>
-          </View>
+        <Text style={[styles.dataHistoryText1, {width: wp(30)}]}>
+          {item.name}
+        </Text>
+        <Text style={[styles.dataHistoryText1, {width: wp(30)}]}>
+          {item.insurance_no}
+        </Text>
+        <Text style={[styles.dataHistoryText1, {width: wp(35)}]}>
+          {item.insurance_code}
+        </Text>
+        <Text style={[styles.dataHistoryText1, {width: wp(30)}]}>
+          {item.service_tax}
+        </Text>
+        <Text style={[styles.dataHistoryText1, {width: wp(30)}]}>
+          {item.hospital_rate}
+        </Text>
+        <Text style={[styles.dataHistoryText1, {width: wp(22)}]}>
+          {item.total}
+        </Text>
+        <View style={[styles.switchView]}>
+          <Switch
+            trackColor={{
+              false:
+                item.status == 'Active' ? COLORS.greenColor : COLORS.errorColor,
+              true:
+                item.status == 'Active' ? COLORS.greenColor : COLORS.errorColor,
+            }}
+            thumbColor={item.status == 'Active' ? '#f4f3f4' : '#f4f3f4'}
+            ios_backgroundColor={COLORS.errorColor}
+            onValueChange={() => {}}
+            value={item.status == 'Active' ? true : false}
+          />
         </View>
         <View style={styles.actionDataView}>
           <TouchableOpacity
             onPress={async () => {
               let allDatas = await onGetSpecificDoctor(item.id);
               setUserId(item.id);
-              setCategoryId(allDatas.item_category_id);
-              setCategoryName(item.itemcategory);
-              setItemId(allDatas?.item_id);
-              setItemName(item.item);
-              setSupplier(allDatas.supplier_name);
-              setStoreName(allDatas.store_name);
-              setQuantity(JSON.stringify(item.quantity));
-              setPrice(JSON.stringify(item.purchase_price));
-              setDescription(allDatas.description);
-              if (item?.attachment != null) {
-                if (isImageFormat(item?.attachment)) {
-                  setAvatar(parseFileFromUrl(item?.attachment));
-                }
+              setPatientId(allDatas.pathologyTest.patient_id);
+              setPatientName(item.patient_name);
+              setTestName(item.test_name);
+              setTestType(item.test_type);
+              setSortName(item.short_name);
+              setMethod(allDatas.pathologyTest.method);
+              setCategoryId(allDatas.pathologyTest.category_id);
+              setCategoryName(item.category_name);
+              setUnit(JSON.stringify(allDatas.pathologyTest.unit));
+              setSubCategory(allDatas.pathologyTest.subcategory);
+              setReportDay(JSON.stringify(allDatas.pathologyTest.report_days));
+              setChargeId(allDatas.pathologyTest.charge_category_id);
+              setChargeName(item.charge_category);
+              setStandardCharge(
+                JSON.stringify(allDatas.pathologyTest.standard_charge),
+              );
+              if (allDatas.pathologyParameterItems.length > 0) {
+                allDatas.pathologyParameterItems.map(item1 => {
+                  parameterArray.push({
+                    parameter_id: item1.parameter_id,
+                    parameter_name: item1.pathology_parameter
+                      ? item1.pathology_parameter.parameter_name
+                      : '',
+                    patient_result: item1.patient_result,
+                    range: item1.pathology_parameter
+                      ? item1.pathology_parameter.reference_range
+                      : '',
+                    unit: item1.pathology_parameter
+                      ? item1.pathology_parameter.pathology_unit.name
+                      : '',
+                  });
+                });
               } else {
-                setAvatar(null);
+                parameterArray.push({
+                  parameter_id: '',
+                  parameter_name: '',
+                  patient_result: '',
+                  range: '',
+                  unit: '',
+                });
               }
-              setNewAccountVisible(true);
+              setNewUserVisible(true);
             }}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.blueColor}]}
@@ -428,7 +457,7 @@ const ItemStocksList = ({
 
   return (
     <View style={styles.safeAreaStyle}>
-      {!newAccountVisible ? (
+      {!newUserVisible ? (
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{paddingBottom: hp(12)}}>
@@ -440,29 +469,40 @@ const ItemStocksList = ({
               onChangeText={text => setSearchBreak(text)}
               style={[styles.searchView, {color: theme.text}]}
             />
-            <View style={styles.filterView}>
-              <TouchableOpacity
-                onPress={() => {
-                  setCategoryId('');
-                  setCategoryName('');
-                  setItemId('');
-                  setItemName('');
-                  setSupplier('');
-                  setStoreName('');
-                  setQuantity('');
-                  setPrice('');
-                  setDescription('');
-                  setErrorMessage('');
-                  setErrorVisible(false);
-                  setAvatar(null);
-                  setNewAccountVisible(true);
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>New Item Stock</Text>
-              </TouchableOpacity>
-            </View>
           </View>
-
+          <View style={styles.filterView}>
+            <TouchableOpacity
+              onPress={() => {
+                setUserId('');
+                setPatientId('');
+                setPatientName('');
+                setTestName('');
+                setTestType('');
+                setSortName('');
+                setMethod('');
+                setCategoryId('');
+                setCategoryName('');
+                setUnit('');
+                setSubCategory('');
+                setReportDay('');
+                setChargeId('');
+                setChargeName('');
+                setStandardCharge('');
+                parameterArray.push({
+                  parameter_id: '',
+                  parameter_name: '',
+                  patient_result: '',
+                  range: '',
+                  unit: '',
+                });
+                setErrorMessage('');
+                setErrorVisible(false);
+                setNewUserVisible(true);
+              }}
+              style={styles.actionView}>
+              <Text style={styles.actionText}>New Insurances</Text>
+            </TouchableOpacity>
+          </View>
           <View
             style={[styles.activeView, {backgroundColor: theme.headerColor}]}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -472,24 +512,26 @@ const ItemStocksList = ({
                     styles.titleActiveView,
                     {backgroundColor: theme.headerColor},
                   ]}>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: wp(30), textAlign: 'left'},
-                    ]}>
-                    {'ITEM NAME'}
-                  </Text>
-                  <Text style={[styles.titleText, {width: wp(35)}]}>
-                    {'ITEM CATEGORY'}
-                  </Text>
-                  <Text style={[styles.titleText, {width: wp(26)}]}>
-                    {'QUANTITY'}
-                  </Text>
-                  <Text style={[styles.titleText, {width: wp(35)}]}>
-                    {'PURCHASE PRICE'}
+                  <Text style={[styles.titleText, {width: wp(30)}]}>
+                    {'Insurance'}
                   </Text>
                   <Text style={[styles.titleText, {width: wp(30)}]}>
-                    {'CREATED ON'}
+                    {'Insurance No'}
+                  </Text>
+                  <Text style={[styles.titleText, {width: wp(35)}]}>
+                    {'Insurance Code'}
+                  </Text>
+                  <Text style={[styles.titleText, {width: wp(30)}]}>
+                    {'Service Tax'}
+                  </Text>
+                  <Text style={[styles.titleText, {width: wp(30)}]}>
+                    {'Hospital Rate'}
+                  </Text>
+                  <Text style={[styles.titleText, {width: wp(22)}]}>
+                    {'Total'}
+                  </Text>
+                  <Text style={[styles.titleText, {width: wp(22)}]}>
+                    {'Status'}
                   </Text>
                   <Text style={[styles.titleText, {width: wp(16)}]}>
                     {'ACTION'}
@@ -523,205 +565,220 @@ const ItemStocksList = ({
           contentContainerStyle={{paddingBottom: hp(12)}}>
           <View style={styles.subView}>
             <Text style={[styles.doctorText, {color: theme.text}]}>
-              New Item Stock
+              Add New Insurances
             </Text>
             <View style={styles.filterView}>
               <TouchableOpacity
-                onPress={() => setNewAccountVisible(false)}
+                onPress={() => {
+                  setParameterArray([]);
+                  setNewUserVisible(false);
+                }}
                 style={styles.backButtonView}>
                 <Text style={styles.backText}>BACK</Text>
               </TouchableOpacity>
             </View>
           </View>
+
           <View style={styles.profileView}>
             <View style={styles.nameView}>
               <View style={{width: '48%'}}>
-                <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
-                  Item Category:<Text style={styles.dataHistoryText4}>*</Text>
-                </Text>
-                <SelectDropdown
-                  data={itemCategory}
-                  onSelect={(selectedItem, index) => {
-                    setCategoryName(selectedItem.name);
-                    setCategoryId(selectedItem.id);
-                    console.log('gert Value:::', selectedItem);
-                  }}
-                  defaultValue={categoryName}
-                  renderButton={(selectedItem, isOpen) => {
-                    console.log('Get Response>>>', selectedItem);
-                    return (
-                      <View style={styles.dropdown2BtnStyle2}>
-                        {categoryId != '' ? (
-                          <Text style={styles.dropdownItemTxtStyle}>
-                            {categoryId == selectedItem?.id
-                              ? selectedItem?.name
-                              : categoryName}
-                          </Text>
-                        ) : (
-                          <Text style={styles.dropdownItemTxtStyle}>
-                            {selectedItem?.name || 'Select Item Category'}
-                          </Text>
-                        )}
-                      </View>
-                    );
-                  }}
-                  showsVerticalScrollIndicator={false}
-                  renderItem={(item, index, isSelected) => {
-                    return (
-                      <TouchableOpacity style={styles.dropdownView}>
-                        <Text style={styles.dropdownItemTxtStyle}>
-                          {item.name}
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  }}
-                  dropdownIconPosition={'left'}
-                  dropdownStyle={styles.dropdown2DropdownStyle}
-                />
-              </View>
-
-              <View style={{width: '48%'}}>
-                <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
-                  Item Name:<Text style={styles.dataHistoryText4}>*</Text>
-                </Text>
-                <SelectDropdown
-                  data={accountantData}
-                  disabled={accountantData.length > 0 ? false : true}
-                  onSelect={(selectedItem, index) => {
-                    // setSelectedColor(selectedItem);
-                    setItemId(selectedItem.id);
-                    console.log('gert Value:::', selectedItem);
-                  }}
-                  defaultValue={itemName}
-                  renderButton={(selectedItem, isOpen) => {
-                    console.log('Get Response>>>', selectedItem);
-                    return (
-                      <View
-                        style={[
-                          styles.dropdown2BtnStyle2,
-                          {
-                            backgroundColor:
-                              accountantData.length > 0 ? '#fff' : '#c2c2c2',
-                          },
-                        ]}>
-                        {itemId != '' ? (
-                          <Text style={styles.dropdownItemTxtStyle}>
-                            {itemId == selectedItem?.id
-                              ? selectedItem?.name
-                              : itemName}
-                          </Text>
-                        ) : (
-                          <Text style={styles.dropdownItemTxtStyle}>
-                            {selectedItem?.name || 'Select Item'}
-                          </Text>
-                        )}
-                      </View>
-                    );
-                  }}
-                  showsVerticalScrollIndicator={false}
-                  renderItem={(item, index, isSelected) => {
-                    return (
-                      <TouchableOpacity style={styles.dropdownView}>
-                        <Text style={styles.dropdownItemTxtStyle}>
-                          {item.name}
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  }}
-                  dropdownIconPosition={'left'}
-                  dropdownStyle={styles.dropdown2DropdownStyle}
-                />
-              </View>
-            </View>
-            <View style={styles.nameView}>
-              <View style={{width: '48%'}}>
-                <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
-                  Supplier Name:
-                </Text>
+                <Text style={styles.dataHistoryText1}>Insurance:</Text>
                 <TextInput
-                  value={supplier}
-                  placeholder={'Supplier Name'}
-                  onChangeText={text => setSupplier(text)}
+                  value={testName}
+                  placeholder={'Insurance'}
+                  onChangeText={text => setTestName(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
                 />
               </View>
 
               <View style={{width: '48%'}}>
-                <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
-                  Store Name:
-                </Text>
+                <Text style={styles.dataHistoryText1}>Service Tax:</Text>
                 <TextInput
-                  value={storeName}
-                  placeholder={'Store Name'}
-                  onChangeText={text => setStoreName(text)}
+                  value={testName}
+                  placeholder={'Service Tax'}
+                  onChangeText={text => setTestName(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
                 />
               </View>
             </View>
+
             <View style={styles.nameView}>
               <View style={{width: '48%'}}>
-                <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
-                  Quantity:
-                </Text>
+                <Text style={styles.dataHistoryText1}>Discount:</Text>
                 <TextInput
-                  value={quantity}
-                  placeholder={'Quantity'}
-                  onChangeText={text => setQuantity(text)}
+                  value={sortName}
+                  placeholder={'Discount'}
+                  onChangeText={text => setSortName(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
-                  keyboardType={'number-pad'}
+                />
+              </View>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Insurance No:</Text>
+                <TextInput
+                  value={testType}
+                  placeholder={'Insurance No'}
+                  onChangeText={text => setTestType(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                />
+              </View>
+            </View>
+
+            <View style={styles.nameView}>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Insurance Code:</Text>
+                <TextInput
+                  value={testType}
+                  placeholder={'Insurance Code'}
+                  onChangeText={text => setTestType(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
                 />
               </View>
 
               <View style={{width: '48%'}}>
-                <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
-                  Purchase Price:
-                </Text>
+                <Text style={styles.dataHistoryText1}>Hospital Rate:</Text>
                 <TextInput
-                  value={price}
-                  placeholder={'Purchase Price'}
-                  onChangeText={text => setPrice(text)}
+                  value={unit}
+                  placeholder={'Unit'}
+                  onChangeText={text => setUnit(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
                   keyboardType={'number-pad'}
                 />
               </View>
             </View>
+
             <View style={styles.nameView}>
-              <View>
-                <Text style={styles.dataHistoryText5}>Attachment:</Text>
-                <View style={styles.profilePhotoView}>
-                  <TouchableOpacity
-                    style={styles.editView}
-                    onPress={() => openProfileImagePicker()}>
-                    <Image style={styles.editImage1} source={draw} />
-                  </TouchableOpacity>
-                  <Image
-                    style={
-                      avatar != null
-                        ? styles.profileImage1
-                        : styles.profileImage
-                    }
-                    source={avatar != null ? {uri: avatar?.uri} : photo}
-                  />
-                </View>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Sub Category:</Text>
+                <TextInput
+                  value={subCategory}
+                  placeholder={'Sub Category'}
+                  onChangeText={text => setSubCategory(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                />
+              </View>
+
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Method:</Text>
+                <TextInput
+                  value={method}
+                  placeholder={'Method'}
+                  onChangeText={text => setMethod(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                />
               </View>
             </View>
+
             <View style={styles.nameView}>
               <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText6}>Description:</Text>
+                <Text style={styles.dataHistoryText1}>Standard Charge:</Text>
                 <TextInput
-                  value={description}
-                  placeholder={'Description'}
-                  onChangeText={text => setDescription(text)}
-                  style={[styles.commentTextInput]}
-                  multiline
-                  textAlignVertical="top"
+                  value={standardCharge}
+                  placeholder={'Standard Charge'}
+                  onChangeText={text => setStandardCharge(text)}
+                  style={[styles.nameTextVie1, {width: '100%'}]}
+                  editable={false}
                 />
               </View>
             </View>
+            <Text style={styles.parameterView}>Parameter</Text>
+            <FlatList
+              data={parameterArray}
+              renderItem={({item, index}) => {
+                return (
+                  <View
+                    style={{
+                      backgroundColor:
+                        index % 2 == 0 ? '#eeeeee' : COLORS.white,
+                      paddingBottom: hp(1),
+                      marginVertical: hp(1),
+                    }}>
+                    <View style={styles.nameView}>
+                      <View style={{width: '48%'}}>
+                        <TextInput
+                          value={item.patient_result}
+                          placeholder={'Patient Result'}
+                          onChangeText={text => {
+                            setRefresh(!refresh);
+                            parameterArray[index].patient_result = text;
+                          }}
+                          style={[styles.nameTextView, {width: '100%'}]}
+                          keyboardType={'number-pad'}
+                        />
+                      </View>
+                    </View>
+
+                    <View style={styles.nameView}>
+                      <View style={{width: '48%'}}>
+                        <TextInput
+                          editable={false}
+                          value={item.range}
+                          placeholder={'Reference Range'}
+                          style={[styles.nameTextVie1, {width: '100%'}]}
+                        />
+                      </View>
+
+                      <View style={{width: '48%'}}>
+                        <TextInput
+                          editable={false}
+                          value={item.unit}
+                          placeholder={'Unit'}
+                          style={[styles.nameTextVie1, {width: '100%'}]}
+                        />
+                      </View>
+                    </View>
+                    {index <= 0 ? (
+                      <View style={styles.buttonView}>
+                        <TouchableOpacity
+                          onPress={() => {
+                            let NewItemAdd = {
+                              parameter_id: '',
+                              parameter_name: '',
+                              patient_result: '',
+                              range: '',
+                              unit: '',
+                            };
+                            setParameterArray(modifierAdd => [
+                              ...modifierAdd,
+                              NewItemAdd,
+                            ]);
+                          }}
+                          style={styles.nextView}>
+                          <Text style={styles.nextText}>Add</Text>
+                        </TouchableOpacity>
+                      </View>
+                    ) : (
+                      <View style={styles.buttonView}>
+                        <TouchableOpacity
+                          onPress={() => {
+                            const existDataValue = parameterArray;
+                            const filterData = existDataValue.filter(
+                              (dataValue, index1) => index1 !== index,
+                            );
+                            console.log(' =====>', filterData);
+                            setParameterArray(filterData);
+                          }}
+                          style={{marginLeft: wp(2)}}>
+                          <Image
+                            style={[
+                              styles.editImage,
+                              {tintColor: COLORS.errorColor},
+                            ]}
+                            source={deleteIcon}
+                          />
+                        </TouchableOpacity>
+                      </View>
+                    )}
+                  </View>
+                );
+              }}
+              keyExtractor={(item, index) => index.toString()}
+              contentContainerStyle={{paddingBottom: hp(3)}}
+            />
             {errorVisible ? (
               <Text style={styles.dataHistoryText4}>{errorMessage}</Text>
             ) : null}
           </View>
+
           <View style={styles.buttonView}>
             <TouchableOpacity
               onPress={() => {
@@ -735,7 +792,10 @@ const ItemStocksList = ({
               )}
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() => setNewAccountVisible(false)}
+              onPress={() => {
+                setParameterArray([]);
+                setNewUserVisible(false);
+              }}
               style={styles.prevView}>
               <Text style={styles.prevText}>Cancel</Text>
             </TouchableOpacity>
@@ -753,7 +813,7 @@ const ItemStocksList = ({
   );
 };
 
-export default ItemStocksList;
+export default Insurances;
 
 const styles = StyleSheet.create({
   safeAreaStyle: {
@@ -770,7 +830,7 @@ const styles = StyleSheet.create({
     marginVertical: hp(2),
   },
   searchView: {
-    width: '50%',
+    width: '100%',
     paddingHorizontal: wp(2),
     paddingVertical: hp(0.5),
     borderWidth: 1,
@@ -783,9 +843,9 @@ const styles = StyleSheet.create({
   filterView: {
     flexDirection: 'row',
     alignItems: 'center',
-    // justifyContent: 'flex-end',
-    // paddingHorizontal: wp(3),
-    // paddingBottom: hp(1),
+    justifyContent: 'flex-end',
+    paddingHorizontal: wp(3),
+    marginBottom: hp(1),
   },
   filterView1: {
     height: hp(5),
@@ -841,21 +901,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginTop: hp(1),
     paddingBottom: hp(0.5),
-    justifyContent: 'space-between',
   },
   titleText: {
     fontSize: hp(1.8),
     fontFamily: Fonts.FONTS.PoppinsSemiBold,
     color: COLORS.white,
     marginHorizontal: wp(2),
-    textAlign: 'left',
-  },
-  titleText1: {
-    fontSize: hp(1.8),
-    fontFamily: Fonts.FONTS.PoppinsSemiBold,
-    color: COLORS.black,
-    marginHorizontal: wp(3),
-    textAlign: 'left',
+    textAlign: 'center',
   },
   dataHistoryView: {
     width: '100%',
@@ -863,7 +915,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     alignSelf: 'flex-start',
-    justifyContent: 'space-between',
   },
   dataHistoryText: {
     fontSize: hp(1.8),
@@ -876,12 +927,13 @@ const styles = StyleSheet.create({
     fontSize: hp(1.7),
     fontFamily: Fonts.FONTS.PoppinsBold,
     color: COLORS.black,
+    marginHorizontal: wp(2),
+    textAlign: 'center',
   },
   dataHistoryText2: {
     fontSize: hp(1.8),
     fontFamily: Fonts.FONTS.PoppinsBold,
     color: COLORS.blueColor,
-    textAlign: 'center',
   },
   dataHistoryText3: {
     fontSize: hp(1.8),
@@ -898,11 +950,7 @@ const styles = StyleSheet.create({
     fontSize: hp(1.7),
     fontFamily: Fonts.FONTS.PoppinsBold,
     color: COLORS.black,
-  },
-  dataHistoryText6: {
-    fontSize: hp(1.8),
-    fontFamily: Fonts.FONTS.PoppinsMedium,
-    color: COLORS.black,
+    width: wp(45),
   },
   mainDataView: {
     minHeight: hp(29),
@@ -916,14 +964,12 @@ const styles = StyleSheet.create({
   nameDataView: {
     flexDirection: 'row',
     alignItems: 'center',
-    width: wp(30),
+    width: wp(55),
     marginHorizontal: wp(2),
-    // justifyContent: 'center',
   },
   switchView: {
-    width: wp(20),
+    width: wp(22),
     justifyContent: 'center',
-    marginHorizontal: wp(2),
     alignItems: 'flex-start',
   },
   actionDataView: {
@@ -976,6 +1022,19 @@ const styles = StyleSheet.create({
     marginTop: hp(1),
     backgroundColor: COLORS.white,
   },
+  nameTextVie1: {
+    width: '50%',
+    paddingHorizontal: wp(2),
+    paddingVertical: hp(0.5),
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    color: COLORS.black,
+    borderRadius: 5,
+    marginTop: hp(1),
+    backgroundColor: COLORS.lightGrey,
+  },
   nameView: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -993,12 +1052,10 @@ const styles = StyleSheet.create({
   },
   buttonView: {
     width: '94%',
-    paddingHorizontal: wp(3),
     alignSelf: 'center',
     flexDirection: 'row',
     justifyContent: 'flex-end',
     alignItems: 'center',
-    marginTop: hp(2),
   },
   nextView: {
     height: hp(4.5),
@@ -1038,7 +1095,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 5,
-    padding: 8,
+    padding: 5,
   },
   startDateText: {
     fontSize: hp(2),
@@ -1111,26 +1168,16 @@ const styles = StyleSheet.create({
   statusView: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: hp(1.5),
-    width: '92%',
-    alignSelf: 'center',
+    justifyContent: 'flex-start',
   },
   profilePhotoView: {
     borderWidth: 0.5,
-    width: wp(26),
-    height: hp(10),
-    alignItems: 'center',
-    justifyContent: 'center',
     marginTop: hp(1),
   },
   profileImage: {
-    width: wp(10),
-    height: hp(5),
+    width: wp(28),
+    height: hp(13.5),
     resizeMode: 'contain',
-  },
-  profileImage1: {
-    width: wp(26),
-    height: hp(10),
   },
   editView: {
     width: wp(7),
@@ -1149,71 +1196,6 @@ const styles = StyleSheet.create({
     width: wp(3),
     height: hp(2.5),
     resizeMode: 'contain',
-  },
-  container: {
-    width: '94%',
-    // height: hp(22),
-    paddingVertical: hp(2),
-    backgroundColor: COLORS.white,
-    borderRadius: 10,
-    // marginLeft: -wp(2.5),
-    // paddingTop: hp(3),
-  },
-  modalOverlay: {
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-  },
-  maneModalView: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '100%',
-    height: '100%',
-  },
-  headerView: {
-    width: '96%',
-    alignSelf: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginVertical: hp(1),
-    paddingHorizontal: wp(2),
-  },
-  headerText: {
-    fontFamily: Fonts.FONTS.PoppinsBold,
-    fontSize: hp(2.2),
-    color: COLORS.black,
-  },
-  eventTextInput: {
-    width: '92%',
-    paddingHorizontal: wp(3),
-    paddingVertical: hp(1),
-    borderWidth: 1,
-    borderColor: COLORS.greyColor,
-    fontFamily: Fonts.FONTS.PoppinsMedium,
-    fontSize: hp(2),
-    color: COLORS.black,
-    borderRadius: 5,
-    alignSelf: 'center',
-    marginBottom: hp(3),
-    marginTop: hp(1),
-  },
-  commentTextInput: {
-    width: '100%',
-    paddingHorizontal: wp(3),
-    paddingVertical: hp(1),
-    borderWidth: 1,
-    borderColor: COLORS.greyColor,
-    fontFamily: Fonts.FONTS.PoppinsMedium,
-    fontSize: hp(2),
-    color: COLORS.black,
-    borderRadius: 5,
-    alignSelf: 'center',
-    height: hp(14),
-    marginTop: hp(1),
   },
   ListEmptyView: {
     width: '100%',
@@ -1241,12 +1223,12 @@ const styles = StyleSheet.create({
   dropdownView: {
     flexDirection: 'row',
     alignItems: 'center',
-    height: hp(5),
+    height: hp(4),
     borderBottomWidth: 0,
   },
   dropdown2BtnStyle2: {
     width: '100%',
-    height: hp(5),
+    height: hp(4.2),
     backgroundColor: COLORS.white,
     borderRadius: 5,
     alignItems: 'center',
@@ -1254,5 +1236,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.greyColor,
     marginTop: hp(1),
+  },
+  parameterView: {
+    width: '100%',
+    fontSize: hp(2.2),
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    color: COLORS.black,
+    backgroundColor: COLORS.lightGreyColor,
+    paddingVertical: hp(1),
+    marginTop: hp(3),
+    paddingLeft: wp(3),
   },
 });

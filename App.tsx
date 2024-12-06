@@ -50,6 +50,7 @@ import FlashMessage from 'react-native-flash-message';
 import {Provider} from 'react-redux';
 import store from './src/redux/store';
 import RadiologyScreen from './src/screens/RadiologyScreen';
+import ServiceScreen from './src/screens/ServiceScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -275,6 +276,11 @@ function SettingStack() {
       <Stack.Screen
         name="TransactionsScreen"
         component={TransactionsScreen}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="ServiceScreen"
+        component={ServiceScreen}
         options={{headerShown: false}}
       />
     </Stack.Navigator>

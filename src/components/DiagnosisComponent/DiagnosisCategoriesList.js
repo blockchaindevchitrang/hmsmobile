@@ -218,6 +218,8 @@ const DiagnosisCategoriesList = ({
                 setUserId('');
                 setEventTitle('');
                 setDepartmentComment('');
+                setErrorMessage('');
+                setErrorVisible(false);
                 setNewAccountVisible(true);
               }}
               style={styles.actionView}>

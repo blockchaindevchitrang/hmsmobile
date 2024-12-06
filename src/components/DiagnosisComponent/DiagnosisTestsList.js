@@ -10,6 +10,7 @@ import {
   FlatList,
   Modal,
   TouchableWithoutFeedback,
+  ActivityIndicator,
 } from 'react-native';
 import React, {useRef, useState} from 'react';
 import {
@@ -24,17 +25,258 @@ import deleteIcon from '../../images/delete.png';
 import editing from '../../images/editing.png';
 import moment from 'moment';
 import close from '../../images/close.png';
+import SelectDropdown from 'react-native-select-dropdown';
+import {useSelector} from 'react-redux';
+import {
+  onAddAccountListApi,
+  onAddCommonJsonApi,
+  onDeleteCommonApi,
+  onGetEditAccountDataApi,
+  onGetEditCommonJsonApi,
+  onGetSpecificCommonApi,
+} from '../../services/Api';
+import {DeletePopup} from '../DeletePopup';
+import FlashMessage, {
+  showMessage,
+  hideMessage,
+} from 'react-native-flash-message';
 
-const DiagnosisTestsList = ({searchBreak, setSearchBreak, allData}) => {
+const DiagnosisTestsList = ({
+  searchBreak,
+  setSearchBreak,
+  allData,
+  onGetData,
+  category,
+}) => {
+  const user_data = useSelector(state => state.user_data);
+  const doctorData = useSelector(state => state.doctorData);
   const {theme} = useTheme();
   const menuRef = useRef(null);
   const [newBloodIssueVisible, setNewBloodIssueVisible] = useState(false);
-  const [issueDate, setIssueDate] = useState('');
-  const [doctorName, setDoctorName] = useState('');
+  const [patientId, setPatientId] = useState('');
   const [patientName, setPatientName] = useState('');
-  const [bloodGroup, setBloodGroup] = useState('');
-  const [Amount, setAmount] = useState('');
-  const [Remarks, setRemarks] = useState('');
+  const [doctorId, setDoctorId] = useState('');
+  const [doctorName, setDoctorName] = useState('');
+  const [categoryId, setCategoryId] = useState('');
+  const [categoryName, setCategoryName] = useState('');
+  const [age, setAge] = useState('');
+  const [height, setHeight] = useState('');
+  const [weight, setWeight] = useState('');
+  const [average, setAverage] = useState('');
+  const [bloodSugar, setBloodSugar] = useState('');
+  const [urineSugar, setUrineSugar] = useState('');
+  const [bloodPressure, setBloodPressure] = useState('');
+  const [diabetes, setDiabetes] = useState('');
+  const [cholesterol, setCholesterol] = useState('');
+  const [propertyArray, setPropertyArray] = useState([]);
+  const [errorVisible, setErrorVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [userId, setUserId] = useState('');
+  const [deleteUser, setDeleteUser] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const onAddPayRollData = async () => {
+    try {
+      if (patientId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select patient.');
+      } else if (doctorId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select Doctor.');
+      } else if (categoryId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select Diagnosis Category.');
+      } else {
+        setLoading(true);
+        setErrorVisible(false);
+        let raw = JSON.stringify({
+          patient_id: patientId,
+          category_id: categoryId,
+          doctor_id: doctorId,
+          age: age,
+          height: height,
+          weight: weight,
+          average_glucose: average,
+          fasting_blood_sugar: bloodSugar,
+          urine_sugar: urineSugar,
+          blood_pressure: bloodPressure,
+          diabetes: diabetes,
+          cholesterol: cholesterol,
+        });
+        const urlData = 'patient-test-diagnosis-store';
+        const response = await onAddCommonJsonApi(urlData, raw);
+        if (response.data.flag == 1) {
+          onGetData();
+          setLoading(false);
+          setNewBloodIssueVisible(false);
+          showMessage({
+            message: 'Record Added Successfully',
+            type: 'success',
+            duration: 3000,
+          });
+        } else {
+          setLoading(false);
+          showMessage({
+            message: response.data.message,
+            type: 'danger',
+            duration: 6000,
+            icon: 'danger',
+          });
+        }
+      }
+    } catch (err) {
+      if (err.response.data.message) {
+        showMessage({
+          message: err.response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      } else {
+        showMessage({
+          message: 'Something want wrong.',
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
+      setLoading(false);
+      console.log('Error:', err);
+    }
+  };
+
+  const onEditPayRollData = async () => {
+    try {
+      if (patientId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select patient.');
+      } else if (doctorId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select Doctor.');
+      } else if (categoryId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select Diagnosis Category.');
+      } else {
+        setLoading(true);
+        setErrorVisible(false);
+        let raw = JSON.stringify({
+          patient_id: patientId,
+          category_id: categoryId,
+          doctor_id: doctorId,
+          age: age,
+          height: height,
+          weight: weight,
+          average_glucose: average,
+          fasting_blood_sugar: bloodSugar,
+          urine_sugar: urineSugar,
+          blood_pressure: bloodPressure,
+          diabetes: diabetes,
+          cholesterol: cholesterol,
+        });
+        const urlData = `patient-test-diagnosis-update/${userId}`;
+        const response = await onGetEditCommonJsonApi(urlData, raw);
+        if (response.data.flag == 1) {
+          onGetData();
+          setLoading(false);
+          setNewBloodIssueVisible(false);
+          showMessage({
+            message: 'Record Edit Successfully',
+            type: 'success',
+            duration: 3000,
+          });
+        } else {
+          setLoading(false);
+          showMessage({
+            message: response.data.message,
+            type: 'danger',
+            duration: 6000,
+            icon: 'danger',
+          });
+        }
+      }
+    } catch (err) {
+      setLoading(false);
+      if (err.response.data.message) {
+        showMessage({
+          message: err.response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      } else {
+        showMessage({
+          message: 'Something want wrong.',
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
+      console.log('Error:', err);
+    }
+  };
+
+  const onDeletePayrollData = async id => {
+    try {
+      setLoading(true);
+      const response = await onDeleteCommonApi(
+        `patient-test-diagnosis-delete/${id}`,
+      );
+      if (response.data.flag == 1) {
+        onGetData();
+        setLoading(false);
+        setDeleteUser(false);
+        showMessage({
+          message: 'Record Delete Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      } else {
+        setLoading(false);
+        setDeleteUser(false);
+        showMessage({
+          message: response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
+    } catch (err) {
+      setLoading(false);
+      setDeleteUser(false);
+      if (err.response.data.message) {
+        showMessage({
+          message: err.response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      } else {
+        showMessage({
+          message: 'Something want wrong.',
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
+      console.log('Get Error', err);
+    }
+  };
+
+  const onGetSpecificDoctor = async id => {
+    try {
+      const response = await onGetSpecificCommonApi(
+        `patient-test-diagnosis-edit/${id}`,
+      );
+      if (response.status == 200) {
+        console.log('get ValueLL:::', response.data.data);
+        return response.data.data;
+      } else {
+        return 0;
+      }
+    } catch (err) {
+      console.log('Get Error', err);
+    }
+  };
 
   const renderItem = ({item, index}) => {
     return (
@@ -45,39 +287,66 @@ const DiagnosisTestsList = ({searchBreak, setSearchBreak, allData}) => {
         ]}>
         <View style={[styles.switchView, {width: wp(30)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataHistoryText1]}>{item.admission}</Text>
+            <Text style={[styles.dataHistoryText1]}>{item.report_number}</Text>
           </View>
         </View>
         <View style={styles.nameDataView}>
-          <ProfilePhoto username={item.name} />
+          <ProfilePhoto username={item.patient_name} />
           <View>
-            <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
-            <Text style={[styles.dataHistoryText1]}>{item.mail}</Text>
+            <Text style={[styles.dataHistoryText2]}>{item.patient_name}</Text>
+            <Text style={[styles.dataHistoryText5]}>{item.patient_email}</Text>
           </View>
         </View>
         <View style={styles.nameDataView}>
-          <ProfilePhoto username={item.name} />
+          <ProfilePhoto username={item.doctor_name} />
           <View>
-            <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
-            <Text style={[styles.dataHistoryText1]}>{item.mail}</Text>
+            <Text style={[styles.dataHistoryText2]}>{item.doctor_name}</Text>
+            <Text style={[styles.dataHistoryText5]}>{item.doctor_email}</Text>
           </View>
         </View>
         <View style={[styles.switchView, {width: wp(43)}]}>
-          <Text style={[styles.dataHistoryText1]}>{item.discharge}</Text>
+          <Text style={[styles.dataHistoryText1]}>{item.category}</Text>
         </View>
         <View style={[styles.switchView, {width: wp(35)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataHistoryText1]}>{item.date}</Text>
+            <Text style={[styles.dataHistoryText1]}>
+              {moment(item.created_at).format('DD MMM, YYYY')}
+            </Text>
           </View>
         </View>
         <View style={styles.actionDataView}>
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={async () => {
+              let allDatas = await onGetSpecificDoctor(item.id);
+              setUserId(item.id);
+              setPatientId(allDatas.patient_id);
+              setPatientName(item?.patient_name);
+              setDoctorId(allDatas.doctor_id);
+              setDoctorName(item?.doctor_name);
+              setCategoryId(allDatas.category_id);
+              setCategoryName(item?.category);
+              setAge(allDatas.age);
+              setHeight(allDatas.height);
+              setWeight(allDatas.weight);
+              setAverage(allDatas.average_glucose);
+              setBloodSugar(allDatas.fasting_blood_sugar);
+              setUrineSugar(allDatas.urine_sugar);
+              setBloodPressure(allDatas.blood_pressure);
+              setDiabetes(allDatas.diabetes);
+              setCholesterol(allDatas.cholesterol);
+              setNewBloodIssueVisible(true);
+            }}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.blueColor}]}
               source={editing}
             />
           </TouchableOpacity>
-          <TouchableOpacity style={{marginLeft: wp(2)}}>
+          <TouchableOpacity
+            onPress={() => {
+              setUserId(item.id);
+              setDeleteUser(true);
+            }}
+            style={{marginLeft: wp(2)}}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.errorColor}]}
               source={deleteIcon}
@@ -89,8 +358,8 @@ const DiagnosisTestsList = ({searchBreak, setSearchBreak, allData}) => {
   };
 
   return (
-    <>
-      <View style={styles.safeAreaStyle}>
+    <View style={styles.safeAreaStyle}>
+      {!newBloodIssueVisible ? (
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{paddingBottom: hp(12)}}>
@@ -168,137 +437,299 @@ const DiagnosisTestsList = ({searchBreak, setSearchBreak, allData}) => {
             </ScrollView>
           </View>
         </ScrollView>
-      </View>
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={newBloodIssueVisible}
-        onRequestClose={() => setNewBloodIssueVisible(false)}>
-        <View style={styles.maneModalView}>
-          <TouchableWithoutFeedback
-            onPress={() => {
-              setNewBloodIssueVisible(false);
-            }}>
-            <View style={styles.modalOverlay} />
-          </TouchableWithoutFeedback>
-          <View style={styles.container}>
-            <View style={styles.headerView}>
-              <Text style={styles.headerText}>New Blood Issues</Text>
-              <TouchableOpacity onPress={() => setNewBloodIssueVisible(false)}>
-                <Image style={styles.closeImage} source={close} />
-              </TouchableOpacity>
-            </View>
-            <View style={styles.nameView}>
-              <View style={{width: '48%'}}>
-                <Text style={[styles.titleText1]}>
-                  {'Issue Date:'}
-                  <Text style={styles.dataHistoryText4}>*</Text>
-                </Text>
-                <TextInput
-                  value={issueDate}
-                  placeholder={'Issue Date'}
-                  onChangeText={text => setIssueDate(text)}
-                  style={[styles.nameTextView]}
-                />
-              </View>
-              <View style={{width: '48%'}}>
-                <Text style={[styles.titleText1]}>
-                  {'Doctor Name:'}
-                  <Text style={styles.dataHistoryText4}>*</Text>
-                </Text>
-                <TextInput
-                  value={doctorName}
-                  placeholder={'Doctor Name'}
-                  onChangeText={text => setDoctorName(text)}
-                  style={[styles.nameTextView]}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '48%'}}>
-                <Text style={[styles.titleText1]}>
-                  {'Patient Name:'}
-                  <Text style={styles.dataHistoryText4}>*</Text>
-                </Text>
-                <TextInput
-                  value={patientName}
-                  placeholder={'Patient Name'}
-                  onChangeText={text => setPatientName(text)}
-                  style={[styles.nameTextView]}
-                />
-              </View>
-              <View style={{width: '48%'}}>
-                <Text style={[styles.titleText1]}>
-                  {'Doctor Name:'}
-                  <Text style={styles.dataHistoryText4}>*</Text>
-                </Text>
-                <TextInput
-                  value={doctorName}
-                  placeholder={'Doctor Name'}
-                  onChangeText={text => setDoctorName(text)}
-                  style={[styles.nameTextView]}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '48%'}}>
-                <Text style={[styles.titleText1]}>
-                  {'Blood Group:'}
-                  <Text style={styles.dataHistoryText4}>*</Text>
-                </Text>
-                <TextInput
-                  value={bloodGroup}
-                  placeholder={'Blood Group'}
-                  onChangeText={text => setBloodGroup(text)}
-                  style={[styles.nameTextView]}
-                />
-              </View>
-              <View style={{width: '48%'}}>
-                <Text style={[styles.titleText1]}>
-                  {'Amount:'}
-                  <Text style={styles.dataHistoryText4}>*</Text>
-                </Text>
-                <TextInput
-                  value={Amount}
-                  placeholder={'Amount'}
-                  onChangeText={text => setAmount(text)}
-                  style={[styles.nameTextView]}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={[styles.titleText1]}>
-                  {'Remarks:'}
-                  <Text style={styles.dataHistoryText4}>*</Text>
-                </Text>
-                <TextInput
-                  value={Remarks}
-                  placeholder={'Enter Remarks'}
-                  onChangeText={text => setRemarks(text)}
-                  style={[styles.commentTextInput]}
-                  multiline
-                  textAlignVertical="top"
-                />
-              </View>
-            </View>
-            <View style={styles.buttonView}>
-              <TouchableOpacity onPress={() => {}} style={styles.nextView}>
-                <Text style={styles.nextText}>Save</Text>
-              </TouchableOpacity>
+      ) : (
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{paddingBottom: hp(12)}}>
+          <View style={styles.subView}>
+            <Text style={[styles.doctorText, {color: theme.text}]}>
+              New Patient Diagnosis Test
+            </Text>
+            <View style={styles.filterView}>
               <TouchableOpacity
                 onPress={() => setNewBloodIssueVisible(false)}
-                style={styles.prevView}>
-                <Text style={styles.prevText}>Cancel</Text>
+                style={styles.backButtonView}>
+                <Text style={styles.backText}>BACK</Text>
               </TouchableOpacity>
             </View>
           </View>
-        </View>
-      </Modal>
-    </>
+
+          <View style={styles.profileView}>
+            <View style={styles.nameView}>
+              <View style={{width: '48%'}}>
+                <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
+                  Patient:<Text style={styles.dataHistoryText4}>*</Text>
+                </Text>
+                <SelectDropdown
+                  data={user_data}
+                  onSelect={(selectedItem, index) => {
+                    // setSelectedColor(selectedItem);
+                    setPatientId(selectedItem.id);
+                    console.log('gert Value:::', selectedItem);
+                  }}
+                  defaultValue={patientName}
+                  renderButton={(selectedItem, isOpen) => {
+                    console.log('Get Response>>>', selectedItem);
+                    return (
+                      <View style={styles.dropdown2BtnStyle2}>
+                        {patientId != '' ? (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {patientId == selectedItem?.id
+                              ? `${selectedItem?.patient_user?.first_name} ${selectedItem?.patient_user?.last_name}`
+                              : patientName}
+                          </Text>
+                        ) : (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {selectedItem?.patient_user?.first_name ||
+                              'Select Patient'}
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(item, index, isSelected) => {
+                    return (
+                      <TouchableOpacity style={styles.dropdownView}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {`${item?.patient_user?.first_name} ${item?.patient_user?.last_name}`}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                  dropdownIconPosition={'left'}
+                  dropdownStyle={styles.dropdown2DropdownStyle}
+                />
+              </View>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText6}>
+                  Doctor:<Text style={styles.dataHistoryText4}>*</Text>
+                </Text>
+                <SelectDropdown
+                  data={doctorData}
+                  onSelect={(selectedItem, index) => {
+                    // setSelectedColor(selectedItem);
+                    setDoctorId(selectedItem.id);
+                    console.log('gert Value:::', selectedItem);
+                  }}
+                  defaultValue={doctorName}
+                  renderButton={(selectedItem, isOpen) => {
+                    console.log('Get Response>>>', selectedItem);
+                    return (
+                      <View style={styles.dropdown2BtnStyle2}>
+                        {doctorId != '' ? (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {doctorId == selectedItem?.id
+                              ? selectedItem?.name
+                              : doctorName}
+                          </Text>
+                        ) : (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {selectedItem?.name || 'Select Doctor'}
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(item, index, isSelected) => {
+                    return (
+                      <TouchableOpacity style={styles.dropdownView}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {item?.name}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                  dropdownIconPosition={'left'}
+                  dropdownStyle={styles.dropdown2DropdownStyle}
+                />
+              </View>
+            </View>
+            <View style={styles.nameView}>
+              <View style={{width: '48%'}}>
+                <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
+                  Diagnosis Category:
+                  <Text style={styles.dataHistoryText4}>*</Text>
+                </Text>
+                <SelectDropdown
+                  data={category}
+                  onSelect={(selectedItem, index) => {
+                    // setSelectedColor(selectedItem);
+                    setCategoryId(selectedItem.id);
+                    console.log('gert Value:::', selectedItem);
+                  }}
+                  defaultValue={categoryName}
+                  renderButton={(selectedItem, isOpen) => {
+                    console.log('Get Response>>>', selectedItem);
+                    return (
+                      <View style={styles.dropdown2BtnStyle2}>
+                        {categoryId != '' ? (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {categoryId == selectedItem?.id
+                              ? selectedItem?.name
+                              : categoryName}
+                          </Text>
+                        ) : (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {selectedItem?.name || 'Select Category'}
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(item, index, isSelected) => {
+                    return (
+                      <TouchableOpacity style={styles.dropdownView}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {item?.name}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                  dropdownIconPosition={'left'}
+                  dropdownStyle={styles.dropdown2DropdownStyle}
+                />
+              </View>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Age:</Text>
+                <TextInput
+                  value={age}
+                  placeholder={'Age'}
+                  onChangeText={text => setAge(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                  keyboardType={'number-pad'}
+                />
+              </View>
+            </View>
+
+            <View style={styles.nameView}>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Height:</Text>
+                <TextInput
+                  value={height}
+                  placeholder={'Height'}
+                  onChangeText={text => setHeight(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                  keyboardType={'number-pad'}
+                />
+              </View>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Weight:</Text>
+                <TextInput
+                  value={weight}
+                  placeholder={'Weight'}
+                  onChangeText={text => setWeight(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                  keyboardType={'number-pad'}
+                />
+              </View>
+            </View>
+
+            <View style={styles.nameView}>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Average glucose:</Text>
+                <TextInput
+                  value={average}
+                  placeholder={'Average glucose'}
+                  onChangeText={text => setAverage(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                  keyboardType={'number-pad'}
+                />
+              </View>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>
+                  Fasting Blood Sugar:
+                </Text>
+                <TextInput
+                  value={bloodSugar}
+                  placeholder={'Fasting Blood Sugar'}
+                  onChangeText={text => setBloodSugar(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                  keyboardType={'number-pad'}
+                />
+              </View>
+            </View>
+
+            <View style={styles.nameView}>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Urine Sugar:</Text>
+                <TextInput
+                  value={urineSugar}
+                  placeholder={'Urine Sugar'}
+                  onChangeText={text => setUrineSugar(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                  keyboardType={'number-pad'}
+                />
+              </View>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Blood Pressure:</Text>
+                <TextInput
+                  value={bloodPressure}
+                  placeholder={'Blood Pressure'}
+                  onChangeText={text => setBloodPressure(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                  keyboardType={'number-pad'}
+                />
+              </View>
+            </View>
+
+            <View style={styles.nameView}>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Diabetes:</Text>
+                <TextInput
+                  value={diabetes}
+                  placeholder={'Diabetes'}
+                  onChangeText={text => setDiabetes(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                  keyboardType={'number-pad'}
+                />
+              </View>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Cholesterol:</Text>
+                <TextInput
+                  value={cholesterol}
+                  placeholder={'Cholesterol'}
+                  onChangeText={text => setCholesterol(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                  keyboardType={'number-pad'}
+                />
+              </View>
+            </View>
+            {errorVisible ? (
+              <Text style={styles.dataHistoryText4}>{errorMessage}</Text>
+            ) : null}
+          </View>
+
+          <View style={styles.buttonView}>
+            <TouchableOpacity
+              onPress={() => {
+                userId != '' ? onEditPayRollData() : onAddPayRollData();
+              }}
+              style={styles.nextView}>
+              {loading ? (
+                <ActivityIndicator size={'small'} color={COLORS.white} />
+              ) : (
+                <Text style={styles.nextText}>Save</Text>
+              )}
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setNewBloodIssueVisible(false)}
+              style={styles.prevView}>
+              <Text style={styles.prevText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      )}
+      <DeletePopup
+        modelVisible={deleteUser}
+        setModelVisible={setDeleteUser}
+        onPress={() => onDeletePayrollData(userId)}
+        setUserId={setUserId}
+        isLoading={loading}
+      />
+    </View>
   );
 };
 
@@ -400,10 +831,15 @@ const styles = StyleSheet.create({
   },
   dataHistoryView: {
     width: '100%',
-    height: hp(8),
+    paddingVertical: hp(1),
     alignItems: 'center',
     flexDirection: 'row',
     alignSelf: 'flex-start',
+  },
+  dataHistoryText6: {
+    fontSize: hp(1.7),
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    color: COLORS.black,
   },
   dataHistoryText: {
     fontSize: hp(1.8),
@@ -432,6 +868,12 @@ const styles = StyleSheet.create({
     fontSize: hp(1.8),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.errorColor,
+  },
+  dataHistoryText5: {
+    fontSize: hp(1.8),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+    width: wp(45),
   },
   mainDataView: {
     minHeight: hp(29),
@@ -509,7 +951,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    width: '94%',
+    width: '100%',
     marginVertical: hp(2),
     alignSelf: 'center',
   },
@@ -526,6 +968,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     alignItems: 'center',
+    marginTop: hp(3),
   },
   nextView: {
     height: hp(4.5),
@@ -715,5 +1158,34 @@ const styles = StyleSheet.create({
     fontSize: hp(2.5),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
+  },
+  dropdown2DropdownStyle: {
+    backgroundColor: COLORS.white,
+    borderRadius: 4,
+    height: hp(25),
+    // borderRadius: 12,
+  },
+  dropdownItemTxtStyle: {
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    marginLeft: wp(2),
+  },
+  dropdownView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: hp(5),
+    borderBottomWidth: 0,
+  },
+  dropdown2BtnStyle2: {
+    width: '100%',
+    height: hp(5),
+    backgroundColor: COLORS.white,
+    borderRadius: 5,
+    alignItems: 'center',
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    marginTop: hp(1),
   },
 });

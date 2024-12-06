@@ -1447,3 +1447,111 @@ export const onUpdateDocumentApi = async (requestData, id) => {
       .catch(err => reject(err));
   });
 };
+
+export const onAddCommonJsonApi = async (dataUrl, requestData) => {
+  const token = await AsyncStorage.getItem('accessToken');
+  const url = Api.baseUrl1 + dataUrl;
+  console.log('Get Login Url:::', JSON.stringify(requestData));
+  return new Promise((resolve, reject) => {
+    axios
+      .post(url, requestData, {
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(res => resolve(res))
+      .catch(err => reject(err));
+  });
+};
+
+export const onGetEditCommonJsonApi = async (dataUrl, requestData) => {
+  const token = await AsyncStorage.getItem('accessToken');
+  const url = Api.baseUrl1 + dataUrl;
+  console.log('Get Login Url:::', JSON.stringify(requestData));
+  return new Promise((resolve, reject) => {
+    axios
+      .patch(url, requestData, {
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(res => resolve(res))
+      .catch(err => reject(err));
+  });
+};
+
+export const onAddInvestigationApi = async requestData => {
+  const token = await AsyncStorage.getItem('accessToken');
+  console.log('Get Login Url:::', Api.baseUrl1);
+  const url = Api.baseUrl1 + 'investigation-report-store';
+  return new Promise((resolve, reject) => {
+    axios
+      .post(url, requestData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(res => resolve(res))
+      .catch(err => reject(err));
+  });
+};
+
+export const onUpdateInvestigationApi = async (requestData, id) => {
+  const token = await AsyncStorage.getItem('accessToken');
+  const url = Api.baseUrl1 + `investigation-report-update/${id}`;
+  console.log('Get onUpdateIncomeApi Url:::', url, JSON.stringify(requestData));
+  return new Promise((resolve, reject) => {
+    axios
+      .post(url, requestData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(res => resolve(res))
+      .catch(err => reject(err));
+  });
+};
+
+export const onAddCommonFormDataApi = async (dataUrl, requestData) => {
+  const token = await AsyncStorage.getItem('accessToken');
+  console.log('Get Login Url:::', Api.baseUrl1);
+  const url = Api.baseUrl1 + dataUrl;
+  return new Promise((resolve, reject) => {
+    axios
+      .post(url, requestData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(res => resolve(res))
+      .catch(err => reject(err));
+  });
+};
+
+export const onUpdateCommonFormDataApi = async (dataUrl, requestData) => {
+  const token = await AsyncStorage.getItem('accessToken');
+  const url = Api.baseUrl1 + dataUrl;
+  console.log('Get onUpdateIncomeApi Url:::', url, JSON.stringify(requestData));
+  return new Promise((resolve, reject) => {
+    axios
+      .post(url, requestData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(res => resolve(res))
+      .catch(err => reject(err));
+  });
+};

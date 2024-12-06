@@ -449,11 +449,13 @@ export const SettingScreen = ({navigation}) => {
           </TouchableOpacity>
 
           <TouchableOpacity
+            onPress={() => navigation.navigate('SMSScreen')}
             style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
             <Text style={[styles.text, {color: theme.text}]}>{'SMS/Mail'}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
+            onPress={() => navigation.navigate('ServiceScreen')}
             style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
             <Text style={[styles.text, {color: theme.text}]}>{'Services'}</Text>
           </TouchableOpacity>

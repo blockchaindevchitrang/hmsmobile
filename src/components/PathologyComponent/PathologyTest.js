@@ -9,6 +9,7 @@ import {
   TextInput,
   FlatList,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import React, {useRef, useState} from 'react';
 import {
@@ -26,8 +27,10 @@ import SelectDropdown from 'react-native-select-dropdown';
 import {useSelector} from 'react-redux';
 import {
   onAddAccountListApi,
+  onAddCommonJsonApi,
   onDeleteCommonApi,
   onGetEditAccountDataApi,
+  onGetEditCommonJsonApi,
   onGetSpecificCommonApi,
 } from '../../services/Api';
 import {DeletePopup} from '../DeletePopup';
@@ -64,15 +67,7 @@ const PathologyTest = ({
   const [chargeName, setChargeName] = useState('');
   const [standardCharge, setStandardCharge] = useState('');
   const [refresh, setRefresh] = useState(false);
-  const [parameterArray, setParameterArray] = useState([
-    {
-      parameter_id: '',
-      parameter_name: '',
-      patient_result: '',
-      range: '',
-      unit: '',
-    },
-  ]);
+  const [parameterArray, setParameterArray] = useState([]);
   const [errorVisible, setErrorVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [userId, setUserId] = useState('');
@@ -81,20 +76,74 @@ const PathologyTest = ({
 
   const onAddPayRollData = async () => {
     try {
-      if (parameterName == '') {
+      if (patientId == '') {
         setErrorVisible(true);
-        setErrorMessage('Please enter parameter name.');
-      } else if (range == '') {
+        setErrorMessage('Please select patient.');
+      } else if (testName == '') {
         setErrorVisible(true);
-        setErrorMessage('Please enter reference range.');
-      } else if (unitId == '') {
+        setErrorMessage('Please enter test name.');
+      } else if (sortName == '') {
         setErrorVisible(true);
-        setErrorMessage('Please enter unit.');
+        setErrorMessage('Please enter short name.');
+      } else if (testType == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter test type.');
+      } else if (categoryId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select category name.');
+      } else if (chargeId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select charge category.');
+      } else if (standardCharge == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select charge category with standard charge.');
       } else {
         setLoading(true);
         setErrorVisible(false);
-        const urlData = `pathology-parameter-store?parameter_name=${parameterName}&reference_range=${range}&unit_id=${unitId}&description=${description}`;
-        const response = await onAddAccountListApi(urlData);
+        let parameterId = [];
+        let parameterResult = [];
+        let hasEmptyFields = false;
+        parameterArray.map(item => {
+          if (!item.parameter_id || !item.patient_result) {
+            hasEmptyFields = true;
+          } else {
+            parameterId.push(item.parameter_id);
+            parameterResult.push(item.patient_result);
+          }
+        });
+
+        if (hasEmptyFields) {
+          setErrorVisible(true);
+          setErrorMessage(
+            'Please fill in all parameter IDs and patient results.',
+          );
+          showMessage({
+            message: 'Please fill in all parameter IDs and patient results.',
+            type: 'danger',
+            duration: 3000,
+          });
+          return; // Exit the function without calling the API
+        }
+
+        const urlData = 'pathology-test-store';
+        let raw = JSON.stringify({
+          test_name: testName,
+          short_name: sortName,
+          test_type: testType,
+          category_id: categoryId,
+          unit: unit,
+          subcategory: subCategory,
+          method: method,
+          report_days: reportDay,
+          charge_category_id: chargeId,
+          patient_id: patientId,
+          standard_charge: standardCharge,
+          parameter_id: parameterId,
+          patient_result: parameterResult,
+        });
+        console.log('Get Login Url:::', raw);
+        const response = await onAddCommonJsonApi(urlData, raw);
+        // const response = await onAddAccountListApi(urlData);
         if (response.data.flag == 1) {
           onGetData();
           setLoading(false);
@@ -137,20 +186,72 @@ const PathologyTest = ({
 
   const onEditPayRollData = async () => {
     try {
-      if (parameterName == '') {
+      if (patientId == '') {
         setErrorVisible(true);
-        setErrorMessage('Please enter parameter name.');
-      } else if (range == '') {
+        setErrorMessage('Please select patient.');
+      } else if (testName == '') {
         setErrorVisible(true);
-        setErrorMessage('Please enter reference range.');
-      } else if (unitId == '') {
+        setErrorMessage('Please enter test name.');
+      } else if (sortName == '') {
         setErrorVisible(true);
-        setErrorMessage('Please enter unit.');
+        setErrorMessage('Please enter short name.');
+      } else if (testType == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter test type.');
+      } else if (categoryId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select category name.');
+      } else if (chargeId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select charge category.');
+      } else if (standardCharge == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select charge category with standard charge.');
       } else {
         setLoading(true);
         setErrorVisible(false);
-        const urlData = `pathology-parameter-update/${userId}?parameter_name=${parameterName}&reference_range=${range}&unit_id=${unitId}&description=${description}`;
-        const response = await onGetEditAccountDataApi(urlData);
+        let parameterId = [];
+        let parameterResult = [];
+        let hasEmptyFields = false;
+        parameterArray.map(item => {
+          if (!item.parameter_id || !item.patient_result) {
+            hasEmptyFields = true;
+          } else {
+            parameterId.push(item.parameter_id);
+            parameterResult.push(item.patient_result);
+          }
+        });
+
+        if (hasEmptyFields) {
+          setErrorVisible(true);
+          setErrorMessage(
+            'Please fill in all parameter IDs and patient results.',
+          );
+          showMessage({
+            message: 'Please fill in all parameter IDs and patient results.',
+            type: 'danger',
+            duration: 3000,
+          });
+          return; // Exit the function without calling the API
+        }
+        let raw = JSON.stringify({
+          test_name: testName,
+          short_name: sortName,
+          test_type: testType,
+          category_id: categoryId,
+          unit: unit,
+          subcategory: subCategory,
+          method: method,
+          report_days: reportDay,
+          charge_category_id: chargeId,
+          patient_id: patientId,
+          standard_charge: standardCharge,
+          parameter_id: parameterId,
+          patient_result: parameterResult,
+        });
+        const urlData = `pathology-parameter-update/${userId}`;
+        // const response = await onGetEditAccountDataApi(urlData);
+        const response = await onGetEditCommonJsonApi(urlData, raw);
         console.log('Get Error::', response.data);
         if (response.data.flag == 1) {
           onGetData();
@@ -195,9 +296,7 @@ const PathologyTest = ({
   const onDeletePayrollData = async id => {
     try {
       setLoading(true);
-      const response = await onDeleteCommonApi(
-        `pathology-parameter-delete/${id}`,
-      );
+      const response = await onDeleteCommonApi(`pathology-test-delete/${id}`);
       if (response.data.flag == 1) {
         onGetData();
         setLoading(false);
@@ -242,7 +341,7 @@ const PathologyTest = ({
   const onGetSpecificDoctor = async id => {
     try {
       const response = await onGetSpecificCommonApi(
-        `pathology-parameter-edit/${id}`,
+        `pathology-test-edit/${id}`,
       );
       if (response.status == 200) {
         console.log('get ValueLL:::', response.data.data);
@@ -287,13 +386,58 @@ const PathologyTest = ({
           {item.charge_category}
         </Text>
         <View style={styles.actionDataView}>
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={async () => {
+              let allDatas = await onGetSpecificDoctor(item.id);
+              setUserId(item.id);
+              setPatientId(allDatas.pathologyTest.patient_id);
+              setPatientName(item.patient_name);
+              setTestName(item.test_name);
+              setTestType(item.test_type);
+              setSortName(item.short_name);
+              setMethod(allDatas.pathologyTest.method);
+              setCategoryId(allDatas.pathologyTest.category_id);
+              setCategoryName(item.category_name);
+              setUnit(JSON.stringify(allDatas.pathologyTest.unit));
+              setSubCategory(allDatas.pathologyTest.subcategory);
+              setReportDay(JSON.stringify(allDatas.pathologyTest.report_days));
+              setChargeId(allDatas.pathologyTest.charge_category_id);
+              setChargeName(item.charge_category);
+              setStandardCharge(
+                JSON.stringify(allDatas.pathologyTest.standard_charge),
+              );
+              if (allDatas.pathologyParameterItems.length > 0) {
+                allDatas.pathologyParameterItems.map(item1 => {
+                  parameterArray.push({
+                    parameter_id: item1.parameter_id,
+                    parameter_name: item1.pathology_parameter ? item1.pathology_parameter.parameter_name : '',
+                    patient_result: item1.patient_result,
+                    range: item1.pathology_parameter ? item1.pathology_parameter.reference_range : '',
+                    unit: item1.pathology_parameter ? item1.pathology_parameter.pathology_unit.name : '',
+                  });
+                });
+              } else {
+                parameterArray.push({
+                  parameter_id: '',
+                  parameter_name: '',
+                  patient_result: '',
+                  range: '',
+                  unit: '',
+                });
+              }
+              setNewUserVisible(true);
+            }}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.blueColor}]}
               source={editing}
             />
           </TouchableOpacity>
-          <TouchableOpacity style={{marginLeft: wp(2)}}>
+          <TouchableOpacity
+            onPress={() => {
+              setUserId(item.id);
+              setDeleteUser(true);
+            }}
+            style={{marginLeft: wp(2)}}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.errorColor}]}
               source={deleteIcon}
@@ -321,7 +465,33 @@ const PathologyTest = ({
           </View>
           <View style={styles.filterView}>
             <TouchableOpacity
-              onPress={() => setNewUserVisible(true)}
+              onPress={() => {
+                setUserId('');
+                setPatientId('');
+                setPatientName('');
+                setTestName('');
+                setTestType('');
+                setSortName('');
+                setMethod('');
+                setCategoryId('');
+                setCategoryName('');
+                setUnit('');
+                setSubCategory('');
+                setReportDay('');
+                setChargeId('');
+                setChargeName('');
+                setStandardCharge('');
+                parameterArray.push({
+                  parameter_id: '',
+                  parameter_name: '',
+                  patient_result: '',
+                  range: '',
+                  unit: '',
+                });
+                setErrorMessage('');
+                setErrorVisible(false);
+                setNewUserVisible(true);
+              }}
               style={styles.actionView}>
               <Text style={styles.actionText}>New Pathology Test</Text>
             </TouchableOpacity>
@@ -389,7 +559,10 @@ const PathologyTest = ({
             </Text>
             <View style={styles.filterView}>
               <TouchableOpacity
-                onPress={() => setNewUserVisible(false)}
+                onPress={() => {
+                  setParameterArray([]);
+                  setNewUserVisible(false);
+                }}
                 style={styles.backButtonView}>
                 <Text style={styles.backText}>BACK</Text>
               </TouchableOpacity>
@@ -695,9 +868,10 @@ const PathologyTest = ({
                         <TextInput
                           value={item.patient_result}
                           placeholder={'Patient Result'}
-                          onChangeText={text =>
-                            (parameterArray[index].parameter_id = text)
-                          }
+                          onChangeText={text => {
+                            setRefresh(!refresh);
+                            parameterArray[index].patient_result = text;
+                          }}
                           style={[styles.nameTextView, {width: '100%'}]}
                           keyboardType={'number-pad'}
                         />
@@ -765,18 +939,41 @@ const PathologyTest = ({
               keyExtractor={(item, index) => index.toString()}
               contentContainerStyle={{paddingBottom: hp(3)}}
             />
+            {errorVisible ? (
+              <Text style={styles.dataHistoryText4}>{errorMessage}</Text>
+            ) : null}
           </View>
 
           <View style={styles.buttonView}>
-            <TouchableOpacity onPress={() => {}} style={styles.nextView}>
-              <Text style={styles.nextText}>Save</Text>
+            <TouchableOpacity
+              onPress={() => {
+                userId != '' ? onEditPayRollData() : onAddPayRollData();
+              }}
+              style={styles.nextView}>
+              {loading ? (
+                <ActivityIndicator size={'small'} color={COLORS.white} />
+              ) : (
+                <Text style={styles.nextText}>Save</Text>
+              )}
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => {}} style={styles.prevView}>
+            <TouchableOpacity
+              onPress={() => {
+                setParameterArray([]);
+                setNewUserVisible(false);
+              }}
+              style={styles.prevView}>
               <Text style={styles.prevText}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
       )}
+      <DeletePopup
+        modelVisible={deleteUser}
+        setModelVisible={setDeleteUser}
+        onPress={() => onDeletePayrollData(userId)}
+        setUserId={setUserId}
+        isLoading={loading}
+      />
     </View>
   );
 };

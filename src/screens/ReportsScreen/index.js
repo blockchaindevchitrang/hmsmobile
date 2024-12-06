@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -25,6 +25,7 @@ import BirthReportList from '../../components/ReportsComponent/BirthReportList';
 import DeathReportList from '../../components/ReportsComponent/DeathReportList';
 import OperationReports from '../../components/ReportsComponent/OperationReports';
 import InvestigationReports from '../../components/ReportsComponent/InvestigationReports';
+import { onGetCommonApi } from '../../services/Api';
 
 const allData = [
   {
@@ -153,11 +154,17 @@ const BloodIssueData = [
 export const ReportsScreen = ({navigation}) => {
   const {t} = useTranslation();
   const {theme} = useTheme();
-  const [searchAccount, setSearchAccount] = useState('');
-  const [searchPayroll, setSearchPayroll] = useState('');
-  const [searchPharmacists, setSearchPharmacists] = useState('');
+  const [searchBirth, setSearchBirth] = useState('');
+  const [searchDeath, setSearchDeath] = useState('');
+  const [searchInvestigation, setSearchInvestigation] = useState('');
+  const [searchOperation, setSearchOperation] = useState('');
   const [optionModalView, setOptionModalView] = useState(false);
-  const [selectedView, setSelectedView] = useState('PathologyCategories');
+  const [selectedView, setSelectedView] = useState('Birth reports');
+  const [birthReportList, setBirthReportList] = useState([]);
+  const [deathReportList, setDeathReportList] = useState([]);
+  const [investigationList, setInvestigationList] = useState([]);
+  const [operationList, setOperationList] = useState([]);
+  const [refresh, setRefresh] = useState(false);
 
   const animations = useRef(
     [0, 0, 0, 0, 0].map(() => new Animated.Value(300)),
@@ -216,6 +223,82 @@ export const ReportsScreen = ({navigation}) => {
     }
   };
 
+  useEffect(() => {
+    onGetBirthData();
+  }, [searchBirth]);
+
+  const onGetBirthData = async () => {
+    try {
+      const response = await onGetCommonApi(
+        `birth-report-get?search=${searchBirth}`,
+      );
+      console.log('get Response:', response.data.data);
+      if (response.data.flag === 1) {
+        setBirthReportList(response.data.data.items);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Error>>', err);
+    }
+  };
+
+  useEffect(() => {
+    onGetDeathData();
+  }, [searchDeath]);
+
+  const onGetDeathData = async () => {
+    try {
+      const response = await onGetCommonApi(
+        `death-report-get?search=${searchDeath}`,
+      );
+      console.log('get Response:', response.data.data);
+      if (response.data.flag === 1) {
+        setDeathReportList(response.data.data.items);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Error>>', err);
+    }
+  };
+
+  useEffect(() => {
+    onGetInvestigationData();
+  }, [searchInvestigation]);
+
+  const onGetInvestigationData = async () => {
+    try {
+      const response = await onGetCommonApi(
+        `investigation-report-get?search=${searchInvestigation}`,
+      );
+      console.log('get Response:', response.data.data);
+      if (response.data.flag === 1) {
+        setInvestigationList(response.data.data.items);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Error>>', err);
+    }
+  };
+
+  useEffect(() => {
+    onGetOperationData();
+  }, [searchOperation]);
+
+  const onGetOperationData = async () => {
+    try {
+      const response = await onGetCommonApi(
+        `operation-report-get?search=${searchOperation}`,
+      );
+      console.log('get Response:', response.data.data);
+      if (response.data.flag === 1) {
+        setOperationList(response.data.data.items);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Error>>', err);
+    }
+  };
+
   return (
     <View style={[styles.container, {backgroundColor: theme.lightColor}]}>
       <View style={styles.headerView}>
@@ -229,28 +312,32 @@ export const ReportsScreen = ({navigation}) => {
       <View style={styles.mainView}>
         {selectedView == 'Birth reports' ? (
           <BirthReportList
-            searchBreak={searchAccount}
-            setSearchBreak={setSearchAccount}
-            allData={allData}
+            searchBreak={searchBirth}
+            setSearchBreak={setSearchBirth}
+            allData={birthReportList}
+            onGetData={onGetBirthData}
           />
         ) : selectedView == 'Death reports' ? (
           <DeathReportList
-            searchBreak={searchPayroll}
-            setSearchBreak={setSearchPayroll}
-            allData={allData}
+            searchBreak={searchDeath}
+            setSearchBreak={setSearchDeath}
+            allData={deathReportList}
+            onGetData={onGetDeathData}
           />
         ) : selectedView == 'Investigation reports' ? (
           <InvestigationReports
-            searchBreak={searchPayroll}
-            setSearchBreak={setSearchPayroll}
-            allData={BloodDonorData}
+            searchBreak={searchInvestigation}
+            setSearchBreak={setSearchInvestigation}
+            allData={investigationList}
+            onGetData={onGetInvestigationData}
           />
         ) : (
           selectedView == 'Operation reports' && (
             <OperationReports
-              searchBreak={searchPharmacists}
-              setSearchBreak={setSearchPharmacists}
-              allData={allData}
+              searchBreak={searchOperation}
+              setSearchBreak={setSearchOperation}
+              allData={operationList}
+              onGetData={onGetOperationData}
             />
           )
         )}

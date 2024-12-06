@@ -11,6 +11,7 @@ import {
   Modal,
   TouchableWithoutFeedback,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import React, {useRef, useState} from 'react';
 import {
@@ -24,59 +25,213 @@ import filter from '../../images/filter.png';
 import deleteIcon from '../../images/delete.png';
 import editing from '../../images/editing.png';
 import moment from 'moment';
-import man from '../../images/man.png';
-import draw from '../../images/draw.png';
 import DatePicker from 'react-native-date-picker';
-import ImagePicker from 'react-native-image-crop-picker';
-import close from '../../images/close.png';
+import SelectDropdown from 'react-native-select-dropdown';
+import {useSelector} from 'react-redux';
+import {
+  onAddAccountListApi,
+  onDeleteCommonApi,
+  onGetEditAccountDataApi,
+  onGetSpecificCommonApi,
+} from '../../services/Api';
+import {DeletePopup} from '../DeletePopup';
+import FlashMessage, {
+  showMessage,
+  hideMessage,
+} from 'react-native-flash-message';
 
-const OperationReports = ({searchBreak, setSearchBreak, allData}) => {
+const OperationReports = ({
+  searchBreak,
+  setSearchBreak,
+  allData,
+  onGetData,
+}) => {
+  const caseData = useSelector(state => state.caseData);
+  const doctorData = useSelector(state => state.doctorData);
   const {theme} = useTheme();
   const [newBloodIssueVisible, setNewBloodIssueVisible] = useState(false);
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [role, setRole] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [address, setAddress] = useState('');
-  const [city, setCity] = useState('');
-  const [country, setCountry] = useState('');
-  const [postalCode, setPostalCode] = useState('');
-  const [genderType, setGenderType] = useState('female');
+  const [caseId, setCaseId] = useState('');
+  const [caseName, setCaseName] = useState('');
+  const [doctorId, setDoctorId] = useState('');
+  const [doctorName, setDoctorName] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState(new Date());
-  const [dateModalVisible, setDateModalVisible] = useState(false);
-  const [avatar, setAvatar] = useState(null);
-  const [eventTitle, setEventTitle] = useState('');
-  const [departmentComment, setDepartmentComment] = useState('');
+  const [dateModalVisible, setDateModalVisible] = useState(true);
+  const [description, setDescription] = useState('');
+  const [errorVisible, setErrorVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [userId, setUserId] = useState('');
+  const [deleteUser, setDeleteUser] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const openProfileImagePicker = async () => {
+  const onAddPayRollData = async () => {
     try {
-      const image = await ImagePicker.openPicker({
-        width: 300,
-        height: 400,
-        cropping: false,
-        multiple: false, // Allow selecting only one image
-        compressImageQuality: 0.5,
-      });
-
-      if (image && image.path) {
-        if (image && image.path) {
-          var filename = image.path.substring(image.path.lastIndexOf('/') + 1);
-          let imageData = {
-            uri: Platform.OS === 'ios' ? image.sourceURL : image.path,
-            type: image.mime,
-            name: Platform.OS === 'ios' ? image.filename : filename,
-          };
-          setAvatar(imageData);
-
-          console.log('Selected image:', avatar);
-        }
+      if (caseId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select patient case.');
+      } else if (doctorId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select doctor.');
       } else {
-        console.log('No image selected');
+        setLoading(true);
+        setErrorVisible(false);
+
+        const urlData = `operation-report-store?case_id=${caseId}&doctor_id=${doctorId}&date=${moment(
+          dateOfBirth,
+        ).format('YYYY-MM-DD')}&description=${description}`;
+        const response = await onAddAccountListApi(urlData);
+        if (response.data.flag == 1) {
+          onGetData();
+          setLoading(false);
+          setNewBloodIssueVisible(false);
+          showMessage({
+            message: 'Record Added Successfully',
+            type: 'success',
+            duration: 3000,
+          });
+        } else {
+          setLoading(false);
+          showMessage({
+            message: response.data.message,
+            type: 'danger',
+            duration: 6000,
+            icon: 'danger',
+          });
+        }
       }
-    } catch (error) {
-      console.log('Error selecting image:', error);
+    } catch (err) {
+      if (err.response.data.message) {
+        showMessage({
+          message: err.response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      } else {
+        showMessage({
+          message: 'Something want wrong.',
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
+      setLoading(false);
+      console.log('Error:', err);
+    }
+  };
+
+  const onEditPayRollData = async () => {
+    try {
+      if (caseId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select patient case.');
+      } else if (doctorId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select doctor.');
+      } else {
+        setLoading(true);
+        setErrorVisible(false);
+        const urlData = `operation-report-update/${userId}?case_id=${caseId}&doctor_id=${doctorId}&date=${moment(
+          dateOfBirth,
+        ).format('YYYY-MM-DD')}&description=${description}`;
+        const response = await onGetEditAccountDataApi(urlData);
+        // const response = await onGetEditCommonJsonApi(urlData, raw);
+        console.log('Get Error::', response.data);
+        if (response.data.flag == 1) {
+          onGetData();
+          setLoading(false);
+          setNewBloodIssueVisible(false);
+          showMessage({
+            message: 'Record Edit Successfully',
+            type: 'success',
+            duration: 3000,
+          });
+        } else {
+          setLoading(false);
+          showMessage({
+            message: response.data.message,
+            type: 'danger',
+            duration: 6000,
+            icon: 'danger',
+          });
+        }
+      }
+    } catch (err) {
+      setLoading(false);
+      if (err.response.data.message) {
+        showMessage({
+          message: err.response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      } else {
+        showMessage({
+          message: 'Something want wrong.',
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
+      console.log('Error:', err);
+    }
+  };
+
+  const onDeletePayrollData = async id => {
+    try {
+      setLoading(true);
+      const response = await onDeleteCommonApi(`operation-report-delete/${id}`);
+      if (response.data.flag == 1) {
+        onGetData();
+        setLoading(false);
+        setDeleteUser(false);
+        showMessage({
+          message: 'Record Delete Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      } else {
+        setLoading(false);
+        setDeleteUser(false);
+        showMessage({
+          message: response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
+    } catch (err) {
+      setLoading(false);
+      setDeleteUser(false);
+      if (err.response.data.message) {
+        showMessage({
+          message: err.response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      } else {
+        showMessage({
+          message: 'Something want wrong.',
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
+      console.log('Get Error', err);
+    }
+  };
+
+  const onGetSpecificDoctor = async id => {
+    try {
+      const response = await onGetSpecificCommonApi(`operation-report-edit/${id}`);
+      if (response.status == 200) {
+        console.log('get ValueLL:::', response.data.data);
+        return response.data.data;
+      } else {
+        return 0;
+      }
+    } catch (err) {
+      console.log('Get Error', err);
     }
   };
 
@@ -89,21 +244,21 @@ const OperationReports = ({searchBreak, setSearchBreak, allData}) => {
         ]}>
         <View style={[styles.switchView, {width: wp(30)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataHistoryText1]}>{item.admission}</Text>
+            <Text style={[styles.dataHistoryText1]}>{item.case_id}</Text>
           </View>
         </View>
         <View style={styles.nameDataView}>
-          <ProfilePhoto username={item.name} />
+          <ProfilePhoto username={item.patient_name} />
           <View>
-            <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
-            <Text style={[styles.dataHistoryText1]}>{item.mail}</Text>
+            <Text style={[styles.dataHistoryText2]}>{item.patient_name}</Text>
+            <Text style={[styles.dataHistoryText5]}>{item.patient_email}</Text>
           </View>
         </View>
         <View style={styles.nameDataView}>
-          <ProfilePhoto username={item.name} />
+          <ProfilePhoto username={item.doctor_name} />
           <View>
-            <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
-            <Text style={[styles.dataHistoryText1]}>{item.mail}</Text>
+            <Text style={[styles.dataHistoryText2]}>{item.doctor_name}</Text>
+            <Text style={[styles.dataHistoryText5]}>{item.doctor_email}</Text>
           </View>
         </View>
         <View style={[styles.switchView, {width: wp(35)}]}>
@@ -112,13 +267,29 @@ const OperationReports = ({searchBreak, setSearchBreak, allData}) => {
           </View>
         </View>
         <View style={styles.actionDataView}>
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={async () => {
+              let allDatas = await onGetSpecificDoctor(item.id);
+              setUserId(item.id);
+              setCaseId(item.case_id);
+              setCaseName(`${item.case_id} ${item.patient_name}`);
+              setDoctorId(allDatas.doctor_id);
+              setDoctorName(item.doctor_name);
+              setDescription(allDatas.description);
+              setDateOfBirth(new Date(allDatas.date));
+              setNewBloodIssueVisible(true);
+            }}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.blueColor}]}
               source={editing}
             />
           </TouchableOpacity>
-          <TouchableOpacity style={{marginLeft: wp(2)}}>
+          <TouchableOpacity
+            onPress={() => {
+              setUserId(item.id);
+              setDeleteUser(true);
+            }}
+            style={{marginLeft: wp(2)}}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.errorColor}]}
               source={deleteIcon}
@@ -130,8 +301,8 @@ const OperationReports = ({searchBreak, setSearchBreak, allData}) => {
   };
 
   return (
-    <>
-      <View style={styles.safeAreaStyle}>
+    <View style={styles.safeAreaStyle}>
+      {!newBloodIssueVisible ? (
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{paddingBottom: hp(12)}}>
@@ -149,7 +320,18 @@ const OperationReports = ({searchBreak, setSearchBreak, allData}) => {
               <Image style={styles.filterImage} source={filter} />
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() => setNewBloodIssueVisible(true)}
+              onPress={() => {
+                setUserId('');
+                setCaseId('');
+                setCaseName('');
+                setDoctorId('');
+                setDoctorName('');
+                setDescription('');
+                setDateOfBirth(new Date());
+                setErrorMessage('');
+                setErrorVisible(false);
+                setNewBloodIssueVisible(true);
+              }}
               style={styles.actionView}>
               <Text style={styles.actionText}>New Operation Reports</Text>
             </TouchableOpacity>
@@ -209,57 +391,192 @@ const OperationReports = ({searchBreak, setSearchBreak, allData}) => {
             </ScrollView>
           </View>
         </ScrollView>
-      </View>
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={newBloodIssueVisible}
-        onRequestClose={() => setNewBloodIssueVisible(false)}>
-        <View style={styles.maneModalView}>
-          <TouchableWithoutFeedback
-            onPress={() => {
-              setNewBloodIssueVisible(false);
-            }}>
-            <View style={styles.modalOverlay} />
-          </TouchableWithoutFeedback>
-          <View style={styles.container}>
-            <View style={styles.headerView}>
-              <Text style={styles.headerText}>New Operation Category</Text>
-              <TouchableOpacity onPress={() => setNewBloodIssueVisible(false)}>
-                <Image style={styles.closeImage} source={close} />
-              </TouchableOpacity>
-            </View>
-            <Text style={[styles.titleText1, {marginTop: hp(1.5)}]}>
-              {'Operation Category'}
+      ) : (
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{paddingBottom: hp(12)}}>
+          <View style={styles.subView}>
+            <Text style={[styles.doctorText, {color: theme.text}]}>
+              New Operation Report
             </Text>
-            <TextInput
-              value={eventTitle}
-              placeholder={''}
-              onChangeText={text => setEventTitle(text)}
-              style={[styles.eventTextInput]}
-            />
-            <Text style={[styles.titleText1]}>{'Remained Bags:'}</Text>
-            <TextInput
-              value={departmentComment}
-              placeholder={''}
-              onChangeText={text => setDepartmentComment(text)}
-              style={[styles.eventTextInput]}
-            />
-
-            <View style={styles.buttonView}>
-              <TouchableOpacity onPress={() => {}} style={styles.nextView}>
-                <Text style={styles.nextText}>Save</Text>
-              </TouchableOpacity>
+            <View style={styles.filterView}>
               <TouchableOpacity
                 onPress={() => setNewBloodIssueVisible(false)}
-                style={styles.prevView}>
-                <Text style={styles.prevText}>Cancel</Text>
+                style={styles.backButtonView}>
+                <Text style={styles.backText}>BACK</Text>
               </TouchableOpacity>
             </View>
           </View>
-        </View>
-      </Modal>
-    </>
+
+          <View style={styles.profileView}>
+            <View style={styles.nameView}>
+              <View style={{width: '100%'}}>
+                <Text style={styles.dataHistoryText6}>Case:</Text>
+                <SelectDropdown
+                  data={caseData}
+                  onSelect={(selectedItem, index) => {
+                    // setSelectedColor(selectedItem);
+                    setCaseId(selectedItem.case_id);
+                    setCaseName(
+                      `${selectedItem?.case_id} ${selectedItem?.patient_name}`,
+                    );
+                    console.log('gert Value:::', selectedItem);
+                  }}
+                  defaultValue={caseName}
+                  renderButton={(selectedItem, isOpen) => {
+                    console.log('Get Response>>>', selectedItem);
+                    return (
+                      <View style={styles.dropdown2BtnStyle2}>
+                        {caseId != '' ? (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {caseId == selectedItem?.case_id
+                              ? `${selectedItem?.case_id} ${selectedItem?.patient_name}`
+                              : caseName}
+                          </Text>
+                        ) : (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {selectedItem?.case_id +
+                              selectedItem?.patient_name || 'Select Case'}
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(item, index, isSelected) => {
+                    return (
+                      <TouchableOpacity style={styles.dropdownView}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {`${item?.case_id} ${item?.patient_name}`}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                  dropdownIconPosition={'left'}
+                  dropdownStyle={styles.dropdown2DropdownStyle}
+                />
+              </View>
+            </View>
+            <View style={styles.nameView}>
+              <View style={{width: '100%'}}>
+                <Text style={styles.dataHistoryText6}>Doctor:</Text>
+                <SelectDropdown
+                  data={doctorData}
+                  onSelect={(selectedItem, index) => {
+                    // setSelectedColor(selectedItem);
+                    setDoctorId(selectedItem.id);
+                    console.log('gert Value:::', selectedItem);
+                  }}
+                  defaultValue={doctorName}
+                  renderButton={(selectedItem, isOpen) => {
+                    console.log('Get Response>>>', selectedItem);
+                    return (
+                      <View style={styles.dropdown2BtnStyle2}>
+                        {doctorId != '' ? (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {doctorId == selectedItem?.id
+                              ? selectedItem?.name
+                              : doctorName}
+                          </Text>
+                        ) : (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {selectedItem?.name || 'Select Doctor'}
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(item, index, isSelected) => {
+                    return (
+                      <TouchableOpacity style={styles.dropdownView}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {item?.name}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                  dropdownIconPosition={'left'}
+                  dropdownStyle={styles.dropdown2DropdownStyle}
+                />
+              </View>
+            </View>
+
+            <View style={styles.nameView}>
+              <View style={{width: '100%'}}>
+                <Text style={styles.dataHistoryText6}>Date:</Text>
+                <Text
+                  style={[
+                    styles.nameTextView,
+                    {width: '100%', paddingVertical: hp(1)},
+                  ]}
+                  onPress={() => setDateModalVisible(!dateModalVisible)}>
+                  {moment(dateOfBirth).format('DD/MM/YYYY')}
+                </Text>
+                <DatePicker
+                  open={dateModalVisible}
+                  modal={true}
+                  date={dateOfBirth}
+                  maximumDate={new Date()}
+                  mode={'date'}
+                  onConfirm={date => {
+                    console.log('Console Log>>', date);
+                    setDateModalVisible(false);
+                    setDateOfBirth(date);
+                  }}
+                  onCancel={() => {
+                    setDateModalVisible(false);
+                  }}
+                />
+              </View>
+            </View>
+
+            <View style={styles.nameView}>
+              <View style={{width: '100%'}}>
+                <Text style={styles.dataHistoryText6}>Description:</Text>
+                <TextInput
+                  value={description}
+                  placeholder={'Description'}
+                  onChangeText={text => setDescription(text)}
+                  style={[styles.commentTextInput]}
+                  multiline
+                  textAlignVertical="top"
+                />
+              </View>
+            </View>
+            {errorVisible ? (
+              <Text style={styles.dataHistoryText4}>{errorMessage}</Text>
+            ) : null}
+          </View>
+
+          <View style={styles.buttonView}>
+            <TouchableOpacity
+              onPress={() => {
+                userId != '' ? onEditPayRollData() : onAddPayRollData();
+              }}
+              style={styles.nextView}>
+              {loading ? (
+                <ActivityIndicator size={'small'} color={COLORS.white} />
+              ) : (
+                <Text style={styles.nextText}>Save</Text>
+              )}
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setNewBloodIssueVisible(false)}
+              style={styles.prevView}>
+              <Text style={styles.prevText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      )}
+      <DeletePopup
+        modelVisible={deleteUser}
+        setModelVisible={setDeleteUser}
+        onPress={() => onDeletePayrollData(userId)}
+        setUserId={setUserId}
+        isLoading={loading}
+      />
+    </View>
   );
 };
 
@@ -361,7 +678,7 @@ const styles = StyleSheet.create({
   },
   dataHistoryView: {
     width: '100%',
-    height: hp(8),
+    paddingVertical: hp(1),
     alignItems: 'center',
     flexDirection: 'row',
     alignSelf: 'flex-start',
@@ -399,6 +716,12 @@ const styles = StyleSheet.create({
     fontSize: hp(1.8),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.errorColor,
+  },
+  dataHistoryText5: {
+    fontSize: hp(1.8),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+    width: wp(45),
   },
   mainDataView: {
     minHeight: hp(29),
@@ -461,7 +784,7 @@ const styles = StyleSheet.create({
   nameTextView: {
     width: '100%',
     paddingHorizontal: wp(2),
-    paddingVertical: hp(0.5),
+    paddingVertical: hp(1),
     borderWidth: 1,
     borderColor: COLORS.greyColor,
     fontFamily: Fonts.FONTS.PoppinsMedium,
@@ -476,7 +799,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     width: '94%',
-    marginVertical: hp(2),
+    marginVertical: hp(1.5),
     alignSelf: 'center',
   },
   contactView: {
@@ -664,6 +987,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     alignSelf: 'center',
     height: hp(14),
+    marginTop: hp(1),
   },
   titleText1: {
     fontSize: hp(1.8),
@@ -708,5 +1032,34 @@ const styles = StyleSheet.create({
     fontSize: hp(2.5),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
+  },
+  dropdown2DropdownStyle: {
+    backgroundColor: COLORS.white,
+    borderRadius: 4,
+    height: hp(25),
+    // borderRadius: 12,
+  },
+  dropdownItemTxtStyle: {
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    marginLeft: wp(2),
+  },
+  dropdownView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: hp(5),
+    borderBottomWidth: 0,
+  },
+  dropdown2BtnStyle2: {
+    width: '100%',
+    height: hp(5),
+    backgroundColor: COLORS.white,
+    borderRadius: 5,
+    alignItems: 'center',
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    marginTop: hp(1),
   },
 });
