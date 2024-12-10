@@ -109,6 +109,12 @@ const styles = StyleSheet.create({
     height: hp(12),
     resizeMode: 'contain',
   },
+  nextView: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
 });
 
 export default styles;

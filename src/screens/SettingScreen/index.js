@@ -360,12 +360,6 @@ export const SettingScreen = ({navigation}) => {
               {'Front Office'}
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
-            <Text style={[styles.text, {color: theme.text}]}>
-              {'Front CMS'}
-            </Text>
-          </TouchableOpacity>
 
           <TouchableOpacity
             onPress={() => navigation.navigate('HospitalChargesScreen')}

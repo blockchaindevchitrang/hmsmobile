@@ -11,7 +11,7 @@ import {
   Platform,
   ActivityIndicator,
 } from 'react-native';
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -39,16 +39,18 @@ import FlashMessage, {
   hideMessage,
 } from 'react-native-flash-message';
 
-const Insurances = ({searchBreak, setSearchBreak, allData, onGetData}) => {
+let totalAmount = '0';
+const Packages = ({
+  searchBreak,
+  setSearchBreak,
+  allData,
+  onGetData,
+  parameter,
+}) => {
   const {theme} = useTheme();
   const [newUserVisible, setNewUserVisible] = useState(false);
-  const [insurance, setInsurance] = useState('');
-  const [serviceTex, setServiceTex] = useState('');
+  const [packageData, setPackageData] = useState('');
   const [discount, setDiscount] = useState('');
-  const [insuranceNo, setInsuranceNo] = useState('');
-  const [insuranceCode, setInsuranceCode] = useState('');
-  const [hospitalRate, setHospitalRate] = useState('');
-  const [status, setStatus] = useState(false);
   const [description, setDescription] = useState('');
   const [refresh, setRefresh] = useState(false);
   const [parameterArray, setParameterArray] = useState([]);
@@ -58,28 +60,30 @@ const Insurances = ({searchBreak, setSearchBreak, allData, onGetData}) => {
   const [deleteUser, setDeleteUser] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // useEffect(() => {
+  //   parameterArray.map(item => {
+  //     totalAmount = parseFloat(item.amount) + parseFloat(totalAmount);
+  //   });
+  // }, [parameterArray]);
+
+  parameterArray.map(item => {
+    totalAmount = parseFloat(item.amount) + parseFloat(totalAmount);
+  });
+
   const onAddPayRollData = async () => {
     try {
-      if (insurance == '') {
+      if (packageData == '') {
         setErrorVisible(true);
-        setErrorMessage('Please enter insurance.');
-      } else if (serviceTex == '') {
+        setErrorMessage('Please enter package name.');
+      } else if (discount == '') {
         setErrorVisible(true);
-        setErrorMessage('Please enter service tex.');
-      } else if (insuranceNo == '') {
-        setErrorVisible(true);
-        setErrorMessage('Please enter insurance no.');
-      } else if (insuranceCode == '') {
-        setErrorVisible(true);
-        setErrorMessage('Please enter insurance code.');
-      } else if (hospitalRate == '') {
-        setErrorVisible(true);
-        setErrorMessage('Please enter hospital rate.');
+        setErrorMessage('Please enter package discount.');
       } else {
         setLoading(true);
         setErrorVisible(false);
         let parameterId = [];
         let parameterResult = [];
+        let rateArray = [];
         let hasEmptyFields = false;
         parameterArray.map(item => {
           if (!item.diseases_name || !item.diseases_charge) {
@@ -87,34 +91,31 @@ const Insurances = ({searchBreak, setSearchBreak, allData, onGetData}) => {
           } else {
             parameterId.push(item.diseases_name);
             parameterResult.push(item.diseases_charge);
+            rateArray.push(item.rate);
           }
         });
 
         if (hasEmptyFields) {
           setErrorVisible(true);
-          setErrorMessage('Please fill in all diseases details.');
+          setErrorMessage('Please fill in all service details.');
           showMessage({
-            message: 'Please fill in all diseases details.',
+            message: 'Please fill in all service details.',
             type: 'danger',
             duration: 6000,
           });
           return; // Exit the function without calling the API
         }
-
-        const urlData = 'insurance-store';
         let raw = JSON.stringify({
-          name: insurance,
-          service_tax: serviceTex,
-          insurance_no: insuranceNo,
-          insurance_code: insuranceCode,
-          hospital_rate: hospitalRate,
-          status: status,
-          discount: discount,
-          remark: description,
-          disease_name: parameterId,
-          disease_charge: parameterResult,
+          name: packageData,
+          description: discount,
+          discount: description,
+          service_id: parameterId,
+          quantity: parameterResult,
+          rate: rateArray,
+          total_amount: totalAmount,
         });
         console.log('Get Login Url:::', raw);
+        const urlData = 'package-store';
         const response = await onAddCommonJsonApi(urlData, raw);
         // const response = await onAddAccountListApi(urlData);
         if (response.data.flag == 1) {
@@ -159,26 +160,18 @@ const Insurances = ({searchBreak, setSearchBreak, allData, onGetData}) => {
 
   const onEditPayRollData = async () => {
     try {
-      if (insurance == '') {
+      if (packageData == '') {
         setErrorVisible(true);
-        setErrorMessage('Please enter insurance.');
-      } else if (serviceTex == '') {
+        setErrorMessage('Please enter package name.');
+      } else if (discount == '') {
         setErrorVisible(true);
-        setErrorMessage('Please enter service tex.');
-      } else if (insuranceNo == '') {
-        setErrorVisible(true);
-        setErrorMessage('Please enter insurance no.');
-      } else if (insuranceCode == '') {
-        setErrorVisible(true);
-        setErrorMessage('Please enter insurance code.');
-      } else if (hospitalRate == '') {
-        setErrorVisible(true);
-        setErrorMessage('Please enter hospital rate.');
+        setErrorMessage('Please enter package discount.');
       } else {
         setLoading(true);
         setErrorVisible(false);
         let parameterId = [];
         let parameterResult = [];
+        let rateArray = [];
         let hasEmptyFields = false;
         parameterArray.map(item => {
           if (!item.diseases_name || !item.diseases_charge) {
@@ -186,32 +179,30 @@ const Insurances = ({searchBreak, setSearchBreak, allData, onGetData}) => {
           } else {
             parameterId.push(item.diseases_name);
             parameterResult.push(item.diseases_charge);
+            rateArray.push(item.rate);
           }
         });
 
         if (hasEmptyFields) {
           setErrorVisible(true);
-          setErrorMessage('Please fill in all diseases details.');
+          setErrorMessage('Please fill in all service details.');
           showMessage({
-            message: 'Please fill in all diseases details.',
+            message: 'Please fill in all service details.',
             type: 'danger',
             duration: 6000,
           });
           return; // Exit the function without calling the API
         }
         let raw = JSON.stringify({
-          name: insurance,
-          service_tax: serviceTex,
-          insurance_no: insuranceNo,
-          insurance_code: insuranceCode,
-          hospital_rate: hospitalRate,
-          status: status,
-          discount: discount,
-          remark: description,
-          disease_name: parameterId,
-          disease_charge: parameterResult,
+          name: packageData,
+          description: discount,
+          discount: description,
+          service_id: parameterId,
+          quantity: parameterResult,
+          rate: rateArray,
+          total_amount: totalAmount,
         });
-        const urlData = `insurance-update/${userId}`;
+        const urlData = `package-update/${userId}`;
         // const response = await onGetEditAccountDataApi(urlData);
         const response = await onGetEditCommonJsonApi(urlData, raw);
         console.log('Get Error::', response.data);
@@ -258,7 +249,7 @@ const Insurances = ({searchBreak, setSearchBreak, allData, onGetData}) => {
   const onDeletePayrollData = async id => {
     try {
       setLoading(true);
-      const response = await onDeleteCommonApi(`insurance-delete/${id}`);
+      const response = await onDeleteCommonApi(`package-delete/${id}`);
       if (response.data.flag == 1) {
         onGetData();
         setLoading(false);
@@ -302,7 +293,7 @@ const Insurances = ({searchBreak, setSearchBreak, allData, onGetData}) => {
 
   const onGetSpecificDoctor = async id => {
     try {
-      const response = await onGetSpecificCommonApi(`insurance-edit/${id}`);
+      const response = await onGetSpecificCommonApi(`package-edit/${id}`);
       if (response.status == 200) {
         console.log('get ValueLL:::', response.data.data);
         return response.data.data;
@@ -325,58 +316,37 @@ const Insurances = ({searchBreak, setSearchBreak, allData, onGetData}) => {
           {item.name}
         </Text>
         <Text style={[styles.dataHistoryText1, {width: wp(30)}]}>
-          {item.insurance_no}
+          {`${item.discount}%`}
         </Text>
         <Text style={[styles.dataHistoryText1, {width: wp(35)}]}>
-          {item.insurance_code}
+          {item.total_amount}
         </Text>
-        <Text style={[styles.dataHistoryText1, {width: wp(30)}]}>
-          {item.service_tax}
-        </Text>
-        <Text style={[styles.dataHistoryText1, {width: wp(30)}]}>
-          {item.hospital_rate}
-        </Text>
-        <Text style={[styles.dataHistoryText1, {width: wp(22)}]}>
-          {item.total}
-        </Text>
-        <View style={[styles.switchView]}>
-          <Switch
-            trackColor={{
-              false:
-                item.status == 'Active' ? COLORS.greenColor : COLORS.errorColor,
-              true:
-                item.status == 'Active' ? COLORS.greenColor : COLORS.errorColor,
-            }}
-            thumbColor={item.status == 'Active' ? '#f4f3f4' : '#f4f3f4'}
-            ios_backgroundColor={COLORS.errorColor}
-            onValueChange={() => {}}
-            value={item.status == 'Active' ? true : false}
-          />
-        </View>
         <View style={styles.actionDataView}>
           <TouchableOpacity
             onPress={async () => {
               let allDatas = await onGetSpecificDoctor(item.id);
               setUserId(item.id);
-              setInsurance(item.name);
-              setInsuranceNo(item.insurance_no);
-              setInsuranceCode(item.insurance_code);
-              setServiceTex(item.service_tax);
-              setHospitalRate(item.hospital_rate);
-              setDiscount(allDatas.pathologyTest.method);
-              setDescription(allDatas.pathologyTest.category_id);
-              setStatus(item.status == 'Active' ? true : false);
+              setPackageData(item.name);
+              setDiscount(item.discount);
+              setDescription(item.insurance_code);
+              totalAmount = item.total_amount;
               if (allDatas.pathologyParameterItems.length > 0) {
                 allDatas.pathologyParameterItems.map(item1 => {
                   parameterArray.push({
-                    disease_name: item1.disease_name,
-                    disease_charge: item1.disease_charge,
+                    service_id: item1.disease_name,
+                    service_name: item1.disease_charge,
+                    quantity: item1.quantity,
+                    rate: item1.rate,
+                    amount: item1.amount,
                   });
                 });
               } else {
                 parameterArray.push({
-                  disease_name: '',
-                  disease_charge: '',
+                  service_id: '',
+                  service_name: '',
+                  quantity: '',
+                  rate: '',
+                  amount: '0',
                 });
               }
               setNewUserVisible(true);
@@ -421,24 +391,23 @@ const Insurances = ({searchBreak, setSearchBreak, allData, onGetData}) => {
             <TouchableOpacity
               onPress={() => {
                 setUserId('');
-                setInsurance('');
-                setServiceTex('');
+                setPackageData('');
                 setDiscount('');
-                setInsuranceNo('');
-                setInsuranceCode('');
                 setDescription('');
-                setStatus('');
-                setHospitalRate('');
+                totalAmount = 0;
                 parameterArray.push({
-                  diseases_name: '',
-                  diseases_charge: '',
+                  service_id: '',
+                  service_name: '',
+                  quantity: '',
+                  rate: '',
+                  amount: '0',
                 });
                 setErrorMessage('');
                 setErrorVisible(false);
                 setNewUserVisible(true);
               }}
               style={styles.actionView}>
-              <Text style={styles.actionText}>New Insurances</Text>
+              <Text style={styles.actionText}>New Package</Text>
             </TouchableOpacity>
           </View>
           <View
@@ -451,25 +420,13 @@ const Insurances = ({searchBreak, setSearchBreak, allData, onGetData}) => {
                     {backgroundColor: theme.headerColor},
                   ]}>
                   <Text style={[styles.titleText, {width: wp(30)}]}>
-                    {'Insurance'}
+                    {'Package'}
                   </Text>
                   <Text style={[styles.titleText, {width: wp(30)}]}>
-                    {'Insurance No'}
+                    {'Discount'}
                   </Text>
                   <Text style={[styles.titleText, {width: wp(35)}]}>
-                    {'Insurance Code'}
-                  </Text>
-                  <Text style={[styles.titleText, {width: wp(30)}]}>
-                    {'Service Tax'}
-                  </Text>
-                  <Text style={[styles.titleText, {width: wp(30)}]}>
-                    {'Hospital Rate'}
-                  </Text>
-                  <Text style={[styles.titleText, {width: wp(22)}]}>
-                    {'Total'}
-                  </Text>
-                  <Text style={[styles.titleText, {width: wp(22)}]}>
-                    {'Status'}
+                    {'Total Amount'}
                   </Text>
                   <Text style={[styles.titleText, {width: wp(16)}]}>
                     {'ACTION'}
@@ -503,7 +460,7 @@ const Insurances = ({searchBreak, setSearchBreak, allData, onGetData}) => {
           contentContainerStyle={{paddingBottom: hp(12)}}>
           <View style={styles.subView}>
             <Text style={[styles.doctorText, {color: theme.text}]}>
-              Add New Insurances
+              New Package
             </Text>
             <View style={styles.filterView}>
               <TouchableOpacity
@@ -520,30 +477,17 @@ const Insurances = ({searchBreak, setSearchBreak, allData, onGetData}) => {
           <View style={styles.profileView}>
             <View style={styles.nameView}>
               <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText6}>Insurance:</Text>
+                <Text style={styles.dataHistoryText6}>Package:</Text>
                 <TextInput
-                  value={insurance}
-                  placeholder={'Insurance'}
-                  onChangeText={text => setInsurance(text)}
+                  value={packageData}
+                  placeholder={'Package'}
+                  onChangeText={text => setPackageData(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
                 />
               </View>
 
               <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText6}>Service Tax:</Text>
-                <TextInput
-                  value={serviceTex}
-                  placeholder={'Service Tax'}
-                  onChangeText={text => setServiceTex(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                  keyboardType={'number-pad'}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText6}>Discount:</Text>
+                <Text style={styles.dataHistoryText6}>{'Discount:(%)'}</Text>
                 <TextInput
                   value={discount}
                   placeholder={'Discount'}
@@ -552,40 +496,7 @@ const Insurances = ({searchBreak, setSearchBreak, allData, onGetData}) => {
                   keyboardType={'number-pad'}
                 />
               </View>
-              <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText6}>Insurance No:</Text>
-                <TextInput
-                  value={insuranceNo}
-                  placeholder={'Insurance No'}
-                  onChangeText={text => setInsuranceNo(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
             </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText6}>Insurance Code:</Text>
-                <TextInput
-                  value={insuranceCode}
-                  placeholder={'Insurance Code'}
-                  onChangeText={text => setInsuranceCode(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-
-              <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText6}>Hospital Rate:</Text>
-                <TextInput
-                  value={hospitalRate}
-                  placeholder={'Unit'}
-                  onChangeText={text => setHospitalRate(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                  keyboardType={'number-pad'}
-                />
-              </View>
-            </View>
-
             <View style={styles.nameView}>
               <View style={{width: '100%'}}>
                 <Text style={styles.dataHistoryText6}>Description:</Text>
@@ -600,30 +511,16 @@ const Insurances = ({searchBreak, setSearchBreak, allData, onGetData}) => {
               </View>
             </View>
 
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText6}>STATUS</Text>
-                <View style={styles.statusView}>
-                  <Switch
-                    trackColor={{
-                      false: status ? COLORS.greenColor : COLORS.errorColor,
-                      true: status ? COLORS.greenColor : COLORS.errorColor,
-                    }}
-                    thumbColor={status ? '#f4f3f4' : '#f4f3f4'}
-                    ios_backgroundColor={COLORS.errorColor}
-                    onValueChange={() => setStatus(!status)}
-                    value={status}
-                  />
-                </View>
-              </View>
-            </View>
             <View style={styles.parameterView}>
-              <Text style={styles.parameterText}>Disease Details</Text>
+              <Text style={styles.parameterText}>Service Details</Text>
               <TouchableOpacity
                 onPress={() => {
                   let NewItemAdd = {
-                    diseases_name: '',
-                    diseases_charge: '',
+                    service_id: '',
+                    service_name: '',
+                    quantity: '',
+                    rate: '',
+                    amount: '0',
                   };
                   setParameterArray(modifierAdd => [
                     ...modifierAdd,
@@ -647,27 +544,98 @@ const Insurances = ({searchBreak, setSearchBreak, allData, onGetData}) => {
                       marginVertical: hp(1),
                     }}>
                     <View style={styles.nameView}>
-                      <View style={{width: '42%'}}>
+                      <View style={{width: '48%'}}>
+                        <SelectDropdown
+                          data={parameter}
+                          onSelect={(selectedItem, index1) => {
+                            // setSelectedColor(selectedItem);
+                            // setCategoryId(selectedItem.id);
+                            parameterArray[index].service_id = selectedItem.id;
+                            parameterArray[index].service_name =
+                              selectedItem.name;
+                            console.log('gert Value:::', parameterArray);
+                            setRefresh(!refresh);
+                          }}
+                          defaultValue={item.service_name}
+                          renderButton={(selectedItem, isOpen) => {
+                            console.log('Get Response>>>', selectedItem);
+                            return (
+                              <View style={styles.dropdown2BtnStyle2}>
+                                {item.service_id != '' ? (
+                                  <Text style={styles.dropdownItemTxtStyle}>
+                                    {item.service_id == selectedItem?.id
+                                      ? selectedItem?.name
+                                      : item.service_name}
+                                  </Text>
+                                ) : (
+                                  <Text style={styles.dropdownItemTxtStyle}>
+                                    {selectedItem?.name || 'Select Service'}
+                                  </Text>
+                                )}
+                              </View>
+                            );
+                          }}
+                          showsVerticalScrollIndicator={false}
+                          renderItem={(item, index, isSelected) => {
+                            return (
+                              <TouchableOpacity style={styles.dropdownView}>
+                                <Text style={styles.dropdownItemTxtStyle}>
+                                  {item?.name}
+                                </Text>
+                              </TouchableOpacity>
+                            );
+                          }}
+                          dropdownIconPosition={'left'}
+                          dropdownStyle={styles.dropdown2DropdownStyle}
+                        />
+                      </View>
+
+                      <View style={{width: '48%'}}>
                         <TextInput
-                          value={item.diseases_name}
-                          placeholder={'Diseases Name'}
+                          value={item.quantity}
+                          placeholder={'Qty'}
                           onChangeText={text => {
                             setRefresh(!refresh);
-                            parameterArray[index].diseases_name = text;
+                            parameterArray[index].quantity = text;
+                            if (item.rate != '') {
+                              if (text != '') {
+                                parameterArray[index].amount =
+                                  parseFloat(text) * parseFloat(item.rate);
+                              } else {
+                                parameterArray[index].amount = '0';
+                              }
+                            }
+                          }}
+                          style={[styles.nameTextView, {width: '100%'}]}
+                          keyboardType={'number-pad'}
+                        />
+                      </View>
+                    </View>
+                    <View style={styles.nameView}>
+                      <View style={{width: '42%'}}>
+                        <TextInput
+                          value={item.rate}
+                          placeholder={'Rate'}
+                          onChangeText={text => {
+                            setRefresh(!refresh);
+                            parameterArray[index].rate = text;
+                            if (item.quantity != '') {
+                              if (text != '') {
+                                parameterArray[index].amount =
+                                  parseFloat(text) * parseFloat(item.quantity);
+                              } else {
+                                parameterArray[index].amount = '0';
+                              }
+                            }
                           }}
                           style={[styles.nameTextView, {width: '100%'}]}
                         />
                       </View>
                       <View style={{width: '42%'}}>
-                        <TextInput
-                          value={item.diseases_charge}
-                          placeholder={'Diseases Charge'}
-                          onChangeText={text => {
-                            setRefresh(!refresh);
-                            parameterArray[index].diseases_charge = text;
-                          }}
-                          style={[styles.nameTextView, {width: '100%'}]}
-                        />
+                        <Text style={styles.dataHistoryText6}>Amount</Text>
+                        <Text style={[styles.nameTextView, {width: '100%'}]}>
+                          {item.amount}
+                        </Text>
                       </View>
                       <TouchableOpacity
                         onPress={() => {
@@ -696,6 +664,11 @@ const Insurances = ({searchBreak, setSearchBreak, allData, onGetData}) => {
               keyExtractor={(item, index) => index.toString()}
               contentContainerStyle={{paddingBottom: hp(3)}}
             />
+            <View style={[styles.nameView, {justifyContent: 'flex-end'}]}>
+              <Text style={styles.dataHistoryText6}>
+                {'Total Amount:' + totalAmount}
+              </Text>
+            </View>
             {errorVisible ? (
               <Text style={styles.dataHistoryText4}>{errorMessage}</Text>
             ) : null}
@@ -735,7 +708,7 @@ const Insurances = ({searchBreak, setSearchBreak, allData, onGetData}) => {
   );
 };
 
-export default Insurances;
+export default Packages;
 
 const styles = StyleSheet.create({
   safeAreaStyle: {
@@ -950,6 +923,16 @@ const styles = StyleSheet.create({
     marginTop: hp(1),
     backgroundColor: COLORS.white,
   },
+  nameTextView1: {
+    width: '50%',
+    paddingHorizontal: wp(2),
+    paddingVertical: hp(0.5),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    color: COLORS.black,
+    borderRadius: 5,
+    marginTop: hp(1),
+  },
   nameTextVie1: {
     width: '50%',
     paddingHorizontal: wp(2),
@@ -995,7 +978,7 @@ const styles = StyleSheet.create({
     marginLeft: wp(2),
   },
   nextView1: {
-    height: hp(4.5),
+    height: hp(4),
     borderRadius: 5,
     alignItems: 'center',
     justifyContent: 'center',

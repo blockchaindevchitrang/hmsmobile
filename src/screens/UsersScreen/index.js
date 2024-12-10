@@ -31,11 +31,12 @@ import LabTechniciansList from '../../components/UsersComponent/LabTechniciansLi
 import PharmacistsList from '../../components/UsersComponent/PharmacistsList';
 import {
   onGetAllUsersDataApi,
+  onGetCommonApi,
   onGetRoleDataApi,
   onGetRolePermissionDataApi,
 } from '../../services/Api';
 import RoleList from '../../components/UsersComponent/RoleList';
-import { useSelector } from 'react-redux';
+import {useSelector} from 'react-redux';
 
 const allData = [
   {
@@ -317,6 +318,20 @@ export const UsersScreen = ({navigation}) => {
   const [labTechniciansData, setLabTechniciansData] = useState([]);
   const [pharmacistsData, setPharmacistsData] = useState([]);
   const [rolePermission, setRolePermission] = useState([]);
+  const [pageCount, setPageCount] = useState('1');
+  const [totalPage, setTotalPage] = useState('1');
+  const [nurseTotalPage, setNurseTotalPage] = useState('1');
+  const [accountantTotalPage, setAccountantTotalPage] = useState('1');
+  const [receptionistTotalPage, setReceptionistTotalPage] = useState('1');
+  const [labTechnicianTotalPage, setLabTechnicianTotalPage] = useState('1');
+  const [pharmacistTotalPage, setPharmacistTotalPage] = useState('1');
+  const [userActive, setUserActive] = useState('');
+  const [nurseActive, setNurseActive] = useState('');
+  const [accountantActive, setAccountantActive] = useState('');
+  const [receptionistActive, setReceptionistActive] = useState('');
+  const [labTechnicianActive, setLabTechnicianActive] = useState('');
+  const [pharmacistActive, setPharmacistActive] = useState('');
+  const [userDepartment, setUserDepartment] = useState('');
   const [refresh, setRefresh] = useState(false);
 
   // const UserRoute = () => (
@@ -426,6 +441,9 @@ export const UsersScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetUserData();
+  }, [searchUser, pageCount, userDepartment, userActive]);
+
+  useEffect(() => {
     onGetRolePermissionData();
   }, []);
 
@@ -439,7 +457,6 @@ export const UsersScreen = ({navigation}) => {
   const toggleMenu = open => {
     const toValue = open ? 0 : 300; // For closing, move down
     const opacityValue = open ? 1 : 0; // For fading
-
     if (open) {
       // Start opening animations
       setOptionModalView(true); // Show modal first
@@ -488,7 +505,9 @@ export const UsersScreen = ({navigation}) => {
 
   const onGetUserData = async () => {
     try {
-      const response = await onGetAllUsersDataApi();
+      let urlData = `get-users?search=${searchUser}&page=${pageCount}&department_name=${userDepartment}&${userActive == 'active' ? 'active=1' : userActive == 'deactive' && 'deactive=0'}`;
+      // const response = await onGetAllUsersDataApi();
+      const response = await onGetCommonApi(urlData);
       console.log('Response User Data', response.data);
       if (response.status === 200) {
         const usersData = response.data.data;
@@ -509,12 +528,118 @@ export const UsersScreen = ({navigation}) => {
         );
 
         // Set data to respective states
-        setAccountantData(accountantData);
-        setNursesData(nursesData);
-        setReceptionistData(receptionistData);
-        setLabTechniciansData(labTechniciansData);
-        setPharmacistsData(pharmacistsData);
+        // setAccountantData(accountantData);
+        // setNursesData(nursesData);
+        // setReceptionistData(receptionistData);
+        // setLabTechniciansData(labTechniciansData);
+        // setPharmacistsData(pharmacistsData);
         setUserData(response.data.data);
+        setTotalPage(response.data.recordsTotal);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Get User Error:', err);
+    }
+  };
+
+  useEffect(() => {
+    onGetNurseData();
+  }, [searchUser, pageCount, nurseActive]);
+
+  const onGetNurseData = async () => {
+    try {
+      let urlData = `get-users?search=${searchNurse}&page=${pageCount}&department_name=Nurse&${nurseActive == 'active' ? 'active=1' : nurseActive == 'deactive' && 'deactive=0'}`;
+      // const response = await onGetAllUsersDataApi();
+      const response = await onGetCommonApi(urlData);
+      console.log('Response User Data', response.data);
+      if (response.status === 200) {
+        // Set data to respective states
+        setNursesData(response.data.data);
+        setNurseTotalPage(response.data.recordsTotal);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Get User Error:', err);
+    }
+  };
+
+  useEffect(() => {
+    onGetAccountantData();
+  }, [searchUser, pageCount, accountantActive]);
+
+  const onGetAccountantData = async () => {
+    try {
+      let urlData = `get-users?search=${searchAccountant}&page=${pageCount}&department_name=Accountant&${accountantActive == 'active' ? 'active=1' : accountantActive == 'deactive' && 'deactive=0'}`;
+      // const response = await onGetAllUsersDataApi();
+      const response = await onGetCommonApi(urlData);
+      console.log('Response User Data', response.data);
+      if (response.status === 200) {
+        // Set data to respective states
+        setAccountantData(response.data.data);
+        setAccountantTotalPage(response.data.recordsTotal);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Get User Error:', err);
+    }
+  };
+
+  useEffect(() => {
+    onGetReceptionistData();
+  }, [searchUser, pageCount, receptionistActive]);
+
+  const onGetReceptionistData = async () => {
+    try {
+      let urlData = `get-users?search=${searchReceptionist}&page=${pageCount}&department_name=Receptionist&${receptionistActive == 'active' ? 'active=1' : receptionistActive == 'deactive' && 'deactive=0'}`;
+      // const response = await onGetAllUsersDataApi();
+      const response = await onGetCommonApi(urlData);
+      console.log('Response User Data', response.data);
+      if (response.status === 200) {
+        // Set data to respective states
+        setReceptionistData(response.data.data);
+        setReceptionistTotalPage(response.data.recordsTotal);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Get User Error:', err);
+    }
+  };
+
+  useEffect(() => {
+    onGetPharmacistData();
+  }, [searchUser, pageCount, pharmacistActive]);
+
+  const onGetPharmacistData = async () => {
+    try {
+      let urlData = `get-users?search=${searchPharmacists}&page=${pageCount}&department_name=Pharmacist&${pharmacistActive == 'active' ? 'active=1' : pharmacistActive == 'deactive' && 'deactive=0'}`;
+      // const response = await onGetAllUsersDataApi();
+      const response = await onGetCommonApi(urlData);
+      console.log('Response User Data', response.data);
+      if (response.status === 200) {
+        // Set data to respective states
+        setPharmacistsData(response.data.data);
+        setPharmacistTotalPage(response.data.recordsTotal);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Get User Error:', err);
+    }
+  };
+
+  useEffect(() => {
+    onGetLabTechniciansData();
+  }, [searchUser, pageCount, labTechnicianActive]);
+
+  const onGetLabTechniciansData = async () => {
+    try {
+      let urlData = `get-users?search=${searchLabTechnician}&page=${pageCount}&department_name=Lab Technician&${labTechnicianActive == 'active' ? 'active=1' : labTechnicianActive == 'deactive' && 'deactive=0'}`;
+      // const response = await onGetAllUsersDataApi();
+      const response = await onGetCommonApi(urlData);
+      console.log('Response User Data', response.data);
+      if (response.status === 200) {
+        // Set data to respective states
+        setLabTechniciansData(response.data.data);
+        setLabTechnicianTotalPage(response.data.recordsTotal);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -561,34 +686,49 @@ export const UsersScreen = ({navigation}) => {
             setSearchBreak={setSearchUser}
             allData={userData}
             onGetData={onGetUserData}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
+            totalPage={totalPage}
           />
         ) : selectedView == 'Accountant' ? (
           <AccountantList
             searchBreak={searchAccountant}
             setSearchBreak={setSearchAccountant}
             allData={accountantData}
-            onGetData={onGetUserData}
+            onGetData={onGetAccountantData}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
+            totalPage={accountantTotalPage}
           />
         ) : selectedView == 'Nurses' ? (
           <NursesList
             searchBreak={searchNurse}
             setSearchBreak={setSearchNurse}
             allData={nursesData}
-            onGetData={onGetUserData}
+            onGetData={onGetNurseData}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
+            totalPage={nurseTotalPage}
           />
         ) : selectedView == 'Receptionists' ? (
           <ReceptionistsList
             searchBreak={searchReceptionist}
             setSearchBreak={setSearchReceptionist}
             allData={receptionistData}
-            onGetData={onGetUserData}
+            onGetData={onGetReceptionistData}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
+            totalPage={receptionistTotalPage}
           />
         ) : selectedView == 'Lab Technicians' ? (
           <LabTechniciansList
             searchBreak={searchLabTechnician}
             setSearchBreak={setSearchLabTechnician}
             allData={labTechniciansData}
-            onGetData={onGetUserData}
+            onGetData={onGetLabTechniciansData}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
+            totalPage={labTechnicianTotalPage}
           />
         ) : (
           selectedView == 'Pharmacists' && (
@@ -596,7 +736,10 @@ export const UsersScreen = ({navigation}) => {
               searchBreak={searchPharmacists}
               setSearchBreak={setSearchPharmacists}
               allData={pharmacistsData}
-              onGetData={onGetUserData}
+              onGetData={onGetPharmacistData}
+              pageCount={pageCount}
+              setPageCount={setPageCount}
+              totalPage={pharmacistTotalPage}
             />
           )
         )}
@@ -652,7 +795,9 @@ export const UsersScreen = ({navigation}) => {
                     <TouchableOpacity
                       style={styles.optionButton}
                       onPress={() => {
-                        setSelectedView(option), toggleMenu(false);
+                        setSelectedView(option);
+                        setPageCount('1');
+                        toggleMenu(false);
                       }}>
                       <Text style={styles.menuItem}>{option}</Text>
                     </TouchableOpacity>

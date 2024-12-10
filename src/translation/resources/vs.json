@@ -74,5 +74,6 @@
   "radiology": "Radiology",
   "reports": "Reports",
   "transactions": "Transactions",
-  "service": "Service"
+  "service": "Service",
+  "sms": "SMS"
 }

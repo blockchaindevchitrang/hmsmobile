@@ -33,6 +33,7 @@ import PathologyParameter from '../../components/PathologyComponent/PathologyPar
 import PathologyTest from '../../components/PathologyComponent/PathologyTest';
 import PathologyUnit from '../../components/PathologyComponent/PathologyUnit';
 import {onGetCommonApi} from '../../services/Api';
+import SMSList from '../../components/SMSComponent/SMSList';
 
 const allData = [
   {
@@ -154,11 +155,9 @@ export const SMSScreen = ({navigation}) => {
   const [refresh, setRefresh] = useState(false);
 
   const animations = useRef(
-    [0, 0, 0, 0, 0].map(() => new Animated.Value(300)),
+    [0, 0, 0].map(() => new Animated.Value(300)),
   ).current;
-  const opacities = useRef(
-    [0, 0, 0, 0, 0].map(() => new Animated.Value(0)),
-  ).current;
+  const opacities = useRef([0, 0, 0].map(() => new Animated.Value(0))).current;
 
   const toggleMenu = open => {
     const toValue = open ? 0 : 300; // For closing, move down
@@ -248,7 +247,7 @@ export const SMSScreen = ({navigation}) => {
     <View style={[styles.container, {backgroundColor: theme.lightColor}]}>
       <View style={styles.headerView}>
         <Header
-          title={t('service')}
+          title={t('sms')}
           navigation={navigation}
           onPress={() => navigation.openDrawer()}
           moreButtonClick={() => toggleMenu(true)}
@@ -256,7 +255,7 @@ export const SMSScreen = ({navigation}) => {
       </View>
       <View style={styles.mainView}>
         {selectedView == 'SMS' ? (
-          <PathologyCategories
+          <SMSList
             searchBreak={searchAccount}
             setSearchBreak={setSearchAccount}
             allData={pathologyCategories}

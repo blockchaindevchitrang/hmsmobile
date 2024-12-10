@@ -33,7 +33,10 @@ import PathologyParameter from '../../components/PathologyComponent/PathologyPar
 import PathologyTest from '../../components/PathologyComponent/PathologyTest';
 import PathologyUnit from '../../components/PathologyComponent/PathologyUnit';
 import {onGetCommonApi} from '../../services/Api';
-import Insurances from '../../components/ServiceComponent/Insurances';
+import InsurancesScreen from '../../components/ServiceComponent/Insurances';
+import Services from '../../components/ServiceComponent/Services';
+import Packages from '../../components/ServiceComponent/Packages';
+import Ambulances from '../../components/ServiceComponent/Ambulances';
 
 const allData = [
   {
@@ -145,20 +148,22 @@ export const ServiceScreen = ({navigation}) => {
   const [searchAccount, setSearchAccount] = useState('');
   const [searchPayroll, setSearchPayroll] = useState('');
   const [searchUnit, setSearchUnit] = useState('');
-  const [searchPharmacists, setSearchPharmacists] = useState('');
+  const [searchAmbulance, setSearchAmbulance] = useState('');
+  const [searchAmbulanceCall, setSearchAmbulanceCall] = useState('');
   const [optionModalView, setOptionModalView] = useState(false);
   const [selectedView, setSelectedView] = useState('Insurances');
   const [insuranceList, setInsuranceList] = useState([]);
   const [parameter, setParameter] = useState([]);
+  const [ambulances, setAmbulances] = useState([]);
   const [unit, setUnit] = useState([]);
   const [test, setTest] = useState([]);
   const [refresh, setRefresh] = useState(false);
 
   const animations = useRef(
-    [0, 0, 0, 0, 0].map(() => new Animated.Value(300)),
+    [0, 0, 0, 0, 0, 0].map(() => new Animated.Value(300)),
   ).current;
   const opacities = useRef(
-    [0, 0, 0, 0, 0].map(() => new Animated.Value(0)),
+    [0, 0, 0, 0, 0, 0].map(() => new Animated.Value(0)),
   ).current;
 
   const toggleMenu = open => {
@@ -236,7 +241,9 @@ export const ServiceScreen = ({navigation}) => {
 
   const onGetParameterData = async () => {
     try {
-      const response = await onGetCommonApi(`pathology-parameter-get?search=${searchPayroll}`);
+      const response = await onGetCommonApi(
+        `services-get?search=${searchPayroll}`,
+      );
       console.log('get Response:', response.data.data);
       if (response.data.flag === 1) {
         setParameter(response.data.data.items);
@@ -253,7 +260,7 @@ export const ServiceScreen = ({navigation}) => {
 
   const onGetUnitData = async () => {
     try {
-      const response = await onGetCommonApi(`pathology-unit-get?search=${searchUnit}`);
+      const response = await onGetCommonApi(`package-get?search=${searchUnit}`);
       console.log('get Response:', response.data.data);
       if (response.data.flag === 1) {
         setUnit(response.data.data.items);
@@ -266,14 +273,14 @@ export const ServiceScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetTestData();
-  }, [searchPharmacists]);
+  }, [searchAmbulance]);
 
   const onGetTestData = async () => {
     try {
-      const response = await onGetCommonApi(`pathology-test-get?search=${searchPharmacists}`);
+      const response = await onGetCommonApi(`ambulance-get?search=${searchAmbulance}`);
       console.log('get Response:', response.data.data);
       if (response.data.flag === 1) {
-        setTest(response.data.data.items);
+        setAmbulances(response.data.data.items);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -293,43 +300,41 @@ export const ServiceScreen = ({navigation}) => {
       </View>
       <View style={styles.mainView}>
         {selectedView == 'Insurances' ? (
-          <Insurances
+          <InsurancesScreen
             searchBreak={searchAccount}
             setSearchBreak={setSearchAccount}
             allData={insuranceList}
             onGetData={onGetPathologyCategoriesData}
           />
         ) : selectedView == 'Packages' ? (
-          <PathologyUnit
-            searchBreak={searchPayroll}
-            setSearchBreak={setSearchPayroll}
+          <Packages
+            searchBreak={searchUnit}
+            setSearchBreak={setSearchUnit}
             allData={unit}
             onGetData={onGetUnitData}
+            parameter={parameter}
           />
         ) : selectedView == 'Services' ? (
-          <PathologyParameter
+          <Services
             searchBreak={searchPayroll}
             setSearchBreak={setSearchPayroll}
             allData={parameter}
             onGetData={onGetParameterData}
-            unitData={unit}
           />
         ) : selectedView == 'Ambulances' ? (
-          <PathologyParameter
-            searchBreak={searchPayroll}
-            setSearchBreak={setSearchPayroll}
-            allData={parameter}
-            onGetData={onGetParameterData}
-            unitData={unit}
+          <Ambulances
+            searchBreak={searchAmbulance}
+            setSearchBreak={setSearchAmbulance}
+            allData={ambulances}
+            onGetData={onGetTestData}
           />
         ) : (
           selectedView == 'Ambulance Calls' && (
             <PathologyTest
-              searchBreak={searchPharmacists}
-              setSearchBreak={setSearchPharmacists}
+              searchBreak={searchAmbulanceCall}
+              setSearchBreak={setSearchAmbulanceCall}
               allData={test}
               onGetData={onGetTestData}
-              category={pathologyCategories}
               parameter={parameter}
             />
           )

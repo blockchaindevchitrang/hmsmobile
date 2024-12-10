@@ -245,6 +245,13 @@ export const DoctorScreen = ({navigation}) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [holidayDateModalVisible, setHolidayDateModalVisible] = useState(false);
   const [avatar, setAvatar] = useState(null);
+  const [pageCount, setPageCount] = useState('1');
+  const [totalPage, setTotalPage] = useState('1');
+  const [departmentPage, setDepartmentPage] = useState('1');
+  const [schedulePage, setSchedulePage] = useState('1');
+  const [holidayPage, setHolidayPage] = useState('1');
+  const [breakPage, setBreakPage] = useState('1');
+  const [statusId, setStatusId] = useState(1);
   const {t} = useTranslation();
   const {theme} = useTheme();
 
@@ -278,8 +285,9 @@ export const DoctorScreen = ({navigation}) => {
   const onGetDoctorDepartmentData = async () => {
     try {
       const response = await onGetDoctorDepartmentApi(searchDepartment);
-      if (response.status == 200) {
+      if (response.data.flag == 1) {
         setDoctorDepartmentList(response.data.data);
+        setTotalPage(response.data.recordsTotal);
         setAddDoctorVisible(false);
         setRefresh(!refresh);
       }

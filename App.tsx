@@ -51,6 +51,7 @@ import {Provider} from 'react-redux';
 import store from './src/redux/store';
 import RadiologyScreen from './src/screens/RadiologyScreen';
 import ServiceScreen from './src/screens/ServiceScreen';
+import SMSScreen from './src/screens/SMSScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -281,6 +282,11 @@ function SettingStack() {
       <Stack.Screen
         name="ServiceScreen"
         component={ServiceScreen}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="SMSScreen"
+        component={SMSScreen}
         options={{headerShown: false}}
       />
     </Stack.Navigator>

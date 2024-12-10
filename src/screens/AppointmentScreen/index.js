@@ -25,7 +25,11 @@ import {BlurView} from '@react-native-community/blur';
 import headerLogo from '../../images/headerLogo.png';
 import TransactionComponent from '../../components/TransactionComponent';
 import AppointmentComponent from '../../components/AppointmentComponent';
-import { onGetAppointmentPaymentHistoryApi, onGetFilterAppointmentApi } from '../../services/Api';
+import {
+  onGetAppointmentPaymentHistoryApi,
+  onGetCommonApi,
+  onGetFilterAppointmentApi,
+} from '../../services/Api';
 
 const allData = [
   {
@@ -141,6 +145,13 @@ export const AppointmentScreen = ({navigation}) => {
   const [appointmentList, setAppointmentList] = useState([]);
   const [transactionList, setTransactionList] = useState([]);
   const [refresh, setRefresh] = useState(false);
+  const [holidayStartDate, setHolidayStartDate] = useState(null);
+  const [holidayEndDate, setHolidayEndDate] = useState(null);
+  const [pageCount, setPageCount] = useState('1');
+  const [totalPage, setTotalPage] = useState('1');
+  const [transactionPage, setTransactionPage] = useState('1');
+  const [statusShow, setStatusShow] = useState('');
+  const [statusId, setStatusId] = useState(1);
 
   // const AppointmentRoute = () => (
   //   <AppointmentComponent
@@ -259,7 +270,7 @@ export const AppointmentScreen = ({navigation}) => {
 
   useEffect(() => {
     onAppointmentGet();
-  }, [searchAppointment]);
+  }, [searchAppointment, holidayStartDate, holidayEndDate, pageCount, statusId]);
 
   useEffect(() => {
     onTransactionDataGet();
@@ -267,10 +278,22 @@ export const AppointmentScreen = ({navigation}) => {
 
   const onAppointmentGet = async () => {
     try {
-      const response = await onGetFilterAppointmentApi(searchAppointment);
+      let urlData = `appointment-get?search=${searchAppointment}&page=${pageCount}${
+        statusId == 2
+          ? '&pending=0'
+          : statusId == 3
+          ? '&completed=1'
+          : statusId == 4
+          ? '&cancelled=3'
+          : ''
+      }${holidayStartDate != null ? `&start_date=${holidayStartDate}` : ''}${
+        holidayEndDate != null ? `&end_date=${holidayEndDate}` : ''
+      }`;
+      const response = await onGetCommonApi(urlData);
 
       if (response.status === 200) {
-        console.log('Get Response :::', response.data.data.items);
+        console.log('Get Response :::', response.data);
+        setTotalPage(response.data.data.pagination.last_page);
         setAppointmentList(response.data.data.items);
         setRefresh(!refresh);
       }
@@ -285,6 +308,7 @@ export const AppointmentScreen = ({navigation}) => {
 
       if (response.status === 200) {
         console.log('Get Response :::', response.data.data.items);
+        setTransactionPage(response.data.data.pagination.last_page);
         setTransactionList(response.data.data.items);
         setRefresh(!refresh);
       }
@@ -319,6 +343,17 @@ export const AppointmentScreen = ({navigation}) => {
             setSearchBreak={setSearchAppointment}
             allData={appointmentList}
             onGetData={onAppointmentGet}
+            holidayStartDate={holidayStartDate}
+            setHolidayStartDate={setHolidayStartDate}
+            holidayEndDate={holidayEndDate}
+            setHolidayEndDate={setHolidayEndDate}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
+            totalPage={totalPage}
+            statusShow={statusShow}
+            setStatusShow={setStatusShow}
+            setStatusId={setStatusId}
+            statusId={statusId}
           />
         ) : (
           selectedView == 'Appointments Transaction' && (
@@ -326,6 +361,9 @@ export const AppointmentScreen = ({navigation}) => {
               searchBreak={searchBreak}
               setSearchBreak={setSearchBreak}
               allData={transactionList}
+              pageCount={pageCount}
+              setPageCount={setPageCount}
+              totalPage={transactionPage}
             />
           )
         )}
@@ -377,7 +415,9 @@ export const AppointmentScreen = ({navigation}) => {
                       <TouchableOpacity
                         style={styles.optionButton}
                         onPress={() => {
-                          setSelectedView(option), toggleMenu(false);
+                          setSelectedView(option);
+                          setPageCount('1');
+                          toggleMenu(false);
                         }}>
                         <Text style={styles.menuItem}>{option}</Text>
                       </TouchableOpacity>
