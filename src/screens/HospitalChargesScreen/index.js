@@ -24,111 +24,7 @@ import {BlurView} from '@react-native-community/blur';
 import ChargeCategoriesList from '../../components/HospitalChargesComponent/ChargeCategoriesList';
 import ChargesComponent from '../../components/HospitalChargesComponent/ChargesComponent';
 import DoctorChargesList from '../../components/HospitalChargesComponent/DoctorChargesList';
-import { onGetCommonApi } from '../../services/Api';
-
-const allData = [
-  {
-    id: 1,
-    chargeCategory: 'Consultation',
-    description: 'N/A',
-    chargeTime: 'Operation Theatre',
-  },
-  {
-    id: 2,
-    chargeCategory: 'Online Consulation',
-    description: 'demo',
-    chargeTime: 'Procedures',
-  },
-  {
-    id: 3,
-    chargeCategory: 'Fee',
-    description: 'N/A',
-    chargeTime: 'Investigations',
-  },
-  {
-    id: 4,
-    chargeCategory: 'Other',
-    description: 'N/A',
-    chargeTime: 'Others',
-  },
-  {
-    id: 5,
-    chargeCategory: 'op',
-    description: 'N/A',
-    chargeTime: 'Operation Theatre',
-  },
-];
-
-const BloodDonorData = [
-  {
-    id: 1,
-    code: '76571',
-    chargeCategory: 'Consultation',
-    chargeType: 'Operation Theatre',
-    standard_charge: '$100.00',
-  },
-  {
-    id: 2,
-    code: '76572',
-    chargeCategory: 'Online Consultation',
-    chargeType: 'Procedures',
-    standard_charge: '$1,000.00',
-  },
-  {
-    id: 3,
-    code: '76573',
-    chargeCategory: 'Fee',
-    chargeType: 'Investigations',
-    standard_charge: '$343,442.00',
-  },
-  {
-    id: 4,
-    code: '76574',
-    chargeCategory: 'Other',
-    chargeType: 'Others',
-    standard_charge: '$5,000.00',
-  },
-  {
-    id: 5,
-    code: '76575',
-    chargeCategory: 'op',
-    chargeType: 'Operation Theatre',
-    standard_charge: '$5,000.00',
-  },
-];
-
-const BloodIssueData = [
-  {
-    id: 1,
-    name: 'Joey Tribiyani',
-    mail: 'joey@gmail.com',
-    standard_charge: '$600.00',
-  },
-  {
-    id: 2,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    standard_charge: '$600.00',
-  },
-  {
-    id: 3,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    standard_charge: '$500.00',
-  },
-  {
-    id: 4,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    standard_charge: '$500.00',
-  },
-  {
-    id: 5,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    standard_charge: '$400.00',
-  },
-];
+import {onGetCommonApi} from '../../services/Api';
 
 export const HospitalChargesScreen = ({navigation}) => {
   const {t} = useTranslation();
@@ -143,6 +39,11 @@ export const HospitalChargesScreen = ({navigation}) => {
   const [chargeList, setChargeList] = useState([]);
   const [chargeOPDList, setChargeOPDList] = useState([]);
   const [refresh, setRefresh] = useState(false);
+  const [pageCount, setPageCount] = useState('1');
+  const [totalPage, setTotalPage] = useState('1');
+  const [chargePage, setChargePage] = useState('1');
+  const [OPDChargePage, setOPDChargePage] = useState('1');
+  const [statusId, setStatusId] = useState(0);
 
   const animations = useRef(
     [0, 0, 0, 0].map(() => new Animated.Value(300)),
@@ -224,16 +125,17 @@ export const HospitalChargesScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetDocumentData();
-  }, [searchAccount]);
+  }, [searchAccount, pageCount]);
 
   const onGetDocumentData = async () => {
     try {
       const response = await onGetCommonApi(
-        `charge-category-get?search=${searchAccount}`,
+        `charge-category-get?search=${searchAccount}&page=${pageCount}`,
       );
       console.log('GetAccountData>>', response.data.data);
-      if (response.status == 200) {
+      if (response.data.flag == 1) {
         setChargeCategory(response.data.data.items);
+        setTotalPage(response.data.data.pagination.last_page);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -243,16 +145,17 @@ export const HospitalChargesScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetChargeData();
-  }, [searchPayroll]);
+  }, [searchPayroll, pageCount, statusId]);
 
   const onGetChargeData = async () => {
     try {
       const response = await onGetCommonApi(
-        `charge-get?search=${searchPayroll}`,
+        `charge-get?search=${searchPayroll}&page=${pageCount}&charge_type=${statusId}`,
       );
       console.log('GetAccountData>>', response.data.data);
-      if (response.status == 200) {
+      if (response.data.flag == 1) {
         setChargeList(response.data.data.items);
+        setChargePage(response.data.data.pagination.last_page);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -262,16 +165,17 @@ export const HospitalChargesScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetOPDChargeData();
-  }, [searchPharmacists]);
+  }, [searchPharmacists, pageCount]);
 
   const onGetOPDChargeData = async () => {
     try {
       const response = await onGetCommonApi(
-        `doctor-opd-charge-get?search=${searchPharmacists}`,
+        `doctor-opd-charge-get?search=${searchPharmacists}&page=${pageCount}`,
       );
       console.log('GetAccountData>>', response.data.data);
       if (response.status == 200) {
         setChargeOPDList(response.data.data.items);
+        setOPDChargePage(response.data.data.pagination.last_page);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -297,6 +201,9 @@ export const HospitalChargesScreen = ({navigation}) => {
             allData={chargeCategory}
             categoryType={categoryType}
             onGetData={onGetDocumentData}
+            totalPage={totalPage}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
           />
         ) : selectedView == 'Charges' ? (
           <ChargesComponent
@@ -306,6 +213,11 @@ export const HospitalChargesScreen = ({navigation}) => {
             categoryType={categoryType}
             onGetData={onGetChargeData}
             chargeCategory={chargeCategory}
+            totalPage={chargePage}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
+            statusId={statusId}
+            setStatusId={setStatusId}
           />
         ) : (
           selectedView == 'Doctor OPD Charges' && (
@@ -314,6 +226,9 @@ export const HospitalChargesScreen = ({navigation}) => {
               setSearchBreak={setSearchPharmacists}
               allData={chargeOPDList}
               onGetData={onGetOPDChargeData}
+              totalPage={OPDChargePage}
+              pageCount={pageCount}
+              setPageCount={setPageCount}
             />
           )
         )}
@@ -365,7 +280,9 @@ export const HospitalChargesScreen = ({navigation}) => {
                       <TouchableOpacity
                         style={styles.optionButton}
                         onPress={() => {
-                          setSelectedView(option), toggleMenu(false);
+                          setSelectedView(option);
+                          setPageCount('1');
+                          toggleMenu(false);
                         }}>
                         <Text style={styles.menuItem}>{option}</Text>
                       </TouchableOpacity>

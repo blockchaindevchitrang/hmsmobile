@@ -9,6 +9,9 @@ import {
   TextInput,
   FlatList,
   Platform,
+  Modal,
+  TouchableWithoutFeedback,
+  ActivityIndicator,
 } from 'react-native';
 import React, {useRef, useState} from 'react';
 import {
@@ -28,25 +31,210 @@ import DatePicker from 'react-native-date-picker';
 import ImagePicker from 'react-native-image-crop-picker';
 import SelectDropdown from 'react-native-select-dropdown';
 import {useSelector} from 'react-redux';
+import {
+  onAddAccountListApi,
+  onAddBedAssignApi,
+  onDeleteCommonApi,
+  onGetSpecificCommonApi,
+} from '../../services/Api';
+import FlashMessage, {
+  showMessage,
+  hideMessage,
+} from 'react-native-flash-message';
+import {DeletePopup} from '../DeletePopup';
 
-const BedAssignList = ({searchBreak, setSearchBreak, allData}) => {
+const filterArray = [
+  {id: 1, name: 'All'},
+  {id: 2, name: 'Active'},
+  {id: 3, name: 'Deactive'},
+];
+
+const BedAssignList = ({
+  searchBreak,
+  setSearchBreak,
+  allData,
+  getData,
+  pageCount,
+  setPageCount,
+  totalPage,
+  setStatusId,
+  statusId,
+}) => {
   const bedData = useSelector(state => state.bedData);
+  const caseData = useSelector(state => state.caseData);
   const {theme} = useTheme();
   const [newUserVisible, setNewUserVisible] = useState(false);
-  const [caseData, setCase] = useState('');
+  const [caseText, setCase] = useState('');
+  const [caseId, setCaseId] = useState('');
   const [patient, setPatient] = useState('');
   const [bed, setBed] = useState('');
   const [bedId, setBedId] = useState('');
   const [description, setDescription] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState(new Date());
+  const [dischargeDate, setDischargeDate] = useState(new Date());
   const [dateModalVisible, setDateModalVisible] = useState(false);
+  const [dateModalVisible1, setDateModalVisible1] = useState(false);
   const [status, setStatus] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [editId, setEditId] = useState('');
+  const [filterVisible, setFilterVisible] = useState(false);
+  const [errorVisible, setErrorVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [userId, setUserId] = useState('');
+  const [deleteUser, setDeleteUser] = useState(false);
 
   const onAddBedAssign = async () => {
     try {
-      setNewUserVisible(false);
+      setIsLoading(true);
+      let urlData = `bed-assign-create?bed_id=${bedId}&case_id=${caseId}&assign_date=${moment(
+        dateOfBirth,
+      ).format('YYYY-MM-DD')}&discharge_date=${moment(dischargeDate).format(
+        'YYYY-MM-DD',
+      )}&description=${description}`;
+      const response = await onAddAccountListApi(urlData);
+      if (response.data.flag == 1) {
+        getData();
+        setIsLoading(false);
+        setNewUserVisible(false);
+        showMessage({
+          message: 'Record Added Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      } else {
+        setIsLoading(false);
+        showMessage({
+          message: response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
     } catch (err) {
-      console.log('Add Error:', err);
+      setIsLoading(false);
+      if (err.response.data.message) {
+        showMessage({
+          message: err.response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      } else {
+        showMessage({
+          message: 'Please enter properly details.',
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
+      console.log('Add Error:', err.response.data);
+    }
+  };
+
+  const onEditBedAssign = async () => {
+    try {
+      setIsLoading(true);
+      let urlData = `bed-assign-update/${userId}?bed_id=${bedId}&case_id=${caseId}&assign_date=${moment(
+        dateOfBirth,
+      ).format('YYYY-MM-DD')}&discharge_date=${moment(dischargeDate).format(
+        'YYYY-MM-DD',
+      )}&description=${description}`;
+      const response = await onAddAccountListApi(urlData);
+      if (response.data.flag == 1) {
+        getData();
+        setIsLoading(false);
+        setNewUserVisible(false);
+        showMessage({
+          message: 'Record Edit Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      } else {
+        setIsLoading(false);
+        showMessage({
+          message: response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
+    } catch (err) {
+      setIsLoading(false);
+      if (err.response.data.message) {
+        showMessage({
+          message: err.response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      } else {
+        showMessage({
+          message: 'Please enter properly details.',
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
+      console.log('Add Error:', err.response.data);
+    }
+  };
+
+  const onDeletePayrollData = async id => {
+    try {
+      setIsLoading(true);
+      const response = await onDeleteCommonApi(`bed-assign-delete/${id}`);
+      if (response.data.flag == 1) {
+        getData();
+        setIsLoading(false);
+        setDeleteUser(false);
+        showMessage({
+          message: 'Record Delete Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      } else {
+        setIsLoading(false);
+        setDeleteUser(false);
+        showMessage({
+          message: response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
+    } catch (err) {
+      setIsLoading(false);
+      setDeleteUser(false);
+      if (err.response.data.message) {
+        showMessage({
+          message: err.response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      } else {
+        showMessage({
+          message: 'Something want wrong.',
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
+      console.log('Get Error', err);
+    }
+  };
+
+  const onGetSpecificDoctor = async id => {
+    try {
+      const response = await onGetSpecificCommonApi(`bed-assign-edit/${id}`);
+      if (response.status == 200) {
+        console.log('get ValueLL:::', response.data.data);
+        return response.data.data;
+      } else {
+        return 0;
+      }
+    } catch (err) {
+      console.log('Get Error', err);
     }
   };
 
@@ -66,13 +254,13 @@ const BedAssignList = ({searchBreak, setSearchBreak, allData}) => {
           <ProfilePhoto username={item.patient_name} />
           <View>
             <Text style={[styles.dataHistoryText2]}>{item.patient_name}</Text>
-            <Text style={[styles.dataHistoryText1]}>{item.patient_email}</Text>
+            <Text style={[styles.dataHistoryText5]}>{item.patient_email}</Text>
           </View>
         </View>
         <Text
           style={[
             styles.dataHistoryText2,
-            {width: wp(24), textAlign: 'left', marginHorizontal: wp(2)},
+            {width: wp(24), textAlign: 'center', marginHorizontal: wp(2)},
           ]}>
           {item.bed_name}
         </Text>
@@ -99,13 +287,31 @@ const BedAssignList = ({searchBreak, setSearchBreak, allData}) => {
           />
         </View>
         <View style={styles.actionDataView}>
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={async () => {
+              let allDatas = await onGetSpecificDoctor(item.id);
+              setUserId(item.id);
+              setCaseId(item.case_id);
+              setCase(`${item.case_id} ${item.patient_name}`);
+              setBedId(allDatas.bed_id);
+              setBed(item.bed_name);
+              setDescription(allDatas.description);
+              setDateOfBirth(new Date(allDatas.assign_date));
+              setDischargeDate(new Date(allDatas.discharge_date));
+              setStatus(item?.status == 'Deactive' ? false : true);
+              setNewUserVisible(true);
+            }}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.blueColor}]}
               source={editing}
             />
           </TouchableOpacity>
-          <TouchableOpacity style={{marginLeft: wp(2)}}>
+          <TouchableOpacity
+            onPress={() => {
+              setUserId(item.id);
+              setDeleteUser(true);
+            }}
+            style={{marginLeft: wp(2)}}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.errorColor}]}
               source={deleteIcon}
@@ -132,7 +338,9 @@ const BedAssignList = ({searchBreak, setSearchBreak, allData}) => {
             />
           </View>
           <View style={styles.filterView}>
-            <TouchableOpacity style={styles.filterView1}>
+            <TouchableOpacity
+              style={styles.filterView1}
+              onPress={() => setFilterVisible(true)}>
               <Image style={styles.filterImage} source={filter} />
             </TouchableOpacity>
             <TouchableOpacity
@@ -140,6 +348,64 @@ const BedAssignList = ({searchBreak, setSearchBreak, allData}) => {
               style={styles.actionView}>
               <Text style={styles.actionText}>New Bed Assign</Text>
             </TouchableOpacity>
+            <Modal
+              animationType="none"
+              transparent={true}
+              visible={filterVisible}
+              onRequestClose={() => setFilterVisible(false)}>
+              <View style={styles.filterModal}>
+                <TouchableWithoutFeedback
+                  onPress={() => {
+                    setFilterVisible(false);
+                  }}>
+                  <View style={styles.modalOverlay1} />
+                </TouchableWithoutFeedback>
+                <View style={styles.filterFirstView}>
+                  <Text style={styles.filterTitle}>Filter Options</Text>
+                  <View style={styles.secondFilterView}>
+                    <Text style={styles.secondTitleFilter}>Status:</Text>
+                    <SelectDropdown
+                      data={filterArray}
+                      onSelect={(selectedItem, index) => {
+                        // setSelectedColor(selectedItem);
+                        setStatusId(selectedItem.id);
+                        console.log('gert Value:::', selectedItem);
+                      }}
+                      defaultValueByIndex={statusId - 1}
+                      renderButton={(selectedItem, isOpen) => {
+                        console.log('Get Response>>>', selectedItem);
+                        return (
+                          <View style={styles.dropdown2BtnStyle2}>
+                            <Text style={styles.dropdownItemTxtStyle}>
+                              {selectedItem?.name || 'Select'}
+                            </Text>
+                          </View>
+                        );
+                      }}
+                      showsVerticalScrollIndicator={false}
+                      renderItem={(item, index, isSelected) => {
+                        return (
+                          <TouchableOpacity style={styles.dropdownView}>
+                            <Text style={styles.dropdownItemTxtStyle}>
+                              {item.name}
+                            </Text>
+                          </TouchableOpacity>
+                        );
+                      }}
+                      dropdownIconPosition={'left'}
+                      dropdownStyle={styles.dropdown2DropdownStyle}
+                    />
+                    <View>
+                      <TouchableOpacity
+                        onPress={() => setStatusId(1)}
+                        style={styles.resetButton}>
+                        <Text style={styles.resetText}>Reset</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </View>
+              </View>
+            </Modal>
           </View>
           <View
             style={[styles.activeView, {backgroundColor: theme.headerColor}]}>
@@ -197,6 +463,55 @@ const BedAssignList = ({searchBreak, setSearchBreak, allData}) => {
               </View>
             </ScrollView>
           </View>
+          <View style={styles.nextView1}>
+            <View style={styles.prevViewData}>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {opacity: pageCount == '1' ? 0.7 : 1},
+                ]}
+                disabled={pageCount == '1'}
+                onPress={() => setPageCount('1')}>
+                {'<<'}
+              </Text>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {marginLeft: wp(3), opacity: pageCount == '1' ? 0.7 : 1},
+                ]}
+                disabled={pageCount == '1'}
+                onPress={() => setPageCount(parseFloat(pageCount) - 1)}>
+                {'<'}
+              </Text>
+            </View>
+            <Text
+              style={styles.totalCountText}>{`Page ${pageCount} to ${Math.ceil(
+              totalPage / 10,
+            )}`}</Text>
+            <View style={styles.prevViewData}>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {opacity: pageCount >= Math.ceil(totalPage / 10) ? 0.7 : 1},
+                ]}
+                disabled={pageCount >= Math.ceil(totalPage / 10)}
+                onPress={() => setPageCount(parseFloat(pageCount) + 1)}>
+                {'>'}
+              </Text>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {
+                    marginLeft: wp(3),
+                    opacity: pageCount >= Math.ceil(totalPage / 10) ? 0.7 : 1,
+                  },
+                ]}
+                disabled={pageCount >= Math.ceil(totalPage / 10)}
+                onPress={() => setPageCount(Math.ceil(totalPage / 10))}>
+                {'>>'}
+              </Text>
+            </View>
+          </View>
         </ScrollView>
       ) : (
         <ScrollView
@@ -217,17 +532,60 @@ const BedAssignList = ({searchBreak, setSearchBreak, allData}) => {
 
           <View style={styles.profileView}>
             <View style={styles.nameView}>
-              <View style={{width: '48%'}}>
+              <View style={{width: '100%'}}>
                 <Text style={styles.dataHistoryText1}>CASE:</Text>
-                <TextInput
+                {/* <TextInput
                   value={caseData}
                   placeholder={'Case'}
                   onChangeText={text => setCase(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
+                /> */}
+                <SelectDropdown
+                  data={caseData}
+                  onSelect={(selectedItem, index) => {
+                    // setSelectedColor(selectedItem);
+                    setCaseId(selectedItem.case_id);
+                    setCase(
+                      `${selectedItem?.case_id} ${selectedItem?.patient_name}`,
+                    );
+                    console.log('gert Value:::', selectedItem);
+                  }}
+                  defaultValue={caseText}
+                  renderButton={(selectedItem, isOpen) => {
+                    console.log('Get Response>>>', selectedItem);
+                    return (
+                      <View style={styles.dropdown2BtnStyle2}>
+                        {caseId != '' ? (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {caseId == selectedItem?.case_id
+                              ? `${selectedItem?.case_id} ${selectedItem?.patient_name}`
+                              : caseText}
+                          </Text>
+                        ) : (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {selectedItem?.case_id +
+                              selectedItem?.patient_name || 'Select Case'}
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(item, index, isSelected) => {
+                    return (
+                      <TouchableOpacity style={styles.dropdownView}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {`${item?.case_id} ${item?.patient_name}`}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                  dropdownIconPosition={'left'}
+                  dropdownStyle={styles.dropdown2DropdownStyle}
                 />
               </View>
 
-              <View style={{width: '48%'}}>
+              {/* <View style={{width: '48%'}}>
                 <Text style={styles.dataHistoryText1}>IPD PATIENT:</Text>
                 <TextInput
                   value={patient}
@@ -235,7 +593,7 @@ const BedAssignList = ({searchBreak, setSearchBreak, allData}) => {
                   onChangeText={text => setPatient(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
                 />
-              </View>
+              </View> */}
             </View>
 
             <View style={styles.nameView}>
@@ -288,7 +646,7 @@ const BedAssignList = ({searchBreak, setSearchBreak, allData}) => {
                 />
               </View>
               <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>DATE OF BIRTH</Text>
+                <Text style={styles.dataHistoryText1}>Assign Date:</Text>
                 <Text
                   style={[
                     styles.nameTextView,
@@ -301,6 +659,7 @@ const BedAssignList = ({searchBreak, setSearchBreak, allData}) => {
                   open={dateModalVisible}
                   modal={true}
                   date={dateOfBirth}
+                  minimumDate={new Date()}
                   mode={'date'}
                   onConfirm={date => {
                     console.log('Console Log>>', date);
@@ -316,14 +675,29 @@ const BedAssignList = ({searchBreak, setSearchBreak, allData}) => {
 
             <View style={styles.nameView}>
               <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>Description:</Text>
-                <TextInput
-                  value={description}
-                  placeholder={'Enter Description...'}
-                  onChangeText={text => setDescription(text)}
-                  style={[styles.commentTextInput]}
-                  multiline
-                  textAlignVertical="top"
+                <Text style={styles.dataHistoryText1}>Assign Date:</Text>
+                <Text
+                  style={[
+                    styles.nameTextView,
+                    {width: '100%', paddingVertical: hp(1)},
+                  ]}
+                  onPress={() => setDateModalVisible1(!dateModalVisible1)}>
+                  {moment(dischargeDate).format('DD-MM-YYYY')}
+                </Text>
+                <DatePicker
+                  open={dateModalVisible1}
+                  modal={true}
+                  date={dischargeDate}
+                  minimumDate={dateOfBirth}
+                  mode={'date'}
+                  onConfirm={date => {
+                    console.log('Console Log>>', date);
+                    setDateModalVisible1(false);
+                    setDischargeDate(date);
+                  }}
+                  onCancel={() => {
+                    setDateModalVisible(false);
+                  }}
                 />
               </View>
 
@@ -341,13 +715,36 @@ const BedAssignList = ({searchBreak, setSearchBreak, allData}) => {
                 />
               </View>
             </View>
+
+            <View style={styles.nameView}>
+              <View style={{width: '100%'}}>
+                <Text style={styles.dataHistoryText1}>Description:</Text>
+                <TextInput
+                  value={description}
+                  placeholder={'Enter Description...'}
+                  onChangeText={text => setDescription(text)}
+                  style={[styles.commentTextInput]}
+                  multiline
+                  textAlignVertical="top"
+                />
+              </View>
+            </View>
+            {errorVisible ? (
+              <Text style={styles.dataHistoryText4}>{errorMessage}</Text>
+            ) : null}
           </View>
 
           <View style={styles.buttonView}>
             <TouchableOpacity
-              onPress={() => onAddBedAssign()}
+              onPress={() => {
+                userId != '' ? onEditBedAssign() : onAddBedAssign();
+              }}
               style={styles.nextView}>
-              <Text style={styles.nextText}>Save</Text>
+              {isLoading ? (
+                <ActivityIndicator size={'small'} color={COLORS.white} />
+              ) : (
+                <Text style={styles.nextText}>Save</Text>
+              )}
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => setNewUserVisible(false)}
@@ -357,6 +754,13 @@ const BedAssignList = ({searchBreak, setSearchBreak, allData}) => {
           </View>
         </ScrollView>
       )}
+      <DeletePopup
+        modelVisible={deleteUser}
+        setModelVisible={setDeleteUser}
+        onPress={() => onDeletePayrollData(userId)}
+        setUserId={setUserId}
+        isLoading={isLoading}
+      />
     </View>
   );
 };
@@ -459,7 +863,7 @@ const styles = StyleSheet.create({
   },
   dataHistoryView: {
     width: '100%',
-    height: hp(8),
+    paddingVertical: hp(1),
     alignItems: 'center',
     flexDirection: 'row',
     alignSelf: 'flex-start',
@@ -491,6 +895,12 @@ const styles = StyleSheet.create({
     fontSize: hp(1.8),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.errorColor,
+  },
+  dataHistoryText5: {
+    fontSize: hp(1.7),
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    color: COLORS.black,
+    width: wp(45),
   },
   mainDataView: {
     minHeight: hp(29),
@@ -778,5 +1188,79 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.greyColor,
     marginTop: hp(1),
+  },
+  modalOverlay1: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+  },
+  filterModal: {
+    flex: 1,
+    alignItems: 'flex-end',
+  },
+  filterFirstView: {
+    width: '60%',
+    backgroundColor: 'white',
+    borderRadius: 5,
+    marginTop: hp(25),
+    marginRight: wp(2),
+  },
+  filterTitle: {
+    fontSize: hp(2.2),
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    color: COLORS.black,
+    padding: hp(2),
+    borderBottomWidth: 0.5,
+  },
+  secondFilterView: {
+    padding: hp(2),
+  },
+  secondTitleFilter: {
+    fontSize: hp(2),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+  },
+  resetButton: {
+    width: wp(22),
+    height: hp(4.5),
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'flex-end',
+    backgroundColor: COLORS.greyColor,
+    marginTop: hp(2),
+    borderRadius: 5,
+  },
+  resetText: {
+    fontSize: hp(2),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+  },
+  nextView1: {
+    width: '92%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    alignSelf: 'center',
+    marginTop: hp(3),
+  },
+  prevViewData: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  prevButtonView: {
+    paddingHorizontal: wp(3),
+    backgroundColor: COLORS.headerGreenColor,
+    paddingVertical: hp(0.5),
+    borderRadius: 5,
+    fontSize: hp(3),
+    color: COLORS.white,
+  },
+  totalCountText: {
+    fontSize: hp(2),
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
   },
 });

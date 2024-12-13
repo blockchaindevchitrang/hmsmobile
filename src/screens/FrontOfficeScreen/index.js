@@ -27,145 +27,6 @@ import {onGetCommonApi} from '../../services/Api';
 import PostalReceiveList from '../../components/FrontOfficeComponent/PostalReceiveList';
 import PostalDispatchList from '../../components/FrontOfficeComponent/PostalDispatchList';
 
-const allData = [
-  {
-    id: 1,
-    name: 'John Doe',
-    number: 'N/A',
-    date: '01 Nov, 2022',
-    follow_type: '02 Nov, 2022',
-    call_type: 'Incoming',
-  },
-  {
-    id: 2,
-    name: 'John Doe',
-    number: 'N/A',
-    date: '01 Nov, 2022',
-    follow_type: '02 Nov, 2022',
-    call_type: 'Incoming',
-  },
-  {
-    id: 3,
-    name: 'John Doe',
-    number: 'N/A',
-    date: '01 Nov, 2022',
-    follow_type: '02 Nov, 2022',
-    call_type: 'Incoming',
-  },
-  {
-    id: 4,
-    name: 'John Doe',
-    number: 'N/A',
-    date: '01 Nov, 2022',
-    follow_type: '02 Nov, 2022',
-    call_type: 'Incoming',
-  },
-  {
-    id: 5,
-    name: 'John Doe',
-    number: 'N/A',
-    date: '01 Nov, 2022',
-    follow_type: '02 Nov, 2022',
-    call_type: 'Incoming',
-  },
-];
-
-const VisitorData = [
-  {
-    id: 1,
-    purpose: 'Visit',
-    name: 'John Doe',
-    number: 'N/A',
-    person: '3',
-    date: '01 Nov, 2022',
-    in_time: '12:30:00 PM',
-    out_time: '01:30:00 PM',
-  },
-  {
-    id: 2,
-    purpose: 'Seminar',
-    name: 'Jane Smith',
-    number: 'N/A',
-    person: '1',
-    date: '11 Dec, 2022',
-    in_time: '01:30:00 PM',
-    out_time: '02:00:00 PM',
-  },
-  {
-    id: 3,
-    purpose: 'Seminar',
-    name: 'Joe Johnson',
-    number: '+ 91987654321',
-    person: '2',
-    date: '08 Sept, 2023',
-    in_time: '04:30:00 PM',
-    out_time: '06:30:00 PM',
-  },
-  {
-    id: 4,
-    purpose: 'Visit',
-    name: 'John Doe',
-    number: 'N/A',
-    person: '3',
-    date: '01 Nov, 2022',
-    in_time: '12:30:00 PM',
-    out_time: '01:30:00 PM',
-  },
-  {
-    id: 5,
-    purpose: 'Visit',
-    name: 'John Doe',
-    number: 'N/A',
-    person: '3',
-    date: '01 Nov, 2022',
-    in_time: '12:30:00 PM',
-    out_time: '01:30:00 PM',
-  },
-];
-
-const BloodIssueData = [
-  {
-    id: 1,
-    admission: 'EMP0000001',
-    name: 'Joey Tribiyani',
-    mail: 'joey@gmail.com',
-    date: '01 Feb, 2024',
-    discharge: 'Surgery',
-  },
-  {
-    id: 2,
-    admission: 'EMP0000002',
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    date: '9 Sept, 2020',
-    discharge: 'X-ray',
-  },
-  {
-    id: 3,
-    admission: 'EMP0000003',
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    date: '12 Dec, 2022',
-    discharge: 'Full Body checkup',
-  },
-  {
-    id: 4,
-    admission: 'EMP0000004',
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    date: '12 Dec, 2022',
-    discharge: 'MRI',
-  },
-  {
-    id: 5,
-    admission: 'EMP0000005',
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    date: '12 Dec, 2022',
-    discharge: 'Dental Implant',
-  },
-];
-
 export const FrontOfficeScreen = ({navigation}) => {
   const {t} = useTranslation();
   const {theme} = useTheme();
@@ -180,6 +41,13 @@ export const FrontOfficeScreen = ({navigation}) => {
   const [receiveList, setReceiveList] = useState([]);
   const [dispatchList, setDispatchList] = useState([]);
   const [refresh, setRefresh] = useState(false);
+  const [pageCount, setPageCount] = useState('1');
+  const [totalPage, setTotalPage] = useState('1');
+  const [visitorPage, setVisitorPage] = useState('1');
+  const [receivePage, setReceivePage] = useState('1');
+  const [dispatchPage, setDispatchPage] = useState('1');
+  const [statusId, setStatusId] = useState(3);
+  const [statusId1, setStatusId1] = useState(0);
 
   const animations = useRef(
     [0, 0, 0, 0, 0].map(() => new Animated.Value(300)),
@@ -240,16 +108,17 @@ export const FrontOfficeScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetCallLogData();
-  }, [searchCallLog]);
+  }, [searchCallLog, pageCount, statusId]);
 
   const onGetCallLogData = async () => {
     try {
       const response = await onGetCommonApi(
-        `call-log-get?search=${searchCallLog}`,
+        `call-log-get?search=${searchCallLog}&page=${pageCount}&call_type=${statusId}`,
       );
       console.log('GetAccountData>>', response.data.data);
-      if (response.status == 200) {
+      if (response.data.flag == 1) {
         setCallLogList(response.data.data.items);
+        setTotalPage(response.data.data.pagination.last_page);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -259,16 +128,17 @@ export const FrontOfficeScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetVisitorData();
-  }, [searchVisitor]);
+  }, [searchVisitor, pageCount, statusId1]);
 
   const onGetVisitorData = async () => {
     try {
       const response = await onGetCommonApi(
-        `visitor-get?search=${searchVisitor}`,
+        `visitor-get?search=${searchVisitor}&page=${pageCount}&purpose=${statusId1}`,
       );
       console.log('GetAccountData>>', response.data.data);
-      if (response.status == 200) {
+      if (response.data.flag == 1) {
         setVisitorList(response.data.data.items);
+        setVisitorPage(response.data.data.pagination.last_page);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -286,8 +156,9 @@ export const FrontOfficeScreen = ({navigation}) => {
         `postal-receive-get?search=${searchReceive}`,
       );
       console.log('GetAccountData>>', response.data.data);
-      if (response.status == 200) {
+      if (response.data.flag == 1) {
         setReceiveList(response.data.data.items);
+        setReceivePage(response.data.data.pagination.last_page);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -305,8 +176,9 @@ export const FrontOfficeScreen = ({navigation}) => {
         `postal-diapatch-get?search=${searchDispatch}`,
       );
       console.log('GetAccountData>>', response.data.data);
-      if (response.status == 200) {
+      if (response.data.flag == 1) {
         setDispatchList(response.data.data.items);
+        setDispatchPage(response.data.data.pagination.last_page);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -331,6 +203,11 @@ export const FrontOfficeScreen = ({navigation}) => {
             setSearchBreak={setSearchCallLog}
             allData={callLogList}
             onGetData={onGetCallLogData}
+            totalPage={totalPage}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
+            statusId={statusId}
+            setStatusId={setStatusId}
           />
         ) : selectedView == 'Visitors' ? (
           <VisitorList
@@ -338,6 +215,11 @@ export const FrontOfficeScreen = ({navigation}) => {
             setSearchBreak={setSearchVisitor}
             allData={visitorList}
             onGetData={onGetVisitorData}
+            totalPage={visitorPage}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
+            statusId={statusId1}
+            setStatusId={setStatusId1}
           />
         ) : selectedView == 'Postal Receives' ? (
           <PostalReceiveList
@@ -345,6 +227,9 @@ export const FrontOfficeScreen = ({navigation}) => {
             setSearchBreak={setSearchReceive}
             allData={receiveList}
             onGetData={onGetReceiveData}
+            totalPage={receivePage}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
           />
         ) : (
           selectedView == 'Postal Dispatches' && (
@@ -353,6 +238,9 @@ export const FrontOfficeScreen = ({navigation}) => {
               setSearchBreak={setSearchDispatch}
               allData={dispatchList}
               onGetData={onGetDispatchData}
+              totalPage={dispatchPage}
+              pageCount={pageCount}
+              setPageCount={setPageCount}
             />
           )
         )}

@@ -25,6 +25,7 @@ import {
   onGetBedApi,
   onGetBedAssignApi,
   onGetBedTypeApi,
+  onGetCommonApi,
 } from '../../services/Api';
 
 const allData = [
@@ -204,12 +205,12 @@ export const BedScreen = ({navigation}) => {
   const [bedData, setBedData] = useState([]);
   const [bedAssignData, setBedAssignData] = useState([]);
   const [refresh, setRefresh] = useState(false);
-
-  useEffect(() => {
-    bedDataGet();
-    bedTypeDataGet();
-    bedAssignDataGet();
-  }, []);
+  const [pageCount, setPageCount] = useState('1');
+  const [totalPage, setTotalPage] = useState('1');
+  const [bedPage, setBedPage] = useState('1');
+  const [assignPage, setAssignPage] = useState('1');
+  const [statusId, setStatusId] = useState(1);
+  const [assignStatusId, setAssignStatusId] = useState(1);
 
   const animations = useRef(
     [0, 0, 0, 0, 0].map(() => new Animated.Value(300)),
@@ -268,25 +269,39 @@ export const BedScreen = ({navigation}) => {
     }
   };
 
+  useEffect(() => {
+    bedTypeDataGet();
+  }, [searchAccount, pageCount]);
+
   const bedTypeDataGet = async () => {
     try {
-      const response = await onGetBedTypeApi('created_at', 'ASC');
+      let urlData = `bed-type-get?search=${searchAccount}&page=${pageCount}`;
+      const response = await onGetCommonApi(urlData);
       console.log('get Response:', response.data.data);
-      if (response.status) {
+      if (response.data.flag == 1) {
         setBedTypeData(response.data.data);
+        setTotalPage(response.data.recordsTotal);
         setRefresh(!refresh);
       }
     } catch (err) {
       console.log('Error:', err.response.data);
     }
   };
+
+  useEffect(() => {
+    bedDataGet();
+  }, [searchPayroll, pageCount, statusId]);
 
   const bedDataGet = async () => {
     try {
-      const response = await onGetBedApi();
+      let urlData = `bed-get?search=${searchPayroll}&page=${pageCount}${
+        statusId == 2 ? '&available=1' : statusId == 3 ? '&not_availavle=0' : ''
+      }`;
+      const response = await onGetCommonApi(urlData);
       console.log('get Response:', response.data.data);
-      if (response.status) {
+      if (response.data.flag == 1) {
         setBedData(response.data.data);
+        setBedPage(response.data.recordsTotal);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -294,12 +309,24 @@ export const BedScreen = ({navigation}) => {
     }
   };
 
+  useEffect(() => {
+    bedAssignDataGet();
+  }, [searchInvoice, pageCount, assignStatusId]);
+
   const bedAssignDataGet = async () => {
     try {
-      const response = await onGetBedAssignApi('created_at', 'ASC');
+      let urlData = `bed-assign-get?search=${searchInvoice}&page=${pageCount}${
+        assignStatusId == 2
+          ? '&active=1'
+          : assignStatusId == 3
+          ? '&deactive=0'
+          : ''
+      }`;
+      const response = await onGetCommonApi(urlData);
       console.log('get Response:', response.data.data);
-      if (response.status) {
+      if (response.data.flag == 1) {
         setBedAssignData(response.data.data);
+        setAssignPage(response.data.recordsTotal);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -323,7 +350,10 @@ export const BedScreen = ({navigation}) => {
             searchBreak={searchAccount}
             setSearchBreak={setSearchAccount}
             allData={BedTypeData}
-            onGetBedTypeData={() => bedTypeDataGet()}
+            onGetBedTypeData={bedTypeDataGet}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
+            totalPage={totalPage}
           />
         ) : selectedView == 'Beds' ? (
           <BedList
@@ -331,6 +361,11 @@ export const BedScreen = ({navigation}) => {
             setSearchBreak={setSearchPayroll}
             allData={bedData}
             onGetBedTypeData={bedDataGet}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
+            totalPage={bedPage}
+            setStatusId={setStatusId}
+            statusId={statusId}
           />
         ) : selectedView == 'Bed Assigns' ? (
           <BedAssignList
@@ -338,6 +373,11 @@ export const BedScreen = ({navigation}) => {
             setSearchBreak={setSearchInvoice}
             allData={bedAssignData}
             getData={bedAssignDataGet}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
+            totalPage={assignPage}
+            setStatusId={setAssignStatusId}
+            statusId={assignStatusId}
           />
         ) : (
           selectedView == 'Bed Status' && (
@@ -396,7 +436,9 @@ export const BedScreen = ({navigation}) => {
                       <TouchableOpacity
                         style={styles.optionButton}
                         onPress={() => {
-                          setSelectedView(option), toggleMenu(false);
+                          setSelectedView(option);
+                          setPageCount('1');
+                          toggleMenu(false);
                         }}>
                         <Text style={styles.menuItem}>{option}</Text>
                       </TouchableOpacity>

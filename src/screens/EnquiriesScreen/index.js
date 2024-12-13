@@ -38,53 +38,12 @@ import view from '../../images/view.png';
 import printing from '../../images/printing.png';
 import ProfilePhoto from '../../components/ProfilePhoto';
 import {onGetCommonApi, onGetSpecificCommonApi} from '../../services/Api';
+import SelectDropdown from 'react-native-select-dropdown';
 
-const BloodIssueData = [
-  {
-    id: 1,
-    name: 'Joey Tribiyani',
-    mail: 'joey@gmail.com',
-    type: 'Residential Care',
-    date: '24th May, 2024',
-    view: 'City Hospital N/A',
-    status: true,
-  },
-  {
-    id: 2,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    type: 'General Inquiry',
-    date: '12 Jan, 2021',
-    view: 'City Hospital N/A',
-    status: false,
-  },
-  {
-    id: 3,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    type: 'Feedback/Suggestions',
-    date: '9 Sept, 2020',
-    view: 'Ashok Patel',
-    status: true,
-  },
-  {
-    id: 4,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    type: 'Feedback/Suggestions',
-    date: '12 Nov, 2023',
-    view: 'City Hospital N/A',
-    status: false,
-  },
-  {
-    id: 5,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    type: 'Residential Care',
-    date: '01 Feb, 2024',
-    view: 'City Hospital N/A',
-    status: true,
-  },
+const filterArray = [
+  {id: 1, name: 'All'},
+  {id: 2, name: 'Read'},
+  {id: 3, name: 'Unread'},
 ];
 
 export const EnquiriesScreen = ({navigation}) => {
@@ -103,19 +62,26 @@ export const EnquiriesScreen = ({navigation}) => {
   const [enquiryList, setEnquiryList] = useState([]);
   const [refresh, setRefresh] = useState(false);
   const [singleDataShow, setSingleDataShow] = useState(null);
+  const [pageCount, setPageCount] = useState('1');
+  const [totalPage, setTotalPage] = useState('1');
+  const [statusId, setStatusId] = useState(1);
+  const [filterVisible, setFilterVisible] = useState(false);
 
   useEffect(() => {
     onGetCallLogData();
-  }, [searchAccount]);
+  }, [searchAccount, statusId, pageCount]);
 
   const onGetCallLogData = async () => {
     try {
       const response = await onGetCommonApi(
-        `enquiry-get?search=${searchAccount}`,
+        `enquiry-get?search=${searchAccount}&page=${pageCount}${
+          statusId == 2 ? '&status=1' : statusId == 3 ? '&status=0' : ''
+        }`,
       );
       console.log('GetAccountData>>', response.data.data);
       if (response.status == 200) {
         setEnquiryList(response.data.data.items);
+        setTotalPage(response.data.data.pagination.last_page);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -225,9 +191,69 @@ export const EnquiriesScreen = ({navigation}) => {
                 style={[styles.searchView, {color: theme.text}]}
               />
               <View style={styles.filterView}>
-                <TouchableOpacity style={styles.filterView1}>
+                <TouchableOpacity
+                  style={styles.filterView1}
+                  onPress={() => setFilterVisible(true)}>
                   <Image style={styles.filterImage} source={filter} />
                 </TouchableOpacity>
+                <Modal
+                  animationType="none"
+                  transparent={true}
+                  visible={filterVisible}
+                  onRequestClose={() => setFilterVisible(false)}>
+                  <View style={styles.filterModal}>
+                    <TouchableWithoutFeedback
+                      onPress={() => {
+                        setFilterVisible(false);
+                      }}>
+                      <View style={styles.modalOverlay} />
+                    </TouchableWithoutFeedback>
+                    <View style={styles.filterFirstView}>
+                      <Text style={styles.filterTitle}>Filter Options</Text>
+                      <View style={styles.secondFilterView}>
+                        <Text style={styles.secondTitleFilter}>Status:</Text>
+                        <SelectDropdown
+                          data={filterArray}
+                          onSelect={(selectedItem, index) => {
+                            // setSelectedColor(selectedItem);
+                            setStatusId(selectedItem.id);
+                            console.log('gert Value:::', selectedItem);
+                          }}
+                          defaultValueByIndex={statusId - 1}
+                          renderButton={(selectedItem, isOpen) => {
+                            console.log('Get Response>>>', selectedItem);
+                            return (
+                              <View style={styles.dropdown2BtnStyle2}>
+                                <Text style={styles.dropdownItemTxtStyle}>
+                                  {selectedItem?.name || 'Select'}
+                                </Text>
+                              </View>
+                            );
+                          }}
+                          showsVerticalScrollIndicator={false}
+                          renderItem={(item, index, isSelected) => {
+                            return (
+                              <TouchableOpacity style={styles.dropdownView}>
+                                <Text style={styles.dropdownItemTxtStyle}>
+                                  {item.name}
+                                </Text>
+                              </TouchableOpacity>
+                            );
+                          }}
+                          dropdownIconPosition={'left'}
+                          dropdownStyle={styles.dropdown2DropdownStyle}
+                        />
+                        <View>
+                          <TouchableOpacity
+                            onPress={() => setStatusId(1)}
+                            style={styles.resetButton}>
+                            <Text style={styles.resetText}>Reset</Text>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    </View>
+                  </View>
+                </Modal>
               </View>
             </View>
             <View
@@ -298,6 +324,55 @@ export const EnquiriesScreen = ({navigation}) => {
                   </View>
                 </View>
               </ScrollView>
+            </View>
+            <View style={styles.nextView1}>
+              <View style={styles.prevViewData}>
+                <Text
+                  style={[
+                    styles.prevButtonView,
+                    {opacity: pageCount == '1' ? 0.7 : 1},
+                  ]}
+                  disabled={pageCount == '1'}
+                  onPress={() => setPageCount('1')}>
+                  {'<<'}
+                </Text>
+                <Text
+                  style={[
+                    styles.prevButtonView,
+                    {marginLeft: wp(3), opacity: pageCount == '1' ? 0.7 : 1},
+                  ]}
+                  disabled={pageCount == '1'}
+                  onPress={() => setPageCount(parseFloat(pageCount) - 1)}>
+                  {'<'}
+                </Text>
+              </View>
+              <Text
+                style={
+                  styles.totalCountText
+                }>{`Page ${pageCount} to ${totalPage}`}</Text>
+              <View style={styles.prevViewData}>
+                <Text
+                  style={[
+                    styles.prevButtonView,
+                    {opacity: pageCount >= totalPage ? 0.7 : 1},
+                  ]}
+                  disabled={pageCount >= totalPage}
+                  onPress={() => setPageCount(parseFloat(pageCount) + 1)}>
+                  {'>'}
+                </Text>
+                <Text
+                  style={[
+                    styles.prevButtonView,
+                    {
+                      marginLeft: wp(3),
+                      opacity: pageCount >= totalPage ? 0.7 : 1,
+                    },
+                  ]}
+                  disabled={pageCount >= totalPage}
+                  onPress={() => setPageCount(totalPage)}>
+                  {'>>'}
+                </Text>
+              </View>
             </View>
           </ScrollView>
         ) : (

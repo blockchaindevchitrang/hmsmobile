@@ -716,7 +716,6 @@ const styles = StyleSheet.create({
     fontSize: hp(1.8),
     fontFamily: Fonts.FONTS.PoppinsBold,
     color: COLORS.blueColor,
-    textAlign: 'center',
   },
   dataHistoryText3: {
     fontSize: hp(1.8),

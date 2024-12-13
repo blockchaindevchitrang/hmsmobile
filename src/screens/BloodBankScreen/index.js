@@ -25,169 +25,13 @@ import BloodBanksList from '../../components/BloodComponent/BloodBanksList';
 import BloodDonorList from '../../components/BloodComponent/BloodDonorList';
 import BloodDonationList from '../../components/BloodComponent/BloodDonationList';
 import BloodIssueList from '../../components/BloodComponent/BloodIssueList';
-import {onGetBloodBankApi, onGetBloodDonationApi, onGetBloodDonorApi, onGetBloodIssueApi} from '../../services/Api';
-
-const allData = [
-  {
-    id: 1,
-    blood: 'O+',
-    bag: 5,
-  },
-  {
-    id: 2,
-    blood: 'A+',
-    bag: 2,
-  },
-  {
-    id: 3,
-    blood: 'B+',
-    bag: 2,
-  },
-  {
-    id: 4,
-    blood: 'AB+',
-    bag: 10,
-  },
-  {
-    id: 5,
-    blood: 'O-',
-    bag: 12,
-  },
-];
-
-const BloodDonorData = [
-  {
-    id: 1,
-    name: 'joey Tribiyani',
-    age: '48',
-    gender: 'Male',
-    blood_group: 'O+',
-    date: '22:02:00\n2023-05-25',
-  },
-  {
-    id: 2,
-    name: 'Monica Geller',
-    age: '43',
-    gender: 'Female',
-    blood_group: 'B+',
-    date: '22:02:00\n2023-05-25',
-  },
-  {
-    id: 3,
-    name: 'joey Tribiyani',
-    age: '49',
-    gender: 'Male',
-    blood_group: 'O+',
-    date: '22:02:00\n2023-05-25',
-  },
-  {
-    id: 4,
-    name: 'joey Tribiyani',
-    age: '45',
-    gender: 'Female',
-    blood_group: 'A-',
-    date: '22:02:00\n2023-05-25',
-  },
-  {
-    id: 5,
-    name: 'joey Tribiyani',
-    age: '41',
-    gender: 'Female',
-    blood_group: 'B-',
-    date: '22:02:00\n2023-05-25',
-  },
-];
-
-const BloodDonationData = [
-  {
-    id: 1,
-    bag: '1',
-    name: 'Joey Tribiyani',
-  },
-  {
-    id: 2,
-    bag: '3',
-    name: 'Monica Geller',
-  },
-  {
-    id: 3,
-    bag: '1',
-    name: 'Ross Geller',
-  },
-  {
-    id: 4,
-    bag: '2',
-    name: 'Monica Geller',
-  },
-  {
-    id: 5,
-    bag: '1',
-    name: 'Ross Geller',
-  },
-];
-
-const BloodIssueData = [
-  {
-    id: 1,
-    admission: 'EMP0000001',
-    name: 'Joey Tribiyani',
-    mail: 'joey@gmail.com',
-    date: '22:02:00 2023-05-25',
-    discharge: 'N/A',
-    package: 'Patient',
-    insurance: 'Cooper Mccall',
-    policy: 'N/A',
-    status: true,
-  },
-  {
-    id: 2,
-    admission: 'EMP0000002',
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    date: '22:02:00 2023-05-25',
-    discharge: 'N/A',
-    package: 'Body Check up',
-    insurance: 'Colleen Craig',
-    policy: '4839920',
-    status: false,
-  },
-  {
-    id: 3,
-    admission: 'EMP0000003',
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    date: '22:02:00 2023-05-25',
-    discharge: '22:02:00 2023-05-28',
-    package: 'N/A',
-    insurance: 'Demo Insurance',
-    policy: 'N/A',
-    status: true,
-  },
-  {
-    id: 4,
-    admission: 'EMP0000004',
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    date: '22:02:00 2023-05-25',
-    discharge: 'N/A',
-    package: 'Patient',
-    insurance: 'Demo Insurance',
-    policy: 'N/A',
-    status: false,
-  },
-  {
-    id: 5,
-    admission: 'EMP0000005',
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    date: '22:02:00 2023-05-25',
-    discharge: 'N/A',
-    package: 'Patient',
-    insurance: 'Demo Insurance',
-    policy: 'N/A',
-    status: false,
-  },
-];
+import {
+  onGetBloodBankApi,
+  onGetBloodDonationApi,
+  onGetBloodDonorApi,
+  onGetBloodIssueApi,
+  onGetCommonApi,
+} from '../../services/Api';
 
 export const BloodBankScreen = ({navigation}) => {
   const {t} = useTranslation();
@@ -203,6 +47,11 @@ export const BloodBankScreen = ({navigation}) => {
   const [bloodDonationData, setBloodDonationData] = useState([]);
   const [bloodIssueData, setBloodIssueData] = useState([]);
   const [refresh, setRefresh] = useState(false);
+  const [pageCount, setPageCount] = useState('1');
+  const [totalPage, setTotalPage] = useState('1');
+  const [bloodDonorPage, setBloodDonorPage] = useState('1');
+  const [donationPage, setDonationPage] = useState('1');
+  const [bloodIssuePage, setBloodIssuePage] = useState('1');
 
   const animations = useRef(
     [0, 0, 0, 0, 0].map(() => new Animated.Value(300)),
@@ -263,24 +112,35 @@ export const BloodBankScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetBloodBankData();
-  }, []);
+  }, [searchAccount, pageCount]);
 
   const onGetBloodBankData = async () => {
     try {
-      const response = await onGetBloodBankApi();
+      let urlData = `blood-bank-get?search=${searchAccount}&page=${pageCount}`;
+      const response = await onGetCommonApi(urlData);
       console.log('Response Role Data', response.data);
-      if (response.status === 200) {
+      if (response.data.flag == 1) {
         setBloodBankData(response.data.data);
+        setTotalPage(response.data.recordsTotal);
         setRefresh(!refresh);
       }
     } catch (err) {
       console.log('Get User Error:', err);
     }
+  };
+
+  useEffect(() => {
+    onGetBloodDonorData();
+  }, [searchPayroll, pageCount]);
+
+  const onGetBloodDonorData = async () => {
     try {
-      const bloodDonor = await onGetBloodDonorApi();
+      let urlData = `blood-donor-get?search=${searchPayroll}&page=${pageCount}`;
+      const bloodDonor = await onGetCommonApi(urlData);
       console.log('Response bloodDonor Data', bloodDonor.data);
-      if (bloodDonor.status === 200) {
+      if (bloodDonor.data.flag == 1) {
         setBloodDonorData(bloodDonor.data.data);
+        setBloodDonorPage(bloodDonor.data.recordsTotal);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -290,14 +150,16 @@ export const BloodBankScreen = ({navigation}) => {
 
   useEffect(() => {
     onBloodDonationData();
-  }, [searchInvoice]);
+  }, [searchInvoice, pageCount]);
 
   const onBloodDonationData = async () => {
     try {
-      const bloodDonor = await onGetBloodDonationApi(searchInvoice);
+      let urlData = `blood-donation-get?search=${searchInvoice}&page=${pageCount}`;
+      const bloodDonor = await onGetCommonApi(urlData);
       console.log('Response bloodDonor Data', bloodDonor.data);
-      if (bloodDonor.status === 200) {
+      if (bloodDonor.data.flag == 1) {
         setBloodDonationData(bloodDonor.data.data);
+        setDonationPage(bloodDonor.data.recordsTotal);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -307,14 +169,16 @@ export const BloodBankScreen = ({navigation}) => {
 
   useEffect(() => {
     onBloodIssueData();
-  }, [searchPharmacists]);
+  }, [searchPharmacists, pageCount]);
 
   const onBloodIssueData = async () => {
     try {
-      const bloodDonor = await onGetBloodIssueApi(searchPharmacists);
+      let urlData = `blood-issue-get?search=${searchPharmacists}&page=${pageCount}`;
+      const bloodDonor = await onGetCommonApi(urlData);
       console.log('Response bloodDonor Data', bloodDonor.data);
-      if (bloodDonor.status === 200) {
+      if (bloodDonor.data.flag == 1) {
         setBloodIssueData(bloodDonor.data.data);
+        setBloodIssuePage(bloodDonor.data.recordsTotal);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -338,14 +202,20 @@ export const BloodBankScreen = ({navigation}) => {
             searchBreak={searchAccount}
             setSearchBreak={setSearchAccount}
             allData={bloodBankData}
-            onGetData={() => onGetBloodBankData()}
+            onGetData={onGetBloodBankData}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
+            totalPage={totalPage}
           />
         ) : selectedView == 'Blood Donors' ? (
           <BloodDonorList
             searchBreak={searchPayroll}
             setSearchBreak={setSearchPayroll}
             allData={bloodDonorData}
-            onGetData={onGetBloodBankData}
+            onGetData={onGetBloodDonorData}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
+            totalPage={bloodDonorPage}
           />
         ) : selectedView == 'Blood Donations' ? (
           <BloodDonationList
@@ -353,6 +223,9 @@ export const BloodBankScreen = ({navigation}) => {
             setSearchBreak={setSearchInvoice}
             allData={bloodDonationData}
             onGetData={onBloodDonationData}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
+            totalPage={donationPage}
           />
         ) : (
           selectedView == 'Blood Issues' && (
@@ -361,6 +234,9 @@ export const BloodBankScreen = ({navigation}) => {
               setSearchBreak={setSearchPharmacists}
               allData={bloodIssueData}
               onGetData={onBloodIssueData}
+              pageCount={pageCount}
+              setPageCount={setPageCount}
+              totalPage={bloodIssuePage}
             />
           )
         )}
@@ -414,7 +290,9 @@ export const BloodBankScreen = ({navigation}) => {
                     <TouchableOpacity
                       style={styles.optionButton}
                       onPress={() => {
-                        setSelectedView(option), toggleMenu(false);
+                        setSelectedView(option);
+                        setPageCount('1');
+                        toggleMenu(false);
                       }}>
                       <Text style={styles.menuItem}>{option}</Text>
                     </TouchableOpacity>

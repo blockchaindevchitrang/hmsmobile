@@ -45,7 +45,23 @@ import {onAddBedApi, onDeleteBedApi, onUpdateBedApi} from '../../services/Api';
 import SelectDropdown from 'react-native-select-dropdown';
 import {useSelector} from 'react-redux';
 
-const BedList = ({searchBreak, setSearchBreak, allData, onGetBedTypeData}) => {
+const filterArray = [
+  {id: 1, name: 'All'},
+  {id: 2, name: 'Available'},
+  {id: 3, name: 'Not Available'},
+];
+
+const BedList = ({
+  searchBreak,
+  setSearchBreak,
+  allData,
+  onGetBedTypeData,
+  pageCount,
+  setPageCount,
+  totalPage,
+  setStatusId,
+  statusId,
+}) => {
   const bedTypeData = useSelector(state => state.bedTypeData);
   const {theme} = useTheme();
   const menuRef = useRef(null);
@@ -58,6 +74,7 @@ const BedList = ({searchBreak, setSearchBreak, allData, onGetBedTypeData}) => {
   const [isLoading, setIsLoading] = useState(false);
   const [deleteUser, setDeleteUser] = useState(false);
   const [editId, setEditId] = useState('');
+  const [filterVisible, setFilterVisible] = useState(false);
 
   const renderItem = ({item, index}) => {
     return (
@@ -200,47 +217,116 @@ const BedList = ({searchBreak, setSearchBreak, allData, onGetBedTypeData}) => {
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{paddingBottom: hp(12)}}>
-          <View style={[styles.subView, {flexWrap: 'wrap'}]}>
+          <View style={[styles.subView]}>
             <TextInput
               value={searchBreak}
               placeholder={'Search'}
               placeholderTextColor={theme.text}
               onChangeText={text => setSearchBreak(text)}
-              style={[styles.searchView, {color: theme.text}]}
+              style={[styles.searchView, {color: theme.text, width: '55%'}]}
             />
-          </View>
-          <View style={styles.filterView}>
-            <TouchableOpacity style={styles.filterView1}>
-              <Image style={styles.filterImage} source={filter} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => {
-                if (menuRef.current) {
-                  menuRef.current.open(); // Open the menu on button press
-                }
-              }}
-              style={styles.actionView}>
-              <Text style={styles.actionText}>Action</Text>
-            </TouchableOpacity>
-            <Menu
-              ref={menuRef}
-              onSelect={value => {
-                if (value == 'add') {
-                  setNewUserVisible(true);
-                } else {
-                  alert(`Selected number: ${value}`);
-                }
-              }}>
-              <MenuTrigger text={''} />
-              <MenuOptions style={{marginVertical: hp(0.5)}}>
-                <MenuOption value={'add'}>
-                  <Text style={styles.dataHistoryText3}>New Bed</Text>
-                </MenuOption>
-                <MenuOption value={'excel'}>
-                  <Text style={styles.dataHistoryText3}>Export to Excel</Text>
-                </MenuOption>
-              </MenuOptions>
-            </Menu>
+            <View style={styles.filterView}>
+              <TouchableOpacity
+                style={styles.filterView1}
+                onPress={() => setFilterVisible(true)}>
+                <Image style={styles.filterImage} source={filter} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  if (menuRef.current) {
+                    menuRef.current.open(); // Open the menu on button press
+                  }
+                }}
+                style={styles.actionView}>
+                <Text style={styles.actionText}>Action</Text>
+              </TouchableOpacity>
+              <Menu
+                ref={menuRef}
+                onSelect={value => {
+                  if (value == 'add') {
+                    setNewUserVisible(true);
+                  } else {
+                    alert(`Selected number: ${value}`);
+                  }
+                }}>
+                <MenuTrigger text={''} />
+                <MenuOptions style={{marginVertical: hp(0.5)}}>
+                  <MenuOption value={'add'}>
+                    <Text style={styles.dataHistoryText3}>New Bed</Text>
+                  </MenuOption>
+                  <MenuOption value={'excel'}>
+                    <Text style={styles.dataHistoryText3}>Export to Excel</Text>
+                  </MenuOption>
+                </MenuOptions>
+              </Menu>
+              <Modal
+                animationType="none"
+                transparent={true}
+                visible={filterVisible}
+                onRequestClose={() => setFilterVisible(false)}>
+                <View style={styles.filterModal}>
+                  <TouchableWithoutFeedback
+                    onPress={() => {
+                      setFilterVisible(false);
+                    }}>
+                    <View style={styles.modalOverlay1} />
+                  </TouchableWithoutFeedback>
+                  <View style={styles.filterFirstView}>
+                    <Text style={styles.filterTitle}>Filter Options</Text>
+                    <View style={styles.secondFilterView}>
+                      <Text style={styles.secondTitleFilter}>Status:</Text>
+                      <SelectDropdown
+                        data={filterArray}
+                        onSelect={(selectedItem, index) => {
+                          // setSelectedColor(selectedItem);
+                          setStatusId(selectedItem.id);
+                          // setStatusShow(
+                          //   selectedItem.id == 2
+                          //     ? 'pending'
+                          //     : selectedItem.id == 3
+                          //     ? 'completed'
+                          //     : selectedItem.id == 4
+                          //     ? 'cancelled'
+                          //     : '',
+                          // );
+                          console.log('gert Value:::', selectedItem);
+                        }}
+                        defaultValueByIndex={statusId - 1}
+                        renderButton={(selectedItem, isOpen) => {
+                          console.log('Get Response>>>', selectedItem);
+                          return (
+                            <View style={styles.dropdown2BtnStyle2}>
+                              <Text style={styles.dropdownItemTxtStyle}>
+                                {selectedItem?.name || 'Select'}
+                              </Text>
+                            </View>
+                          );
+                        }}
+                        showsVerticalScrollIndicator={false}
+                        renderItem={(item, index, isSelected) => {
+                          return (
+                            <TouchableOpacity style={styles.dropdownView}>
+                              <Text style={styles.dropdownItemTxtStyle}>
+                                {item.name}
+                              </Text>
+                            </TouchableOpacity>
+                          );
+                        }}
+                        dropdownIconPosition={'left'}
+                        dropdownStyle={styles.dropdown2DropdownStyle}
+                      />
+                      <View>
+                        <TouchableOpacity
+                          onPress={() => setStatusId(1)}
+                          style={styles.resetButton}>
+                          <Text style={styles.resetText}>Reset</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  </View>
+                </View>
+              </Modal>
+            </View>
           </View>
           <View
             style={[styles.activeView, {backgroundColor: theme.headerColor}]}>
@@ -294,6 +380,55 @@ const BedList = ({searchBreak, setSearchBreak, allData, onGetBedTypeData}) => {
                 </View>
               </View>
             </ScrollView>
+          </View>
+          <View style={styles.nextView1}>
+            <View style={styles.prevViewData}>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {opacity: pageCount == '1' ? 0.7 : 1},
+                ]}
+                disabled={pageCount == '1'}
+                onPress={() => setPageCount('1')}>
+                {'<<'}
+              </Text>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {marginLeft: wp(3), opacity: pageCount == '1' ? 0.7 : 1},
+                ]}
+                disabled={pageCount == '1'}
+                onPress={() => setPageCount(parseFloat(pageCount) - 1)}>
+                {'<'}
+              </Text>
+            </View>
+            <Text
+              style={styles.totalCountText}>{`Page ${pageCount} to ${Math.ceil(
+              totalPage / 10,
+            )}`}</Text>
+            <View style={styles.prevViewData}>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {opacity: pageCount >= Math.ceil(totalPage / 10) ? 0.7 : 1},
+                ]}
+                disabled={pageCount >= Math.ceil(totalPage / 10)}
+                onPress={() => setPageCount(parseFloat(pageCount) + 1)}>
+                {'>'}
+              </Text>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {
+                    marginLeft: wp(3),
+                    opacity: pageCount >= Math.ceil(totalPage / 10) ? 0.7 : 1,
+                  },
+                ]}
+                disabled={pageCount >= Math.ceil(totalPage / 10)}
+                onPress={() => setPageCount(Math.ceil(totalPage / 10))}>
+                {'>>'}
+              </Text>
+            </View>
           </View>
         </ScrollView>
         {/* ) : (
@@ -583,8 +718,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-end',
-    paddingHorizontal: wp(3),
-    paddingBottom: hp(1),
+    // paddingHorizontal: wp(3),
+    // paddingBottom: hp(1),
   },
   filterView1: {
     height: hp(5),
@@ -1028,5 +1163,79 @@ const styles = StyleSheet.create({
     marginTop: hp(1),
     alignSelf: 'center',
     marginBottom: hp(2),
+  },
+  modalOverlay1: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+  },
+  filterModal: {
+    flex: 1,
+    alignItems: 'flex-end',
+  },
+  filterFirstView: {
+    width: '60%',
+    backgroundColor: 'white',
+    borderRadius: 5,
+    marginTop: hp(17),
+    marginRight: wp(2),
+  },
+  filterTitle: {
+    fontSize: hp(2.2),
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    color: COLORS.black,
+    padding: hp(2),
+    borderBottomWidth: 0.5,
+  },
+  secondFilterView: {
+    padding: hp(2),
+  },
+  secondTitleFilter: {
+    fontSize: hp(2),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+  },
+  resetButton: {
+    width: wp(22),
+    height: hp(4.5),
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'flex-end',
+    backgroundColor: COLORS.greyColor,
+    marginTop: hp(2),
+    borderRadius: 5,
+  },
+  resetText: {
+    fontSize: hp(2),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+  },
+  nextView1: {
+    width: '92%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    alignSelf: 'center',
+    marginTop: hp(3),
+  },
+  prevViewData: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  prevButtonView: {
+    paddingHorizontal: wp(3),
+    backgroundColor: COLORS.headerGreenColor,
+    paddingVertical: hp(0.5),
+    borderRadius: 5,
+    fontSize: hp(3),
+    color: COLORS.white,
+  },
+  totalCountText: {
+    fontSize: hp(2),
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
   },
 });

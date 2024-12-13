@@ -35,7 +35,12 @@ import CaseHandlerList from '../../components/PatientsComponent/CaseHandlerList'
 import PatientAdmissionList from '../../components/PatientsComponent/PatientAdmissionList';
 import SmartCardTemplates from '../../components/PatientsComponent/SmartCardTemplates';
 import GeneratePatient from '../../components/PatientsComponent/GeneratePatient';
-import { onGetAllUsersDataApi, onGetCommonApi, onGetPatientApi, onGetPatientCasesApi } from '../../services/Api';
+import {
+  onGetAllUsersDataApi,
+  onGetCommonApi,
+  onGetPatientApi,
+  onGetPatientCasesApi,
+} from '../../services/Api';
 
 const allData = [
   {
@@ -401,6 +406,17 @@ export const PatientsScreen = ({navigation}) => {
   const [smartCardTempList, setSmartCardTempList] = useState([]);
   const [patientSmartCardList, setPatientSmartCardList] = useState([]);
   const [refresh, setRefresh] = useState(false);
+  const [pageCount, setPageCount] = useState('1');
+  const [totalPage, setTotalPage] = useState('1');
+  const [casesPage, setCasesPage] = useState('1');
+  const [caseHandlerPage, setCaseHandlerPage] = useState('1');
+  const [admissionPage, setAdmissionPage] = useState('1');
+  const [templatePage, setTemplatePage] = useState('1');
+  const [smartCardPage, setSmartCardPage] = useState('1');
+  const [statusId, setStatusId] = useState(1);
+  const [statusId1, setStatusId1] = useState(1);
+  const [statusId2, setStatusId2] = useState(1);
+  const [admissionStatusId, setAdmissionStatusId] = useState(1);
 
   const animations = useRef(
     [0, 0, 0, 0, 0, 0, 0].map(() => new Animated.Value(300)),
@@ -461,15 +477,31 @@ export const PatientsScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetPatientData();
-  }, []);
+  }, [searchUser, pageCount, statusId]);
 
   const onGetPatientData = async () => {
     try {
-      const response = await onGetPatientApi();
-      console.log('get Response:', response.data.data);
-      if (response.data.flag === 1) {
-        setPatientsList(response.data.data);
-        setRefresh(!refresh);
+      const response1 = await onGetCommonApi(
+        `patient-get-by-filter?search=${searchUser}&page=${pageCount}${
+          statusId == 2 ? '&active=1' : statusId == 3 ? '&deactive=0' : ''
+        }`,
+      );
+      if (response1.data.flag === 1) {
+        let dataArray = [];
+        const response = await onGetPatientApi();
+        console.log('get Response:', response.data.data);
+        if (response.data.flag == 1) {
+          response1.data.data.map(item => {
+            response.data.data.map(item1 => {
+              if (item.id == item1.id) {
+                dataArray.push(item1);
+              }
+            });
+          });
+          setTotalPage(response1.data.recordsTotal);
+          setPatientsList(dataArray);
+          setRefresh(!refresh);
+        }
       }
     } catch (err) {
       console.log('Error>>', err);
@@ -478,14 +510,20 @@ export const PatientsScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetPatientCasesData();
-  }, [searchUser]);
+  }, [searchCases, pageCount, statusId1]);
 
   const onGetPatientCasesData = async () => {
     try {
-      const response = await onGetPatientCasesApi(searchUser);
+      const response = await onGetCommonApi(
+        `patient-cases-get?search=${searchCases}&page=${pageCount}${
+          statusId1 == 2 ? '&active=1' : statusId1 == 3 ? '&deactive=0' : ''
+        }`,
+      );
+      // const response = await onGetPatientCasesApi(searchCases);
       console.log('get Response:', response.data.data);
       if (response.data.flag === 1) {
         setCasesList(response.data.data);
+        setCasesPage(response.data.recordsTotal);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -495,19 +533,19 @@ export const PatientsScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetCasesHandlerData();
-  }, [searchCasesHandler]);
+  }, [searchCasesHandler, pageCount, statusId2]);
 
   const onGetCasesHandlerData = async () => {
     try {
-      const response = await onGetAllUsersDataApi();
+      let urlData = `get-users?search=${searchCasesHandler}&page=${pageCount}&department_name=Case Manager${
+        statusId2 == 2 ? '&active=1' : statusId2 == 3 ? '&deactive=0' : ''
+      }`;
+      const response = await onGetCommonApi(urlData);
       console.log('Response User Data', response.data);
       if (response.status === 200) {
-        const usersData = response.data.data;
-        const accountantData = usersData.filter(
-          user => user.department === 'Case Manager',
-        );
         console.log('get Response:', response.data.data);
-        setCaseHandlerList(accountantData);
+        setCaseHandlerList(response.data.data);
+        setCaseHandlerPage(response.data.recordsTotal);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -517,14 +555,23 @@ export const PatientsScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetAdmissionData();
-  }, [searchAdmission]);
+  }, [searchAdmission, pageCount, admissionStatusId]);
 
   const onGetAdmissionData = async () => {
     try {
-      const response = await onGetCommonApi(`patient-admissions-get?search=${searchAdmission}`);
+      const response = await onGetCommonApi(
+        `patient-admissions-get?search=${searchAdmission}&page=${pageCount}&department_name=Case Manager${
+          admissionStatusId == 2
+            ? '&active=1'
+            : admissionStatusId == 3
+            ? '&deactive=0'
+            : ''
+        }`,
+      );
       console.log('get Response:', response.data.data);
       if (response.data.flag === 1) {
         setAdmissionList(response.data.data);
+        setAdmissionPage(response.data.recordsTotal);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -534,14 +581,17 @@ export const PatientsScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetSmartCardTempData();
-  }, [searchTemplate]);
+  }, [searchTemplate, pageCount]);
 
   const onGetSmartCardTempData = async () => {
     try {
-      const response = await onGetCommonApi(`patient-smart-card-get?search=${searchTemplate}`);
+      const response = await onGetCommonApi(
+        `patient-smart-card-get?search=${searchTemplate}&page=${pageCount}`,
+      );
       console.log('get Response:', response.data.data);
       if (response.data.flag === 1) {
         setSmartCardTempList(response.data.data);
+        setTemplatePage(response.data.recordsTotal);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -551,14 +601,17 @@ export const PatientsScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetSmartCardData();
-  }, [searchSmartCard]);
+  }, [searchSmartCard, pageCount]);
 
   const onGetSmartCardData = async () => {
     try {
-      const response = await onGetCommonApi(`patient-smart-cards?search=${searchSmartCard}`);
+      const response = await onGetCommonApi(
+        `patient-smart-cards?search=${searchSmartCard}&page=${pageCount}`,
+      );
       console.log('get Response:', response.data.data);
       if (response.data.flag === 1) {
         setPatientSmartCardList(response.data.data);
+        setSmartCardPage(response.data.recordsTotal);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -583,6 +636,11 @@ export const PatientsScreen = ({navigation}) => {
             setSearchBreak={setSearchUser}
             allData={patientsList}
             onGetData={onGetPatientData}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
+            totalPage={totalPage}
+            statusId={statusId}
+            setStatusId={setStatusId}
           />
         ) : selectedView == 'Cases' ? (
           <CasesList
@@ -590,6 +648,11 @@ export const PatientsScreen = ({navigation}) => {
             setSearchBreak={setSearchCases}
             allData={casesList}
             onGetData={onGetPatientCasesData}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
+            totalPage={casesPage}
+            statusId={statusId1}
+            setStatusId={setStatusId1}
           />
         ) : selectedView == 'Case Handlers' ? (
           <CaseHandlerList
@@ -597,6 +660,11 @@ export const PatientsScreen = ({navigation}) => {
             setSearchBreak={setCaseHandlerList}
             allData={caseHandlerList}
             onGetData={onGetCasesHandlerData}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
+            totalPage={caseHandlerPage}
+            statusId={statusId2}
+            setStatusId={setStatusId2}
           />
         ) : selectedView == 'Patient Admissions' ? (
           <PatientAdmissionList
@@ -604,6 +672,11 @@ export const PatientsScreen = ({navigation}) => {
             setSearchBreak={setSearchAdmission}
             allData={admissionList}
             onGetData={onGetAdmissionData}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
+            totalPage={admissionPage}
+            statusId={admissionStatusId}
+            setStatusId={setAdmissionStatusId}
           />
         ) : selectedView == 'Patient Smart Card Templates' ? (
           <SmartCardTemplates
@@ -611,6 +684,9 @@ export const PatientsScreen = ({navigation}) => {
             setSearchBreak={setSearchTemplate}
             allData={smartCardTempList}
             onGetData={onGetSmartCardTempData}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
+            totalPage={templatePage}
           />
         ) : (
           selectedView == 'Generate Patient Smart Cards' && (
@@ -619,6 +695,9 @@ export const PatientsScreen = ({navigation}) => {
               setSearchBreak={setSearchSmartCard}
               allData={patientSmartCardList}
               onGetData={onGetSmartCardData}
+              pageCount={pageCount}
+              setPageCount={setPageCount}
+              totalPage={smartCardPage}
             />
           )
         )}

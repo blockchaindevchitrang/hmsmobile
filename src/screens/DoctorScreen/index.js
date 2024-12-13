@@ -35,6 +35,7 @@ import {
   onDeleteDepartmentApi,
   onDeleteDoctorApi,
   onDeleteHolidayApi,
+  onGetCommonApi,
   onGetDoctorApi,
   onGetDoctorBreakApi,
   onGetDoctorDepartmentApi,
@@ -264,12 +265,16 @@ export const DoctorScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetDoctorData();
-  }, []);
+  }, [search, pageCount, statusId]);
 
   const onGetDoctorData = async () => {
     try {
-      const response = await onGetDoctorApi('doctor-get');
-      if (response.status == 200) {
+      let urlData = `doctor-get?search=${search}&page=${pageCount}${
+        statusId == 2 ? '&active=1' : statusId == 3 ? '&deactive=0' : ''
+      }`;
+      const response = await onGetDoctorApi(urlData);
+      if (response.data.flag == 1) {
+        setTotalPage(response.data.recordsTotal);
         setDoctorDataList(response.data.data);
         setRefresh(!refresh);
       }
@@ -280,14 +285,15 @@ export const DoctorScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetDoctorDepartmentData();
-  }, [searchDepartment]);
+  }, [searchDepartment, pageCount]);
 
   const onGetDoctorDepartmentData = async () => {
     try {
-      const response = await onGetDoctorDepartmentApi(searchDepartment);
+      let urlData = `filter-doctor-department?search=${searchDepartment}&page=${pageCount}`;
+      const response = await onGetCommonApi(urlData);
       if (response.data.flag == 1) {
         setDoctorDepartmentList(response.data.data);
-        setTotalPage(response.data.recordsTotal);
+        setDepartmentPage(response.data.recordsTotal);
         setAddDoctorVisible(false);
         setRefresh(!refresh);
       }
@@ -497,13 +503,16 @@ export const DoctorScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetDoctorHolidayData();
-  }, [searchHoliday]);
+  }, [searchHoliday, pageCount]);
 
   const onGetDoctorHolidayData = async () => {
     try {
-      const response = await onGetDoctorHolidayApi(searchHoliday);
+      let urlData = `doctor-holiday-get?search=${searchHoliday}&page=${pageCount}`;
+      const response = await onGetCommonApi(urlData);
+      // const response = await onGetDoctorHolidayApi(searchHoliday);
       if (response.status == 200) {
         setDoctorHolidayList(response.data.data);
+        setHolidayPage(response.data.recordsTotal);
         setAddHolidayVisible(false);
         setRefresh(!refresh);
       }
@@ -653,13 +662,16 @@ export const DoctorScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetDoctorBreakData();
-  }, [searchBreak]);
+  }, [searchBreak, pageCount]);
 
   const onGetDoctorBreakData = async () => {
     try {
-      const response = await onGetDoctorBreakApi(searchBreak);
-      if (response.status == 200) {
+      let urlData = `lunch-break-get?search=${searchBreak}&page=${pageCount}`;
+      const response = await onGetCommonApi(urlData);
+      // const response = await onGetDoctorBreakApi(searchBreak);
+      if (response.data.flag == 1) {
         setDoctorBreakList(response.data.data);
+        setBreakPage(response.data.recordsTotal);
         // setAddHolidayVisible(false);
         setRefresh(!refresh);
       }
@@ -753,6 +765,11 @@ export const DoctorScreen = ({navigation}) => {
             deleteUser={deleteUser}
             avatar={avatar}
             setAvatar={setAvatar}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
+            totalPage={totalPage}
+            statusId={statusId}
+            setStatusId={setStatusId}
           />
         ) : selectedView == 'Doctor Departments' ? (
           <DepartmentComponent
@@ -775,6 +792,9 @@ export const DoctorScreen = ({navigation}) => {
             setDeleteUser={setDeleteUser}
             deleteUser={deleteUser}
             isLoading={isLoading}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
+            totalPage={departmentPage}
           />
         ) : selectedView == 'Schedules' ? (
           <ScheduleComponent
@@ -805,6 +825,9 @@ export const DoctorScreen = ({navigation}) => {
             setDeleteUser={setDeleteUser}
             deleteUser={deleteUser}
             isLoading={isLoading}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
+            totalPage={holidayPage}
           />
         ) : (
           selectedView == 'Breaks' && (
@@ -813,6 +836,9 @@ export const DoctorScreen = ({navigation}) => {
               setSearchBreak={setSearchBreak}
               allData={doctorBreakList}
               onGetDoctorBreakData={() => onGetDoctorBreakData()}
+              pageCount={pageCount}
+              setPageCount={setPageCount}
+              totalPage={breakPage}
             />
           )
         )}
@@ -866,7 +892,9 @@ export const DoctorScreen = ({navigation}) => {
                     <TouchableOpacity
                       style={styles.optionButton}
                       onPress={() => {
-                        setSelectedView(option), toggleMenu(false);
+                        setSelectedView(option);
+                        setPageCount('1');
+                        toggleMenu(false);
                       }}>
                       <Text style={styles.menuItem}>{option}</Text>
                     </TouchableOpacity>

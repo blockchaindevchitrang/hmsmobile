@@ -773,4 +773,30 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
   },
+  nextView1: {
+    width: '92%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    alignSelf: 'center',
+    marginTop: hp(3),
+  },
+  prevViewData: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  prevButtonView: {
+    paddingHorizontal: wp(3),
+    backgroundColor: COLORS.headerGreenColor,
+    paddingVertical: hp(0.5),
+    borderRadius: 5,
+    fontSize: hp(3),
+    color: COLORS.white,
+  },
+  totalCountText: {
+    fontSize: hp(2),
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+  },
 });

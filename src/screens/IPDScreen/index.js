@@ -131,6 +131,10 @@ export const IPDScreen = ({navigation}) => {
   const [IPDData, setIPDData] = useState([]);
   const [OPDData, setOPDData] = useState([]);
   const [refresh, setRefresh] = useState(false);
+  const [pageCount, setPageCount] = useState('1');
+  const [totalPage, setTotalPage] = useState('1');
+  const [OPDPage, setOPDPage] = useState('1');
+  const [statusId, setStatusId] = useState(3);
 
   const animations = useRef(
     [0, 0, 0].map(() => new Animated.Value(300)),
@@ -189,14 +193,16 @@ export const IPDScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetIPDData();
-  }, [searchAccount]);
+  }, [searchAccount, pageCount, statusId]);
 
   const onGetIPDData = async () => {
     try {
-      const response = await onGetCommonApi(`ipd-patient-department-get?search=${searchAccount}`);
+      let urlData = `ipd-patient-department-get?search=${searchAccount}&page=${pageCount}&is_discharge=${statusId}`;
+      const response = await onGetCommonApi(urlData);
       console.log('get Response:', response.data.data);
       if (response.data.flag === 1) {
         setIPDData(response.data.data.items);
+        setTotalPage(response.data.data.pagination.last_page);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -206,14 +212,16 @@ export const IPDScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetOPDData();
-  }, [searchPharmacists]);
+  }, [searchPharmacists, pageCount]);
 
   const onGetOPDData = async () => {
     try {
-      const response = await onGetCommonApi(`opd-patient-department-get?search=${searchPharmacists}`);
+      let urlData = `opd-patient-department-get?search=${searchPharmacists}&page=${pageCount}`;
+      const response = await onGetCommonApi(urlData);
       console.log('get Response:', response.data.data);
       if (response.data.flag === 1) {
         setOPDData(response.data.data.items);
+        setOPDPage(response.data.data.pagination.last_page);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -238,6 +246,11 @@ export const IPDScreen = ({navigation}) => {
             setSearchBreak={setSearchAccount}
             allData={IPDData}
             onGetData={onGetIPDData}
+            totalPage={totalPage}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
+            statusId={statusId}
+            setStatusId={setStatusId}
           />
         ) : (
           selectedView == 'OPD Patients' && (
@@ -246,6 +259,9 @@ export const IPDScreen = ({navigation}) => {
               setSearchBreak={setSearchPharmacists}
               allData={OPDData}
               onGetData={onGetOPDData}
+              totalPage={OPDPage}
+              pageCount={pageCount}
+              setPageCount={setPageCount}
             />
           )
         )}
@@ -293,7 +309,9 @@ export const IPDScreen = ({navigation}) => {
                     <TouchableOpacity
                       style={styles.optionButton}
                       onPress={() => {
-                        setSelectedView(option), toggleMenu(false);
+                        setSelectedView(option);
+                        setPageCount('1');
+                        toggleMenu(false);
                       }}>
                       <Text style={styles.menuItem}>{option}</Text>
                     </TouchableOpacity>

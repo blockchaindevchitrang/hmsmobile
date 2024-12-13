@@ -33,7 +33,14 @@ import {
   MenuTrigger,
 } from 'react-native-popup-menu';
 
-const PurchaseMedicineList = ({searchBreak, setSearchBreak, allData}) => {
+const PurchaseMedicineList = ({
+  searchBreak,
+  setSearchBreak,
+  allData,
+  totalPage,
+  pageCount,
+  setPageCount,
+}) => {
   const {theme} = useTheme();
   const menuRef = useRef(null);
   const [newUserVisible, setNewUserVisible] = useState(false);
@@ -95,7 +102,7 @@ const PurchaseMedicineList = ({searchBreak, setSearchBreak, allData}) => {
         ]}>
         <View style={[styles.nameDataView]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataHistoryText1]}>{item.number}</Text>
+            <Text style={[styles.dataHistoryText1]}>{item.purchase_no}</Text>
           </View>
         </View>
         <Text style={[styles.dataHistoryText, {width: wp(26)}]}>
@@ -106,15 +113,15 @@ const PurchaseMedicineList = ({searchBreak, setSearchBreak, allData}) => {
         </Text>
         <View style={[styles.switchView, {width: wp(32)}]}>
           <View style={[styles.dateBox, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataHistoryText1]}>{item.status}</Text>
+            <Text style={[styles.dataHistoryText1]}>{item.payment_type}</Text>
           </View>
         </View>
         <Text style={[styles.dataHistoryText, {width: wp(28)}]}>
-          {item.total}
+          {item.net_amount}
         </Text>
         <View style={[styles.nameDataView, {width: wp(32)}]}>
           <View style={[styles.dateBox, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataHistoryText1]}>{item.payment}</Text>
+            <Text style={[styles.dataHistoryText1]}>{item.payment_status}</Text>
           </View>
         </View>
         <View style={styles.actionDataView}>
@@ -150,9 +157,9 @@ const PurchaseMedicineList = ({searchBreak, setSearchBreak, allData}) => {
               style={[styles.searchView, {color: theme.text}]}
             />
             <View style={styles.filterView}>
-              <TouchableOpacity style={styles.filterView1}>
+              {/* <TouchableOpacity style={styles.filterView1}>
                 <Image style={styles.filterImage} source={filter} />
-              </TouchableOpacity>
+              </TouchableOpacity> */}
               <TouchableOpacity
                 onPress={() => {
                   if (menuRef.current) {
@@ -240,6 +247,55 @@ const PurchaseMedicineList = ({searchBreak, setSearchBreak, allData}) => {
                 </View>
               </View>
             </ScrollView>
+          </View>
+          <View style={styles.nextView1}>
+            <View style={styles.prevViewData}>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {opacity: pageCount == '1' ? 0.7 : 1},
+                ]}
+                disabled={pageCount == '1'}
+                onPress={() => setPageCount('1')}>
+                {'<<'}
+              </Text>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {marginLeft: wp(3), opacity: pageCount == '1' ? 0.7 : 1},
+                ]}
+                disabled={pageCount == '1'}
+                onPress={() => setPageCount(parseFloat(pageCount) - 1)}>
+                {'<'}
+              </Text>
+            </View>
+            <Text
+              style={
+                styles.totalCountText
+              }>{`Page ${pageCount} to ${totalPage}`}</Text>
+            <View style={styles.prevViewData}>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {opacity: pageCount >= totalPage ? 0.7 : 1},
+                ]}
+                disabled={pageCount >= totalPage}
+                onPress={() => setPageCount(parseFloat(pageCount) + 1)}>
+                {'>'}
+              </Text>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {
+                    marginLeft: wp(3),
+                    opacity: pageCount >= totalPage ? 0.7 : 1,
+                  },
+                ]}
+                disabled={pageCount >= totalPage}
+                onPress={() => setPageCount(totalPage)}>
+                {'>>'}
+              </Text>
+            </View>
           </View>
         </ScrollView>
       ) : (
@@ -913,5 +969,31 @@ const styles = StyleSheet.create({
     fontSize: hp(2.5),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
+  },
+  nextView1: {
+    width: '92%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    alignSelf: 'center',
+    marginTop: hp(3),
+  },
+  prevViewData: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  prevButtonView: {
+    paddingHorizontal: wp(3),
+    backgroundColor: COLORS.headerGreenColor,
+    paddingVertical: hp(0.5),
+    borderRadius: 5,
+    fontSize: hp(3),
+    color: COLORS.white,
+  },
+  totalCountText: {
+    fontSize: hp(2),
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
   },
 });

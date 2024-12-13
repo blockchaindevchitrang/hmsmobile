@@ -27,7 +27,14 @@ import draw from '../../images/draw.png';
 import DatePicker from 'react-native-date-picker';
 import ImagePicker from 'react-native-image-crop-picker';
 
-const SmartCardTemplates = ({searchBreak, setSearchBreak, allData}) => {
+const SmartCardTemplates = ({
+  searchBreak,
+  setSearchBreak,
+  allData,
+  totalPage,
+  pageCount,
+  setPageCount,
+}) => {
   const {theme} = useTheme();
   const [newUserVisible, setNewUserVisible] = useState(false);
   const [firstName, setFirstName] = useState('');
@@ -261,6 +268,55 @@ const SmartCardTemplates = ({searchBreak, setSearchBreak, allData}) => {
                 </View>
               </View>
             </ScrollView>
+          </View>
+          <View style={styles.nextView1}>
+            <View style={styles.prevViewData}>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {opacity: pageCount == '1' ? 0.7 : 1},
+                ]}
+                disabled={pageCount == '1'}
+                onPress={() => setPageCount('1')}>
+                {'<<'}
+              </Text>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {marginLeft: wp(3), opacity: pageCount == '1' ? 0.7 : 1},
+                ]}
+                disabled={pageCount == '1'}
+                onPress={() => setPageCount(parseFloat(pageCount) - 1)}>
+                {'<'}
+              </Text>
+            </View>
+            <Text
+              style={styles.totalCountText}>{`Page ${pageCount} to ${Math.ceil(
+              totalPage / 10,
+            )}`}</Text>
+            <View style={styles.prevViewData}>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {opacity: pageCount >= Math.ceil(totalPage / 10) ? 0.7 : 1},
+                ]}
+                disabled={pageCount >= Math.ceil(totalPage / 10)}
+                onPress={() => setPageCount(parseFloat(pageCount) + 1)}>
+                {'>'}
+              </Text>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {
+                    marginLeft: wp(3),
+                    opacity: pageCount >= Math.ceil(totalPage / 10) ? 0.7 : 1,
+                  },
+                ]}
+                disabled={pageCount >= Math.ceil(totalPage / 10)}
+                onPress={() => setPageCount(Math.ceil(totalPage / 10))}>
+                {'>>'}
+              </Text>
+            </View>
           </View>
         </ScrollView>
       ) : (
@@ -867,5 +923,31 @@ const styles = StyleSheet.create({
     width: wp(3),
     height: hp(2.5),
     resizeMode: 'contain',
+  },
+  nextView1: {
+    width: '92%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    alignSelf: 'center',
+    marginTop: hp(3),
+  },
+  prevViewData: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  prevButtonView: {
+    paddingHorizontal: wp(3),
+    backgroundColor: COLORS.headerGreenColor,
+    paddingVertical: hp(0.5),
+    borderRadius: 5,
+    fontSize: hp(3),
+    color: COLORS.white,
+  },
+  totalCountText: {
+    fontSize: hp(2),
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
   },
 });

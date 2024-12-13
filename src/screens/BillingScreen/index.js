@@ -310,6 +310,19 @@ export const BillingScreen = ({navigation}) => {
   const [paymentList, setPaymentList] = useState([]);
   const [advancePaymentList, setAdvancePaymentList] = useState([]);
   const [refresh, setRefresh] = useState(false);
+  const [pageCount, setPageCount] = useState('1');
+  const [totalPage, setTotalPage] = useState('1');
+  const [payrollPage, setPayrollPage] = useState('1');
+  const [invoicePage, setInvoicePage] = useState('1');
+  const [paymentPage, setPaymentPage] = useState('1');
+  const [reportPage, setReportPage] = useState('1');
+  const [advancePage, setAdvancePage] = useState('1');
+  const [billPage, setBillPage] = useState('1');
+  const [manualPage, setManualPage] = useState('1');
+  const [statusId, setStatusId] = useState(1);
+  const [payrollStatusId, setPayrollStatusId] = useState(1);
+  const [paymentStatusId, setPaymentStatusId] = useState(1);
+  const [typeId, setTypeId] = useState(1);
 
   const animations = useRef(
     [0, 0, 0, 0, 0, 0, 0, 0, 0].map(() => new Animated.Value(300)),
@@ -370,14 +383,18 @@ export const BillingScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetAccountData();
-  }, [searchAccount]);
+  }, [searchAccount, pageCount]);
 
   const onGetAccountData = async () => {
     try {
-      const response = await onGetAccountListApi(searchAccount);
+      let urlData = `account-get?search=${searchAccount}&page=${pageCount}${
+        statusId == 2 ? '&active=1' : statusId == 3 ? '&deactive=0' : ''
+      }`;
+      const response = await onGetCommonApi(urlData);
       console.log('GetAccountData>>', response.data.data);
       if (response.status == 200) {
         setAccountList(response.data.data);
+        setTotalPage(response.data.recordsTotal);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -387,14 +404,22 @@ export const BillingScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetPayrollData();
-  }, [searchPayroll]);
+  }, [searchPayroll, pageCount, payrollStatusId]);
 
   const onGetPayrollData = async () => {
     try {
-      const response = await onGetPayrollListApi(searchPayroll);
+      let urlData = `emplloyee-payroll-get?search=${searchPayroll}&page=${pageCount}${
+        payrollStatusId == 2
+          ? '&paid=1'
+          : payrollStatusId == 3
+          ? '&unpaid=0'
+          : ''
+      }`;
+      const response = await onGetCommonApi(urlData);
       console.log('GetAccountData>>', response.data.data);
-      if (response.status == 200) {
+      if (response.data.flag == 1) {
         setPayrollList(response.data.data.items);
+        setPayrollPage(response.data.data.pagination.last_page);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -404,16 +429,17 @@ export const BillingScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetPaymentData();
-  }, [searchPayment]);
+  }, [searchPayment, pageCount]);
 
   const onGetPaymentData = async () => {
     try {
       const response = await onGetCommonApi(
-        `bill-payment-get?search=${searchPayment}`,
+        `bill-payment-get?search=${searchPayment}&page=${pageCount}`,
       );
       console.log('GetAccountData>>', response.data.data);
-      if (response.status == 200) {
+      if (response.data.flag == 1) {
         setPaymentList(response.data.data.items);
+        setPaymentPage(response.data.data.pagination.last_page);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -423,16 +449,17 @@ export const BillingScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetAdvancePaymentData();
-  }, [searchAdvance]);
+  }, [searchAdvance, pageCount]);
 
   const onGetAdvancePaymentData = async () => {
     try {
       const response = await onGetCommonApi(
-        `advance-payment-get?search=${searchAdvance}`,
+        `advance-payment-get?search=${searchAdvance}&page=${pageCount}`,
       );
       console.log('GetAccountData>>', response.data.data);
-      if (response.status == 200) {
+      if (response.data.flag == 1) {
         setAdvancePaymentList(response.data.data.items);
+        setAdvancePage(response.data.data.pagination.last_page);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -457,6 +484,13 @@ export const BillingScreen = ({navigation}) => {
             setSearchBreak={setSearchAccount}
             allData={accountList}
             onGetData={onGetAccountData}
+            totalPage={totalPage}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
+            setStatusId={setStatusId}
+            statusId={statusId}
+            setTypeId={setTypeId}
+            typeId={typeId}
           />
         ) : selectedView == 'Employee Payrolls' ? (
           <PayrollList
@@ -464,6 +498,11 @@ export const BillingScreen = ({navigation}) => {
             setSearchBreak={setSearchPayroll}
             allData={payrollList}
             onGetData={onGetPayrollData}
+            totalPage={payrollPage}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
+            setStatusId1={setPayrollStatusId}
+            statusId1={payrollStatusId}
           />
         ) : selectedView == 'Invoices' ? (
           <InvoicesList
@@ -477,6 +516,9 @@ export const BillingScreen = ({navigation}) => {
             setSearchBreak={setSearchPayment}
             allData={paymentList}
             onGetData={onGetPaymentData}
+            totalPage={paymentPage}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
           />
         ) : selectedView == 'Payment Reports' ? (
           <ReportList
@@ -484,6 +526,11 @@ export const BillingScreen = ({navigation}) => {
             setSearchBreak={setSearchReport}
             allData={paymentList}
             onGetData={onGetPaymentData}
+            totalPage={paymentPage}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
+            setStatusId={setPaymentStatusId}
+            statusId={paymentStatusId}
           />
         ) : selectedView == 'Advance Payments' ? (
           <AdvanceList
@@ -491,6 +538,9 @@ export const BillingScreen = ({navigation}) => {
             setSearchBreak={setSearchAdvance}
             allData={advancePaymentList}
             onGetData={onGetAdvancePaymentData}
+            totalPage={advancePage}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
           />
         ) : selectedView == 'Bills' ? (
           <PharmacistsList
@@ -561,7 +611,9 @@ export const BillingScreen = ({navigation}) => {
                     <TouchableOpacity
                       style={styles.optionButton}
                       onPress={() => {
-                        setSelectedView(option), toggleMenu(false);
+                        setSelectedView(option);
+                        setPageCount('1');
+                        toggleMenu(false);
                       }}>
                       <Text style={styles.menuItem}>{option}</Text>
                     </TouchableOpacity>

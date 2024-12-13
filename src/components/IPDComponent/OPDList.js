@@ -48,7 +48,15 @@ const paymentData = [
   {id: 2, name: 'Cheque'},
 ];
 
-const OPDList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
+const OPDList = ({
+  searchBreak,
+  setSearchBreak,
+  allData,
+  onGetData,
+  totalPage,
+  pageCount,
+  setPageCount,
+}) => {
   const user_data = useSelector(state => state.user_data);
   const doctorData = useSelector(state => state.doctorData);
   const bedTypeData = useSelector(state => state.bedTypeData);
@@ -308,9 +316,6 @@ const OPDList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
             />
           </View>
           <View style={styles.filterView}>
-            <TouchableOpacity style={styles.filterView1}>
-              <Image style={styles.filterImage} source={filter} />
-            </TouchableOpacity>
             <TouchableOpacity
               onPress={() => {
                 setUserId('');
@@ -400,6 +405,55 @@ const OPDList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
               </View>
             </ScrollView>
           </View>
+          <View style={styles.nextView1}>
+            <View style={styles.prevViewData}>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {opacity: pageCount == '1' ? 0.7 : 1},
+                ]}
+                disabled={pageCount == '1'}
+                onPress={() => setPageCount('1')}>
+                {'<<'}
+              </Text>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {marginLeft: wp(3), opacity: pageCount == '1' ? 0.7 : 1},
+                ]}
+                disabled={pageCount == '1'}
+                onPress={() => setPageCount(parseFloat(pageCount) - 1)}>
+                {'<'}
+              </Text>
+            </View>
+            <Text
+              style={
+                styles.totalCountText
+              }>{`Page ${pageCount} to ${totalPage}`}</Text>
+            <View style={styles.prevViewData}>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {opacity: pageCount >= totalPage ? 0.7 : 1},
+                ]}
+                disabled={pageCount >= totalPage}
+                onPress={() => setPageCount(parseFloat(pageCount) + 1)}>
+                {'>'}
+              </Text>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {
+                    marginLeft: wp(3),
+                    opacity: pageCount >= totalPage ? 0.7 : 1,
+                  },
+                ]}
+                disabled={pageCount >= totalPage}
+                onPress={() => setPageCount(totalPage)}>
+                {'>>'}
+              </Text>
+            </View>
+          </View>
         </ScrollView>
       ) : (
         <ScrollView
@@ -446,7 +500,8 @@ const OPDList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
                           </Text>
                         ) : (
                           <Text style={styles.dropdownItemTxtStyle}>
-                            {selectedItem?.patient_user?.first_name || 'Select Patient'}
+                            {selectedItem?.patient_user?.first_name ||
+                              'Select Patient'}
                           </Text>
                         )}
                       </View>
@@ -1253,5 +1308,31 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
+  },
+  nextView1: {
+    width: '92%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    alignSelf: 'center',
+    marginTop: hp(3),
+  },
+  prevViewData: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  prevButtonView: {
+    paddingHorizontal: wp(3),
+    backgroundColor: COLORS.headerGreenColor,
+    paddingVertical: hp(0.5),
+    borderRadius: 5,
+    fontSize: hp(3),
+    color: COLORS.white,
+  },
+  totalCountText: {
+    fontSize: hp(2),
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
   },
 });

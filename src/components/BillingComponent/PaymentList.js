@@ -43,7 +43,15 @@ import FlashMessage, {
 } from 'react-native-flash-message';
 import {DeletePopup} from '../DeletePopup';
 
-const PaymentList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
+const PaymentList = ({
+  searchBreak,
+  setSearchBreak,
+  allData,
+  onGetData,
+  totalPage,
+  pageCount,
+  setPageCount,
+}) => {
   const accountData = useSelector(state => state.accountData);
   const {theme} = useTheme();
   const menuRef = useRef(null);
@@ -257,11 +265,7 @@ const PaymentList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
               onChangeText={text => setSearchBreak(text)}
               style={[styles.searchView, {color: theme.text}]}
             />
-          </View>
-          <View style={styles.filterView}>
-            <TouchableOpacity style={styles.filterView1}>
-              <Image style={styles.filterImage} source={filter} />
-            </TouchableOpacity>
+            {/* <View style={styles.filterView}> */}
             <TouchableOpacity
               onPress={() => {
                 if (menuRef.current) {
@@ -297,6 +301,7 @@ const PaymentList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
                 </MenuOption>
               </MenuOptions>
             </Menu>
+            {/* </View> */}
           </View>
           <View
             style={[styles.activeView, {backgroundColor: theme.headerColor}]}>
@@ -347,6 +352,55 @@ const PaymentList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
                 </View>
               </View>
             </ScrollView>
+          </View>
+          <View style={styles.nextView1}>
+            <View style={styles.prevViewData}>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {opacity: pageCount == '1' ? 0.7 : 1},
+                ]}
+                disabled={pageCount == '1'}
+                onPress={() => setPageCount('1')}>
+                {'<<'}
+              </Text>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {marginLeft: wp(3), opacity: pageCount == '1' ? 0.7 : 1},
+                ]}
+                disabled={pageCount == '1'}
+                onPress={() => setPageCount(parseFloat(pageCount) - 1)}>
+                {'<'}
+              </Text>
+            </View>
+            <Text
+              style={
+                styles.totalCountText
+              }>{`Page ${pageCount} to ${totalPage}`}</Text>
+            <View style={styles.prevViewData}>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {opacity: pageCount >= totalPage ? 0.7 : 1},
+                ]}
+                disabled={pageCount >= totalPage}
+                onPress={() => setPageCount(parseFloat(pageCount) + 1)}>
+                {'>'}
+              </Text>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {
+                    marginLeft: wp(3),
+                    opacity: pageCount >= totalPage ? 0.7 : 1,
+                  },
+                ]}
+                disabled={pageCount >= totalPage}
+                onPress={() => setPageCount(totalPage)}>
+                {'>>'}
+              </Text>
+            </View>
           </View>
         </ScrollView>
       ) : (
@@ -529,7 +583,7 @@ const styles = StyleSheet.create({
     marginVertical: hp(2),
   },
   searchView: {
-    width: '100%',
+    width: '70%',
     paddingHorizontal: wp(3),
     paddingVertical: hp(0.5),
     borderWidth: 1,
@@ -929,5 +983,31 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.greyColor,
     marginTop: hp(1),
+  },
+  nextView1: {
+    width: '92%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    alignSelf: 'center',
+    marginTop: hp(3),
+  },
+  prevViewData: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  prevButtonView: {
+    paddingHorizontal: wp(3),
+    backgroundColor: COLORS.headerGreenColor,
+    paddingVertical: hp(0.5),
+    borderRadius: 5,
+    fontSize: hp(3),
+    color: COLORS.white,
+  },
+  totalCountText: {
+    fontSize: hp(2),
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
   },
 });

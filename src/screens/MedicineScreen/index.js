@@ -31,245 +31,7 @@ import MedicineList from '../../components/MedicineComponent/MedicineList';
 import PurchaseMedicineList from '../../components/MedicineComponent/PurchaseMedicineList';
 import UsedMedicineList from '../../components/MedicineComponent/UsedMedicineList';
 import MedicineBillList from '../../components/MedicineComponent/MedicineBillList';
-import { onGetCommonApi } from '../../services/Api';
-
-const allData = [
-  {
-    id: 1,
-    name: 'Antiboitics',
-    status: true,
-  },
-  {
-    id: 2,
-    name: 'Injections',
-    status: true,
-  },
-  {
-    id: 3,
-    name: 'Dental',
-    status: false,
-  },
-  {
-    id: 4,
-    name: 'Fever',
-    status: true,
-  },
-  {
-    id: 5,
-    name: 'Syrup',
-    status: true,
-  },
-];
-
-const medicineBrandData = [
-  {
-    id: 1,
-    name: 'Cheryl Mcclure',
-    email: 'cheryl@dffg.com',
-    phone: '9876543210',
-  },
-  {
-    id: 2,
-    name: 'Wallace Roberts',
-    email: 'wallace@dffg.com',
-    phone: 'NA',
-  },
-  {
-    id: 3,
-    name: 'Diamox',
-    email: 'diamox@dffg.com',
-    phone: '9876543210',
-  },
-  {
-    id: 4,
-    name: 'Alpha',
-    email: 'alpha@dffg.com',
-    phone: '9876543210',
-  },
-  {
-    id: 5,
-    name: 'Cipla Limited',
-    email: 'cipla@dffg.com',
-    phone: '9876543210',
-  },
-];
-
-const MedicinesData = [
-  {
-    id: 1,
-    medicines: 'xyz',
-    brand: 'Cheryl Mcclure',
-    available: '10',
-    buy: '$10.00',
-    sell: '$11.00',
-  },
-  {
-    id: 2,
-    medicines: 'mno',
-    brand: 'Wallace Roberts',
-    available: '80',
-    buy: '$15.00',
-    sell: '$16.00',
-  },
-  {
-    id: 3,
-    medicines: 'demo',
-    brand: 'Diamox',
-    available: '0',
-    buy: '$10.00',
-    sell: '$11.00',
-  },
-  {
-    id: 4,
-    medicines: 'xyz',
-    brand: 'Cheryl Mcclure',
-    available: '10',
-    buy: '$10.00',
-    sell: '$11.00',
-  },
-  {
-    id: 5,
-    medicines: 'text',
-    brand: 'Alpha',
-    available: '50',
-    buy: '$50.00',
-    sell: '$55.00',
-  },
-];
-
-const PurchaseData = [
-  {
-    id: 1,
-    number: 'N2JY0SK9',
-    total: '$244.00',
-    tax: '$0.00',
-    status: 'Paid',
-    payment: 'Cash',
-  },
-  {
-    id: 2,
-    number: 'N2JY0SK9',
-    total: '$244.00',
-    tax: '$0.00',
-    status: 'Paid',
-    payment: 'Cash',
-  },
-  {
-    id: 3,
-    number: 'N2JY0SK9',
-    total: '$244.00',
-    tax: '$0.00',
-    status: 'Paid',
-    payment: 'Cash',
-  },
-  {
-    id: 4,
-    number: 'N2JY0SK9',
-    total: '$244.00',
-    tax: '$0.00',
-    status: 'Paid',
-    payment: 'Cash',
-  },
-  {
-    id: 5,
-    number: 'N2JY0SK9',
-    total: '$244.00',
-    tax: '$0.00',
-    status: 'Paid',
-    payment: 'Cash',
-  },
-];
-
-const BloodDonationData = [
-  {
-    id: 1,
-    medicine: 'pracetemol',
-    quantity: '10',
-    usedAt: 'Medicine Bill',
-    date: '22:02:00 2023-05-25',
-  },
-  {
-    id: 2,
-    medicine: 'Panadol',
-    quantity: '80',
-    usedAt: 'Prescription',
-    date: '22:02:00 2023-05-25',
-  },
-  {
-    id: 3,
-    medicine: 'pracetemol',
-    quantity: '0',
-    usedAt: 'Medicine Bill',
-    date: '22:02:00 2023-05-25',
-  },
-  {
-    id: 4,
-    medicine: 'Panadol',
-    quantity: '50',
-    usedAt: 'Prescription',
-    date: '22:02:00 2023-05-25',
-  },
-  {
-    id: 5,
-    medicine: 'ziwa',
-    quantity: '20',
-    usedAt: 'Prescription',
-    date: '22:02:00 2023-05-25',
-  },
-];
-
-const BloodIssueData = [
-  {
-    id: 1,
-    admission: 'EMP0000001',
-    name: 'Joey Tribiyani',
-    mail: 'joey@gmail.com',
-    date: '22:02:00 2023-05-25',
-    mode: 'Cash',
-    amount: '$1000',
-    status: 'Paid',
-  },
-  {
-    id: 2,
-    admission: 'EMP0000002',
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    date: '22:02:00 2023-05-25',
-    mode: 'Cash',
-    amount: '$1,890.00',
-    status: 'Paid',
-  },
-  {
-    id: 3,
-    admission: 'EMP0000003',
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    date: '22:02:00 2023-05-25',
-    mode: 'Cash',
-    amount: '$1,580.00',
-    status: 'Paid',
-  },
-  {
-    id: 4,
-    admission: 'EMP0000004',
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    date: '22:02:00 2023-05-25',
-    mode: 'Cash',
-    amount: '$630.00',
-    status: 'Paid',
-  },
-  {
-    id: 5,
-    admission: 'EMP0000005',
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    date: '22:02:00 2023-05-25',
-    mode: 'Cash',
-    amount: '$1,890.00',
-    status: 'Paid',
-  },
-];
+import {onGetCommonApi} from '../../services/Api';
 
 export const MedicineScreen = ({navigation}) => {
   const {t} = useTranslation();
@@ -289,6 +51,14 @@ export const MedicineScreen = ({navigation}) => {
   const [medicineUsed, setMedicineUsed] = useState([]);
   const [medicineBill, setMedicineBill] = useState([]);
   const [refresh, setRefresh] = useState(false);
+  const [pageCount, setPageCount] = useState('1');
+  const [totalPage, setTotalPage] = useState('1');
+  const [brandPage, setBrandPage] = useState('1');
+  const [medicinePage, setMedicinePage] = useState('1');
+  const [purchasePage, setPurchasePage] = useState('1');
+  const [usedPage, setUsedPage] = useState('1');
+  const [medicineBillPage, setMedicineBillPage] = useState('1');
+  const [statusId, setStatusId] = useState(2);
 
   const animations = useRef(
     [0, 0, 0, 0, 0, 0, 0].map(() => new Animated.Value(300)),
@@ -349,16 +119,16 @@ export const MedicineScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetMedicineCategoryData();
-  }, [searchCategory]);
+  }, [searchCategory, pageCount, statusId]);
 
   const onGetMedicineCategoryData = async () => {
     try {
-      const response = await onGetCommonApi(
-        `medicine-category-get?search=${searchCategory}`,
-      );
+      let urlData = `medicine-category-get?search=${searchCategory}&page=${pageCount}&status=${statusId}`;
+      const response = await onGetCommonApi(urlData);
       console.log('Response User Data', response.data);
       if (response.data.flag === 1) {
         setMedicineCategory(response.data.data.items);
+        setTotalPage(response.data.data.pagination.last_page);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -368,16 +138,17 @@ export const MedicineScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetMedicineBrandData();
-  }, [searchBrand]);
+  }, [searchBrand, pageCount]);
 
   const onGetMedicineBrandData = async () => {
     try {
       const response = await onGetCommonApi(
-        `medicine-brand-get?search=${searchBrand}`,
+        `medicine-brand-get?search=${searchBrand}&page=${pageCount}`,
       );
       console.log('Response User Data', response.data);
       if (response.data.flag === 1) {
         setMedicineBrand(response.data.data.items);
+        setBrandPage(response.data.data.pagination.last_page);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -387,16 +158,17 @@ export const MedicineScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetMedicineData();
-  }, [searchMedicine]);
+  }, [searchMedicine, pageCount]);
 
   const onGetMedicineData = async () => {
     try {
       const response = await onGetCommonApi(
-        `medicine-get?search=${searchMedicine}`,
+        `medicine-get?search=${searchMedicine}&page=${pageCount}`,
       );
       console.log('Response User Data', response.data);
       if (response.data.flag === 1) {
         setMedicine(response.data.data.items);
+        setMedicinePage(response.data.data.pagination.last_page);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -406,16 +178,17 @@ export const MedicineScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetPurchaseMedicineData();
-  }, [searchPurchase]);
+  }, [searchPurchase, pageCount]);
 
   const onGetPurchaseMedicineData = async () => {
     try {
       const response = await onGetCommonApi(
-        `purchase-medicine-get?search=${searchPurchase}`,
+        `purchase-medicine-get?search=${searchPurchase}&page=${pageCount}`,
       );
       console.log('Response User Data', response.data);
       if (response.data.flag === 1) {
         setMedicinePurchase(response.data.data.items);
+        setPurchasePage(response.data.data.pagination.last_page);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -425,16 +198,17 @@ export const MedicineScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetMedicineBillData();
-  }, [searchBill]);
+  }, [searchBill, pageCount]);
 
   const onGetMedicineBillData = async () => {
     try {
       const response = await onGetCommonApi(
-        `medicine-bill-get?search=${searchBill}`,
+        `medicine-bill-get?search=${searchBill}&page=${pageCount}`,
       );
       console.log('Response User Data', response.data);
       if (response.data.flag === 1) {
         setMedicineBill(response.data.data.items);
+        setMedicineBillPage(response.data.data.pagination.last_page);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -459,6 +233,11 @@ export const MedicineScreen = ({navigation}) => {
             setSearchBreak={setSearchCategory}
             allData={medicineCategory}
             onGetData={onGetMedicineCategoryData}
+            totalPage={totalPage}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
+            statusId={statusId}
+            setStatusId={setStatusId}
           />
         ) : selectedView == 'Medicines Brands' ? (
           <MedicinesBrandList
@@ -466,6 +245,9 @@ export const MedicineScreen = ({navigation}) => {
             setSearchBreak={setSearchBrand}
             allData={medicineBrand}
             onGetData={onGetMedicineBrandData}
+            totalPage={brandPage}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
           />
         ) : selectedView == 'Medicines' ? (
           <MedicineList
@@ -475,6 +257,9 @@ export const MedicineScreen = ({navigation}) => {
             onGetData={onGetMedicineData}
             medicineCategory={medicineCategory}
             medicineBrand={medicineBrand}
+            totalPage={medicinePage}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
           />
         ) : selectedView == 'Purchase Medicine' ? (
           <PurchaseMedicineList
@@ -482,6 +267,9 @@ export const MedicineScreen = ({navigation}) => {
             setSearchBreak={setSearchPurchase}
             allData={medicinePurchase}
             onGetData={onGetPurchaseMedicineData}
+            totalPage={purchasePage}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
           />
         ) : selectedView == 'Used Medicine' ? (
           <UsedMedicineList
@@ -489,6 +277,9 @@ export const MedicineScreen = ({navigation}) => {
             setSearchBreak={setSearchUsed}
             allData={medicineUsed}
             onGetData={onGetPurchaseMedicineData}
+            totalPage={purchasePage}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
           />
         ) : (
           selectedView == 'Medicine Bills' && (
@@ -497,6 +288,9 @@ export const MedicineScreen = ({navigation}) => {
               setSearchBreak={setSearchBill}
               allData={medicineBill}
               onGetData={onGetMedicineBillData}
+              totalPage={medicineBillPage}
+              pageCount={pageCount}
+              setPageCount={setPageCount}
             />
           )
         )}
@@ -552,7 +346,9 @@ export const MedicineScreen = ({navigation}) => {
                     <TouchableOpacity
                       style={styles.optionButton}
                       onPress={() => {
-                        setSelectedView(option), toggleMenu(false);
+                        setSelectedView(option);
+                        setPageCount('1');
+                        toggleMenu(false);
                       }}>
                       <Text style={styles.menuItem}>{option}</Text>
                     </TouchableOpacity>

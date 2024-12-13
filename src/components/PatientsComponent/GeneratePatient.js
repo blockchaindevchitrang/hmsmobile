@@ -27,7 +27,14 @@ import draw from '../../images/draw.png';
 import DatePicker from 'react-native-date-picker';
 import ImagePicker from 'react-native-image-crop-picker';
 
-const GeneratePatient = ({searchBreak, setSearchBreak, allData}) => {
+const GeneratePatient = ({
+  searchBreak,
+  setSearchBreak,
+  allData,
+  totalPage,
+  pageCount,
+  setPageCount,
+}) => {
   const {theme} = useTheme();
   const [newUserVisible, setNewUserVisible] = useState(false);
   const [firstName, setFirstName] = useState('');
@@ -83,10 +90,10 @@ const GeneratePatient = ({searchBreak, setSearchBreak, allData}) => {
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
         <View style={styles.nameDataView}>
-          <ProfilePhoto username={item.name} />
+          <ProfilePhoto username={item.patient_name} />
           <View>
-            <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
-            <Text style={[styles.dataHistoryText1]}>{item.mail}</Text>
+            <Text style={[styles.dataHistoryText2]}>{item.patient_name}</Text>
+            <Text style={[styles.dataHistoryText5]}>{item.patient_email}</Text>
           </View>
         </View>
         <View style={[styles.switchView, {width: wp(35)}]}>
@@ -187,6 +194,55 @@ const GeneratePatient = ({searchBreak, setSearchBreak, allData}) => {
                 </View>
               </View>
             </ScrollView>
+          </View>
+          <View style={styles.nextView1}>
+            <View style={styles.prevViewData}>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {opacity: pageCount == '1' ? 0.7 : 1},
+                ]}
+                disabled={pageCount == '1'}
+                onPress={() => setPageCount('1')}>
+                {'<<'}
+              </Text>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {marginLeft: wp(3), opacity: pageCount == '1' ? 0.7 : 1},
+                ]}
+                disabled={pageCount == '1'}
+                onPress={() => setPageCount(parseFloat(pageCount) - 1)}>
+                {'<'}
+              </Text>
+            </View>
+            <Text
+              style={styles.totalCountText}>{`Page ${pageCount} to ${Math.ceil(
+              totalPage / 10,
+            )}`}</Text>
+            <View style={styles.prevViewData}>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {opacity: pageCount >= Math.ceil(totalPage / 10) ? 0.7 : 1},
+                ]}
+                disabled={pageCount >= Math.ceil(totalPage / 10)}
+                onPress={() => setPageCount(parseFloat(pageCount) + 1)}>
+                {'>'}
+              </Text>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {
+                    marginLeft: wp(3),
+                    opacity: pageCount >= Math.ceil(totalPage / 10) ? 0.7 : 1,
+                  },
+                ]}
+                disabled={pageCount >= Math.ceil(totalPage / 10)}
+                onPress={() => setPageCount(Math.ceil(totalPage / 10))}>
+                {'>>'}
+              </Text>
+            </View>
           </View>
         </ScrollView>
       ) : (
@@ -527,7 +583,7 @@ const styles = StyleSheet.create({
   },
   dataHistoryView: {
     width: '100%',
-    height: hp(8),
+    paddingVertical: hp(1),
     alignItems: 'center',
     flexDirection: 'row',
     alignSelf: 'flex-start',
@@ -544,6 +600,12 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.FONTS.PoppinsBold,
     color: COLORS.black,
     marginHorizontal: wp(2),
+  },
+  dataHistoryText5: {
+    fontSize: hp(1.7),
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    color: COLORS.black,
+    width: wp(45),
   },
   dataHistoryText2: {
     fontSize: hp(1.8),
@@ -793,5 +855,31 @@ const styles = StyleSheet.create({
     width: wp(3),
     height: hp(2.5),
     resizeMode: 'contain',
+  },
+  nextView1: {
+    width: '92%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    alignSelf: 'center',
+    marginTop: hp(3),
+  },
+  prevViewData: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  prevButtonView: {
+    paddingHorizontal: wp(3),
+    backgroundColor: COLORS.headerGreenColor,
+    paddingVertical: hp(0.5),
+    borderRadius: 5,
+    fontSize: hp(3),
+    color: COLORS.white,
+  },
+  totalCountText: {
+    fontSize: hp(2),
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
   },
 });

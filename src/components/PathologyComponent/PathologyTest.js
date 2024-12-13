@@ -410,10 +410,16 @@ const PathologyTest = ({
                 allDatas.pathologyParameterItems.map(item1 => {
                   parameterArray.push({
                     parameter_id: item1.parameter_id,
-                    parameter_name: item1.pathology_parameter ? item1.pathology_parameter.parameter_name : '',
+                    parameter_name: item1.pathology_parameter
+                      ? item1.pathology_parameter.parameter_name
+                      : '',
                     patient_result: item1.patient_result,
-                    range: item1.pathology_parameter ? item1.pathology_parameter.reference_range : '',
-                    unit: item1.pathology_parameter ? item1.pathology_parameter.pathology_unit.name : '',
+                    range: item1.pathology_parameter
+                      ? item1.pathology_parameter.reference_range
+                      : '',
+                    unit: item1.pathology_parameter
+                      ? item1.pathology_parameter.pathology_unit.name
+                      : '',
                   });
                 });
               } else {
@@ -843,7 +849,8 @@ const PathologyTest = ({
                                   </Text>
                                 ) : (
                                   <Text style={styles.dropdownItemTxtStyle}>
-                                    {selectedItem?.parameter_name || 'Select Parameter'}
+                                    {selectedItem?.parameter_name ||
+                                      'Select Parameter'}
                                   </Text>
                                 )}
                               </View>
@@ -908,7 +915,10 @@ const PathologyTest = ({
                               range: '',
                               unit: '',
                             };
-                            setParameterArray(modifierAdd => [...modifierAdd, NewItemAdd]);
+                            setParameterArray(modifierAdd => [
+                              ...modifierAdd,
+                              NewItemAdd,
+                            ]);
                           }}
                           style={styles.nextView}>
                           <Text style={styles.nextText}>Add</Text>
@@ -927,7 +937,10 @@ const PathologyTest = ({
                           }}
                           style={{marginLeft: wp(2)}}>
                           <Image
-                            style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                            style={[
+                              styles.editImage,
+                              {tintColor: COLORS.errorColor},
+                            ]}
                             source={deleteIcon}
                           />
                         </TouchableOpacity>

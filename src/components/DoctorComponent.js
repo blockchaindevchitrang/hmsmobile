@@ -10,6 +10,8 @@ import {
   FlatList,
   ActivityIndicator,
   Platform,
+  Modal,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import React, {useRef, useState} from 'react';
 import {
@@ -37,6 +39,12 @@ import ImagePicker from 'react-native-image-crop-picker';
 import {onGetDoctorDetailApi} from '../services/Api';
 import SelectDropdown from 'react-native-select-dropdown';
 import {useSelector} from 'react-redux';
+
+const filterArray = [
+  {id: 1, name: 'All'},
+  {id: 2, name: 'Active'},
+  {id: 3, name: 'Deactive'},
+];
 
 const DoctorComponent = ({
   search,
@@ -98,6 +106,11 @@ const DoctorComponent = ({
   isLoading,
   setAvatar,
   avatar,
+  pageCount,
+  setPageCount,
+  totalPage,
+  statusId,
+  setStatusId,
 }) => {
   const departmentData = useSelector(state => state.departmentData);
   const bloodData = useSelector(state => state.bloodData);
@@ -106,6 +119,7 @@ const DoctorComponent = ({
   const [editId, setEditId] = useState('');
   const [doctorSelectedName, setDoctorSelectedName] = useState('');
   const [bloodSelected, setBloodSelected] = useState('');
+  const [filterVisible, setFilterVisible] = useState(false);
 
   const openProfileImagePicker = async () => {
     try {
@@ -181,8 +195,10 @@ const DoctorComponent = ({
     }
   };
 
-  const isImageFormat = (url) => {
-    return url.endsWith('.png') || url.endsWith('.jpg') || url.endsWith('.jpeg');
+  const isImageFormat = url => {
+    return (
+      url.endsWith('.png') || url.endsWith('.jpg') || url.endsWith('.jpeg')
+    );
   };
 
   const renderItem = ({item, index}) => {
@@ -224,17 +240,25 @@ const DoctorComponent = ({
             onPress={async () => {
               let allData = await onGetSpecificDoctor(item.id);
               console.log('Get Value Of Doctor::', allData);
-              const matchingKey = Object.entries(allData.doctorsDepartments).find(
-                ([key, value]) => value === allData?.doctor_detail?.doctor_department,
+              const matchingKey = Object.entries(
+                allData.doctorsDepartments,
+              ).find(
+                ([key, value]) =>
+                  value === allData?.doctor_detail?.doctor_department,
               )?.[0];
-              const [first, last] = allData.doctor_detail.doctor_name.split(' ');
+              const [first, last] =
+                allData.doctor_detail.doctor_name.split(' ');
               setEditId(allData?.doctor_detail?.id);
               setFirstName(first);
               setLastName(last);
               if (isImageFormat(allData?.doctor_detail?.doctor_image)) {
-                setAvatar(parseFileFromUrl(allData?.doctor_detail?.doctor_image));
+                setAvatar(
+                  parseFileFromUrl(allData?.doctor_detail?.doctor_image),
+                );
               }
-              setGenderType(allData?.doctor_detail?.gender == 'Female' ? 'female' : 'male');
+              setGenderType(
+                allData?.doctor_detail?.gender == 'Female' ? 'female' : 'male',
+              );
               setDateOfBirth(new Date(allData?.doctor_detail?.date_of_birth));
               setDoctorContact(allData?.doctor_detail?.phone);
               setDoctorEmail(allData?.doctor_detail?.email);
@@ -289,7 +313,9 @@ const DoctorComponent = ({
               style={[styles.searchView, {color: theme.text}]}
             />
             <View style={styles.filterView}>
-              <TouchableOpacity style={styles.filterView1}>
+              <TouchableOpacity
+                style={styles.filterView1}
+                onPress={() => setFilterVisible(true)}>
                 <Image style={styles.filterImage} source={filter} />
               </TouchableOpacity>
               <TouchableOpacity
@@ -339,6 +365,74 @@ const DoctorComponent = ({
                   </MenuOption>
                 </MenuOptions>
               </Menu>
+              <Modal
+                animationType="none"
+                transparent={true}
+                visible={filterVisible}
+                onRequestClose={() => setFilterVisible(false)}>
+                <View style={styles.filterModal}>
+                  <TouchableWithoutFeedback
+                    onPress={() => {
+                      setFilterVisible(false);
+                    }}>
+                    <View style={styles.modalOverlay} />
+                  </TouchableWithoutFeedback>
+                  <View style={styles.filterFirstView}>
+                    <Text style={styles.filterTitle}>Filter Options</Text>
+                    <View style={styles.secondFilterView}>
+                      <Text style={styles.secondTitleFilter}>Status:</Text>
+                      <SelectDropdown
+                        data={filterArray}
+                        onSelect={(selectedItem, index) => {
+                          // setSelectedColor(selectedItem);
+                          setStatusId(selectedItem.id);
+                          // setStatusShow(
+                          //   selectedItem.id == 2
+                          //     ? 'pending'
+                          //     : selectedItem.id == 3
+                          //     ? 'completed'
+                          //     : selectedItem.id == 4
+                          //     ? 'cancelled'
+                          //     : '',
+                          // );
+                          console.log('gert Value:::', selectedItem);
+                        }}
+                        defaultValue={doctorSelectedName}
+                        defaultValueByIndex={statusId - 1}
+                        renderButton={(selectedItem, isOpen) => {
+                          console.log('Get Response>>>', selectedItem);
+                          return (
+                            <View style={styles.dropdown2BtnStyle2}>
+                              <Text style={styles.dropdownItemTxtStyle}>
+                                {selectedItem?.name || 'Select'}
+                              </Text>
+                            </View>
+                          );
+                        }}
+                        showsVerticalScrollIndicator={false}
+                        renderItem={(item, index, isSelected) => {
+                          return (
+                            <TouchableOpacity style={styles.dropdownView}>
+                              <Text style={styles.dropdownItemTxtStyle}>
+                                {item.name}
+                              </Text>
+                            </TouchableOpacity>
+                          );
+                        }}
+                        dropdownIconPosition={'left'}
+                        dropdownStyle={styles.dropdown2DropdownStyle}
+                      />
+                      <View>
+                        <TouchableOpacity
+                          onPress={() => setStatusId(1)}
+                          style={styles.resetButton}>
+                          <Text style={styles.resetText}>Reset</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  </View>
+                </View>
+              </Modal>
             </View>
           </View>
           <View
@@ -386,6 +480,55 @@ const DoctorComponent = ({
                 </View>
               </View>
             </ScrollView>
+          </View>
+          <View style={styles.nextView1}>
+            <View style={styles.prevViewData}>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {opacity: pageCount == '1' ? 0.7 : 1},
+                ]}
+                disabled={pageCount == '1'}
+                onPress={() => setPageCount('1')}>
+                {'<<'}
+              </Text>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {marginLeft: wp(3), opacity: pageCount == '1' ? 0.7 : 1},
+                ]}
+                disabled={pageCount == '1'}
+                onPress={() => setPageCount(parseFloat(pageCount) - 1)}>
+                {'<'}
+              </Text>
+            </View>
+            <Text
+              style={styles.totalCountText}>{`Page ${pageCount} to ${Math.ceil(
+              totalPage / 10,
+            )}`}</Text>
+            <View style={styles.prevViewData}>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {opacity: pageCount >= Math.ceil(totalPage / 10) ? 0.7 : 1},
+                ]}
+                disabled={pageCount >= Math.ceil(totalPage / 10)}
+                onPress={() => setPageCount(parseFloat(pageCount) + 1)}>
+                {'>'}
+              </Text>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {
+                    marginLeft: wp(3),
+                    opacity: pageCount >= Math.ceil(totalPage / 10) ? 0.7 : 1,
+                  },
+                ]}
+                disabled={pageCount >= Math.ceil(totalPage / 10)}
+                onPress={() => setPageCount(Math.ceil(totalPage / 10))}>
+                {'>>'}
+              </Text>
+            </View>
           </View>
         </ScrollView>
       ) : (
@@ -991,7 +1134,7 @@ const styles = StyleSheet.create({
   },
   dataHistoryView: {
     width: '100%',
-    height: hp(8),
+    paddingVertical: hp(1),
     alignItems: 'center',
     flexDirection: 'row',
     alignSelf: 'flex-start',
@@ -1259,5 +1402,79 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.greyColor,
     marginTop: hp(1),
+  },
+  modalOverlay: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+  },
+  filterModal: {
+    flex: 1,
+    alignItems: 'flex-end',
+  },
+  filterFirstView: {
+    width: '60%',
+    backgroundColor: 'white',
+    borderRadius: 5,
+    marginTop: hp(17),
+    marginRight: wp(2),
+  },
+  filterTitle: {
+    fontSize: hp(2.2),
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    color: COLORS.black,
+    padding: hp(2),
+    borderBottomWidth: 0.5,
+  },
+  secondFilterView: {
+    padding: hp(2),
+  },
+  secondTitleFilter: {
+    fontSize: hp(2),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+  },
+  resetButton: {
+    width: wp(22),
+    height: hp(4.5),
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'flex-end',
+    backgroundColor: COLORS.greyColor,
+    marginTop: hp(2),
+    borderRadius: 5,
+  },
+  resetText: {
+    fontSize: hp(2),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+  },
+  nextView1: {
+    width: '92%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    alignSelf: 'center',
+    marginTop: hp(3),
+  },
+  prevViewData: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  prevButtonView: {
+    paddingHorizontal: wp(3),
+    backgroundColor: COLORS.headerGreenColor,
+    paddingVertical: hp(0.5),
+    borderRadius: 5,
+    fontSize: hp(3),
+    color: COLORS.white,
+  },
+  totalCountText: {
+    fontSize: hp(2),
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
   },
 });

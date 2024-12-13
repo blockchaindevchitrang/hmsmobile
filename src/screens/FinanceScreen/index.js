@@ -23,98 +23,7 @@ import headerLogo from '../../images/headerLogo.png';
 import {BlurView} from '@react-native-community/blur';
 import IncomeList from '../../components/FinanceComponent/IncomeList';
 import ExpensesList from '../../components/FinanceComponent/ExpensesList';
-import { onGetCommonApi } from '../../services/Api';
-
-const allData = [
-  {
-    id: 1,
-    opo_no: 'EMP0000001',
-    name: 'Saina Nehra',
-    head: 'John Doe',
-    date: '12 Dec, 2022',
-    amount: '$5,000.00',
-    attach: 'N/A',
-  },
-  {
-    id: 2,
-    opo_no: 'EMP0000002',
-    name: 'Deepak Soni',
-    head: 'Jane Smith',
-    date: '12 Jan, 2021',
-    amount: '$15,454.00',
-    attach: 'X-ray',
-  },
-  {
-    id: 3,
-    opo_no: 'EMP0000003',
-    name: 'Saina Nehra',
-    head: 'Joe Johnson',
-    date: '9 Sept, 2020',
-    amount: '$1,500.00',
-    attach: 'X-ray',
-  },
-  {
-    id: 4,
-    opo_no: 'EMP0000004',
-    name: 'Harvey Specter',
-    head: 'John Doe',
-    date: '12 Nov, 2023',
-    amount: '$500.00',
-    attach: 'N/A',
-  },
-  {
-    id: 5,
-    opo_no: 'EMP0000005',
-    name: 'Saina Nehra',
-    head: 'John Doe',
-    date: '01 Feb, 2024',
-    amount: '$5,000.00',
-    attach: 'N/A',
-  },
-];
-
-const BloodIssueData = [
-  {
-    id: 1,
-    admission: 'EMP0000001',
-    name: 'Joey Tribiyani',
-    mail: 'joey@gmail.com',
-    date: '01 Feb, 2024',
-    discharge: 'Surgery',
-  },
-  {
-    id: 2,
-    admission: 'EMP0000002',
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    date: '9 Sept, 2020',
-    discharge: 'X-ray',
-  },
-  {
-    id: 3,
-    admission: 'EMP0000003',
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    date: '12 Dec, 2022',
-    discharge: 'Full Body checkup',
-  },
-  {
-    id: 4,
-    admission: 'EMP0000004',
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    date: '12 Dec, 2022',
-    discharge: 'MRI',
-  },
-  {
-    id: 5,
-    admission: 'EMP0000005',
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    date: '12 Dec, 2022',
-    discharge: 'Dental Implant',
-  },
-];
+import {onGetCommonApi} from '../../services/Api';
 
 export const FinanceScreen = ({navigation}) => {
   const {t} = useTranslation();
@@ -126,6 +35,11 @@ export const FinanceScreen = ({navigation}) => {
   const [incomeList, setIncomeList] = useState([]);
   const [expensesList, setExpensesList] = useState([]);
   const [refresh, setRefresh] = useState(false);
+  const [pageCount, setPageCount] = useState('1');
+  const [totalPage, setTotalPage] = useState('1');
+  const [expensesPage, setExpensesPage] = useState('1');
+  const [statusId, setStatusId] = useState(0);
+  const [statusId1, setStatusId1] = useState(0);
 
   const animations = useRef(
     [0, 0, 0].map(() => new Animated.Value(300)),
@@ -184,16 +98,17 @@ export const FinanceScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetIncomeData();
-  }, [searchIncome]);
+  }, [searchIncome, pageCount, statusId]);
 
   const onGetIncomeData = async () => {
     try {
       const response = await onGetCommonApi(
-        `income-get?search=${searchIncome}`,
+        `income-get?search=${searchIncome}&page=${pageCount}&income_head=${statusId}`,
       );
       console.log('GetAccountData>>', response.data.data);
-      if (response.status == 200) {
+      if (response.data.flag == 1) {
         setIncomeList(response.data.data.items);
+        setTotalPage(response.data.data.pagination.last_page);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -203,16 +118,17 @@ export const FinanceScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetExpenseData();
-  }, [searchExpense]);
+  }, [searchExpense, pageCount, statusId1]);
 
   const onGetExpenseData = async () => {
     try {
       const response = await onGetCommonApi(
-        `expense-get?search=${searchExpense}`,
+        `expense-get?search=${searchExpense}&page=${pageCount}&expense_head=${statusId1}`,
       );
       console.log('GetAccountData>>', response.data.data);
-      if (response.status == 200) {
+      if (response.data.flag == 1) {
         setExpensesList(response.data.data.items);
+        setExpensesPage(response.data.data.pagination.last_page);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -237,6 +153,11 @@ export const FinanceScreen = ({navigation}) => {
             setSearchBreak={setSearchIncome}
             allData={incomeList}
             getData={onGetIncomeData}
+            totalPage={totalPage}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
+            statusId={statusId}
+            setStatusId={setStatusId}
           />
         ) : (
           selectedView == 'Expenses' && (
@@ -245,6 +166,11 @@ export const FinanceScreen = ({navigation}) => {
               setSearchBreak={setSearchExpense}
               allData={expensesList}
               getData={onGetExpenseData}
+              totalPage={expensesPage}
+              pageCount={pageCount}
+              setPageCount={setPageCount}
+              statusId={statusId1}
+              setStatusId={setStatusId1}
             />
           )
         )}
@@ -292,7 +218,9 @@ export const FinanceScreen = ({navigation}) => {
                     <TouchableOpacity
                       style={styles.optionButton}
                       onPress={() => {
-                        setSelectedView(option), toggleMenu(false);
+                        setSelectedView(option);
+                        setPageCount('1');
+                        toggleMenu(false);
                       }}>
                       <Text style={styles.menuItem}>{option}</Text>
                     </TouchableOpacity>

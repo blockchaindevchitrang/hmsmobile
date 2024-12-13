@@ -29,7 +29,14 @@ import draw from '../../images/draw.png';
 import DatePicker from 'react-native-date-picker';
 import ImagePicker from 'react-native-image-crop-picker';
 
-const MedicineBillList = ({searchBreak, setSearchBreak, allData}) => {
+const MedicineBillList = ({
+  searchBreak,
+  setSearchBreak,
+  allData,
+  totalPage,
+  pageCount,
+  setPageCount,
+}) => {
   const {theme} = useTheme();
   const menuRef = useRef(null);
   const [newBloodIssueVisible, setNewBloodIssueVisible] = useState(false);
@@ -92,39 +99,39 @@ const MedicineBillList = ({searchBreak, setSearchBreak, allData}) => {
         ]}>
         <View style={[styles.switchView, {width: wp(30)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataHistoryText1]}>{item.admission}</Text>
+            <Text style={[styles.dataHistoryText1]}>#{item.bill_number}</Text>
           </View>
         </View>
         <View style={[styles.switchView, {width: wp(35)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataHistoryText1]}>{item.date}</Text>
+            <Text style={[styles.dataHistoryText1]}>{item.bill_date}</Text>
           </View>
         </View>
         <View style={styles.nameDataView}>
-          <ProfilePhoto username={item.name} />
+          <ProfilePhoto username={item.patient_name} />
           <View>
-            <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
-            <Text style={[styles.dataHistoryText1]}>{item.mail}</Text>
+            <Text style={[styles.dataHistoryText2]}>{item.patient_name}</Text>
+            <Text style={[styles.dataHistoryText5]}>{item.patient_email}</Text>
           </View>
         </View>
         <View style={styles.nameDataView}>
-          <ProfilePhoto username={item.name} />
+          <ProfilePhoto username={item.doctor_name} />
           <View>
-            <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
-            <Text style={[styles.dataHistoryText1]}>{item.mail}</Text>
+            <Text style={[styles.dataHistoryText2]}>{item.doctor_name}</Text>
+            <Text style={[styles.dataHistoryText5]}>{item.doctor_email}</Text>
           </View>
         </View>
         <View style={[styles.switchView, {width: wp(35)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataHistoryText1]}>{item.mode}</Text>
+            <Text style={[styles.dataHistoryText1]}>{item.payment_type}</Text>
           </View>
         </View>
         <Text style={[styles.dataHistoryText, {width: wp(32)}]}>
-          {item.amount}
+          {item.net_amount}
         </Text>
         <View style={[styles.switchView, {width: wp(35)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataListText1]}>{item.status}</Text>
+            <Text style={[styles.dataListText1]}>{item.payment_status}</Text>
           </View>
         </View>
         <View style={styles.actionDataView}>
@@ -625,7 +632,7 @@ const styles = StyleSheet.create({
   },
   dataHistoryView: {
     width: '100%',
-    height: hp(8),
+    paddingVertical: hp(1),
     alignItems: 'center',
     flexDirection: 'row',
     alignSelf: 'flex-start',
@@ -657,6 +664,12 @@ const styles = StyleSheet.create({
     fontSize: hp(1.8),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.errorColor,
+  },
+  dataHistoryText5: {
+    fontSize: hp(1.8),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+    width: wp(45),
   },
   mainDataView: {
     minHeight: hp(29),

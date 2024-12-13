@@ -17,7 +17,14 @@ import {
 import {COLORS, Fonts} from '../../utils';
 import {useTheme} from '../../utils/ThemeProvider';
 
-const DiagnosisList = ({searchBreak, setSearchBreak, allData}) => {
+const DiagnosisList = ({
+  searchBreak,
+  setSearchBreak,
+  allData,
+  pageCount,
+  setPageCount,
+  totalPage,
+}) => {
   const {theme} = useTheme();
 
   const renderItem = ({item, index}) => {
@@ -127,6 +134,55 @@ const DiagnosisList = ({searchBreak, setSearchBreak, allData}) => {
               </View>
             </View>
           </ScrollView>
+        </View>
+        <View style={styles.nextView1}>
+          <View style={styles.prevViewData}>
+            <Text
+              style={[
+                styles.prevButtonView,
+                {opacity: pageCount == '1' ? 0.7 : 1},
+              ]}
+              disabled={pageCount == '1'}
+              onPress={() => setPageCount('1')}>
+              {'<<'}
+            </Text>
+            <Text
+              style={[
+                styles.prevButtonView,
+                {marginLeft: wp(3), opacity: pageCount == '1' ? 0.7 : 1},
+              ]}
+              disabled={pageCount == '1'}
+              onPress={() => setPageCount(parseFloat(pageCount) - 1)}>
+              {'<'}
+            </Text>
+          </View>
+          <Text
+            style={styles.totalCountText}>{`Page ${pageCount} to ${Math.ceil(
+            totalPage / 10,
+          )}`}</Text>
+          <View style={styles.prevViewData}>
+            <Text
+              style={[
+                styles.prevButtonView,
+                {opacity: pageCount >= Math.ceil(totalPage / 10) ? 0.7 : 1},
+              ]}
+              disabled={pageCount >= Math.ceil(totalPage / 10)}
+              onPress={() => setPageCount(parseFloat(pageCount) + 1)}>
+              {'>'}
+            </Text>
+            <Text
+              style={[
+                styles.prevButtonView,
+                {
+                  marginLeft: wp(3),
+                  opacity: pageCount >= Math.ceil(totalPage / 10) ? 0.7 : 1,
+                },
+              ]}
+              disabled={pageCount >= Math.ceil(totalPage / 10)}
+              onPress={() => setPageCount(Math.ceil(totalPage / 10))}>
+              {'>>'}
+            </Text>
+          </View>
         </View>
       </ScrollView>
     </View>
@@ -474,5 +530,31 @@ const styles = StyleSheet.create({
     fontSize: hp(2.5),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
+  },
+  nextView1: {
+    width: '92%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    alignSelf: 'center',
+    marginTop: hp(3),
+  },
+  prevViewData: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  prevButtonView: {
+    paddingHorizontal: wp(3),
+    backgroundColor: COLORS.headerGreenColor,
+    paddingVertical: hp(0.5),
+    borderRadius: 5,
+    fontSize: hp(3),
+    color: COLORS.white,
+  },
+  totalCountText: {
+    fontSize: hp(2),
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
   },
 });

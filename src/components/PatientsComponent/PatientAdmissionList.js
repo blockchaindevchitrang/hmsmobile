@@ -9,6 +9,8 @@ import {
   TextInput,
   FlatList,
   Platform,
+  TouchableWithoutFeedback,
+  Modal,
 } from 'react-native';
 import React, {useRef, useState} from 'react';
 import {
@@ -32,8 +34,25 @@ import {
   MenuOption,
   MenuTrigger,
 } from 'react-native-popup-menu';
+import SelectDropdown from 'react-native-select-dropdown';
 
-const PatientAdmissionList = ({searchBreak, setSearchBreak, allData}) => {
+const filterArray = [
+  {id: 1, name: 'All'},
+  {id: 2, name: 'Active'},
+  {id: 3, name: 'Deactive'},
+];
+
+const PatientAdmissionList = ({
+  searchBreak,
+  setSearchBreak,
+  allData,
+  onGetData,
+  pageCount,
+  setPageCount,
+  totalPage,
+  statusId,
+  setStatusId,
+}) => {
   const {theme} = useTheme();
   const menuRef = useRef(null);
   const [newUserVisible, setNewUserVisible] = useState(false);
@@ -51,6 +70,7 @@ const PatientAdmissionList = ({searchBreak, setSearchBreak, allData}) => {
   const [dateOfBirth, setDateOfBirth] = useState(new Date());
   const [dateModalVisible, setDateModalVisible] = useState(false);
   const [avatar, setAvatar] = useState(null);
+  const [filterVisible, setFilterVisible] = useState(false);
 
   const openProfileImagePicker = async () => {
     try {
@@ -91,26 +111,28 @@ const PatientAdmissionList = ({searchBreak, setSearchBreak, allData}) => {
         ]}>
         <View style={[styles.switchView, {width: wp(32)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataHistoryText1]}>{item.admission}</Text>
+            <Text style={[styles.dataHistoryText1]}>
+              {item.patient_admission_id}
+            </Text>
           </View>
         </View>
         <View style={styles.nameDataView}>
-          <ProfilePhoto username={item.name} />
+          <ProfilePhoto username={item.patient_name} />
           <View>
-            <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
-            <Text style={[styles.dataHistoryText1]}>{item.mail}</Text>
+            <Text style={[styles.dataHistoryText2]}>{item.patient_name}</Text>
+            <Text style={[styles.dataHistoryText5]}>{item.patient_email}</Text>
           </View>
         </View>
         <View style={styles.nameDataView}>
-          <ProfilePhoto username={item.name} />
+          <ProfilePhoto username={item.doctor_name} />
           <View>
-            <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
-            <Text style={[styles.dataHistoryText1]}>{item.mail}</Text>
+            <Text style={[styles.dataHistoryText2]}>{item.doctor_name}</Text>
+            <Text style={[styles.dataHistoryText5]}>{item.doctor_email}</Text>
           </View>
         </View>
         <View style={[styles.switchView, {width: wp(30)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataHistoryText1]}>{item.date}</Text>
+            <Text style={[styles.dataHistoryText1]}>{item.admission_date}</Text>
           </View>
         </View>
         {item.discharge_date == 'N/A' ? (
@@ -134,18 +156,18 @@ const PatientAdmissionList = ({searchBreak, setSearchBreak, allData}) => {
           {item.insurance}
         </Text>
         <Text style={[styles.dataHistoryText1, {width: wp(32)}]}>
-          {item.number}
+          {item.policy_no}
         </Text>
         <View style={[styles.switchView, {width: wp(20)}]}>
           <Switch
             trackColor={{
-              false: item.status ? COLORS.greenColor : COLORS.errorColor,
-              true: item.status ? COLORS.greenColor : COLORS.errorColor,
+              false: item.status == 1 ? COLORS.greenColor : COLORS.errorColor,
+              true: item.status == 1 ? COLORS.greenColor : COLORS.errorColor,
             }}
-            thumbColor={item.status ? '#f4f3f4' : '#f4f3f4'}
+            thumbColor={item.status == 1 ? '#f4f3f4' : '#f4f3f4'}
             ios_backgroundColor={COLORS.errorColor}
             onValueChange={() => {}}
-            value={item.status}
+            value={item.status == 1}
           />
         </View>
         <View style={styles.actionDataView}>
@@ -181,7 +203,9 @@ const PatientAdmissionList = ({searchBreak, setSearchBreak, allData}) => {
               style={[styles.searchView, {color: theme.text}]}
             />
             <View style={styles.filterView}>
-              <TouchableOpacity style={styles.filterView1}>
+              <TouchableOpacity
+                style={styles.filterView1}
+                onPress={() => setFilterVisible(true)}>
                 <Image style={styles.filterImage} source={filter} />
               </TouchableOpacity>
               <TouchableOpacity
@@ -214,6 +238,64 @@ const PatientAdmissionList = ({searchBreak, setSearchBreak, allData}) => {
                   </MenuOption>
                 </MenuOptions>
               </Menu>
+              <Modal
+                animationType="none"
+                transparent={true}
+                visible={filterVisible}
+                onRequestClose={() => setFilterVisible(false)}>
+                <View style={styles.filterModal}>
+                  <TouchableWithoutFeedback
+                    onPress={() => {
+                      setFilterVisible(false);
+                    }}>
+                    <View style={styles.modalOverlay} />
+                  </TouchableWithoutFeedback>
+                  <View style={styles.filterFirstView}>
+                    <Text style={styles.filterTitle}>Filter Options</Text>
+                    <View style={styles.secondFilterView}>
+                      <Text style={styles.secondTitleFilter}>Status:</Text>
+                      <SelectDropdown
+                        data={filterArray}
+                        onSelect={(selectedItem, index) => {
+                          // setSelectedColor(selectedItem);
+                          setStatusId(selectedItem.id);
+                          console.log('gert Value:::', selectedItem);
+                        }}
+                        defaultValueByIndex={statusId - 1}
+                        renderButton={(selectedItem, isOpen) => {
+                          console.log('Get Response>>>', selectedItem);
+                          return (
+                            <View style={styles.dropdown2BtnStyle2}>
+                              <Text style={styles.dropdownItemTxtStyle}>
+                                {selectedItem?.name || 'Select'}
+                              </Text>
+                            </View>
+                          );
+                        }}
+                        showsVerticalScrollIndicator={false}
+                        renderItem={(item, index, isSelected) => {
+                          return (
+                            <TouchableOpacity style={styles.dropdownView}>
+                              <Text style={styles.dropdownItemTxtStyle}>
+                                {item.name}
+                              </Text>
+                            </TouchableOpacity>
+                          );
+                        }}
+                        dropdownIconPosition={'left'}
+                        dropdownStyle={styles.dropdown2DropdownStyle}
+                      />
+                      <View>
+                        <TouchableOpacity
+                          onPress={() => setStatusId(1)}
+                          style={styles.resetButton}>
+                          <Text style={styles.resetText}>Reset</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  </View>
+                </View>
+              </Modal>
             </View>
           </View>
           <View
@@ -286,6 +368,55 @@ const PatientAdmissionList = ({searchBreak, setSearchBreak, allData}) => {
                 </View>
               </View>
             </ScrollView>
+          </View>
+          <View style={styles.nextView1}>
+            <View style={styles.prevViewData}>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {opacity: pageCount == '1' ? 0.7 : 1},
+                ]}
+                disabled={pageCount == '1'}
+                onPress={() => setPageCount('1')}>
+                {'<<'}
+              </Text>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {marginLeft: wp(3), opacity: pageCount == '1' ? 0.7 : 1},
+                ]}
+                disabled={pageCount == '1'}
+                onPress={() => setPageCount(parseFloat(pageCount) - 1)}>
+                {'<'}
+              </Text>
+            </View>
+            <Text
+              style={styles.totalCountText}>{`Page ${pageCount} to ${Math.ceil(
+              totalPage / 10,
+            )}`}</Text>
+            <View style={styles.prevViewData}>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {opacity: pageCount >= Math.ceil(totalPage / 10) ? 0.7 : 1},
+                ]}
+                disabled={pageCount >= Math.ceil(totalPage / 10)}
+                onPress={() => setPageCount(parseFloat(pageCount) + 1)}>
+                {'>'}
+              </Text>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {
+                    marginLeft: wp(3),
+                    opacity: pageCount >= Math.ceil(totalPage / 10) ? 0.7 : 1,
+                  },
+                ]}
+                disabled={pageCount >= Math.ceil(totalPage / 10)}
+                onPress={() => setPageCount(Math.ceil(totalPage / 10))}>
+                {'>>'}
+              </Text>
+            </View>
           </View>
         </ScrollView>
       ) : (
@@ -623,7 +754,7 @@ const styles = StyleSheet.create({
   },
   dataHistoryView: {
     width: '100%',
-    height: hp(8),
+    paddingVertical: hp(1),
     alignItems: 'center',
     flexDirection: 'row',
     alignSelf: 'flex-start',
@@ -656,6 +787,12 @@ const styles = StyleSheet.create({
     fontSize: hp(1.8),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.errorColor,
+  },
+  dataHistoryText5: {
+    fontSize: hp(1.7),
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    color: COLORS.black,
+    width: wp(45),
   },
   mainDataView: {
     minHeight: hp(29),
@@ -889,5 +1026,108 @@ const styles = StyleSheet.create({
     width: wp(3),
     height: hp(2.5),
     resizeMode: 'contain',
+  },
+  dropdown2DropdownStyle: {
+    backgroundColor: COLORS.white,
+    borderRadius: 4,
+    height: hp(25),
+    // borderRadius: 12,
+  },
+  dropdownItemTxtStyle: {
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    marginLeft: wp(2),
+  },
+  dropdownView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: hp(4),
+    borderBottomWidth: 0,
+  },
+  dropdown2BtnStyle2: {
+    width: '100%',
+    height: hp(4.2),
+    backgroundColor: COLORS.white,
+    borderRadius: 5,
+    alignItems: 'center',
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    marginTop: hp(1),
+  },
+  modalOverlay: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+  },
+  filterModal: {
+    flex: 1,
+    alignItems: 'flex-end',
+  },
+  filterFirstView: {
+    width: '60%',
+    backgroundColor: 'white',
+    borderRadius: 5,
+    marginTop: hp(17),
+    marginRight: wp(2),
+  },
+  filterTitle: {
+    fontSize: hp(2.2),
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    color: COLORS.black,
+    padding: hp(2),
+    borderBottomWidth: 0.5,
+  },
+  secondFilterView: {
+    padding: hp(2),
+  },
+  secondTitleFilter: {
+    fontSize: hp(2),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+  },
+  resetButton: {
+    width: wp(22),
+    height: hp(4.5),
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'flex-end',
+    backgroundColor: COLORS.greyColor,
+    marginTop: hp(2),
+    borderRadius: 5,
+  },
+  resetText: {
+    fontSize: hp(2),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+  },
+  nextView1: {
+    width: '92%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    alignSelf: 'center',
+    marginTop: hp(3),
+  },
+  prevViewData: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  prevButtonView: {
+    paddingHorizontal: wp(3),
+    backgroundColor: COLORS.headerGreenColor,
+    paddingVertical: hp(0.5),
+    borderRadius: 5,
+    fontSize: hp(3),
+    color: COLORS.white,
+  },
+  totalCountText: {
+    fontSize: hp(2),
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
   },
 });

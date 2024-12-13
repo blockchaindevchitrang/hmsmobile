@@ -156,6 +156,10 @@ export const DiagnosisScreen = ({navigation}) => {
   const [diagnosis, setDiagnosis] = useState([]);
   const [diagnosisTest, setDiagnosisTest] = useState([]);
   const [refresh, setRefresh] = useState(false);
+  const [pageCount, setPageCount] = useState('1');
+  const [totalPage, setTotalPage] = useState('1');
+  const [categoryPage, setCategoryPage] = useState('1');
+  const [testPage, setTestPage] = useState('1');
 
   const animations = useRef(
     [0, 0, 0, 0].map(() => new Animated.Value(300)),
@@ -216,16 +220,17 @@ export const DiagnosisScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetAdvancePaymentData();
-  }, [searchPayroll]);
+  }, [searchPayroll, pageCount]);
 
   const onGetAdvancePaymentData = async () => {
     try {
       const response = await onGetCommonApi(
-        `diagnosis-get?search=${searchPayroll}`,
+        `diagnosis-get?search=${searchPayroll}&page=${pageCount}`,
       );
       console.log('GetAccountData>>', response.data.data);
-      if (response.status == 200) {
+      if (response.data.flag == 1) {
         setDiagnosisCategory(response.data.data);
+        setCategoryPage(response.data.recordsTotal);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -235,16 +240,17 @@ export const DiagnosisScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetDiagnosisData();
-  }, [searchAccount]);
+  }, [searchAccount, pageCount]);
 
   const onGetDiagnosisData = async () => {
     try {
       const response = await onGetCommonApi(
-        `patient-diagnosis-get?search=${searchAccount}`,
+        `patient-diagnosis-get?search=${searchAccount}&page=${pageCount}`,
       );
       console.log('GetAccountData>>', response.data.data);
       if (response.data.flag == 1) {
         setDiagnosis(response.data.data);
+        setTotalPage(response.data.recordsTotal);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -254,16 +260,17 @@ export const DiagnosisScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetDiagnosisTestData();
-  }, [searchPharmacists]);
+  }, [searchPharmacists, pageCount]);
 
   const onGetDiagnosisTestData = async () => {
     try {
       const response = await onGetCommonApi(
-        `patient-test-diagnosis-get?search=${searchPharmacists}`,
+        `patient-test-diagnosis-get?search=${searchPharmacists}&page=${pageCount}`,
       );
       console.log('GetAccountData>>', response.data.data);
       if (response.data.flag == 1) {
         setDiagnosisTest(response.data.data.items);
+        setTestPage(response.data.data.pagination.last_page);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -288,6 +295,9 @@ export const DiagnosisScreen = ({navigation}) => {
             setSearchBreak={setSearchAccount}
             allData={diagnosis}
             onGetData={onGetDiagnosisData}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
+            totalPage={totalPage}
           />
         ) : selectedView == 'Diagnosis Categories' ? (
           <DiagnosisCategoriesList
@@ -295,6 +305,9 @@ export const DiagnosisScreen = ({navigation}) => {
             setSearchBreak={setSearchPayroll}
             allData={diagnosisCategory}
             onGetData={onGetAdvancePaymentData}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
+            totalPage={categoryPage}
           />
         ) : (
           selectedView == 'Diagnosis Tests' && (
@@ -304,6 +317,9 @@ export const DiagnosisScreen = ({navigation}) => {
               allData={diagnosisTest}
               onGetData={onGetDiagnosisTestData}
               category={diagnosisCategory}
+              pageCount={pageCount}
+              setPageCount={setPageCount}
+              totalPage={testPage}
             />
           )
         )}

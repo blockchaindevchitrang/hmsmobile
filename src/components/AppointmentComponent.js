@@ -443,7 +443,7 @@ const AppointmentComponent = ({
               <Image style={styles.filterImage} source={filter} />
             </TouchableOpacity>
             <Modal
-              animationType="slide"
+              animationType="none"
               transparent={true}
               visible={filterVisible}
               onRequestClose={() => setFilterVisible(false)}>
