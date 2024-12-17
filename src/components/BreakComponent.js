@@ -42,8 +42,8 @@ const BreakComponent = ({
   const {theme} = useTheme();
   const menuRef = useRef(null);
   const [addDoctorVisible, setAddHolidayVisible] = useState(false);
-  const [fromTime, setFromTime] = useState(new Date());
-  const [toTime, setToTime] = useState(new Date());
+  const [fromTime, setFromTime] = useState(null);
+  const [toTime, setToTime] = useState(null);
   const [breakType, setBreakType] = useState('every');
   const [isLoading, setIsLoading] = useState(false);
   const [doctorBreakName, setDoctorBreakName] = useState('');
@@ -54,7 +54,7 @@ const BreakComponent = ({
   const [fromDateVisible, setFromDateVisible] = useState(false);
   const [singleDateVisible, setSingleDateVisible] = useState(false);
   const [toDateVisible, setToDateVisible] = useState(false);
-  const [singleDate, setSingleDate] = useState(new Date());
+  const [singleDate, setSingleDate] = useState(null);
 
   const renderItem = ({item, index}) => {
     return (
@@ -182,9 +182,10 @@ const BreakComponent = ({
               <TouchableOpacity
                 onPress={() => {
                   setDoctorBreakName('');
-                  setFromTime(new Date());
-                  setToTime(new Date());
+                  setFromTime(null);
+                  setToTime(null);
                   setBreakType('every');
+                  setSingleDate(null);
                   setAddHolidayVisible(true);
                 }}
                 style={styles.actionView}>
@@ -394,14 +395,14 @@ const BreakComponent = ({
                   {width: '100%', paddingVertical: hp(1)},
                 ]}
                 onPress={() => setFromDateVisible(!fromDateVisible)}>
-                {fromTime == new Date()
+                {fromTime == null
                   ? '--:--:--'
                   : moment(fromTime).format('hh:mm:ss')}
               </Text>
               <DatePicker
                 open={fromDateVisible}
                 modal={true}
-                date={fromTime}
+                date={fromTime || new Date()}
                 mode={'time'}
                 onConfirm={date => {
                   console.log('Console Log>>', date);
@@ -424,14 +425,14 @@ const BreakComponent = ({
                   {width: '100%', paddingVertical: hp(1)},
                 ]}
                 onPress={() => setToDateVisible(!toDateVisible)}>
-                {toTime == new Date()
+                {toTime == null
                   ? '--:--:--'
                   : moment(toTime).format('hh:mm:ss')}
               </Text>
               <DatePicker
                 open={toDateVisible}
                 modal={true}
-                date={toTime}
+                date={toTime || new Date()}
                 mode={'time'}
                 onConfirm={date => {
                   console.log('Console Log>>', date);
@@ -456,14 +457,14 @@ const BreakComponent = ({
                     {width: '100%', paddingVertical: hp(1)},
                   ]}
                   onPress={() => setSingleDateVisible(!singleDateVisible)}>
-                  {singleDate == new Date()
+                  {singleDate == null
                     ? 'Date'
                     : moment(singleDate).format('YYYY-MM-DD')}
                 </Text>
                 <DatePicker
                   open={singleDateVisible}
                   modal={true}
-                  date={singleDate}
+                  date={singleDate || new Date()}
                   mode={'time'}
                   onConfirm={date => {
                     console.log('Console Log>>', date);

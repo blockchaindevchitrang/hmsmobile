@@ -21,106 +21,122 @@ import {
 } from '../../components/Pixel';
 import headerLogo from '../../images/headerLogo.png';
 import {BlurView} from '@react-native-community/blur';
-import DoctorChargesList from '../../components/HospitalChargesComponent/DoctorChargesList';
-import VaccinatedPatients from '../../components/VaccinationComponent/VaccinatedPatients';
-import VaccinationList from '../../components/VaccinationComponent/VaccinationList';
-import { onGetCommonApi } from '../../services/Api';
-
-const allData = [
-  {
-    id: 1,
-    name: 'Joey Tribiyani',
-    mail: 'joey@gmail.com',
-    vaccination: 'C19 Pfiger',
-    serial_number: '113141',
-    dose_number: '20',
-    dose_given_date: '22:02:00 2023-05-25',
-  },
-  {
-    id: 2,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    vaccination: 'C19 Pfiger',
-    serial_number: '113141',
-    dose_number: '20',
-    dose_given_date: '22:02:00 2023-05-25',
-  },
-  {
-    id: 3,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    vaccination: 'C19 Pfiger',
-    serial_number: '113141',
-    dose_number: '20',
-    dose_given_date: '22:02:00 2023-05-25',
-  },
-  {
-    id: 4,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    vaccination: 'C19 Pfiger',
-    serial_number: '113141',
-    dose_number: '20',
-    dose_given_date: '22:02:00 2023-05-25',
-  },
-  {
-    id: 5,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    vaccination: 'C19 Pfiger',
-    serial_number: '113141',
-    dose_number: '20',
-    dose_given_date: '22:02:00 2023-05-25',
-  },
-];
+import IPDList from '../../components/IPDComponent/IPDList';
+import OPDList from '../../components/IPDComponent/OPDList';
+import {onGetCommonApi} from '../../services/Api';
+import ConsultationList from '../../components/ConsultationComponent/ConsultationList';
+import LiveMeetingList from '../../components/ConsultationComponent/LiveMeetingList';
 
 const BloodIssueData = [
   {
     id: 1,
-    name: 'cod',
-    manufacture: 'dada',
-    brand: 'Pfiger',
+    admission: 'OMGFK57O',
+    name: 'Joey Tribiyani',
+    mail: 'joey@gmail.com',
+    date: '22:02:00 2023-05-25',
+    bed: 'Single-10',
+    status: 'Paid',
   },
   {
     id: 2,
-    name: 'C19 Pfiger',
-    manufacture: 'dada',
-    brand: 'Pfiger',
+    admission: 'OMGFK571',
+    name: 'Monica Geller',
+    mail: 'monica@gmail.com',
+    date: '22:02:00 2023-05-25',
+    bed: 'General Ward',
+    status: 'Unpaid',
   },
   {
     id: 3,
-    name: 'Covid 19 Vaccinate',
-    manufacture: 'dada',
-    brand: 'Pfiger',
+    admission: 'OMGFK572',
+    name: 'Ross Geller',
+    mail: 'ross@gmail.com',
+    date: '22:02:00 2023-05-25',
+    bed: 'VVIP-32',
+    status: 'Paid',
   },
   {
     id: 4,
-    name: 'Covid 19 Vaccinate',
-    manufacture: 'dada',
-    brand: 'Pfiger',
+    admission: 'OMGFK573',
+    name: 'Monica Geller',
+    mail: 'monica@gmail.com',
+    date: '22:02:00 2023-05-25',
+    bed: 'General Ward',
+    status: 'Unpaid',
   },
   {
     id: 5,
-    name: 'Covid 19 Vaccinate',
-    manufacture: 'dada',
-    brand: 'Pfiger',
+    admission: 'OMGFK574',
+    name: 'Ross Geller',
+    mail: 'ross@gmail.com',
+    date: '22:02:00 2023-05-25',
+    bed: 'General Ward',
+    status: 'Unpaid',
   },
 ];
 
-export const VaccinationScreen = ({navigation}) => {
+const ODPData = [
+  {
+    id: 1,
+    admission: 'OMGFK57O',
+    name: 'Joey Tribiyani',
+    mail: 'joey@gmail.com',
+    date: '22:02:00 2023-05-25',
+    charge: '$1,200.00',
+    payment: 'Card',
+  },
+  {
+    id: 2,
+    admission: 'OMGFK571',
+    name: 'Monica Geller',
+    mail: 'monica@gmail.com',
+    date: '22:02:00 2023-05-25',
+    charge: '$600.00',
+    payment: 'Cash',
+  },
+  {
+    id: 3,
+    admission: 'OMGFK572',
+    name: 'Ross Geller',
+    mail: 'ross@gmail.com',
+    date: '22:02:00 2023-05-25',
+    charge: '$1,500.00',
+    payment: 'Card',
+  },
+  {
+    id: 4,
+    admission: 'OMGFK573',
+    name: 'Monica Geller',
+    mail: 'monica@gmail.com',
+    date: '22:02:00 2023-05-25',
+    charge: '$600.00',
+    payment: 'Cash',
+  },
+  {
+    id: 5,
+    admission: 'OMGFK574',
+    name: 'Ross Geller',
+    mail: 'ross@gmail.com',
+    date: '22:02:00 2023-05-25',
+    charge: '$600.00',
+    payment: 'Cash',
+  },
+];
+
+export const LiveConsultationScreen = ({navigation}) => {
   const {t} = useTranslation();
   const {theme} = useTheme();
-  const [searchAccount, setSearchAccount] = useState('');
-  const [searchPayroll, setSearchPayroll] = useState('');
-  const [searchPharmacists, setSearchPharmacists] = useState('');
+  const [searchConsultation, setSearchConsultation] = useState('');
+  const [searchLiveMeeting, setSearchLiveMeeting] = useState('');
   const [optionModalView, setOptionModalView] = useState(false);
-  const [selectedView, setSelectedView] = useState('Vaccinated Patients');
-  const [vaccinatedPatient, setVaccinatedPatient] = useState([]);
-  const [vaccinated, setVaccinated] = useState([]);
+  const [selectedView, setSelectedView] = useState('Live Consultations');
+  const [consultationData, setConsultationData] = useState([]);
+  const [liveMeetingData, setLiveMeetingData] = useState([]);
   const [refresh, setRefresh] = useState(false);
   const [pageCount, setPageCount] = useState('1');
   const [totalPage, setTotalPage] = useState('1');
-  const [vaccinationPage, setVaccinationPage] = useState('1');
+  const [meetingPage, setMeetingPage] = useState('1');
+  const [statusId, setStatusId] = useState(3);
 
   const animations = useRef(
     [0, 0, 0].map(() => new Animated.Value(300)),
@@ -178,17 +194,16 @@ export const VaccinationScreen = ({navigation}) => {
   };
 
   useEffect(() => {
-    onGetVaccinatedPatientData();
-  }, [searchAccount, pageCount]);
+    onGetConsultationData();
+  }, [searchConsultation, pageCount, statusId]);
 
-  const onGetVaccinatedPatientData = async () => {
+  const onGetConsultationData = async () => {
     try {
-      const response = await onGetCommonApi(
-        `vaccinated-patient-get?search=${searchAccount}&page=${pageCount}`,
-      );
+      let urlData = `ipd-patient-department-get?search=${searchConsultation}&page=${pageCount}&is_discharge=${statusId}`;
+      const response = await onGetCommonApi(urlData);
       console.log('get Response:', response.data.data);
-      if (response.data.flag == 1) {
-        setVaccinatedPatient(response.data.data.items);
+      if (response.data.flag === 1) {
+        setConsultationData(response.data.data.items);
         setTotalPage(response.data.data.pagination.last_page);
         setRefresh(!refresh);
       }
@@ -198,18 +213,17 @@ export const VaccinationScreen = ({navigation}) => {
   };
 
   useEffect(() => {
-    onGetVaccinatedData();
-  }, [searchPharmacists, pageCount]);
+    onGetLiveMeetingData();
+  }, [searchLiveMeeting, pageCount]);
 
-  const onGetVaccinatedData = async () => {
+  const onGetLiveMeetingData = async () => {
     try {
-      const response = await onGetCommonApi(
-        `vaccination-get?search=${searchPharmacists}&page=${pageCount}`,
-      );
+      let urlData = `opd-patient-department-get?search=${searchLiveMeeting}&page=${pageCount}`;
+      const response = await onGetCommonApi(urlData);
       console.log('get Response:', response.data.data);
-      if (response.data.flag == 1) {
-        setVaccinated(response.data.data.items);
-        setVaccinationPage(response.data.data.pagination.last_page);
+      if (response.data.flag === 1) {
+        setLiveMeetingData(response.data.data.items);
+        setMeetingPage(response.data.data.pagination.last_page);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -221,32 +235,33 @@ export const VaccinationScreen = ({navigation}) => {
     <View style={[styles.container, {backgroundColor: theme.lightColor}]}>
       <View style={styles.headerView}>
         <Header
-          title={t('vaccination')}
+          title={t('live_consultations')}
           navigation={navigation}
           onPress={() => navigation.openDrawer()}
           moreButtonClick={() => toggleMenu(true)}
         />
       </View>
       <View style={styles.mainView}>
-        {selectedView == 'Vaccinated Patients' ? (
-          <VaccinatedPatients
-            searchBreak={searchAccount}
-            setSearchBreak={setSearchAccount}
-            allData={vaccinatedPatient}
-            onGetData={onGetVaccinatedPatientData}
-            vaccinated={vaccinated}
+        {selectedView == 'Live Consultations' ? (
+          <ConsultationList
+            searchBreak={searchConsultation}
+            setSearchBreak={setSearchConsultation}
+            allData={consultationData}
+            onGetData={onGetConsultationData}
             totalPage={totalPage}
             pageCount={pageCount}
             setPageCount={setPageCount}
+            statusId={statusId}
+            setStatusId={setStatusId}
           />
         ) : (
-          selectedView == 'Vaccinations' && (
-            <VaccinationList
-              searchBreak={searchPharmacists}
-              setSearchBreak={setSearchPharmacists}
-              allData={vaccinated}
-              onGetData={onGetVaccinatedData}
-              totalPage={vaccinationPage}
+          selectedView == 'Live Meetings' && (
+            <LiveMeetingList
+              searchBreak={searchLiveMeeting}
+              setSearchBreak={setSearchLiveMeeting}
+              allData={liveMeetingData}
+              onGetData={onGetLiveMeetingData}
+              totalPage={meetingPage}
               pageCount={pageCount}
               setPageCount={setPageCount}
             />
@@ -268,7 +283,7 @@ export const VaccinationScreen = ({navigation}) => {
 
         <View style={styles.mainModalView}>
           <View style={styles.menuContainer}>
-            {['Logo', 'Vaccinated Patients', 'Vaccinations'].map(
+            {['Logo', 'Live Consultations', 'Live Meetings'].map(
               (option, index) => (
                 <>
                   {option == 'Logo' ? (
@@ -300,7 +315,9 @@ export const VaccinationScreen = ({navigation}) => {
                       <TouchableOpacity
                         style={styles.optionButton}
                         onPress={() => {
-                          setSelectedView(option), toggleMenu(false);
+                          setSelectedView(option);
+                          setPageCount('1');
+                          toggleMenu(false);
                         }}>
                         <Text style={styles.menuItem}>{option}</Text>
                       </TouchableOpacity>
@@ -322,4 +339,4 @@ export const VaccinationScreen = ({navigation}) => {
   );
 };
 
-export default VaccinationScreen;
+export default LiveConsultationScreen;

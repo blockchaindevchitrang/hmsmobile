@@ -23,6 +23,7 @@ import {useTheme} from '../../utils/ThemeProvider';
 import ProfilePhoto from '../ProfilePhoto';
 import moment from 'moment';
 import deleteIcon from '../../images/delete.png';
+import filter from '../../images/filter.png';
 import editing from '../../images/editing.png';
 import close from '../../images/close.png';
 import photo from '../../images/photo.png';
@@ -46,6 +47,12 @@ import FlashMessage, {
 } from 'react-native-flash-message';
 import DatePicker from 'react-native-date-picker';
 
+const filterArray = [
+  {id: 3, name: 'All'},
+  {id: 0, name: 'Return Item'},
+  {id: 1, name: 'Returned'},
+];
+
 const IssuedItemsList = ({
   searchBreak,
   setSearchBreak,
@@ -53,6 +60,11 @@ const IssuedItemsList = ({
   onGetData,
   itemCategory,
   itemList,
+  totalPage,
+  pageCount,
+  setPageCount,
+  statusId,
+  setStatusId,
 }) => {
   const roleData = useSelector(state => state.roleData);
   const allUserData = useSelector(state => state.allUserData);
@@ -80,6 +92,7 @@ const IssuedItemsList = ({
   const [deleteUser, setDeleteUser] = useState(false);
   const [loading, setLoading] = useState(false);
   const [availableQty, setAvailableQty] = useState('0');
+  const [filterVisible, setFilterVisible] = useState(false);
 
   let accountantData = itemList.filter(
     user => user.itemcategory === categoryName,
@@ -99,8 +112,9 @@ const IssuedItemsList = ({
   let accountantData1 = allUserData.filter(
     user => user.department === roleName,
   );
+
   useEffect(() => {
-    console.log("USERLLLL", allUserData);
+    console.log('USERLLLL', allUserData);
     if (accountantData1.length > 0) {
       setEmployeeId(accountantData1[0].id);
       setEmployeeName(accountantData1[0].name);
@@ -112,32 +126,50 @@ const IssuedItemsList = ({
 
   const onAddPayRollData = async () => {
     try {
-      if (categoryId == '') {
+      if (roleId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select user type.');
+      } else if (employeeId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select user to issue.');
+      } else if (issueBy == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter issue by.');
+      } else if (categoryId == '') {
         setErrorVisible(true);
         setErrorMessage('Please select item category.');
       } else if (itemId == '') {
         setErrorVisible(true);
-        setErrorMessage('Please select item name.');
+        setErrorMessage('Please select item.');
       } else if (quantity == '') {
         setErrorVisible(true);
         setErrorMessage('Please enter quantity.');
+      } else if (parseFloat(quantity) < parseFloat(availableQty)) {
+        setErrorVisible(true);
+        setErrorMessage('Please enter less then available quantity.');
       } else {
         setLoading(true);
         setErrorVisible(false);
 
         const formdata = new FormData();
+        formdata.append('department_id', roleId);
+        formdata.append('user_id', employeeId);
+        formdata.append('issued_by', issueBy);
+        formdata.append('issued_date', moment(issueDate).format('YYYY-MM-DD'));
+        formdata.append('return_date', moment(returnDate).format('YYYY-MM-DD'));
         formdata.append('item_category_id', categoryId);
         formdata.append('item_id', itemId);
-        formdata.append('supplier_name', supplier);
-        formdata.append('store_name', storeName);
         formdata.append('quantity', quantity);
-        formdata.append('purchase_price', price);
         formdata.append('description', description);
         // if (avatar != null) {
         //   formdata.append('attachment', avatar);
         // }
-        const dataUrl = 'item-stock-store';
-        const response = await onAddCommonFormDataApi(dataUrl, formdata);
+        const dataUrl = `issue-item-store?department_id=${roleId}&user_id=${employeeId}&issued_by=${issueBy}&issued_date=${moment(
+          issueDate,
+        ).format('YYYY-MM-DD')}&return_date=${moment(returnDate).format(
+          'YYYY-MM-DD',
+        )}&item_category_id=${categoryId}&item_id=${itemId}&quantity=${quantity}&description=${description}`;
+        const response = await onAddAccountListApi(dataUrl);
         if (response.data.flag == 1) {
           onGetData();
           setLoading(false);
@@ -192,18 +224,23 @@ const IssuedItemsList = ({
       } else {
         setLoading(true);
         setErrorVisible(false);
-        const formdata = new FormData();
-        formdata.append('item_category_id', categoryId);
-        formdata.append('item_id', itemId);
-        formdata.append('supplier_name', supplier);
-        formdata.append('store_name', storeName);
-        formdata.append('quantity', quantity);
-        formdata.append('purchase_price', price);
-        formdata.append('description', description);
+        // const formdata = new FormData();
+        // formdata.append('item_category_id', categoryId);
+        // formdata.append('item_id', itemId);
+        // formdata.append('supplier_name', supplier);
+        // formdata.append('store_name', storeName);
+        // formdata.append('quantity', quantity);
+        // formdata.append('purchase_price', price);
+        // formdata.append('description', description);
         // if (avatar != null) {
         //   formdata.append('attachment', avatar);
         // }
-        const dataUrl = `item-stock-update/${userId}`;
+        const dataUrl = `issue-item-store/${userId}?department_id=${roleId}&user_id=${employeeId}&issued_by=${issueBy}&issued_date=${moment(
+          issueDate,
+        ).format('YYYY-MM-DD')}&return_date=${moment(returnDate).format(
+          'YYYY-MM-DD',
+        )}&item_category_id=${categoryId}&item_id=${itemId}&quantity=${quantity}&description=${description}`;
+        // const dataUrl = `item-stock-update/${userId}`;
         const response = await onUpdateCommonFormDataApi(dataUrl, formdata);
         // const response = await onGetEditCommonJsonApi(urlData, raw);
         console.log('Get Error::', response.data);
@@ -250,7 +287,7 @@ const IssuedItemsList = ({
   const onDeletePayrollData = async id => {
     try {
       setLoading(true);
-      const response = await onDeleteCommonApi(`item-stock-delete/${id}`);
+      const response = await onDeleteCommonApi(`issue-item-delete/${id}`);
       if (response.data.flag == 1) {
         onGetData();
         setLoading(false);
@@ -338,7 +375,7 @@ const IssuedItemsList = ({
           <Text style={[styles.dataHistoryText1]}>{item.status}</Text>
         </View>
         <View style={styles.actionDataView}>
-          <TouchableOpacity
+          {/* <TouchableOpacity
             onPress={async () => {
               let allDatas = await onGetSpecificDoctor(item.id);
               setUserId(item.id);
@@ -361,7 +398,7 @@ const IssuedItemsList = ({
               style={[styles.editImage, {tintColor: COLORS.blueColor}]}
               source={editing}
             />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
           <TouchableOpacity
             onPress={() => {
               setUserId(item.id);
@@ -384,7 +421,7 @@ const IssuedItemsList = ({
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{paddingBottom: hp(12)}}>
-          <View style={styles.subView}>
+          <View style={[styles.subView, {flexWrap: 'wrap'}]}>
             <TextInput
               value={searchBreak}
               placeholder={'Search'}
@@ -392,7 +429,12 @@ const IssuedItemsList = ({
               onChangeText={text => setSearchBreak(text)}
               style={[styles.searchView, {color: theme.text}]}
             />
-            <View style={styles.filterView}>
+            <View style={styles.filterView2}>
+              <TouchableOpacity
+                style={styles.filterView1}
+                onPress={() => setFilterVisible(true)}>
+                <Image style={styles.filterImage} source={filter} />
+              </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => {
                   setCategoryId('');
@@ -417,6 +459,64 @@ const IssuedItemsList = ({
                 <Text style={styles.actionText}>New Issued Item</Text>
               </TouchableOpacity>
             </View>
+            <Modal
+              animationType="none"
+              transparent={true}
+              visible={filterVisible}
+              onRequestClose={() => setFilterVisible(false)}>
+              <View style={styles.filterModal}>
+                <TouchableWithoutFeedback
+                  onPress={() => {
+                    setFilterVisible(false);
+                  }}>
+                  <View style={styles.modalOverlay1} />
+                </TouchableWithoutFeedback>
+                <View style={styles.filterFirstView}>
+                  <Text style={styles.filterTitle}>Filter Options</Text>
+                  <View style={styles.secondFilterView}>
+                    <Text style={styles.secondTitleFilter}>Status:</Text>
+                    <SelectDropdown
+                      data={filterArray}
+                      onSelect={(selectedItem, index) => {
+                        // setSelectedColor(selectedItem);
+                        setStatusId(selectedItem.id);
+                        console.log('gert Value:::', selectedItem);
+                      }}
+                      defaultValueByIndex={statusId == 3 ? 0 : statusId + 1}
+                      renderButton={(selectedItem, isOpen) => {
+                        console.log('Get Response>>>', selectedItem);
+                        return (
+                          <View style={styles.dropdown2BtnStyle2}>
+                            <Text style={styles.dropdownItemTxtStyle}>
+                              {selectedItem?.name || 'Select'}
+                            </Text>
+                          </View>
+                        );
+                      }}
+                      showsVerticalScrollIndicator={false}
+                      renderItem={(item, index, isSelected) => {
+                        return (
+                          <TouchableOpacity style={styles.dropdownView}>
+                            <Text style={styles.dropdownItemTxtStyle}>
+                              {item.name}
+                            </Text>
+                          </TouchableOpacity>
+                        );
+                      }}
+                      dropdownIconPosition={'left'}
+                      dropdownStyle={styles.dropdown2DropdownStyle}
+                    />
+                    <View>
+                      <TouchableOpacity
+                        onPress={() => setStatusId(3)}
+                        style={styles.resetButton}>
+                        <Text style={styles.resetText}>Reset</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </View>
+              </View>
+            </Modal>
           </View>
 
           <View
@@ -474,6 +574,55 @@ const IssuedItemsList = ({
                 </View>
               </View>
             </ScrollView>
+          </View>
+          <View style={styles.nextView1}>
+            <View style={styles.prevViewData}>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {opacity: pageCount == '1' ? 0.7 : 1},
+                ]}
+                disabled={pageCount == '1'}
+                onPress={() => setPageCount('1')}>
+                {'<<'}
+              </Text>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {marginLeft: wp(3), opacity: pageCount == '1' ? 0.7 : 1},
+                ]}
+                disabled={pageCount == '1'}
+                onPress={() => setPageCount(parseFloat(pageCount) - 1)}>
+                {'<'}
+              </Text>
+            </View>
+            <Text
+              style={
+                styles.totalCountText
+              }>{`Page ${pageCount} to ${totalPage}`}</Text>
+            <View style={styles.prevViewData}>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {opacity: pageCount >= totalPage ? 0.7 : 1},
+                ]}
+                disabled={pageCount >= totalPage}
+                onPress={() => setPageCount(parseFloat(pageCount) + 1)}>
+                {'>'}
+              </Text>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {
+                    marginLeft: wp(3),
+                    opacity: pageCount >= totalPage ? 0.7 : 1,
+                  },
+                ]}
+                disabled={pageCount >= totalPage}
+                onPress={() => setPageCount(totalPage)}>
+                {'>>'}
+              </Text>
+            </View>
           </View>
         </ScrollView>
       ) : (
@@ -804,9 +953,7 @@ const IssuedItemsList = ({
           </View>
           <View style={styles.buttonView}>
             <TouchableOpacity
-              onPress={() => {
-                userId != '' ? onEditPayRollData() : onAddPayRollData();
-              }}
+              onPress={() => onAddPayRollData()}
               style={styles.nextView}>
               {loading ? (
                 <ActivityIndicator size={'small'} color={COLORS.white} />
@@ -850,7 +997,7 @@ const styles = StyleSheet.create({
     marginVertical: hp(2),
   },
   searchView: {
-    width: '50%',
+    width: '100%',
     paddingHorizontal: wp(2),
     paddingVertical: hp(0.5),
     borderWidth: 1,
@@ -866,6 +1013,13 @@ const styles = StyleSheet.create({
     // justifyContent: 'flex-end',
     // paddingHorizontal: wp(3),
     // paddingBottom: hp(1),
+  },
+  filterView2: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    paddingTop: hp(2),
+    width: '100%',
   },
   filterView1: {
     height: hp(5),
@@ -1334,5 +1488,79 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.greyColor,
     marginTop: hp(1),
+  },
+  modalOverlay1: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+  },
+  filterModal: {
+    flex: 1,
+    alignItems: 'flex-end',
+  },
+  filterFirstView: {
+    width: '60%',
+    backgroundColor: 'white',
+    borderRadius: 5,
+    marginTop: hp(25),
+    marginRight: wp(2),
+  },
+  filterTitle: {
+    fontSize: hp(2.2),
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    color: COLORS.black,
+    padding: hp(2),
+    borderBottomWidth: 0.5,
+  },
+  secondFilterView: {
+    padding: hp(2),
+  },
+  secondTitleFilter: {
+    fontSize: hp(2),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+  },
+  resetButton: {
+    width: wp(22),
+    height: hp(4.5),
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'flex-end',
+    backgroundColor: COLORS.greyColor,
+    marginTop: hp(2),
+    borderRadius: 5,
+  },
+  resetText: {
+    fontSize: hp(2),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+  },
+  nextView1: {
+    width: '92%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    alignSelf: 'center',
+    marginTop: hp(3),
+  },
+  prevViewData: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  prevButtonView: {
+    paddingHorizontal: wp(3),
+    backgroundColor: COLORS.headerGreenColor,
+    paddingVertical: hp(0.5),
+    borderRadius: 5,
+    fontSize: hp(3),
+    color: COLORS.white,
+  },
+  totalCountText: {
+    fontSize: hp(2),
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
   },
 });

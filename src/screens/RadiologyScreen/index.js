@@ -27,7 +27,7 @@ import PatientsList from '../../components/PatientsComponent/PatientsList';
 import GeneratePatient from '../../components/PatientsComponent/GeneratePatient';
 import RadiologyTests from '../../components/RadiologyComponent/RadiologyTests';
 import RadiologyCategories from '../../components/RadiologyComponent/RadiologyCategories';
-import { onGetCommonApi } from '../../services/Api';
+import {onGetCommonApi} from '../../services/Api';
 
 const allData = [
   {
@@ -120,6 +120,9 @@ export const RadiologyScreen = ({navigation}) => {
   const [selectedView, setSelectedView] = useState('Radiology Categories');
   const [radiologyCategory, setRadiologyCategory] = useState([]);
   const [radiologyTest, setRadiologyTest] = useState([]);
+  const [pageCount, setPageCount] = useState('1');
+  const [totalPage, setTotalPage] = useState('1');
+  const [radiologyTestPage, setRadiologyTestPage] = useState('1');
 
   const animations = useRef(
     [0, 0, 0].map(() => new Animated.Value(300)),
@@ -178,16 +181,17 @@ export const RadiologyScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetCategoriesData();
-  }, [searchUser]);
+  }, [searchUser, pageCount]);
 
   const onGetCategoriesData = async () => {
     try {
       const response = await onGetCommonApi(
-        `radiology-category-get?search=${searchUser}`,
+        `radiology-category-get?search=${searchUser}&page=${pageCount}`,
       );
       console.log('get Response:', response.data.data);
       if (response.data.flag === 1) {
         setRadiologyCategory(response.data.data.items);
+        setTotalPage(response.data.data.pagination.last_page);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -197,16 +201,17 @@ export const RadiologyScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetTestData();
-  }, [searchPharmacists]);
+  }, [searchPharmacists, pageCount]);
 
   const onGetTestData = async () => {
     try {
       const response = await onGetCommonApi(
-        `radiology-test-get?search=${searchPharmacists}`,
+        `radiology-test-get?search=${searchPharmacists}&page=${pageCount}`,
       );
       console.log('get Response:', response.data.data);
       if (response.data.flag === 1) {
         setRadiologyTest(response.data.data.items);
+        setRadiologyTestPage(response.data.data.pagination.last_page);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -231,6 +236,9 @@ export const RadiologyScreen = ({navigation}) => {
             setSearchBreak={setSearchUser}
             allData={radiologyCategory}
             onGetData={onGetCategoriesData}
+            totalPage={totalPage}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
           />
         ) : (
           selectedView == 'Radiology Tests' && (
@@ -240,6 +248,9 @@ export const RadiologyScreen = ({navigation}) => {
               allData={radiologyTest}
               onGetData={onGetTestData}
               category={radiologyCategory}
+              totalPage={radiologyTestPage}
+              pageCount={pageCount}
+              setPageCount={setPageCount}
             />
           )
         )}

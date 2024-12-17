@@ -10,6 +10,8 @@ import {
   FlatList,
   Platform,
   ActivityIndicator,
+  TouchableWithoutFeedback,
+  Modal,
 } from 'react-native';
 import React, {useRef, useState} from 'react';
 import {
@@ -22,6 +24,7 @@ import ProfilePhoto from './../ProfilePhoto';
 import moment from 'moment';
 import deleteIcon from '../../images/delete.png';
 import editing from '../../images/editing.png';
+import filter from '../../images/filter.png';
 import DatePicker from 'react-native-date-picker';
 import SelectDropdown from 'react-native-select-dropdown';
 import {useSelector} from 'react-redux';
@@ -39,7 +42,23 @@ import FlashMessage, {
   hideMessage,
 } from 'react-native-flash-message';
 
-const Insurances = ({searchBreak, setSearchBreak, allData, onGetData}) => {
+const filterArray = [
+  {id: 3, name: 'All'},
+  {id: 0, name: 'Active'},
+  {id: 1, name: 'Deactive'},
+];
+
+const Insurances = ({
+  searchBreak,
+  setSearchBreak,
+  allData,
+  onGetData,
+  totalPage,
+  pageCount,
+  setPageCount,
+  statusId,
+  setStatusId,
+}) => {
   const {theme} = useTheme();
   const [newUserVisible, setNewUserVisible] = useState(false);
   const [insurance, setInsurance] = useState('');
@@ -57,6 +76,7 @@ const Insurances = ({searchBreak, setSearchBreak, allData, onGetData}) => {
   const [userId, setUserId] = useState('');
   const [deleteUser, setDeleteUser] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [filterVisible, setFilterVisible] = useState(false);
 
   const onAddPayRollData = async () => {
     try {
@@ -419,6 +439,11 @@ const Insurances = ({searchBreak, setSearchBreak, allData, onGetData}) => {
           </View>
           <View style={styles.filterView}>
             <TouchableOpacity
+              style={styles.filterView1}
+              onPress={() => setFilterVisible(true)}>
+              <Image style={styles.filterImage} source={filter} />
+            </TouchableOpacity>
+            <TouchableOpacity
               onPress={() => {
                 setUserId('');
                 setInsurance('');
@@ -440,6 +465,64 @@ const Insurances = ({searchBreak, setSearchBreak, allData, onGetData}) => {
               style={styles.actionView}>
               <Text style={styles.actionText}>New Insurances</Text>
             </TouchableOpacity>
+            <Modal
+              animationType="none"
+              transparent={true}
+              visible={filterVisible}
+              onRequestClose={() => setFilterVisible(false)}>
+              <View style={styles.filterModal}>
+                <TouchableWithoutFeedback
+                  onPress={() => {
+                    setFilterVisible(false);
+                  }}>
+                  <View style={styles.modalOverlay1} />
+                </TouchableWithoutFeedback>
+                <View style={styles.filterFirstView}>
+                  <Text style={styles.filterTitle}>Filter Options</Text>
+                  <View style={styles.secondFilterView}>
+                    <Text style={styles.secondTitleFilter}>Status:</Text>
+                    <SelectDropdown
+                      data={filterArray}
+                      onSelect={(selectedItem, index) => {
+                        // setSelectedColor(selectedItem);
+                        setStatusId(selectedItem.id);
+                        console.log('gert Value:::', selectedItem);
+                      }}
+                      defaultValueByIndex={statusId == 3 ? 0 : statusId + 1}
+                      renderButton={(selectedItem, isOpen) => {
+                        console.log('Get Response>>>', selectedItem);
+                        return (
+                          <View style={styles.dropdown2BtnStyle2}>
+                            <Text style={styles.dropdownItemTxtStyle}>
+                              {selectedItem?.name || 'Select'}
+                            </Text>
+                          </View>
+                        );
+                      }}
+                      showsVerticalScrollIndicator={false}
+                      renderItem={(item, index, isSelected) => {
+                        return (
+                          <TouchableOpacity style={styles.dropdownView}>
+                            <Text style={styles.dropdownItemTxtStyle}>
+                              {item.name}
+                            </Text>
+                          </TouchableOpacity>
+                        );
+                      }}
+                      dropdownIconPosition={'left'}
+                      dropdownStyle={styles.dropdown2DropdownStyle}
+                    />
+                    <View>
+                      <TouchableOpacity
+                        onPress={() => setStatusId(3)}
+                        style={styles.resetButton}>
+                        <Text style={styles.resetText}>Reset</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </View>
+              </View>
+            </Modal>
           </View>
           <View
             style={[styles.activeView, {backgroundColor: theme.headerColor}]}>
@@ -495,6 +578,55 @@ const Insurances = ({searchBreak, setSearchBreak, allData, onGetData}) => {
                 </View>
               </View>
             </ScrollView>
+          </View>
+          <View style={styles.nextView2}>
+            <View style={styles.prevViewData}>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {opacity: pageCount == '1' ? 0.7 : 1},
+                ]}
+                disabled={pageCount == '1'}
+                onPress={() => setPageCount('1')}>
+                {'<<'}
+              </Text>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {marginLeft: wp(3), opacity: pageCount == '1' ? 0.7 : 1},
+                ]}
+                disabled={pageCount == '1'}
+                onPress={() => setPageCount(parseFloat(pageCount) - 1)}>
+                {'<'}
+              </Text>
+            </View>
+            <Text
+              style={
+                styles.totalCountText
+              }>{`Page ${pageCount} to ${totalPage}`}</Text>
+            <View style={styles.prevViewData}>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {opacity: pageCount >= totalPage ? 0.7 : 1},
+                ]}
+                disabled={pageCount >= totalPage}
+                onPress={() => setPageCount(parseFloat(pageCount) + 1)}>
+                {'>'}
+              </Text>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {
+                    marginLeft: wp(3),
+                    opacity: pageCount >= totalPage ? 0.7 : 1,
+                  },
+                ]}
+                disabled={pageCount >= totalPage}
+                onPress={() => setPageCount(totalPage)}>
+                {'>>'}
+              </Text>
+            </View>
           </View>
         </ScrollView>
       ) : (
@@ -1201,5 +1333,79 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     height: hp(14),
     marginTop: hp(1),
+  },
+  modalOverlay1: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+  },
+  filterModal: {
+    flex: 1,
+    alignItems: 'flex-end',
+  },
+  filterFirstView: {
+    width: '60%',
+    backgroundColor: 'white',
+    borderRadius: 5,
+    marginTop: hp(25),
+    marginRight: wp(2),
+  },
+  filterTitle: {
+    fontSize: hp(2.2),
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    color: COLORS.black,
+    padding: hp(2),
+    borderBottomWidth: 0.5,
+  },
+  secondFilterView: {
+    padding: hp(2),
+  },
+  secondTitleFilter: {
+    fontSize: hp(2),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+  },
+  resetButton: {
+    width: wp(22),
+    height: hp(4.5),
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'flex-end',
+    backgroundColor: COLORS.greyColor,
+    marginTop: hp(2),
+    borderRadius: 5,
+  },
+  resetText: {
+    fontSize: hp(2),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+  },
+  nextView2: {
+    width: '92%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    alignSelf: 'center',
+    marginTop: hp(3),
+  },
+  prevViewData: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  prevButtonView: {
+    paddingHorizontal: wp(3),
+    backgroundColor: COLORS.headerGreenColor,
+    paddingVertical: hp(0.5),
+    borderRadius: 5,
+    fontSize: hp(3),
+    color: COLORS.white,
+  },
+  totalCountText: {
+    fontSize: hp(2),
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
   },
 });

@@ -31,6 +31,7 @@ import ReportList from '../../components/BillingComponent/ReportList';
 import AdvanceList from '../../components/BillingComponent/AdvanceList';
 import ManualList from '../../components/BillingComponent/ManualList';
 import {onGetAccountListApi, onGetCommonApi, onGetPayrollListApi} from '../../services/Api';
+import BillList from '../../components/BillingComponent/BillList';
 
 const allData = [
   {
@@ -309,6 +310,8 @@ export const BillingScreen = ({navigation}) => {
   const [payrollList, setPayrollList] = useState([]);
   const [paymentList, setPaymentList] = useState([]);
   const [advancePaymentList, setAdvancePaymentList] = useState([]);
+  const [billList, setBillList] = useState([]);
+  const [invoiceList, setInvoiceList] = useState([]);
   const [refresh, setRefresh] = useState(false);
   const [pageCount, setPageCount] = useState('1');
   const [totalPage, setTotalPage] = useState('1');
@@ -467,6 +470,46 @@ export const BillingScreen = ({navigation}) => {
     }
   };
 
+  useEffect(() => {
+    onGetBillData();
+  }, [searchBill, pageCount]);
+
+  const onGetBillData = async () => {
+    try {
+      const response = await onGetCommonApi(
+        `bills-get?search=${searchBill}&page=${pageCount}`,
+      );
+      console.log('GetAccountData>>', response.data.data);
+      if (response.data.flag == 1) {
+        setBillList(response.data.data.items);
+        setBillPage(response.data.data.pagination.last_page);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Get AccountError>', err.response.data);
+    }
+  };
+
+  useEffect(() => {
+    onGetInvoiceData();
+  }, [searchInvoice, pageCount]);
+
+  const onGetInvoiceData = async () => {
+    try {
+      const response = await onGetCommonApi(
+        `invoice-get?search=${searchInvoice}&page=${pageCount}`,
+      );
+      console.log('GetAccountData>>', response.data.data);
+      if (response.data.flag == 1) {
+        setInvoiceList(response.data.data.items);
+        setInvoicePage(response.data.data.pagination.last_page);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Get AccountError>', err.response.data);
+    }
+  };
+
   return (
     <View style={[styles.container, {backgroundColor: theme.lightColor}]}>
       <View style={styles.headerView}>
@@ -508,7 +551,12 @@ export const BillingScreen = ({navigation}) => {
           <InvoicesList
             searchBreak={searchInvoice}
             setSearchBreak={setSearchInvoice}
-            allData={InvoiceData}
+            allData={invoiceList}
+            onGetData={onGetInvoiceData}
+            totalPage={invoicePage}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
+            account={accountList}
           />
         ) : selectedView == 'Payments' ? (
           <PaymentList
@@ -543,10 +591,14 @@ export const BillingScreen = ({navigation}) => {
             setPageCount={setPageCount}
           />
         ) : selectedView == 'Bills' ? (
-          <PharmacistsList
+          <BillList
             searchBreak={searchBill}
             setSearchBreak={setSearchBill}
-            allData={PharmacistsData}
+            allData={billList}
+            onGetData={onGetBillData}
+            totalPage={billPage}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
           />
         ) : (
           selectedView == 'Manual Billing Payments' && (

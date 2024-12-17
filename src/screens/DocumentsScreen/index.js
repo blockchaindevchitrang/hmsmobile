@@ -139,6 +139,9 @@ export const DocumentsScreen = ({navigation}) => {
   const [documentList, setDocumentList] = useState([]);
   const [documentTypeList, setDocumentTypeList] = useState([]);
   const [refresh, setRefresh] = useState(false);
+  const [pageCount, setPageCount] = useState('1');
+  const [totalPage, setTotalPage] = useState('1');
+  const [documentTypePage, setDocumentTypePage] = useState('1');
 
   const animations = useRef(
     [0, 0, 0].map(() => new Animated.Value(300)),
@@ -197,16 +200,17 @@ export const DocumentsScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetDocumentData();
-  }, [searchAccount]);
+  }, [searchAccount, pageCount]);
 
   const onGetDocumentData = async () => {
     try {
       const response = await onGetCommonApi(
-        `document-get?search=${searchAccount}`,
+        `document-get?search=${searchAccount}&page=${pageCount}`,
       );
       console.log('GetAccountData>>', response.data.data);
       if (response.status == 200) {
         setDocumentList(response.data.data.items);
+        setTotalPage(response.data.data.pagination.last_page);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -216,16 +220,17 @@ export const DocumentsScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetDocumentTypeData();
-  }, [searchPharmacists]);
+  }, [searchPharmacists, pageCount]);
 
   const onGetDocumentTypeData = async () => {
     try {
       const response = await onGetCommonApi(
-        `document-type-get?search=${searchPharmacists}`,
+        `document-type-get?search=${searchPharmacists}&page=${pageCount}`,
       );
       console.log('GetAccountData>>', response.data.data);
       if (response.status == 200) {
         setDocumentTypeList(response.data.data.items);
+        setDocumentTypePage(response.data.data.pagination.last_page);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -250,6 +255,9 @@ export const DocumentsScreen = ({navigation}) => {
             setSearchBreak={setSearchAccount}
             allData={documentList}
             onGetData={onGetDocumentData}
+            totalPage={totalPage}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
           />
         ) : (
           selectedView == 'Document Types' && (
@@ -258,6 +266,9 @@ export const DocumentsScreen = ({navigation}) => {
               setSearchBreak={setSearchPharmacists}
               allData={documentTypeList}
               onGetData={onGetDocumentTypeData}
+              totalPage={documentTypePage}
+              pageCount={pageCount}
+              setPageCount={setPageCount}
             />
           )
         )}

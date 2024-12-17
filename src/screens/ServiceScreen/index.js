@@ -21,17 +21,7 @@ import {
 } from '../../components/Pixel';
 import headerLogo from '../../images/headerLogo.png';
 import {BlurView} from '@react-native-community/blur';
-import ChargeCategoriesList from '../../components/HospitalChargesComponent/ChargeCategoriesList';
-import ChargesComponent from '../../components/HospitalChargesComponent/ChargesComponent';
-import DoctorChargesList from '../../components/HospitalChargesComponent/DoctorChargesList';
-import ItemCategoriesList from '../../components/InventoryComponent/ItemCategoriesList';
-import ItemsList from '../../components/InventoryComponent/ItemsList';
-import IssuedItemsList from '../../components/InventoryComponent/IssuedItemsList';
-import ItemStocksList from '../../components/InventoryComponent/ItemStocksList';
-import PathologyCategories from '../../components/PathologyComponent/PathologyCategories';
-import PathologyParameter from '../../components/PathologyComponent/PathologyParameter';
 import PathologyTest from '../../components/PathologyComponent/PathologyTest';
-import PathologyUnit from '../../components/PathologyComponent/PathologyUnit';
 import {onGetCommonApi} from '../../services/Api';
 import InsurancesScreen from '../../components/ServiceComponent/Insurances';
 import Services from '../../components/ServiceComponent/Services';
@@ -158,6 +148,14 @@ export const ServiceScreen = ({navigation}) => {
   const [unit, setUnit] = useState([]);
   const [test, setTest] = useState([]);
   const [refresh, setRefresh] = useState(false);
+  const [pageCount, setPageCount] = useState('1');
+  const [totalPage, setTotalPage] = useState('1');
+  const [packagePage, setPackagePage] = useState('1');
+  const [servicePage, setServicePage] = useState('1');
+  const [ambulancesPage, setAmbulancesPage] = useState('1');
+  const [statusId, setStatusId] = useState(3);
+  const [serviceStatusId, setServiceStatusId] = useState(3);
+  const [ambulancesStatusId, setAmbulancesStatusId] = useState(3);
 
   const animations = useRef(
     [0, 0, 0, 0, 0, 0].map(() => new Animated.Value(300)),
@@ -218,16 +216,17 @@ export const ServiceScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetPathologyCategoriesData();
-  }, [searchAccount]);
+  }, [searchAccount, pageCount, statusId]);
 
   const onGetPathologyCategoriesData = async () => {
     try {
       const response = await onGetCommonApi(
-        `insurance-get?search=${searchAccount}`,
+        `insurance-get?search=${searchAccount}&page=${pageCount}&status=${statusId}`,
       );
       console.log('get Response:', response.data.data);
       if (response.data.flag === 1) {
         setInsuranceList(response.data.data.items);
+        setTotalPage(response.data.data.pagination.last_page);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -237,16 +236,17 @@ export const ServiceScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetParameterData();
-  }, [searchPayroll]);
+  }, [searchPayroll, pageCount, serviceStatusId]);
 
   const onGetParameterData = async () => {
     try {
       const response = await onGetCommonApi(
-        `services-get?search=${searchPayroll}`,
+        `services-get?search=${searchPayroll}&page=${pageCount}&status=${serviceStatusId}`,
       );
       console.log('get Response:', response.data.data);
       if (response.data.flag === 1) {
         setParameter(response.data.data.items);
+        setServicePage(response.data.data.pagination.last_page);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -256,14 +256,17 @@ export const ServiceScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetUnitData();
-  }, [searchUnit]);
+  }, [searchUnit, pageCount]);
 
   const onGetUnitData = async () => {
     try {
-      const response = await onGetCommonApi(`package-get?search=${searchUnit}`);
+      const response = await onGetCommonApi(
+        `package-get?search=${searchUnit}&page=${pageCount}`,
+      );
       console.log('get Response:', response.data.data);
       if (response.data.flag === 1) {
         setUnit(response.data.data.items);
+        setPackagePage(response.data.data.pagination.last_page);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -273,14 +276,17 @@ export const ServiceScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetTestData();
-  }, [searchAmbulance]);
+  }, [searchAmbulance, pageCount, ambulancesStatusId]);
 
   const onGetTestData = async () => {
     try {
-      const response = await onGetCommonApi(`ambulance-get?search=${searchAmbulance}`);
+      const response = await onGetCommonApi(
+        `ambulance-get?search=${searchAmbulance}&page=${pageCount}&status=${ambulancesStatusId}`,
+      );
       console.log('get Response:', response.data.data);
       if (response.data.flag === 1) {
         setAmbulances(response.data.data.items);
+        setAmbulancesPage(response.data.data.pagination.last_page);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -305,6 +311,11 @@ export const ServiceScreen = ({navigation}) => {
             setSearchBreak={setSearchAccount}
             allData={insuranceList}
             onGetData={onGetPathologyCategoriesData}
+            totalPage={totalPage}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
+            statusId={statusId}
+            setStatusId={setStatusId}
           />
         ) : selectedView == 'Packages' ? (
           <Packages
@@ -313,6 +324,9 @@ export const ServiceScreen = ({navigation}) => {
             allData={unit}
             onGetData={onGetUnitData}
             parameter={parameter}
+            totalPage={packagePage}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
           />
         ) : selectedView == 'Services' ? (
           <Services
@@ -320,6 +334,11 @@ export const ServiceScreen = ({navigation}) => {
             setSearchBreak={setSearchPayroll}
             allData={parameter}
             onGetData={onGetParameterData}
+            totalPage={servicePage}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
+            statusId={serviceStatusId}
+            setStatusId={setServiceStatusId}
           />
         ) : selectedView == 'Ambulances' ? (
           <Ambulances
@@ -327,6 +346,11 @@ export const ServiceScreen = ({navigation}) => {
             setSearchBreak={setSearchAmbulance}
             allData={ambulances}
             onGetData={onGetTestData}
+            totalPage={packagePage}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
+            statusId={ambulancesStatusId}
+            setStatusId={setAmbulancesStatusId}
           />
         ) : (
           selectedView == 'Ambulance Calls' && (

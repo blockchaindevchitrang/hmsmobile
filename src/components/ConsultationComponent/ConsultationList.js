@@ -13,7 +13,7 @@ import {
   Platform,
   ActivityIndicator,
 } from 'react-native';
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -27,20 +27,27 @@ import editing from '../../images/editing.png';
 import moment from 'moment';
 import DatePicker from 'react-native-date-picker';
 import SelectDropdown from 'react-native-select-dropdown';
-import {useSelector} from 'react-redux';
-import {
-  onAddAccountListApi,
-  onDeleteCommonApi,
-  onGetEditAccountDataApi,
-  onGetSpecificCommonApi,
-} from '../../services/Api';
-import {DeletePopup} from '../DeletePopup';
 import FlashMessage, {
   showMessage,
   hideMessage,
 } from 'react-native-flash-message';
+import {DeletePopup} from '../DeletePopup';
+import {
+  onAddAccountListApi,
+  onDeleteCommonApi,
+  onGetCommonApi,
+  onGetEditAccountDataApi,
+  onGetSpecificCommonApi,
+} from '../../services/Api';
+import {useSelector} from 'react-redux';
 
-const OperationReports = ({
+let filterArray = [
+  {id: 3, name: 'All'},
+  {id: 0, name: 'Active'},
+  {id: 1, name: 'Discharged'},
+];
+
+const ConsultationList = ({
   searchBreak,
   setSearchBreak,
   allData,
@@ -48,39 +55,69 @@ const OperationReports = ({
   totalPage,
   pageCount,
   setPageCount,
+  statusId,
+  setStatusId,
 }) => {
-  const caseData = useSelector(state => state.caseData);
+  const user_data = useSelector(state => state.user_data);
   const doctorData = useSelector(state => state.doctorData);
+  const bedTypeData = useSelector(state => state.bedTypeData);
+  const bedData = useSelector(state => state.bedData);
   const {theme} = useTheme();
   const [newBloodIssueVisible, setNewBloodIssueVisible] = useState(false);
+  const [patientId, setPatientId] = useState('');
+  const [patientName, setPatientName] = useState('');
   const [caseId, setCaseId] = useState('');
   const [caseName, setCaseName] = useState('');
+  const [height, setHeight] = useState('0');
+  const [weight, setWeight] = useState('0');
   const [doctorId, setDoctorId] = useState('');
   const [doctorName, setDoctorName] = useState('');
-  const [dateOfBirth, setDateOfBirth] = useState(new Date());
-  const [dateModalVisible, setDateModalVisible] = useState(true);
+  const [bloodPressure, setBloodPressure] = useState('');
+  const [admissionDate, setAdmissionDate] = useState(new Date());
+  const [dateModalVisible, setDateModalVisible] = useState(false);
+  const [bedTypeId, setBedTypeId] = useState('');
+  const [bedTypeName, setBedTypeName] = useState('');
+  const [bedId, setBedId] = useState('');
+  const [bedName, setBedName] = useState('');
+  const [oldPatient, setOldPatient] = useState(false);
+  const [symptoms, setSymptoms] = useState('');
   const [description, setDescription] = useState('');
   const [errorVisible, setErrorVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [userId, setUserId] = useState('');
   const [deleteUser, setDeleteUser] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [allCaseData, setAllCaseData] = useState([]);
+  const [refresh, setRefresh] = useState(false);
+  const [filterVisible, setFilterVisible] = useState(false);
 
   const onAddPayRollData = async () => {
     try {
-      if (caseId == '') {
+      if (patientId == '') {
         setErrorVisible(true);
-        setErrorMessage('Please select patient case.');
+        setErrorMessage('Please enter patient.');
+      } else if (caseId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select case.');
       } else if (doctorId == '') {
         setErrorVisible(true);
         setErrorMessage('Please select doctor.');
+      } else if (bedTypeId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select bed type.');
+      } else if (bedId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select bed.');
       } else {
         setLoading(true);
         setErrorVisible(false);
-
-        const urlData = `operation-report-store?case_id=${caseId}&doctor_id=${doctorId}&date=${moment(
-          dateOfBirth,
-        ).format('YYYY-MM-DD')}&description=${description}`;
+        const urlData = `ipd-patient-department-store?patient_id=${patientId}&case_id=${caseId}&height=${height}&weight=${weight}&bp=${bloodPressure}&admission_date=${moment(
+          admissionDate,
+        ).format(
+          'YYYY-MM-DD',
+        )}&doctor_id=${doctorId}&bed_type_id=${bedTypeId}&bed_id=${bedId}&is_old_patient=${
+          oldPatient ? 1 : 0
+        }&symptoms=${symptoms}&notes=${description}`;
         const response = await onAddAccountListApi(urlData);
         if (response.data.flag == 1) {
           onGetData();
@@ -124,21 +161,32 @@ const OperationReports = ({
 
   const onEditPayRollData = async () => {
     try {
-      if (caseId == '') {
+      if (patientId == '') {
         setErrorVisible(true);
-        setErrorMessage('Please select patient case.');
+        setErrorMessage('Please enter patient.');
+      } else if (caseId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select case.');
       } else if (doctorId == '') {
         setErrorVisible(true);
         setErrorMessage('Please select doctor.');
+      } else if (bedTypeId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select bed type.');
+      } else if (bedId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select bed.');
       } else {
         setLoading(true);
         setErrorVisible(false);
-        const urlData = `operation-report-update/${userId}?case_id=${caseId}&doctor_id=${doctorId}&date=${moment(
-          dateOfBirth,
-        ).format('YYYY-MM-DD')}&description=${description}`;
+        const urlData = `ipd-patient-department-update/${userId}?patient_id=${patientId}&case_id=${caseId}&height=${height}&weight=${weight}&bp=${bloodPressure}&admission_date=${moment(
+          admissionDate,
+        ).format(
+          'YYYY-MM-DD',
+        )}&doctor_id=${doctorId}&bed_type_id=${bedTypeId}&bed_id=${bedId}&is_old_patient=${
+          oldPatient ? 1 : 0
+        }&symptoms=${symptoms}&notes=${description}`;
         const response = await onGetEditAccountDataApi(urlData);
-        // const response = await onGetEditCommonJsonApi(urlData, raw);
-        console.log('Get Error::', response.data);
         if (response.data.flag == 1) {
           onGetData();
           setLoading(false);
@@ -182,7 +230,9 @@ const OperationReports = ({
   const onDeletePayrollData = async id => {
     try {
       setLoading(true);
-      const response = await onDeleteCommonApi(`operation-report-delete/${id}`);
+      const response = await onDeleteCommonApi(
+        `ipd-patient-department-delete/${id}`,
+      );
       if (response.data.flag == 1) {
         onGetData();
         setLoading(false);
@@ -227,11 +277,11 @@ const OperationReports = ({
   const onGetSpecificDoctor = async id => {
     try {
       const response = await onGetSpecificCommonApi(
-        `operation-report-edit/${id}`,
+        `ipd-patient-department-edit/${id}`,
       );
-      if (response.status == 200) {
+      if (response.data.flag == 1) {
         console.log('get ValueLL:::', response.data.data);
-        return response.data.data;
+        return response.data.data.ipdPatientDepartment;
       } else {
         return 0;
       }
@@ -239,6 +289,39 @@ const OperationReports = ({
       console.log('Get Error', err);
     }
   };
+
+  const onGetCaseData = async id => {
+    try {
+      const response = await onGetCommonApi(
+        `patient-case-list-get?patient_id=${id}`,
+      );
+      console.log('get Response:', response.data.data);
+      if (response.data.flag === 1) {
+        const matchingKey = [];
+        Object.entries(response.data.data).find(([key, value]) => {
+          matchingKey.push({id: key, name: value});
+        });
+        setCaseId('');
+        setCaseName('');
+        setAllCaseData(matchingKey);
+        setRefresh(!refresh);
+        return matchingKey;
+      }
+    } catch (err) {
+      console.log('Get Error', err);
+    }
+  };
+
+  let bedGetData = bedData.filter(user => user.bed_type === bedTypeName);
+  useEffect(() => {
+    if (bedGetData.length > 0) {
+      setBedId(bedGetData[0].id);
+      setBedName(bedGetData[0].name);
+    } else {
+      setBedId('');
+      setBedName('');
+    }
+  }, [bedGetData]);
 
   const renderItem = ({item, index}) => {
     return (
@@ -249,7 +332,7 @@ const OperationReports = ({
         ]}>
         <View style={[styles.switchView, {width: wp(30)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataHistoryText1]}>{item.case_id}</Text>
+            <Text style={[styles.dataHistoryText1]}>{item.ipd_number}</Text>
           </View>
         </View>
         <View style={styles.nameDataView}>
@@ -268,20 +351,48 @@ const OperationReports = ({
         </View>
         <View style={[styles.switchView, {width: wp(35)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataHistoryText]}>{item.date}</Text>
+            <Text style={[styles.dataHistoryText]}>{item.admission_date}</Text>
           </View>
+        </View>
+        <Text style={[styles.dataHistoryText1, {width: wp(28)}]}>
+          {item.bed_type}
+        </Text>
+        <View style={[styles.switchView, {width: wp(28)}]}>
+          <Text style={[styles.dataListText1]}>{item.bill_status}</Text>
         </View>
         <View style={styles.actionDataView}>
           <TouchableOpacity
             onPress={async () => {
               let allDatas = await onGetSpecificDoctor(item.id);
               setUserId(item.id);
-              setCaseId(item.case_id);
-              setCaseName(`${item.case_id} ${item.patient_name}`);
+              setPatientId(allDatas.patient_id);
+              setPatientName(item.patient_name);
+              let allDatas1 = await onGetCaseData(allDatas.patient_id);
+              const accountantData = allDatas1.filter(
+                user => user.id == allDatas.case_id,
+              );
+              if (accountantData.length > 0) {
+                setCaseName(accountantData[0].name);
+              }
+              setCaseId(allDatas.case_id);
+              setHeight(JSON.stringify(allDatas.height));
+              setWeight(JSON.stringify(allDatas.weight));
+              setBloodPressure(allDatas.bp);
+              setAdmissionDate(new Date(allDatas.admission_date));
               setDoctorId(allDatas.doctor_id);
               setDoctorName(item.doctor_name);
-              setDescription(allDatas.description);
-              setDateOfBirth(new Date(allDatas.date));
+              setBedTypeId(allDatas.bed_type_id);
+              setBedTypeName(item.bed_type);
+              setBedId(allDatas.bed_id);
+              const accountantData1 = bedData.filter(
+                user => user.id === allDatas.bed_id,
+              );
+              if (accountantData1.length > 0) {
+                setBedName(accountantData1[0].name);
+              }
+              setOldPatient(allDatas.is_old_patient);
+              setSymptoms(allDatas.symptoms);
+              setDescription(allDatas.notes);
               setNewBloodIssueVisible(true);
             }}>
             <Image
@@ -319,24 +430,99 @@ const OperationReports = ({
               onChangeText={text => setSearchBreak(text)}
               style={[styles.searchView, {color: theme.text}]}
             />
-          </View>
-          <View style={styles.filterView}>
-            <TouchableOpacity
-              onPress={() => {
-                setUserId('');
-                setCaseId('');
-                setCaseName('');
-                setDoctorId('');
-                setDoctorName('');
-                setDescription('');
-                setDateOfBirth(new Date());
-                setErrorMessage('');
-                setErrorVisible(false);
-                setNewBloodIssueVisible(true);
-              }}
-              style={styles.actionView}>
-              <Text style={styles.actionText}>New Operation Reports</Text>
-            </TouchableOpacity>
+            <View style={styles.filterView}>
+              <TouchableOpacity
+                onPress={() => setFilterVisible(true)}
+                style={styles.filterView1}>
+                <Image style={styles.filterImage} source={filter} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId('');
+                  setAllCaseData([]);
+                  setPatientId('');
+                  setPatientName('');
+                  setCaseName('');
+                  setCaseId('');
+                  setHeight('0');
+                  setWeight('0');
+                  setBloodPressure('');
+                  setAdmissionDate(new Date());
+                  setDoctorId('');
+                  setDoctorName('');
+                  setBedTypeId('');
+                  setBedTypeName('');
+                  setBedId('');
+                  setBedName('');
+                  setOldPatient('');
+                  setSymptoms('');
+                  setDescription('');
+                  setErrorMessage('');
+                  setErrorVisible(false);
+                  setNewBloodIssueVisible(true);
+                }}
+                style={styles.actionView}>
+                <Text style={styles.actionText}>Actions</Text>
+              </TouchableOpacity>
+              <Modal
+                animationType="none"
+                transparent={true}
+                visible={filterVisible}
+                onRequestClose={() => setFilterVisible(false)}>
+                <View style={styles.filterModal}>
+                  <TouchableWithoutFeedback
+                    onPress={() => {
+                      setFilterVisible(false);
+                    }}>
+                    <View style={styles.modalOverlay1} />
+                  </TouchableWithoutFeedback>
+                  <View style={styles.filterFirstView}>
+                    <Text style={styles.filterTitle}>Filter Options</Text>
+                    <View style={styles.secondFilterView}>
+                      <Text style={styles.secondTitleFilter}>Status:</Text>
+                      <SelectDropdown
+                        data={filterArray}
+                        onSelect={(selectedItem, index) => {
+                          // setSelectedColor(selectedItem);
+                          setStatusId(selectedItem.id);
+                          console.log('gert Value:::', selectedItem);
+                        }}
+                        defaultValueByIndex={statusId == 3 ? 0 : statusId + 1}
+                        renderButton={(selectedItem, isOpen) => {
+                          console.log('Get Response>>>', selectedItem);
+                          return (
+                            <View style={styles.dropdown2BtnStyle2}>
+                              <Text style={styles.dropdownItemTxtStyle}>
+                                {selectedItem?.name || 'Select'}
+                              </Text>
+                            </View>
+                          );
+                        }}
+                        showsVerticalScrollIndicator={false}
+                        renderItem={(item, index, isSelected) => {
+                          return (
+                            <TouchableOpacity style={styles.dropdownView}>
+                              <Text style={styles.dropdownItemTxtStyle}>
+                                {item.name}
+                              </Text>
+                            </TouchableOpacity>
+                          );
+                        }}
+                        dropdownIconPosition={'left'}
+                        dropdownStyle={styles.dropdown2DropdownStyle}
+                      />
+                      <View>
+                        <TouchableOpacity
+                          onPress={() => setStatusId(3)}
+                          style={styles.resetButton}>
+                          <Text style={styles.resetText}>Reset</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  </View>
+                </View>
+              </Modal>
+            </View>
           </View>
           <View
             style={[styles.activeView, {backgroundColor: theme.headerColor}]}>
@@ -348,7 +534,7 @@ const OperationReports = ({
                     {backgroundColor: theme.headerColor},
                   ]}>
                   <Text style={[styles.titleText, {width: wp(30)}]}>
-                    {'CASE ID'}
+                    {'IPD ID'}
                   </Text>
                   <Text
                     style={[
@@ -365,7 +551,13 @@ const OperationReports = ({
                     {'DOCTORS'}
                   </Text>
                   <Text style={[styles.titleText, {width: wp(35)}]}>
-                    {'DATE'}
+                    {'ADMISSION DATE'}
+                  </Text>
+                  <Text style={[styles.titleText, {width: wp(28)}]}>
+                    {'Bed'}
+                  </Text>
+                  <Text style={[styles.titleText, {width: wp(28)}]}>
+                    {'BILL STATUS'}
                   </Text>
                   <Text style={[styles.titleText, {width: wp(16)}]}>
                     {'ACTION'}
@@ -448,7 +640,7 @@ const OperationReports = ({
           contentContainerStyle={{paddingBottom: hp(12)}}>
           <View style={styles.subView}>
             <Text style={[styles.doctorText, {color: theme.text}]}>
-              New Operation Report
+              Create IPD
             </Text>
             <View style={styles.filterView}>
               <TouchableOpacity
@@ -461,33 +653,34 @@ const OperationReports = ({
 
           <View style={styles.profileView}>
             <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText6}>Case:</Text>
+              <View style={{width: '48%'}}>
+                <Text style={[styles.dataHistoryText1]}>{'Patient:'}</Text>
                 <SelectDropdown
-                  data={caseData}
+                  data={user_data}
                   onSelect={(selectedItem, index) => {
                     // setSelectedColor(selectedItem);
-                    setCaseId(selectedItem.case_id);
-                    setCaseName(
-                      `${selectedItem?.case_id} ${selectedItem?.patient_name}`,
-                    );
+                    setAllCaseData([]);
+                    setCaseId('');
+                    setCaseName('');
+                    onGetCaseData(selectedItem.id);
+                    setPatientId(selectedItem.id);
                     console.log('gert Value:::', selectedItem);
                   }}
-                  defaultValue={caseName}
+                  defaultValue={patientName}
                   renderButton={(selectedItem, isOpen) => {
                     console.log('Get Response>>>', selectedItem);
                     return (
                       <View style={styles.dropdown2BtnStyle2}>
-                        {caseId != '' ? (
+                        {patientId != '' ? (
                           <Text style={styles.dropdownItemTxtStyle}>
-                            {caseId == selectedItem?.case_id
-                              ? `${selectedItem?.case_id} ${selectedItem?.patient_name}`
-                              : caseName}
+                            {patientId == selectedItem?.id
+                              ? `${selectedItem?.patient_user?.first_name} ${selectedItem?.patient_user?.last_name}`
+                              : patientName}
                           </Text>
                         ) : (
                           <Text style={styles.dropdownItemTxtStyle}>
-                            {selectedItem?.case_id +
-                              selectedItem?.patient_name || 'Select Case'}
+                            {selectedItem?.patient_user?.first_name ||
+                              'Select Patient'}
                           </Text>
                         )}
                       </View>
@@ -498,7 +691,57 @@ const OperationReports = ({
                     return (
                       <TouchableOpacity style={styles.dropdownView}>
                         <Text style={styles.dropdownItemTxtStyle}>
-                          {`${item?.case_id} ${item?.patient_name}`}
+                          {`${item?.patient_user?.first_name} ${item?.patient_user?.last_name}`}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                  dropdownIconPosition={'left'}
+                  dropdownStyle={styles.dropdown2DropdownStyle}
+                />
+              </View>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Case:</Text>
+                <SelectDropdown
+                  data={allCaseData}
+                  disabled={allCaseData.length > 0 ? false : true}
+                  onSelect={(selectedItem, index) => {
+                    // setSelectedColor(selectedItem);
+                    setCaseId(selectedItem.id);
+                    console.log('gert Value:::', selectedItem);
+                  }}
+                  defaultValue={caseName}
+                  renderButton={(selectedItem, isOpen) => {
+                    console.log('Get Response>>>', selectedItem);
+                    return (
+                      <View
+                        style={[
+                          styles.dropdown2BtnStyle2,
+                          {
+                            backgroundColor:
+                              allCaseData.length > 0 ? '#fff' : '#c2c2c2',
+                          },
+                        ]}>
+                        {caseId != '' ? (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {caseId == selectedItem?.id
+                              ? selectedItem?.name
+                              : caseName}
+                          </Text>
+                        ) : (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {selectedItem?.name || 'Choose Case'}
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(item, index, isSelected) => {
+                    return (
+                      <TouchableOpacity style={styles.dropdownView}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {item.name}
                         </Text>
                       </TouchableOpacity>
                     );
@@ -509,8 +752,68 @@ const OperationReports = ({
               </View>
             </View>
             <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText6}>Doctor:</Text>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Height:</Text>
+                <TextInput
+                  value={height}
+                  placeholder={''}
+                  onChangeText={text => setHeight(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                  keyboardType={'number-pad'}
+                />
+              </View>
+              <View style={{width: '48%'}}>
+                <Text style={[styles.dataHistoryText1]}>{'Weight:'}</Text>
+                <TextInput
+                  value={weight}
+                  placeholder={''}
+                  onChangeText={text => setWeight(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                  keyboardType={'number-pad'}
+                />
+              </View>
+            </View>
+            <View style={styles.nameView}>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Blood Pressure:</Text>
+                <TextInput
+                  value={bloodPressure}
+                  placeholder={'Blood Pressure'}
+                  onChangeText={text => setBloodPressure(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                  keyboardType={'number-pad'}
+                />
+              </View>
+
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Admission Date:</Text>
+                <Text
+                  style={[
+                    styles.nameTextView,
+                    {width: '100%', paddingVertical: hp(1)},
+                  ]}
+                  onPress={() => setDateModalVisible(!dateModalVisible)}>
+                  {moment(admissionDate).format('DD/MM/YYYY')}
+                </Text>
+                <DatePicker
+                  open={dateModalVisible}
+                  modal={true}
+                  date={admissionDate}
+                  mode={'date'}
+                  onConfirm={date => {
+                    console.log('Console Log>>', date);
+                    setDateModalVisible(false);
+                    setAdmissionDate(date);
+                  }}
+                  onCancel={() => {
+                    setDateModalVisible(false);
+                  }}
+                />
+              </View>
+            </View>
+            <View style={styles.nameView}>
+              <View style={{width: '48%'}}>
+                <Text style={[styles.dataHistoryText1]}>{'Doctor:'}</Text>
                 <SelectDropdown
                   data={doctorData}
                   onSelect={(selectedItem, index) => {
@@ -542,7 +845,50 @@ const OperationReports = ({
                     return (
                       <TouchableOpacity style={styles.dropdownView}>
                         <Text style={styles.dropdownItemTxtStyle}>
-                          {item?.name}
+                          {item.name}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                  dropdownIconPosition={'left'}
+                  dropdownStyle={styles.dropdown2DropdownStyle}
+                />
+              </View>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Bed Type:</Text>
+                <SelectDropdown
+                  data={bedTypeData}
+                  onSelect={(selectedItem, index) => {
+                    // setSelectedColor(selectedItem);
+                    setBedTypeName(selectedItem.title);
+                    setBedTypeId(selectedItem.id);
+                    console.log('gert Value:::', selectedItem);
+                  }}
+                  defaultValue={bedTypeName}
+                  renderButton={(selectedItem, isOpen) => {
+                    console.log('Get Response>>>', selectedItem);
+                    return (
+                      <View style={styles.dropdown2BtnStyle2}>
+                        {bedTypeId != '' ? (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {bedTypeId == selectedItem?.id
+                              ? selectedItem?.title
+                              : bedTypeName}
+                          </Text>
+                        ) : (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {selectedItem?.title || 'Select Bed Type'}
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(item, index, isSelected) => {
+                    return (
+                      <TouchableOpacity style={styles.dropdownView}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {item.title}
                         </Text>
                       </TouchableOpacity>
                     );
@@ -552,42 +898,92 @@ const OperationReports = ({
                 />
               </View>
             </View>
-
             <View style={styles.nameView}>
+              <View style={{width: '48%'}}>
+                <Text style={[styles.dataHistoryText1]}>{'Bed:'}</Text>
+                <SelectDropdown
+                  data={bedGetData}
+                  disabled={bedGetData.length > 0 ? false : true}
+                  onSelect={(selectedItem, index) => {
+                    // setSelectedColor(selectedItem);
+                    setBedId(selectedItem.id);
+                    console.log('gert Value:::', selectedItem);
+                  }}
+                  defaultValue={bedName}
+                  renderButton={(selectedItem, isOpen) => {
+                    console.log('Get Response>>>', selectedItem);
+                    return (
+                      <View
+                        style={[
+                          styles.dropdown2BtnStyle2,
+                          {
+                            backgroundColor:
+                              bedGetData.length > 0 ? '#fff' : '#c2c2c2',
+                          },
+                        ]}>
+                        {bedId != '' ? (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {bedId == selectedItem?.id
+                              ? selectedItem?.name
+                              : bedName}
+                          </Text>
+                        ) : (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {selectedItem?.name || 'Choose Bed'}
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(item, index, isSelected) => {
+                    return (
+                      <TouchableOpacity style={styles.dropdownView}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {item.name}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                  dropdownIconPosition={'left'}
+                  dropdownStyle={styles.dropdown2DropdownStyle}
+                />
+              </View>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Is Old Patient:</Text>
+                <View style={[styles.statusView, {paddingVertical: hp(1)}]}>
+                  <Switch
+                    trackColor={{
+                      false: oldPatient ? COLORS.greenColor : COLORS.errorColor,
+                      true: oldPatient ? COLORS.greenColor : COLORS.errorColor,
+                    }}
+                    thumbColor={oldPatient ? '#f4f3f4' : '#f4f3f4'}
+                    ios_backgroundColor={COLORS.errorColor}
+                    onValueChange={() => setOldPatient(!oldPatient)}
+                    value={oldPatient}
+                  />
+                </View>
+              </View>
+            </View>
+            <View style={[styles.nameView]}>
               <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText6}>Date:</Text>
-                <Text
-                  style={[
-                    styles.nameTextView,
-                    {width: '100%', paddingVertical: hp(1)},
-                  ]}
-                  onPress={() => setDateModalVisible(!dateModalVisible)}>
-                  {moment(dateOfBirth).format('DD/MM/YYYY')}
-                </Text>
-                <DatePicker
-                  open={dateModalVisible}
-                  modal={true}
-                  date={dateOfBirth}
-                  maximumDate={new Date()}
-                  mode={'date'}
-                  onConfirm={date => {
-                    console.log('Console Log>>', date);
-                    setDateModalVisible(false);
-                    setDateOfBirth(date);
-                  }}
-                  onCancel={() => {
-                    setDateModalVisible(false);
-                  }}
+                <Text style={styles.dataHistoryText1}>Symptoms:</Text>
+                <TextInput
+                  value={symptoms}
+                  placeholder={'Symptoms'}
+                  onChangeText={text => setSymptoms(text)}
+                  style={[styles.commentTextInput]}
+                  multiline
+                  textAlignVertical="top"
                 />
               </View>
             </View>
-
-            <View style={styles.nameView}>
+            <View style={[styles.nameView]}>
               <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText6}>Description:</Text>
+                <Text style={styles.dataHistoryText1}>Notes:</Text>
                 <TextInput
                   value={description}
-                  placeholder={'Description'}
+                  placeholder={'Notes'}
                   onChangeText={text => setDescription(text)}
                   style={[styles.commentTextInput]}
                   multiline
@@ -595,9 +991,11 @@ const OperationReports = ({
                 />
               </View>
             </View>
-            {errorVisible ? (
-              <Text style={styles.dataHistoryText4}>{errorMessage}</Text>
-            ) : null}
+            <View style={[styles.nameView]}>
+              {errorVisible ? (
+                <Text style={styles.dataHistoryText4}>{errorMessage}</Text>
+              ) : null}
+            </View>
           </View>
 
           <View style={styles.buttonView}>
@@ -631,7 +1029,7 @@ const OperationReports = ({
   );
 };
 
-export default OperationReports;
+export default ConsultationList;
 
 const styles = StyleSheet.create({
   safeAreaStyle: {
@@ -835,7 +1233,7 @@ const styles = StyleSheet.create({
   nameTextView: {
     width: '100%',
     paddingHorizontal: wp(2),
-    paddingVertical: hp(1),
+    paddingVertical: hp(0.5),
     borderWidth: 1,
     borderColor: COLORS.greyColor,
     fontFamily: Fonts.FONTS.PoppinsMedium,
@@ -850,7 +1248,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     width: '94%',
-    marginVertical: hp(1.5),
+    marginVertical: hp(2),
     alignSelf: 'center',
   },
   contactView: {
@@ -1099,7 +1497,7 @@ const styles = StyleSheet.create({
   dropdownView: {
     flexDirection: 'row',
     alignItems: 'center',
-    height: hp(5),
+    height: hp(4),
     borderBottomWidth: 0,
   },
   dropdown2BtnStyle2: {
@@ -1112,6 +1510,60 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.greyColor,
     marginTop: hp(1),
+    alignSelf: 'center',
+  },
+  statusView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+  },
+  modalOverlay1: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+  },
+  filterModal: {
+    flex: 1,
+    alignItems: 'flex-end',
+  },
+  filterFirstView: {
+    width: '60%',
+    backgroundColor: 'white',
+    borderRadius: 5,
+    marginTop: hp(25),
+    marginRight: wp(2),
+  },
+  filterTitle: {
+    fontSize: hp(2.2),
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    color: COLORS.black,
+    padding: hp(2),
+    borderBottomWidth: 0.5,
+  },
+  secondFilterView: {
+    padding: hp(2),
+  },
+  secondTitleFilter: {
+    fontSize: hp(2),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+  },
+  resetButton: {
+    width: wp(22),
+    height: hp(4.5),
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'flex-end',
+    backgroundColor: COLORS.greyColor,
+    marginTop: hp(2),
+    borderRadius: 5,
+  },
+  resetText: {
+    fontSize: hp(2),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
   },
   nextView1: {
     width: '92%',

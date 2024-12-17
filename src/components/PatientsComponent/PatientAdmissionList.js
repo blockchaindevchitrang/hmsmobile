@@ -11,8 +11,9 @@ import {
   Platform,
   TouchableWithoutFeedback,
   Modal,
+  ActivityIndicator,
 } from 'react-native';
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -35,6 +36,19 @@ import {
   MenuTrigger,
 } from 'react-native-popup-menu';
 import SelectDropdown from 'react-native-select-dropdown';
+import {useSelector} from 'react-redux';
+import FlashMessage, {
+  showMessage,
+  hideMessage,
+} from 'react-native-flash-message';
+import {DeletePopup} from '../DeletePopup';
+import {
+  onAddAccountListApi,
+  onDeleteCommonApi,
+  onGetCommonApi,
+  onGetEditAccountDataApi,
+  onGetSpecificCommonApi,
+} from '../../services/Api';
 
 const filterArray = [
   {id: 1, name: 'All'},
@@ -53,52 +67,251 @@ const PatientAdmissionList = ({
   statusId,
   setStatusId,
 }) => {
+  const user_data = useSelector(state => state.user_data);
+  const doctorData = useSelector(state => state.doctorData);
+  const bedData = useSelector(state => state.bedData);
   const {theme} = useTheme();
   const menuRef = useRef(null);
   const [newUserVisible, setNewUserVisible] = useState(false);
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [role, setRole] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [address, setAddress] = useState('');
-  const [city, setCity] = useState('');
-  const [country, setCountry] = useState('');
-  const [postalCode, setPostalCode] = useState('');
-  const [genderType, setGenderType] = useState('female');
-  const [dateOfBirth, setDateOfBirth] = useState(new Date());
+  const [patientId, setPatientId] = useState('');
+  const [patientName, setPatientName] = useState('');
+  const [doctorId, setDoctorId] = useState('');
+  const [doctorName, setDoctorName] = useState('');
+  const [packageId, setPackageId] = useState('');
+  const [packageName, setPackageName] = useState('');
+  const [insuranceId, setInsuranceId] = useState('');
+  const [insuranceName, setInsuranceName] = useState('');
+  const [bedId, setBedId] = useState('');
+  const [bedName, setBedName] = useState('');
+  const [policyNo, setPolicyNo] = useState('');
+  const [agentName, setAgentName] = useState('');
+  const [guardianName, setGuardianName] = useState('');
+  const [guardianRelation, setGuardianRelation] = useState('');
+  const [guardianContact, setGuardianContact] = useState('');
+  const [guardianAddress, setGuardianAddress] = useState('');
+  const [admissionDate, setAdmissionDate] = useState(new Date());
+  const [status, setStatus] = useState(false);
   const [dateModalVisible, setDateModalVisible] = useState(false);
   const [avatar, setAvatar] = useState(null);
   const [filterVisible, setFilterVisible] = useState(false);
+  const [insuranceList, setInsuranceList] = useState([]);
+  const [packageList, setPackageList] = useState([]);
+  const [refresh, setRefresh] = useState(false);
+  const [errorVisible, setErrorVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [userId, setUserId] = useState('');
+  const [deleteUser, setDeleteUser] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const openProfileImagePicker = async () => {
+  useEffect(() => {
+    onGetInsuranceData();
+    onGetPackageData();
+  }, []);
+
+  const onGetInsuranceData = async () => {
     try {
-      const image = await ImagePicker.openPicker({
-        width: 300,
-        height: 400,
-        cropping: false,
-        multiple: false, // Allow selecting only one image
-        compressImageQuality: 0.5,
-      });
-
-      if (image && image.path) {
-        if (image && image.path) {
-          var filename = image.path.substring(image.path.lastIndexOf('/') + 1);
-          let imageData = {
-            uri: Platform.OS === 'ios' ? image.sourceURL : image.path,
-            type: image.mime,
-            name: Platform.OS === 'ios' ? image.filename : filename,
-          };
-          setAvatar(imageData);
-
-          console.log('Selected image:', avatar);
-        }
-      } else {
-        console.log('No image selected');
+      const response = await onGetCommonApi('insurance-get');
+      console.log('get Response:', response.data.data);
+      if (response.data.flag === 1) {
+        setInsuranceList(response.data.data.items);
+        setRefresh(!refresh);
       }
-    } catch (error) {
-      console.log('Error selecting image:', error);
+    } catch (err) {
+      console.log('Error>>', err);
+    }
+  };
+
+  const onGetPackageData = async () => {
+    try {
+      const response = await onGetCommonApi('package-get');
+      console.log('get Response:', response.data.data);
+      if (response.data.flag === 1) {
+        setPackageList(response.data.data.items);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Error>>', err);
+    }
+  };
+
+  const onAddPayRollData = async () => {
+    try {
+      if (patientId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter patient.');
+      } else if (doctorId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select doctor.');
+      } else {
+        setLoading(true);
+        setErrorVisible(false);
+        const urlData = `patient-admissions-create?patient_id=${patientId}&doctor_id=${doctorId}&package_id=${packageId}&insurance_id=${insuranceId}&bed_id=${bedId}&admission_date=${moment(
+          admissionDate,
+        ).format(
+          'YYYY-MM-DD',
+        )}&policy_no=${policyNo}&agent_name=${agentName}&guardian_name=${guardianName}&status=${
+          status ? 1 : 0
+        }&guardian_relation=${guardianRelation}&guardian_contact=${guardianContact}&guardian_address=${guardianAddress}`;
+        const response = await onAddAccountListApi(urlData);
+        if (response.data.flag == 1) {
+          onGetData();
+          setLoading(false);
+          setNewUserVisible(false);
+          showMessage({
+            message: 'Record Added Successfully',
+            type: 'success',
+            duration: 3000,
+          });
+        } else {
+          setLoading(false);
+          showMessage({
+            message: response.data.message,
+            type: 'danger',
+            duration: 6000,
+            icon: 'danger',
+          });
+        }
+      }
+    } catch (err) {
+      if (err.response.data.message) {
+        showMessage({
+          message: err.response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      } else {
+        showMessage({
+          message: 'Something want wrong.',
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
+      setLoading(false);
+      console.log('Error:', err);
+    }
+  };
+
+  const onEditPayRollData = async () => {
+    try {
+      if (patientId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter patient.');
+      } else if (doctorId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select doctor.');
+      } else {
+        setLoading(true);
+        setErrorVisible(false);
+        const urlData = `patient-admissions-update/${userId}?patient_id=${patientId}&doctor_id=${doctorId}&package_id=${packageId}&insurance_id=${insuranceId}&bed_id=${bedId}&admission_date=${moment(
+          admissionDate,
+        ).format(
+          'YYYY-MM-DD',
+        )}&policy_no=${policyNo}&agent_name=${agentName}&guardian_name=${guardianName}&status=${
+          status ? 1 : 0
+        }&guardian_relation=${guardianRelation}&guardian_contact=${guardianContact}&guardian_address=${guardianAddress}`;
+        const response = await onGetEditAccountDataApi(urlData);
+        if (response.data.flag == 1) {
+          onGetData();
+          setLoading(false);
+          setNewUserVisible(false);
+          showMessage({
+            message: 'Record Edit Successfully',
+            type: 'success',
+            duration: 3000,
+          });
+        } else {
+          setLoading(false);
+          showMessage({
+            message: response.data.message,
+            type: 'danger',
+            duration: 6000,
+            icon: 'danger',
+          });
+        }
+      }
+    } catch (err) {
+      setLoading(false);
+      if (err.response.data.message) {
+        showMessage({
+          message: err.response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      } else {
+        showMessage({
+          message: 'Something want wrong.',
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
+      console.log('Error:', err);
+    }
+  };
+
+  const onDeletePayrollData = async id => {
+    try {
+      setLoading(true);
+      const response = await onDeleteCommonApi(
+        `patient-admissions-delete/${id}`,
+      );
+      if (response.data.flag == 1) {
+        onGetData();
+        setLoading(false);
+        setDeleteUser(false);
+        showMessage({
+          message: 'Record Delete Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      } else {
+        setLoading(false);
+        setDeleteUser(false);
+        showMessage({
+          message: response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
+    } catch (err) {
+      setLoading(false);
+      setDeleteUser(false);
+      if (err.response.data.message) {
+        showMessage({
+          message: err.response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      } else {
+        showMessage({
+          message: 'Something want wrong.',
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
+      console.log('Get Error', err);
+    }
+  };
+
+  const onGetSpecificDoctor = async id => {
+    try {
+      const response = await onGetSpecificCommonApi(
+        `patient-admissions-edit/${id}`,
+      );
+      if (response.data.flag == 1) {
+        console.log('get ValueLL:::', response.data.data);
+        return response.data.data;
+      } else {
+        return 0;
+      }
+    } catch (err) {
+      console.log('Get Error', err);
     }
   };
 
@@ -171,13 +384,45 @@ const PatientAdmissionList = ({
           />
         </View>
         <View style={styles.actionDataView}>
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={async () => {
+              let allDatas = await onGetSpecificDoctor(item.id);
+              setUserId(item.id);
+              setPatientId(allDatas.patient_id);
+              setPatientName(item.patient_name);
+              setAdmissionDate(new Date(allDatas.admission_date));
+              setDoctorId(allDatas.doctor_id);
+              setDoctorName(item.doctor_name);
+              setBedId(allDatas.bed_id);
+              setBedName(item.bed);
+              setInsuranceId(allDatas.case_id);
+              setInsuranceName(
+                item.insurance_id != null ? item.insurance_id : '',
+              );
+              setPackageId(allDatas.package_id);
+              setPackageName(item.package);
+              setStatus(status == 0 ? false : true);
+              setAgentName(allDatas.agent_name);
+              setGuardianName(allDatas.guardian_name);
+              setGuardianRelation(allDatas.guardian_relation);
+              setGuardianContact(allDatas.guardian_contact);
+              setGuardianAddress(allDatas.guardian_address);
+              const accountantData1 = bedData.filter(
+                user => user.id === allDatas.bed_id,
+              );
+              setNewUserVisible(true);
+            }}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.blueColor}]}
               source={editing}
             />
           </TouchableOpacity>
-          <TouchableOpacity style={{marginLeft: wp(2)}}>
+          <TouchableOpacity
+            onPress={() => {
+              setUserId(item.id);
+              setDeleteUser(true);
+            }}
+            style={{marginLeft: wp(2)}}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.errorColor}]}
               source={deleteIcon}
@@ -425,7 +670,7 @@ const PatientAdmissionList = ({
           contentContainerStyle={{paddingBottom: hp(12)}}>
           <View style={styles.subView}>
             <Text style={[styles.doctorText, {color: theme.text}]}>
-              Add New Patient Cases
+              New Patient Admission
             </Text>
             <View style={styles.filterView}>
               <TouchableOpacity
@@ -439,222 +684,372 @@ const PatientAdmissionList = ({
           <View style={styles.profileView}>
             <View style={styles.nameView}>
               <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>FIRST NAME</Text>
-                <TextInput
-                  value={firstName}
-                  placeholder={'Enter first name'}
-                  onChangeText={text => setFirstName(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
+                <Text style={styles.dataHistoryText1}>Patient:</Text>
+                <SelectDropdown
+                  data={user_data}
+                  onSelect={(selectedItem, index) => {
+                    // setSelectedColor(selectedItem);
+                    setPatientId(selectedItem.id);
+                    console.log('gert Value:::', selectedItem);
+                  }}
+                  defaultValue={patientName}
+                  renderButton={(selectedItem, isOpen) => {
+                    console.log('Get Response>>>', selectedItem);
+                    return (
+                      <View style={styles.dropdown2BtnStyle2}>
+                        {patientId != '' ? (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {patientId == selectedItem?.id
+                              ? `${selectedItem?.patient_user?.first_name} ${selectedItem?.patient_user?.last_name}`
+                              : patientName}
+                          </Text>
+                        ) : (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {selectedItem?.patient_user?.first_name ||
+                              'Select Patient'}
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(item, index, isSelected) => {
+                    return (
+                      <TouchableOpacity style={styles.dropdownView}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {`${item?.patient_user?.first_name} ${item?.patient_user?.last_name}`}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                  dropdownIconPosition={'left'}
+                  dropdownStyle={styles.dropdown2DropdownStyle}
                 />
               </View>
 
               <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>LAST NAME</Text>
-                <TextInput
-                  value={lastName}
-                  placeholder={'Enter last name'}
-                  onChangeText={text => setLastName(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>EMAIL ADDRESS</Text>
-                <TextInput
-                  value={email}
-                  placeholder={'Enter email'}
-                  onChangeText={text => setEmail(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>ROLE</Text>
-                <TextInput
-                  value={role}
-                  placeholder={'Select'}
-                  onChangeText={text => setRole(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>PASSWORD</Text>
-                <TextInput
-                  value={password}
-                  placeholder={'******'}
-                  onChangeText={text => setPassword(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                  secureTextEntry={true}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>CONFIRM PASSWORD</Text>
-                <TextInput
-                  value={confirmPassword}
-                  placeholder={'******'}
-                  onChangeText={text => setConfirmPassword(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                  secureTextEntry={true}
+                <Text style={styles.dataHistoryText1}>Doctor:</Text>
+                <SelectDropdown
+                  data={doctorData}
+                  onSelect={(selectedItem, index) => {
+                    // setSelectedColor(selectedItem);
+                    setDoctorId(selectedItem.id);
+                    console.log('gert Value:::', selectedItem);
+                  }}
+                  defaultValue={doctorName}
+                  renderButton={(selectedItem, isOpen) => {
+                    console.log('Get Response>>>', selectedItem);
+                    return (
+                      <View style={styles.dropdown2BtnStyle2}>
+                        {doctorId != '' ? (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {doctorId == selectedItem?.id
+                              ? selectedItem?.name
+                              : doctorName}
+                          </Text>
+                        ) : (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {selectedItem?.name || 'Select Doctor'}
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(item, index, isSelected) => {
+                    return (
+                      <TouchableOpacity style={styles.dropdownView}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {item.name}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                  dropdownIconPosition={'left'}
+                  dropdownStyle={styles.dropdown2DropdownStyle}
                 />
               </View>
             </View>
 
             <View style={styles.nameView}>
               <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>DATE OF BIRTH</Text>
-                {/* <TextInput
-                      value={firstName}
-                      placeholder={'Enter first name'}
-                      onChangeText={text => setFirstName(text)}
-                      style={[styles.nameTextView, {width: '100%'}]}
-                    /> */}
+                <Text style={styles.dataHistoryText1}>Admission Date:</Text>
                 <Text
                   style={[
                     styles.nameTextView,
                     {width: '100%', paddingVertical: hp(1)},
                   ]}
                   onPress={() => setDateModalVisible(!dateModalVisible)}>
-                  {moment(dateOfBirth).format('DD/MM/YYYY')}
+                  {moment(admissionDate).format('DD/MM/YYYY')}
                 </Text>
                 <DatePicker
                   open={dateModalVisible}
                   modal={true}
-                  date={dateOfBirth}
+                  date={admissionDate}
                   mode={'date'}
                   onConfirm={date => {
                     console.log('Console Log>>', date);
                     setDateModalVisible(false);
-                    setDateOfBirth(date);
+                    setAdmissionDate(date);
                   }}
                   onCancel={() => {
                     setDateModalVisible(false);
                   }}
                 />
               </View>
-
               <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>GENDER</Text>
-                <View style={[styles.statusView, {paddingVertical: hp(1)}]}>
-                  <View style={[styles.optionView]}>
-                    <TouchableOpacity
-                      onPress={() => setGenderType('female')}
-                      style={[
-                        styles.roundBorder,
-                        {
-                          backgroundColor:
-                            genderType == 'female'
-                              ? COLORS.blueColor
-                              : COLORS.white,
-                          borderWidth: genderType == 'female' ? 0 : 0.5,
-                        },
-                      ]}>
-                      <View style={styles.round} />
-                    </TouchableOpacity>
-                    <Text style={styles.statusText}>Female</Text>
-                  </View>
-                  <View style={[styles.optionView]}>
-                    <TouchableOpacity
-                      onPress={() => setGenderType('male')}
-                      style={[
-                        styles.roundBorder,
-                        {
-                          backgroundColor:
-                            genderType == 'male'
-                              ? COLORS.blueColor
-                              : COLORS.white,
-                          borderWidth: genderType == 'male' ? 0 : 0.5,
-                        },
-                      ]}>
-                      <View style={styles.round} />
-                    </TouchableOpacity>
-                    <Text style={styles.statusText}>Male</Text>
-                  </View>
-                </View>
+                <Text style={styles.dataHistoryText1}>Package:</Text>
+                <SelectDropdown
+                  data={packageList}
+                  onSelect={(selectedItem, index) => {
+                    // setSelectedColor(selectedItem);
+                    setPackageId(selectedItem.id);
+                    console.log('gert Value:::', selectedItem);
+                  }}
+                  defaultValue={packageName}
+                  renderButton={(selectedItem, isOpen) => {
+                    console.log('Get Response>>>', selectedItem);
+                    return (
+                      <View style={styles.dropdown2BtnStyle2}>
+                        {packageId != '' ? (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {packageId == selectedItem?.id
+                              ? selectedItem?.name
+                              : packageName}
+                          </Text>
+                        ) : (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {selectedItem?.name || 'Select Package'}
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(item, index, isSelected) => {
+                    return (
+                      <TouchableOpacity style={styles.dropdownView}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {item.name}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                  dropdownIconPosition={'left'}
+                  dropdownStyle={styles.dropdown2DropdownStyle}
+                />
+              </View>
+            </View>
+
+            <View style={styles.nameView}>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Insurance:</Text>
+                <SelectDropdown
+                  data={insuranceList}
+                  onSelect={(selectedItem, index) => {
+                    // setSelectedColor(selectedItem);
+                    setInsuranceId(selectedItem.id);
+                    console.log('gert Value:::', selectedItem);
+                  }}
+                  defaultValue={insuranceName}
+                  renderButton={(selectedItem, isOpen) => {
+                    console.log('Get Response>>>', selectedItem);
+                    return (
+                      <View style={styles.dropdown2BtnStyle2}>
+                        {insuranceId != '' ? (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {insuranceId == selectedItem?.id
+                              ? selectedItem?.name
+                              : insuranceName}
+                          </Text>
+                        ) : (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {selectedItem?.name || 'Select Insurance'}
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(item, index, isSelected) => {
+                    return (
+                      <TouchableOpacity style={styles.dropdownView}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {item.name}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                  dropdownIconPosition={'left'}
+                  dropdownStyle={styles.dropdown2DropdownStyle}
+                />
+              </View>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Bed:</Text>
+                <SelectDropdown
+                  data={bedData}
+                  disabled={bedData.length > 0 ? false : true}
+                  onSelect={(selectedItem, index) => {
+                    // setSelectedColor(selectedItem);
+                    setBedId(selectedItem.id);
+                    console.log('gert Value:::', selectedItem);
+                  }}
+                  defaultValue={bedName}
+                  renderButton={(selectedItem, isOpen) => {
+                    console.log('Get Response>>>', selectedItem);
+                    return (
+                      <View
+                        style={[
+                          styles.dropdown2BtnStyle2,
+                          {
+                            backgroundColor:
+                              bedData.length > 0 ? '#fff' : '#c2c2c2',
+                          },
+                        ]}>
+                        {bedId != '' ? (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {bedId == selectedItem?.id
+                              ? selectedItem?.name
+                              : bedName}
+                          </Text>
+                        ) : (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {selectedItem?.name || 'Choose Bed'}
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(item, index, isSelected) => {
+                    return (
+                      <TouchableOpacity style={styles.dropdownView}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {item.name}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                  dropdownIconPosition={'left'}
+                  dropdownStyle={styles.dropdown2DropdownStyle}
+                />
+              </View>
+            </View>
+
+            <View style={styles.nameView}>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Policy No:</Text>
+                <TextInput
+                  value={policyNo}
+                  placeholder={'Policy No'}
+                  onChangeText={text => setPolicyNo(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                />
+              </View>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Agent Name:</Text>
+                <TextInput
+                  value={agentName}
+                  placeholder={'Agent Name'}
+                  onChangeText={text => setAgentName(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                />
+              </View>
+            </View>
+
+            <View style={styles.nameView}>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Guardian Name:</Text>
+                <TextInput
+                  value={guardianName}
+                  placeholder={'Guardian Name'}
+                  onChangeText={text => setGuardianName(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                />
+              </View>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Guardian Relation:</Text>
+                <TextInput
+                  value={guardianRelation}
+                  placeholder={'Guardian Relation'}
+                  onChangeText={text => setGuardianRelation(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                />
+              </View>
+            </View>
+
+            <View style={styles.nameView}>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Guardian Contact:</Text>
+                <TextInput
+                  value={guardianContact}
+                  placeholder={'Guardian Contact'}
+                  onChangeText={text => setGuardianContact(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                />
+              </View>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Guardian Address:</Text>
+                <TextInput
+                  value={guardianAddress}
+                  placeholder={'Guardian Address'}
+                  onChangeText={text => setGuardianAddress(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                />
               </View>
             </View>
 
             <View style={styles.nameView}>
               <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>ADDRESS</Text>
-                <TextInput
-                  value={address}
-                  placeholder={'******'}
-                  onChangeText={text => setAddress(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                  secureTextEntry={true}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>CITY</Text>
-                <TextInput
-                  value={city}
-                  placeholder={'Enter city'}
-                  onChangeText={text => setCity(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-
-              <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>COUNTRY</Text>
-                <TextInput
-                  value={country}
-                  placeholder={'Enter country'}
-                  onChangeText={text => setCountry(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>POSTAL CODE</Text>
-                <TextInput
-                  value={postalCode}
-                  placeholder={'Postal Code'}
-                  onChangeText={text => setPostalCode(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View>
-                <Text style={styles.dataHistoryText1}>PROFILE</Text>
-                <View style={styles.profilePhotoView}>
-                  <TouchableOpacity
-                    style={styles.editView}
-                    onPress={() => openProfileImagePicker()}>
-                    <Image style={styles.editImage1} source={draw} />
-                  </TouchableOpacity>
-                  <Image style={styles.profileImage} source={man} />
+                <Text style={styles.dataHistoryText1}>STATUS:</Text>
+                <View style={styles.statusView}>
+                  <Switch
+                    trackColor={{
+                      false: status ? COLORS.greenColor : COLORS.errorColor,
+                      true: status ? COLORS.greenColor : COLORS.errorColor,
+                    }}
+                    thumbColor={status ? '#f4f3f4' : '#f4f3f4'}
+                    ios_backgroundColor={COLORS.errorColor}
+                    onValueChange={() => setStatus(!status)}
+                    value={status}
+                  />
                 </View>
               </View>
+            </View>
+            <View style={[styles.nameView]}>
+              {errorVisible ? (
+                <Text style={styles.dataHistoryText4}>{errorMessage}</Text>
+              ) : null}
             </View>
           </View>
 
           <View style={styles.buttonView}>
-            <TouchableOpacity onPress={() => {}} style={styles.nextView}>
-              <Text style={styles.nextText}>Save</Text>
+            <TouchableOpacity
+              onPress={() => {
+                userId != '' ? onEditPayRollData() : onAddPayRollData();
+              }}
+              style={styles.nextView}>
+              {loading ? (
+                <ActivityIndicator size={'small'} color={COLORS.white} />
+              ) : (
+                <Text style={styles.nextText}>Save</Text>
+              )}
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => {}} style={styles.prevView}>
+            <TouchableOpacity
+              onPress={() => setNewUserVisible(false)}
+              style={styles.prevView}>
               <Text style={styles.prevText}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
       )}
+      <DeletePopup
+        modelVisible={deleteUser}
+        setModelVisible={setDeleteUser}
+        onPress={() => onDeletePayrollData(userId)}
+        setUserId={setUserId}
+        isLoading={loading}
+      />
     </View>
   );
 };

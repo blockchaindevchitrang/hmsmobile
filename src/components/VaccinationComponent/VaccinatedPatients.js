@@ -52,6 +52,9 @@ const VaccinatedPatients = ({
   allData,
   onGetData,
   vaccinated,
+  totalPage,
+  pageCount,
+  setPageCount,
 }) => {
   const user_data = useSelector(state => state.user_data);
   const {theme} = useTheme();
@@ -216,7 +219,7 @@ const VaccinatedPatients = ({
           <ProfilePhoto username={item.patient_name} />
           <View>
             <Text style={[styles.dataHistoryText2]}>{item.patient_name}</Text>
-            <Text style={[styles.dataHistoryText1]}>{item.patient_email}</Text>
+            <Text style={[styles.dataHistoryText5]}>{item.patient_email}</Text>
           </View>
         </View>
         <View style={[styles.switchView, {width: wp(32)}]}>
@@ -388,6 +391,55 @@ const VaccinatedPatients = ({
                 </View>
               </View>
             </ScrollView>
+          </View>
+          <View style={styles.nextView1}>
+            <View style={styles.prevViewData}>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {opacity: pageCount == '1' ? 0.7 : 1},
+                ]}
+                disabled={pageCount == '1'}
+                onPress={() => setPageCount('1')}>
+                {'<<'}
+              </Text>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {marginLeft: wp(3), opacity: pageCount == '1' ? 0.7 : 1},
+                ]}
+                disabled={pageCount == '1'}
+                onPress={() => setPageCount(parseFloat(pageCount) - 1)}>
+                {'<'}
+              </Text>
+            </View>
+            <Text
+              style={
+                styles.totalCountText
+              }>{`Page ${pageCount} to ${totalPage}`}</Text>
+            <View style={styles.prevViewData}>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {opacity: pageCount >= totalPage ? 0.7 : 1},
+                ]}
+                disabled={pageCount >= totalPage}
+                onPress={() => setPageCount(parseFloat(pageCount) + 1)}>
+                {'>'}
+              </Text>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {
+                    marginLeft: wp(3),
+                    opacity: pageCount >= totalPage ? 0.7 : 1,
+                  },
+                ]}
+                disabled={pageCount >= totalPage}
+                onPress={() => setPageCount(totalPage)}>
+                {'>>'}
+              </Text>
+            </View>
           </View>
         </ScrollView>
       </View>
@@ -729,6 +781,12 @@ const styles = StyleSheet.create({
     color: COLORS.errorColor,
     width: '92%',
     alignSelf: 'center',
+  },
+  dataHistoryText5: {
+    fontSize: hp(1.7),
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    color: COLORS.black,
+    width: wp(45),
   },
   mainDataView: {
     minHeight: hp(29),
@@ -1072,5 +1130,31 @@ const styles = StyleSheet.create({
     borderColor: COLORS.greyColor,
     marginTop: hp(1),
     alignSelf: 'center',
+  },
+  nextView1: {
+    width: '92%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    alignSelf: 'center',
+    marginTop: hp(3),
+  },
+  prevViewData: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  prevButtonView: {
+    paddingHorizontal: wp(3),
+    backgroundColor: COLORS.headerGreenColor,
+    paddingVertical: hp(0.5),
+    borderRadius: 5,
+    fontSize: hp(3),
+    color: COLORS.white,
+  },
+  totalCountText: {
+    fontSize: hp(2),
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
   },
 });

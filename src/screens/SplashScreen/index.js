@@ -32,6 +32,7 @@ import {
 } from '../../services/Api';
 import {
   fetchAccountData,
+  fetchAdmissionData,
   fetchAllUserData,
   fetchBedData,
   fetchBedTypeData,
@@ -146,6 +147,12 @@ export const SplashScreen = ({navigation}) => {
       console.log('Get Department Response::', chargeData.data.data.items);
       if (chargeData.data.data.items) {
         dispatch(fetchChargeData(chargeData.data.data.items));
+      }
+
+      const admissionData = await onGetCommonApi('patient-admissions-get');
+      console.log('Get Department Response::', admissionData.data.data);
+      if (admissionData.data.data) {
+        dispatch(fetchAdmissionData(admissionData.data.data));
       }
     } else {
       navigation.replace('LoginScreen');

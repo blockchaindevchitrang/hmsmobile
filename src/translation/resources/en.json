@@ -77,5 +77,6 @@
   "reports": "Reports",
   "transactions": "Transactions",
   "service": "Service",
-  "sms": "SMS"
+  "sms": "SMS",
+  "live_consultations": "Live Consultations"
 }

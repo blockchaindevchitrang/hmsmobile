@@ -25,7 +25,7 @@ import BirthReportList from '../../components/ReportsComponent/BirthReportList';
 import DeathReportList from '../../components/ReportsComponent/DeathReportList';
 import OperationReports from '../../components/ReportsComponent/OperationReports';
 import InvestigationReports from '../../components/ReportsComponent/InvestigationReports';
-import { onGetCommonApi } from '../../services/Api';
+import {onGetCommonApi} from '../../services/Api';
 
 const allData = [
   {
@@ -165,6 +165,11 @@ export const ReportsScreen = ({navigation}) => {
   const [investigationList, setInvestigationList] = useState([]);
   const [operationList, setOperationList] = useState([]);
   const [refresh, setRefresh] = useState(false);
+  const [pageCount, setPageCount] = useState('1');
+  const [totalPage, setTotalPage] = useState('1');
+  const [deathReportPage, setDeathReportPage] = useState('1');
+  const [investigationPage, setInvestigationPage] = useState('1');
+  const [operationPage, setOperationPage] = useState('1');
 
   const animations = useRef(
     [0, 0, 0, 0, 0].map(() => new Animated.Value(300)),
@@ -225,16 +230,17 @@ export const ReportsScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetBirthData();
-  }, [searchBirth]);
+  }, [searchBirth, pageCount]);
 
   const onGetBirthData = async () => {
     try {
       const response = await onGetCommonApi(
-        `birth-report-get?search=${searchBirth}`,
+        `birth-report-get?search=${searchBirth}&page=${pageCount}`,
       );
       console.log('get Response:', response.data.data);
       if (response.data.flag === 1) {
         setBirthReportList(response.data.data.items);
+        setTotalPage(response.data.data.pagination.last_page);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -244,16 +250,17 @@ export const ReportsScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetDeathData();
-  }, [searchDeath]);
+  }, [searchDeath, pageCount]);
 
   const onGetDeathData = async () => {
     try {
       const response = await onGetCommonApi(
-        `death-report-get?search=${searchDeath}`,
+        `death-report-get?search=${searchDeath}&page=${pageCount}`,
       );
       console.log('get Response:', response.data.data);
       if (response.data.flag === 1) {
         setDeathReportList(response.data.data.items);
+        setDeathReportPage(response.data.data.pagination.last_page);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -263,16 +270,17 @@ export const ReportsScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetInvestigationData();
-  }, [searchInvestigation]);
+  }, [searchInvestigation, pageCount]);
 
   const onGetInvestigationData = async () => {
     try {
       const response = await onGetCommonApi(
-        `investigation-report-get?search=${searchInvestigation}`,
+        `investigation-report-get?search=${searchInvestigation}&page=${pageCount}`,
       );
       console.log('get Response:', response.data.data);
       if (response.data.flag === 1) {
         setInvestigationList(response.data.data.items);
+        setInvestigationPage(response.data.data.pagination.last_page);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -282,16 +290,17 @@ export const ReportsScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetOperationData();
-  }, [searchOperation]);
+  }, [searchOperation, pageCount]);
 
   const onGetOperationData = async () => {
     try {
       const response = await onGetCommonApi(
-        `operation-report-get?search=${searchOperation}`,
+        `operation-report-get?search=${searchOperation}&page=${pageCount}`,
       );
       console.log('get Response:', response.data.data);
       if (response.data.flag === 1) {
         setOperationList(response.data.data.items);
+        setOperationPage(response.data.data.pagination.last_page);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -316,6 +325,9 @@ export const ReportsScreen = ({navigation}) => {
             setSearchBreak={setSearchBirth}
             allData={birthReportList}
             onGetData={onGetBirthData}
+            totalPage={totalPage}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
           />
         ) : selectedView == 'Death reports' ? (
           <DeathReportList
@@ -323,6 +335,9 @@ export const ReportsScreen = ({navigation}) => {
             setSearchBreak={setSearchDeath}
             allData={deathReportList}
             onGetData={onGetDeathData}
+            totalPage={deathReportPage}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
           />
         ) : selectedView == 'Investigation reports' ? (
           <InvestigationReports
@@ -330,6 +345,9 @@ export const ReportsScreen = ({navigation}) => {
             setSearchBreak={setSearchInvestigation}
             allData={investigationList}
             onGetData={onGetInvestigationData}
+            totalPage={investigationPage}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
           />
         ) : (
           selectedView == 'Operation reports' && (
@@ -338,6 +356,9 @@ export const ReportsScreen = ({navigation}) => {
               setSearchBreak={setSearchOperation}
               allData={operationList}
               onGetData={onGetOperationData}
+              totalPage={operationPage}
+              pageCount={pageCount}
+              setPageCount={setPageCount}
             />
           )
         )}

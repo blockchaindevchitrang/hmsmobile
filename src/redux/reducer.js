@@ -12,6 +12,7 @@ export const FETCH_ACCOUNT_DATA = 'FETCH_ACCOUNT_DATA';
 export const FETCH_CASE_DATA = 'FETCH_CASE_DATA';
 export const FETCH_CHARGE_CATEGORY_DATA = 'FETCH_CHARGE_CATEGORY_DATA';
 export const FETCH_CHARGE_DATA = 'FETCH_CHARGE_DATA';
+export const FETCH_ADMISSION_DATA = 'FETCH_ADMISSION_DATA';
 
 export const fetchUserData = user_data => {
   return {
@@ -111,6 +112,13 @@ export const fetchChargeData = chargeData => {
   };
 };
 
+export const fetchAdmissionData = admissionData => {
+  return {
+    type: FETCH_ADMISSION_DATA,
+    payload: admissionData,
+  };
+};
+
 // Initial State
 const initialState = {
   user_data: [],
@@ -127,6 +135,7 @@ const initialState = {
   caseData: [],
   chargeCategoryData: [],
   chargeData: [],
+  admissionData: [],
 };
 
 // Reducer
@@ -201,6 +210,11 @@ const rootReducer = (state = initialState, action) => {
       return {
         ...state,
         chargeData: action.payload,
+      };
+    case FETCH_ADMISSION_DATA:
+      return {
+        ...state,
+        admissionData: action.payload,
       };
     default:
       return state;

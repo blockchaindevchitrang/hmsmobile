@@ -32,7 +32,7 @@ import PathologyCategories from '../../components/PathologyComponent/PathologyCa
 import PathologyParameter from '../../components/PathologyComponent/PathologyParameter';
 import PathologyTest from '../../components/PathologyComponent/PathologyTest';
 import PathologyUnit from '../../components/PathologyComponent/PathologyUnit';
-import { onGetCommonApi } from '../../services/Api';
+import {onGetCommonApi} from '../../services/Api';
 
 const allData = [
   {
@@ -152,6 +152,11 @@ export const PathologyScreen = ({navigation}) => {
   const [unit, setUnit] = useState([]);
   const [test, setTest] = useState([]);
   const [refresh, setRefresh] = useState(false);
+  const [pageCount, setPageCount] = useState('1');
+  const [totalPage, setTotalPage] = useState('1');
+  const [pathologyUnitPage, setPathologyUnitPage] = useState('1');
+  const [parameterPage, setParameterPage] = useState('1');
+  const [testPage, setTestPage] = useState('1');
 
   const animations = useRef(
     [0, 0, 0, 0, 0].map(() => new Animated.Value(300)),
@@ -212,14 +217,15 @@ export const PathologyScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetPathologyCategoriesData();
-  }, [searchAccount]);
+  }, [searchAccount, pageCount]);
 
   const onGetPathologyCategoriesData = async () => {
     try {
-      const response = await onGetCommonApi(`pathology-category-get?search=${searchAccount}`);
+      const response = await onGetCommonApi(`pathology-category-get?search=${searchAccount}&page=${pageCount}`);
       console.log('get Response:', response.data.data);
       if (response.data.flag === 1) {
         setPathologyCategories(response.data.data.items);
+        setTotalPage(response.data.data.pagination.last_page);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -229,14 +235,15 @@ export const PathologyScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetParameterData();
-  }, [searchPayroll]);
+  }, [searchPayroll, pageCount]);
 
   const onGetParameterData = async () => {
     try {
-      const response = await onGetCommonApi(`pathology-parameter-get?search=${searchPayroll}`);
+      const response = await onGetCommonApi(`pathology-parameter-get?search=${searchPayroll}&page=${pageCount}`);
       console.log('get Response:', response.data.data);
       if (response.data.flag === 1) {
         setParameter(response.data.data.items);
+        setParameterPage(response.data.data.pagination.last_page);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -246,14 +253,15 @@ export const PathologyScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetUnitData();
-  }, [searchUnit]);
+  }, [searchUnit, pageCount]);
 
   const onGetUnitData = async () => {
     try {
-      const response = await onGetCommonApi(`pathology-unit-get?search=${searchUnit}`);
+      const response = await onGetCommonApi(`pathology-unit-get?search=${searchUnit}&page=${pageCount}`);
       console.log('get Response:', response.data.data);
       if (response.data.flag === 1) {
         setUnit(response.data.data.items);
+        setPathologyUnitPage(response.data.data.pagination.last_page);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -263,14 +271,15 @@ export const PathologyScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetTestData();
-  }, [searchPharmacists]);
+  }, [searchPharmacists, pageCount]);
 
   const onGetTestData = async () => {
     try {
-      const response = await onGetCommonApi(`pathology-test-get?search=${searchPharmacists}`);
+      const response = await onGetCommonApi(`pathology-test-get?search=${searchPharmacists}&page=${pageCount}`);
       console.log('get Response:', response.data.data);
       if (response.data.flag === 1) {
         setTest(response.data.data.items);
+        setTestPage(response.data.data.pagination.last_page);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -295,6 +304,9 @@ export const PathologyScreen = ({navigation}) => {
             setSearchBreak={setSearchAccount}
             allData={pathologyCategories}
             onGetData={onGetPathologyCategoriesData}
+            totalPage={totalPage}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
           />
         ) : selectedView == 'PathologyUnit' ? (
           <PathologyUnit
@@ -302,6 +314,9 @@ export const PathologyScreen = ({navigation}) => {
             setSearchBreak={setSearchPayroll}
             allData={unit}
             onGetData={onGetUnitData}
+            totalPage={pathologyUnitPage}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
           />
         ) : selectedView == 'PathologyParameter' ? (
           <PathologyParameter
@@ -310,6 +325,9 @@ export const PathologyScreen = ({navigation}) => {
             allData={parameter}
             onGetData={onGetParameterData}
             unitData={unit}
+            totalPage={parameterPage}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
           />
         ) : (
           selectedView == 'PathologyTest' && (
@@ -320,6 +338,9 @@ export const PathologyScreen = ({navigation}) => {
               onGetData={onGetTestData}
               category={pathologyCategories}
               parameter={parameter}
+              totalPage={testPage}
+              pageCount={pageCount}
+              setPageCount={setPageCount}
             />
           )
         )}

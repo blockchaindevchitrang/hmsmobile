@@ -28,9 +28,9 @@ import draw from '../../images/draw.png';
 import DatePicker from 'react-native-date-picker';
 import ImagePicker from 'react-native-image-crop-picker';
 import {
-  onAddAccountListApi,
+  onAddCommonJsonApi,
   onDeleteCommonApi,
-  onGetEditAccountDataApi,
+  onGetEditCommonJsonApi,
   onGetSpecificCommonApi,
 } from '../../services/Api';
 import FlashMessage, {
@@ -39,27 +39,43 @@ import FlashMessage, {
 } from 'react-native-flash-message';
 import {DeletePopup} from '../DeletePopup';
 import SelectDropdown from 'react-native-select-dropdown';
+import {useSelector} from 'react-redux';
 
 const BillList = ({
   searchBreak,
   setSearchBreak,
   allData,
   onGetData,
-  medicineCategory,
-  medicineBrand,
+  totalPage,
+  pageCount,
+  setPageCount,
 }) => {
+  const admissionData = useSelector(state => state.admissionData);
   const {theme} = useTheme();
   const [newUserVisible, setNewUserVisible] = useState(false);
-  const [medicine, setMedicine] = useState('');
-  const [categoryId, setCategoryId] = useState('');
-  const [categoryName, setCategoryName] = useState('');
-  const [brandId, setBrandId] = useState('');
-  const [brandyName, setBrandName] = useState('');
-  const [composition, setComposition] = useState('');
-  const [buyPrice, setBuyPrice] = useState('');
-  const [sellPrice, setSellPrice] = useState('');
-  const [effects, setEffects] = useState('');
-  const [description, setDescription] = useState('');
+  const [admissionId, setAdmissionId] = useState('');
+  const [admissionName, setAdmissionName] = useState('');
+  const [billDate, setBillDate] = useState(null);
+  const [dateModalVisible, setDateModalVisible] = useState(false);
+  const [patientEmail, setPatientEmail] = useState('');
+  const [patientGender, setPatientGender] = useState('female');
+  const [doctorName, setDoctorName] = useState('');
+  const [doctorBOD, setDoctorBOD] = useState('');
+  const [admissionDate, setAdmissionDate] = useState('');
+  const [dischargeDate, setDischargeDate] = useState('');
+  const [packageName, setPackageName] = useState('');
+  const [insuranceName, setInsuranceName] = useState('');
+  const [totalDays, setTotalDays] = useState('0');
+  const [policyNo, setPolicyNo] = useState('');
+  const [refresh, setRefresh] = useState(false);
+  const [parameterArray, setParameterArray] = useState([
+    {
+      itemName: '',
+      qty: '',
+      price: '',
+      amount: '',
+    },
+  ]);
   const [errorVisible, setErrorVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [userId, setUserId] = useState('');
@@ -68,29 +84,53 @@ const BillList = ({
 
   const onAddPayRollData = async () => {
     try {
-      if (medicine == '') {
+      if (admissionId == '') {
         setErrorVisible(true);
-        setErrorMessage('Please enter medicine.');
-      } else if (categoryId == '') {
+        setErrorMessage('Please select patient admission.');
+      } else if (billDate == null) {
         setErrorVisible(true);
-        setErrorMessage('Please select medicine category.');
-      } else if (brandId == '') {
-        setErrorVisible(true);
-        setErrorMessage('Please select medicine brand.');
-      } else if (composition == '') {
-        setErrorVisible(true);
-        setErrorMessage('Please enter salt composition.');
-      } else if (buyPrice == '') {
-        setErrorVisible(true);
-        setErrorMessage('Please enter buy price.');
-      } else if (sellPrice == '') {
-        setErrorVisible(true);
-        setErrorMessage('Please enter sell price.');
+        setErrorMessage('Please select bill date.');
       } else {
         setLoading(true);
         setErrorVisible(false);
-        const urlData = `medicine-store?category_id=${categoryId}&brand_id=${brandId}&name=${medicine}&selling_price=${sellPrice}&buying_price=${buyPrice}&side_effects=${effects}&salt_composition=${composition}&description=${description}`;
-        const response = await onAddAccountListApi(urlData);
+        let itemName = [];
+        let qtyArray = [];
+        let price = [];
+        let hasEmptyFields = false;
+        parameterArray.map(item => {
+          if (!item.itemName || !item.qty || !item.price) {
+            hasEmptyFields = true;
+          } else {
+            itemName.push(item.itemName);
+            qtyArray.push(item.qty);
+            price.push(item.price);
+          }
+        });
+
+        if (hasEmptyFields) {
+          setErrorVisible(true);
+          setErrorMessage(
+            'Please fill in all parameter IDs and patient results.',
+          );
+          showMessage({
+            message: 'Please fill in all parameter IDs and patient results.',
+            type: 'danger',
+            duration: 3000,
+          });
+          return; // Exit the function without calling the API
+        }
+
+        let raw = JSON.stringify({
+          bill_date: billDate,
+          patient_admission_id: admissionId,
+          item_name: itemName,
+          qty: qtyArray,
+          price: price,
+        });
+        const urlData = 'bills-create';
+        console.log('Get Login Url:::', raw);
+        const response = await onAddCommonJsonApi(urlData, raw);
+        // const response = await onAddAccountListApi(urlData);
         if (response.data.flag == 1) {
           onGetData();
           setLoading(false);
@@ -102,7 +142,6 @@ const BillList = ({
           });
         } else {
           setLoading(false);
-          setNewUserVisible(false);
           showMessage({
             message: response.data.message,
             type: 'danger',
@@ -112,12 +151,21 @@ const BillList = ({
         }
       }
     } catch (err) {
-      showMessage({
-        message: 'Something want wrong.',
-        type: 'danger',
-        duration: 6000,
-        icon: 'danger',
-      });
+      if (err.response.data.message) {
+        showMessage({
+          message: err.response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      } else {
+        showMessage({
+          message: 'Something want wrong.',
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
       setLoading(false);
       console.log('Error:', err);
     }
@@ -125,29 +173,50 @@ const BillList = ({
 
   const onEditPayRollData = async () => {
     try {
-      if (medicine == '') {
+      if (admissionId == '') {
         setErrorVisible(true);
-        setErrorMessage('Please enter medicine.');
-      } else if (categoryId == '') {
+        setErrorMessage('Please select patient admission.');
+      } else if (billDate == null) {
         setErrorVisible(true);
-        setErrorMessage('Please select medicine category.');
-      } else if (brandId == '') {
-        setErrorVisible(true);
-        setErrorMessage('Please select medicine brand.');
-      } else if (composition == '') {
-        setErrorVisible(true);
-        setErrorMessage('Please enter salt composition.');
-      } else if (buyPrice == '') {
-        setErrorVisible(true);
-        setErrorMessage('Please enter buy price.');
-      } else if (sellPrice == '') {
-        setErrorVisible(true);
-        setErrorMessage('Please enter sell price.');
+        setErrorMessage('Please enter bill date.');
       } else {
         setLoading(true);
         setErrorVisible(false);
-        const urlData = `medicine-update/${userId}?category_id=${categoryId}&brand_id=${brandId}&name=${medicine}&selling_price=${sellPrice}&buying_price=${buyPrice}&side_effects=${effects}&salt_composition=${composition}&description=${description}`;
-        const response = await onGetEditAccountDataApi(urlData);
+        let itemName = [];
+        let qtyArray = [];
+        let price = [];
+        let hasEmptyFields = false;
+        parameterArray.map(item => {
+          if (!item.itemName || !item.qty) {
+            hasEmptyFields = true;
+          } else {
+            itemName.push(item.itemName);
+            qtyArray.push(item.qty);
+            price.push(item.price);
+          }
+        });
+
+        if (hasEmptyFields) {
+          setErrorVisible(true);
+          setErrorMessage('Please fill in all item data.');
+          showMessage({
+            message: 'Please fill in all item data.',
+            type: 'danger',
+            duration: 3000,
+          });
+          return; // Exit the function without calling the API
+        }
+        let raw = JSON.stringify({
+          bill_date: billDate,
+          patient_admission_id: admissionId,
+          item_name: itemName,
+          qty: qtyArray,
+          price: price,
+        });
+        const urlData = `bills-update/${userId}`;
+        // const response = await onGetEditAccountDataApi(urlData);
+        const response = await onGetEditCommonJsonApi(urlData, raw);
+        console.log('Get Error::', response.data);
         if (response.data.flag == 1) {
           onGetData();
           setLoading(false);
@@ -159,7 +228,6 @@ const BillList = ({
           });
         } else {
           setLoading(false);
-          setNewUserVisible(false);
           showMessage({
             message: response.data.message,
             type: 'danger',
@@ -170,12 +238,21 @@ const BillList = ({
       }
     } catch (err) {
       setLoading(false);
-      showMessage({
-        message: 'Something want wrong.',
-        type: 'danger',
-        duration: 6000,
-        icon: 'danger',
-      });
+      if (err.response.data.message) {
+        showMessage({
+          message: err.response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      } else {
+        showMessage({
+          message: 'Something want wrong.',
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
       console.log('Error:', err);
     }
   };
@@ -183,7 +260,7 @@ const BillList = ({
   const onDeletePayrollData = async id => {
     try {
       setLoading(true);
-      const response = await onDeleteCommonApi(`medicine-delete/${id}`);
+      const response = await onDeleteCommonApi(`bills-delete/${id}`);
       if (response.data.flag == 1) {
         onGetData();
         setLoading(false);
@@ -206,19 +283,28 @@ const BillList = ({
     } catch (err) {
       setLoading(false);
       setDeleteUser(false);
-      showMessage({
-        message: 'Something want wrong.',
-        type: 'danger',
-        duration: 6000,
-        icon: 'danger',
-      });
+      if (err.response.data.message) {
+        showMessage({
+          message: err.response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      } else {
+        showMessage({
+          message: 'Something want wrong.',
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
       console.log('Get Error', err);
     }
   };
 
   const onGetSpecificDoctor = async id => {
     try {
-      const response = await onGetSpecificCommonApi(`medicine-edit/${id}`);
+      const response = await onGetSpecificCommonApi(`bills-edit/${id}`);
       if (response.status == 200) {
         console.log('get ValueLL:::', response.data.data);
         return response.data.data;
@@ -257,7 +343,7 @@ const BillList = ({
         <View style={[styles.switchView, {width: wp(28)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
             <Text style={styles.dataListText1} numberOfLines={2}>
-              {item.date}
+              {item.bill_date}
             </Text>
           </View>
         </View>
@@ -268,22 +354,32 @@ const BillList = ({
           <TouchableOpacity
             onPress={async () => {
               let allDatas = await onGetSpecificDoctor(item.id);
+              console.log('gert Value:::', allDatas);
               setUserId(item.id);
-              setMedicine(item.name);
-              setBrandName(item.brand_name);
-              setBrandId(allDatas.brand_id);
-              const accountantData = medicineCategory.filter(
-                user => user.id === allDatas.category_id,
+              setAdmissionId(allDatas.patientadmission.patient_admission_id);
+              setBillDate(new Date(allDatas.bill.bill_date));
+              setAdmissionDate(
+                new Date(allDatas.patientadmission.admission_date),
               );
-              if (accountantData.length > 0) {
-                setCategoryName(accountantData[0].name);
-              }
-              setCategoryId(allDatas.category_id);
-              setBuyPrice(JSON.stringify(allDatas.buying_price));
-              setSellPrice(JSON.stringify(allDatas.selling_price));
-              setComposition(allDatas.salt_composition);
-              setDescription(allDatas.description);
-              setEffects(allDatas.side_effects);
+              setDischargeDate(
+                new Date(allDatas.patientadmission.discharge_date),
+              );
+              setAdmissionName(
+                allDatas.patientadmission.patient_admission_id + item.name,
+              );
+              setPatientEmail(item.email);
+              // setPackageName(item.);
+              setPolicyNo(allDatas.patientadmission.policy_no);
+              let dataValue = [];
+              allDatas.bill.bill_items.map(item1 => {
+                dataValue.push({
+                  itemName: item1.item_name,
+                  qty: JSON.stringify(item1.qty),
+                  price: JSON.stringify(item1.price),
+                  amount: JSON.stringify(item1.amount),
+                });
+              });
+              setParameterArray(dataValue);
               setNewUserVisible(true);
             }}>
             <Image
@@ -307,6 +403,28 @@ const BillList = ({
     );
   };
 
+  const onSelectedAdmission = async data => {
+    try {
+      let allDatas = await onGetSpecificCommonApi(
+        `patient-admissions-edit/${data.id}`,
+      );
+      console.log('gert Value:::', allDatas.data.data);
+      setAdmissionId(data.patient_admission_id);
+      setPatientEmail(data.patient_email);
+      setDoctorName(data.doctor_name);
+      setAdmissionDate(data.admission_date);
+      setDischargeDate(data.discharge_date);
+      setPolicyNo(data.policy_no);
+      setPackageName(data.package);
+      // let response = await onGetSpecificCommonApi(
+      //   `package-edit/${allDatas.data.data.package_id}`,
+      // );
+      // console.log('Get Value of data::', response.data);
+    } catch (err) {
+      console.log('Error Admission:', err.response);
+    }
+  };
+
   return (
     <View style={styles.safeAreaStyle}>
       {!newUserVisible ? (
@@ -325,21 +443,28 @@ const BillList = ({
               <TouchableOpacity
                 onPress={() => {
                   setUserId('');
-                  setMedicine('');
-                  setBrandName('');
-                  setBrandId('');
-                  setCategoryId('');
-                  setBuyPrice('');
-                  setSellPrice('');
-                  setComposition('');
-                  setDescription('');
-                  setEffects('');
+                  setParameterArray([
+                    {
+                      itemName: '',
+                      qty: '',
+                      price: '',
+                      amount: '',
+                    },
+                  ]);
+                  setAdmissionId('');
+                  setBillDate(new Date());
+                  setPatientEmail('');
+                  setDoctorName('');
+                  setAdmissionDate('');
+                  setDischargeDate('');
+                  setPolicyNo('');
+                  setPackageName('');
                   setErrorMessage('');
                   setErrorVisible(false);
                   setNewUserVisible(true);
                 }}
                 style={styles.actionView}>
-                <Text style={styles.actionText}>New Medicine</Text>
+                <Text style={styles.actionText}>New Bill</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -392,6 +517,55 @@ const BillList = ({
               </View>
             </ScrollView>
           </View>
+          <View style={styles.nextView1}>
+            <View style={styles.prevViewData}>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {opacity: pageCount == '1' ? 0.7 : 1},
+                ]}
+                disabled={pageCount == '1'}
+                onPress={() => setPageCount('1')}>
+                {'<<'}
+              </Text>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {marginLeft: wp(3), opacity: pageCount == '1' ? 0.7 : 1},
+                ]}
+                disabled={pageCount == '1'}
+                onPress={() => setPageCount(parseFloat(pageCount) - 1)}>
+                {'<'}
+              </Text>
+            </View>
+            <Text
+              style={
+                styles.totalCountText
+              }>{`Page ${pageCount} to ${totalPage}`}</Text>
+            <View style={styles.prevViewData}>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {opacity: pageCount >= totalPage ? 0.7 : 1},
+                ]}
+                disabled={pageCount >= totalPage}
+                onPress={() => setPageCount(parseFloat(pageCount) + 1)}>
+                {'>'}
+              </Text>
+              <Text
+                style={[
+                  styles.prevButtonView,
+                  {
+                    marginLeft: wp(3),
+                    opacity: pageCount >= totalPage ? 0.7 : 1,
+                  },
+                ]}
+                disabled={pageCount >= totalPage}
+                onPress={() => setPageCount(totalPage)}>
+                {'>>'}
+              </Text>
+            </View>
+          </View>
         </ScrollView>
       ) : (
         <ScrollView
@@ -399,11 +573,13 @@ const BillList = ({
           contentContainerStyle={{paddingBottom: hp(12)}}>
           <View style={styles.subView}>
             <Text style={[styles.doctorText, {color: theme.text}]}>
-              Add New Medicine
+              New Bill
             </Text>
             <View style={styles.filterView}>
               <TouchableOpacity
-                onPress={() => setNewUserVisible(false)}
+                onPress={() => {
+                  setNewUserVisible(false);
+                }}
                 style={styles.backButtonView}>
                 <Text style={styles.backText}>BACK</Text>
               </TouchableOpacity>
@@ -413,37 +589,27 @@ const BillList = ({
           <View style={styles.profileView}>
             <View style={styles.nameView}>
               <View style={{width: '48%'}}>
-                <Text style={[styles.dataHistoryText1]}>{'Medicine:'}</Text>
-                <TextInput
-                  value={medicine}
-                  placeholder={'Medicine'}
-                  onChangeText={text => setMedicine(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-              <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>Category:</Text>
+                <Text style={styles.dataHistoryText1}>Admission ID:</Text>
                 <SelectDropdown
-                  data={medicineCategory}
-                  onSelect={(selectedItem, index) => {
-                    // setSelectedColor(selectedItem);
-                    setCategoryId(selectedItem.id);
-                    console.log('gert Value:::', selectedItem);
-                  }}
-                  defaultValue={categoryName}
+                  data={admissionData}
+                  onSelect={(selectedItem, index) =>
+                    onSelectedAdmission(selectedItem)
+                  }
+                  defaultValue={admissionName}
                   renderButton={(selectedItem, isOpen) => {
                     console.log('Get Response>>>', selectedItem);
                     return (
                       <View style={styles.dropdown2BtnStyle2}>
-                        {categoryId != '' ? (
+                        {admissionId != '' ? (
                           <Text style={styles.dropdownItemTxtStyle}>
-                            {categoryId == selectedItem?.id
-                              ? selectedItem?.name
-                              : categoryName}
+                            {admissionId == selectedItem?.patient_admission_id
+                              ? `${selectedItem?.patient_admission_id} ${selectedItem?.patient_name}`
+                              : admissionName}
                           </Text>
                         ) : (
                           <Text style={styles.dropdownItemTxtStyle}>
-                            {selectedItem?.name || 'Select Category'}
+                            {selectedItem?.patient_admission_id ||
+                              'Select Admission'}
                           </Text>
                         )}
                       </View>
@@ -454,125 +620,313 @@ const BillList = ({
                     return (
                       <TouchableOpacity style={styles.dropdownView}>
                         <Text style={styles.dropdownItemTxtStyle}>
-                          {item.name}
+                          {`${item?.patient_admission_id} ${item?.patient_name}`}
                         </Text>
                       </TouchableOpacity>
                     );
                   }}
                   dropdownIconPosition={'left'}
                   dropdownStyle={styles.dropdown2DropdownStyle}
-                />
-              </View>
-            </View>
-            <View style={styles.nameView}>
-              <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>Brand:</Text>
-                <SelectDropdown
-                  data={medicineBrand}
-                  onSelect={(selectedItem, index) => {
-                    // setSelectedColor(selectedItem);
-                    setBrandId(selectedItem.id);
-                    console.log('gert Value:::', selectedItem);
-                  }}
-                  defaultValue={brandyName}
-                  renderButton={(selectedItem, isOpen) => {
-                    console.log('Get Response>>>', selectedItem);
-                    return (
-                      <View style={styles.dropdown2BtnStyle2}>
-                        {brandId != '' ? (
-                          <Text style={styles.dropdownItemTxtStyle}>
-                            {brandId == selectedItem?.id
-                              ? selectedItem?.name
-                              : brandyName}
-                          </Text>
-                        ) : (
-                          <Text style={styles.dropdownItemTxtStyle}>
-                            {selectedItem?.name || 'Select Brand'}
-                          </Text>
-                        )}
-                      </View>
-                    );
-                  }}
-                  showsVerticalScrollIndicator={false}
-                  renderItem={(item, index, isSelected) => {
-                    return (
-                      <TouchableOpacity style={styles.dropdownView}>
-                        <Text style={styles.dropdownItemTxtStyle}>
-                          {item.name}
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  }}
-                  dropdownIconPosition={'left'}
-                  dropdownStyle={styles.dropdown2DropdownStyle}
-                />
-              </View>
-              <View style={{width: '48%'}}>
-                <Text style={[styles.dataHistoryText1]}>
-                  {'Salt Composition:'}
-                </Text>
-                <TextInput
-                  value={composition}
-                  placeholder={'Salt Composition'}
-                  onChangeText={text => setComposition(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-            </View>
-            <View style={styles.nameView}>
-              <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>Buying Price:</Text>
-                <TextInput
-                  value={buyPrice}
-                  placeholder={'Buying Price'}
-                  onChangeText={text => setBuyPrice(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                  keyboardType={'number-pad'}
                 />
               </View>
 
               <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>Selling Price:</Text>
-                <TextInput
-                  value={sellPrice}
-                  placeholder={'Selling Price'}
-                  onChangeText={text => setSellPrice(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                  keyboardType={'number-pad'}
+                <Text style={styles.dataHistoryText1}>Bill Date:</Text>
+                <Text
+                  style={[
+                    styles.nameTextView,
+                    {width: '100%', paddingVertical: hp(1)},
+                  ]}
+                  onPress={() => setDateModalVisible(!dateModalVisible)}>
+                  {billDate ? moment(billDate).format('hh:mm:ss') : 'Bill Date'}
+                </Text>
+                <DatePicker
+                  open={dateModalVisible}
+                  modal={true}
+                  date={billDate || new Date()}
+                  onConfirm={date => {
+                    console.log('Console Log>>', date);
+                    setDateModalVisible(false);
+                    setBillDate(date);
+                  }}
+                  onCancel={() => {
+                    setDateModalVisible(false);
+                  }}
                 />
               </View>
             </View>
-            <View style={[styles.nameView]}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>Side Effects:</Text>
+
+            <View style={styles.nameView}>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Patient Email:</Text>
                 <TextInput
-                  value={effects}
-                  placeholder={'Side Effects'}
-                  onChangeText={text => setEffects(text)}
-                  style={[styles.commentTextInput]}
-                  multiline
-                  textAlignVertical="top"
+                  value={patientEmail}
+                  editable={false}
+                  placeholder={'Patient Email'}
+                  onChangeText={text => setPatientEmail(text)}
+                  style={[styles.nameTextVie1, {width: '100%'}]}
+                />
+              </View>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Patient Gender:</Text>
+                <View style={[styles.statusView, {paddingVertical: hp(1)}]}>
+                  <View style={[styles.optionView]}>
+                    <TouchableOpacity
+                      onPress={() => setPatientGender('female')}
+                      style={[
+                        styles.roundBorder,
+                        {
+                          backgroundColor:
+                            patientGender == 'female'
+                              ? COLORS.blueColor
+                              : COLORS.white,
+                          borderWidth: patientGender == 'female' ? 0 : 0.5,
+                        },
+                      ]}>
+                      <View style={styles.round} />
+                    </TouchableOpacity>
+                    <Text style={styles.statusText}>Female</Text>
+                  </View>
+                  <View style={[styles.optionView]}>
+                    <TouchableOpacity
+                      onPress={() => setPatientGender('male')}
+                      style={[
+                        styles.roundBorder,
+                        {
+                          backgroundColor:
+                            patientGender == 'male'
+                              ? COLORS.blueColor
+                              : COLORS.white,
+                          borderWidth: patientGender == 'male' ? 0 : 0.5,
+                        },
+                      ]}>
+                      <View style={styles.round} />
+                    </TouchableOpacity>
+                    <Text style={styles.statusText}>Male</Text>
+                  </View>
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.nameView}>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Patient DOB:</Text>
+                <TextInput
+                  value={doctorBOD}
+                  editable={false}
+                  placeholder={'Patient DOB'}
+                  onChangeText={text => setDoctorBOD(text)}
+                  style={[styles.nameTextVie1, {width: '100%'}]}
+                />
+              </View>
+
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Doctor:</Text>
+                <TextInput
+                  value={doctorName}
+                  editable={false}
+                  placeholder={'Doctor'}
+                  onChangeText={text => setDoctorName(text)}
+                  style={[styles.nameTextVie1, {width: '100%'}]}
                 />
               </View>
             </View>
-            <View style={[styles.nameView]}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>Description:</Text>
+
+            <View style={styles.nameView}>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Admission Date:</Text>
                 <TextInput
-                  value={description}
-                  placeholder={'Description'}
-                  onChangeText={text => setDescription(text)}
-                  style={[styles.commentTextInput]}
-                  multiline
-                  textAlignVertical="top"
+                  value={admissionDate}
+                  editable={false}
+                  placeholder={'Admission Date'}
+                  onChangeText={text => setAdmissionDate(text)}
+                  style={[styles.nameTextVie1, {width: '100%'}]}
+                />
+              </View>
+
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Discharge Date:</Text>
+                <TextInput
+                  value={dischargeDate}
+                  editable={false}
+                  placeholder={'Discharge Date'}
+                  onChangeText={text => setDischargeDate(text)}
+                  style={[styles.nameTextVie1, {width: '100%'}]}
                 />
               </View>
             </View>
-            <View style={[styles.nameView]}>
-              {errorVisible ? (
-                <Text style={styles.dataHistoryText4}>{errorMessage}</Text>
-              ) : null}
+
+            <View style={styles.nameView}>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Package Name:</Text>
+                <TextInput
+                  value={packageName}
+                  editable={false}
+                  placeholder={'Package Name'}
+                  onChangeText={text => setPackageName(text)}
+                  style={[styles.nameTextVie1, {width: '100%'}]}
+                />
+              </View>
+
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Insurance Name:</Text>
+                <TextInput
+                  value={insuranceName}
+                  editable={false}
+                  placeholder={'Insurance Name'}
+                  onChangeText={text => setInsuranceName(text)}
+                  style={[styles.nameTextVie1, {width: '100%'}]}
+                />
+              </View>
             </View>
+
+            <View style={styles.nameView}>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Total Days:</Text>
+                <TextInput
+                  value={totalDays}
+                  placeholder={'Total Days'}
+                  onChangeText={text => setTotalDays(text)}
+                  style={[styles.nameTextVie1, {width: '100%'}]}
+                  editable={false}
+                />
+              </View>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Policy No:</Text>
+                <TextInput
+                  value={policyNo}
+                  placeholder={'Policy No'}
+                  onChangeText={text => setPolicyNo(text)}
+                  style={[styles.nameTextVie1, {width: '100%'}]}
+                  editable={false}
+                />
+              </View>
+            </View>
+            <View style={styles.parameterView}>
+              <Text style={styles.parameterText}>ITEMS</Text>
+              <TouchableOpacity
+                onPress={() => {
+                  let NewItemAdd = {
+                    itemName: '',
+                    qty: '',
+                    price: '',
+                    amount: '',
+                  };
+                  setParameterArray(modifierAdd => [
+                    ...modifierAdd,
+                    NewItemAdd,
+                  ]);
+                }}
+                style={styles.nextView2}>
+                <Text style={styles.nextText}>Add</Text>
+              </TouchableOpacity>
+            </View>
+            <FlatList
+              data={parameterArray}
+              renderItem={({item, index}) => {
+                return (
+                  <View
+                    style={{
+                      backgroundColor:
+                        index % 2 == 0 ? '#eeeeee' : COLORS.white,
+                      paddingBottom: hp(1),
+                      marginVertical: hp(1),
+                    }}>
+                    <View style={[styles.nameView, {paddingHorizontal: wp(2)}]}>
+                      <View style={{width: '48%'}}>
+                        <Text style={styles.dataHistoryText6}>Item Name</Text>
+                        <TextInput
+                          value={item.itemName}
+                          placeholder={'Item Name'}
+                          onChangeText={text => {
+                            setRefresh(!refresh);
+                            parameterArray[index].itemName = text;
+                          }}
+                          style={[styles.nameTextView, {width: '100%'}]}
+                        />
+                      </View>
+
+                      <View style={{width: '48%'}}>
+                        <Text style={styles.dataHistoryText6}>QTY</Text>
+                        <TextInput
+                          value={item.qty}
+                          placeholder={'Qty'}
+                          onChangeText={text => {
+                            setRefresh(!refresh);
+                            parameterArray[index].qty = text;
+                            if (item.price != '') {
+                              if (text != '') {
+                                parameterArray[index].amount =
+                                  parseFloat(text) * parseFloat(item.price);
+                              } else {
+                                parameterArray[index].amount = '0';
+                              }
+                            }
+                          }}
+                          style={[styles.nameTextView, {width: '100%'}]}
+                          keyboardType={'number-pad'}
+                        />
+                      </View>
+                    </View>
+
+                    <View style={[styles.nameView, {paddingHorizontal: wp(2)}]}>
+                      <View style={{width: '40%'}}>
+                        <Text style={styles.dataHistoryText6}>PRICE</Text>
+                        <TextInput
+                          value={item.price}
+                          placeholder={'Price'}
+                          onChangeText={text => {
+                            setRefresh(!refresh);
+                            parameterArray[index].price = text;
+                            if (item.qty != '') {
+                              if (text != '') {
+                                parameterArray[index].amount =
+                                  parseFloat(text) * parseFloat(item.qty);
+                              } else {
+                                parameterArray[index].amount = '0';
+                              }
+                            }
+                          }}
+                          style={[styles.nameTextView, {width: '100%'}]}
+                          keyboardType={'number-pad'}
+                        />
+                      </View>
+                      <View style={{width: '30%'}}>
+                        <Text style={styles.dataHistoryText6}>Amount</Text>
+                        <Text style={[styles.nameTextView1, {height: hp(4)}]}>
+                          {item.amount}
+                        </Text>
+                      </View>
+                      <View style={[styles.buttonView, {width: '15%'}]}>
+                        <TouchableOpacity
+                          onPress={() => {
+                            const existDataValue = parameterArray;
+                            const filterData = existDataValue.filter(
+                              (dataValue, index1) => index1 !== index,
+                            );
+                            console.log(' =====>', filterData);
+                            setParameterArray(filterData);
+                          }}
+                          style={{marginLeft: wp(2)}}>
+                          <Image
+                            style={[
+                              styles.editImage,
+                              {tintColor: COLORS.errorColor},
+                            ]}
+                            source={deleteIcon}
+                          />
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  </View>
+                );
+              }}
+              keyExtractor={(item, index) => index.toString()}
+              contentContainerStyle={{paddingBottom: hp(3)}}
+            />
+            {errorVisible ? (
+              <Text style={styles.dataHistoryText4}>{errorMessage}</Text>
+            ) : null}
           </View>
 
           <View style={styles.buttonView}>
@@ -588,7 +942,17 @@ const BillList = ({
               )}
             </TouchableOpacity>
             <TouchableOpacity
-              onPress={() => setNewUserVisible(false)}
+              onPress={() => {
+                setParameterArray([
+                  {
+                    itemName: '',
+                    qty: '',
+                    price: '',
+                    amount: '',
+                  },
+                ]);
+                setNewUserVisible(false);
+              }}
               style={styles.prevView}>
               <Text style={styles.prevText}>Cancel</Text>
             </TouchableOpacity>
@@ -623,7 +987,7 @@ const styles = StyleSheet.create({
     marginVertical: hp(2),
   },
   searchView: {
-    width: '50%',
+    width: '60%',
     paddingHorizontal: wp(2),
     paddingVertical: hp(0.5),
     borderWidth: 1,
@@ -636,6 +1000,9 @@ const styles = StyleSheet.create({
   filterView: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'flex-end',
+    paddingHorizontal: wp(3),
+    // marginBottom: hp(1),
   },
   filterView1: {
     height: hp(5),
@@ -701,7 +1068,7 @@ const styles = StyleSheet.create({
   },
   dataHistoryView: {
     width: '100%',
-    height: hp(8),
+    paddingVertical: hp(1),
     alignItems: 'center',
     flexDirection: 'row',
     alignSelf: 'flex-start',
@@ -717,6 +1084,7 @@ const styles = StyleSheet.create({
     fontSize: hp(1.7),
     fontFamily: Fonts.FONTS.PoppinsBold,
     color: COLORS.black,
+    // marginHorizontal: wp(2),
   },
   dataHistoryText2: {
     fontSize: hp(1.8),
@@ -739,6 +1107,11 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.FONTS.PoppinsBold,
     color: COLORS.black,
     width: wp(45),
+  },
+  dataHistoryText6: {
+    fontSize: hp(1.7),
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    color: COLORS.black,
   },
   mainDataView: {
     minHeight: hp(29),
@@ -810,6 +1183,29 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginTop: hp(1),
     backgroundColor: COLORS.white,
+  },
+  nameTextView1: {
+    width: '50%',
+    paddingHorizontal: wp(2),
+    paddingVertical: hp(0.5),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    color: COLORS.black,
+    borderRadius: 5,
+    marginTop: hp(1),
+  },
+  nameTextVie1: {
+    width: '50%',
+    paddingHorizontal: wp(2),
+    paddingVertical: hp(0.5),
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    color: COLORS.black,
+    borderRadius: 5,
+    marginTop: hp(1),
+    backgroundColor: COLORS.lightGrey,
   },
   nameView: {
     flexDirection: 'row',
@@ -984,20 +1380,6 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
   },
-  commentTextInput: {
-    width: '100%',
-    paddingHorizontal: wp(3),
-    paddingVertical: hp(1),
-    borderWidth: 1,
-    borderColor: COLORS.greyColor,
-    fontFamily: Fonts.FONTS.PoppinsMedium,
-    fontSize: hp(1.8),
-    color: COLORS.black,
-    borderRadius: 5,
-    alignSelf: 'center',
-    height: hp(14),
-    marginTop: hp(1),
-  },
   dropdown2DropdownStyle: {
     backgroundColor: COLORS.white,
     borderRadius: 4,
@@ -1018,7 +1400,7 @@ const styles = StyleSheet.create({
   },
   dropdown2BtnStyle2: {
     width: '100%',
-    height: hp(5),
+    height: hp(4.2),
     backgroundColor: COLORS.white,
     borderRadius: 5,
     alignItems: 'center',
@@ -1026,6 +1408,54 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.greyColor,
     marginTop: hp(1),
+  },
+  parameterView: {
+    width: '100%',
+    backgroundColor: COLORS.lightGreyColor,
+    paddingVertical: hp(1),
+    marginTop: hp(3),
+    paddingHorizontal: wp(3),
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  parameterText: {
+    fontSize: hp(2.2),
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    color: COLORS.black,
+  },
+  nextView1: {
+    width: '92%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     alignSelf: 'center',
+    marginTop: hp(3),
+  },
+  prevViewData: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  prevButtonView: {
+    paddingHorizontal: wp(3),
+    backgroundColor: COLORS.headerGreenColor,
+    paddingVertical: hp(0.5),
+    borderRadius: 5,
+    fontSize: hp(3),
+    color: COLORS.white,
+  },
+  totalCountText: {
+    fontSize: hp(2),
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+  },
+  nextView2: {
+    height: hp(4),
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.blueColor,
+    paddingHorizontal: wp(3),
   },
 });

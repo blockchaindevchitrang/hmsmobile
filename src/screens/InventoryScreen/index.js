@@ -25,7 +25,7 @@ import ItemCategoriesList from '../../components/InventoryComponent/ItemCategori
 import ItemsList from '../../components/InventoryComponent/ItemsList';
 import IssuedItemsList from '../../components/InventoryComponent/IssuedItemsList';
 import ItemStocksList from '../../components/InventoryComponent/ItemStocksList';
-import { onGetCommonApi } from '../../services/Api';
+import {onGetCommonApi} from '../../services/Api';
 
 const allData = [
   {
@@ -145,6 +145,12 @@ export const InventoryScreen = ({navigation}) => {
   const [itemStockList, setItemStockList] = useState([]);
   const [issueItemList, setIssueItemList] = useState([]);
   const [refresh, setRefresh] = useState(false);
+  const [pageCount, setPageCount] = useState('1');
+  const [totalPage, setTotalPage] = useState('1');
+  const [itemPage, setItemPage] = useState('1');
+  const [itemStockPage, setItemStockPage] = useState('1');
+  const [issueItemPage, setIssueItemPage] = useState('1');
+  const [statusId, setStatusId] = useState(3);
 
   const animations = useRef(
     [0, 0, 0, 0, 0].map(() => new Animated.Value(300)),
@@ -205,16 +211,17 @@ export const InventoryScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetItemCategoriesData();
-  }, [searchAccount]);
+  }, [searchAccount, pageCount]);
 
   const onGetItemCategoriesData = async () => {
     try {
       const response = await onGetCommonApi(
-        `item-category-get?search=${searchAccount}`,
+        `item-category-get?search=${searchAccount}&page=${pageCount}`,
       );
       console.log('get Response:', response.data.data);
       if (response.data.flag === 1) {
         setItemCategory(response.data.data.items);
+        setTotalPage(response.data.data.pagination.last_page);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -224,14 +231,17 @@ export const InventoryScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetItemData();
-  }, [searchPayroll]);
+  }, [searchPayroll, pageCount]);
 
   const onGetItemData = async () => {
     try {
-      const response = await onGetCommonApi(`item-get?search=${searchPayroll}`);
+      const response = await onGetCommonApi(
+        `item-get?search=${searchPayroll}&page=${pageCount}`,
+      );
       console.log('get Response:', response.data.data);
       if (response.data.flag === 1) {
         setItemList(response.data.data.items);
+        setItemPage(response.data.data.pagination.last_page);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -241,16 +251,17 @@ export const InventoryScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetItemStockData();
-  }, [searchItemStock]);
+  }, [searchItemStock, pageCount]);
 
   const onGetItemStockData = async () => {
     try {
       const response = await onGetCommonApi(
-        `item-stock-get?search=${searchItemStock}`,
+        `item-stock-get?search=${searchItemStock}&page=${pageCount}`,
       );
       console.log('get Response:', response.data.data);
       if (response.data.flag === 1) {
         setItemStockList(response.data.data.items);
+        setItemStockPage(response.data.data.pagination.last_page);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -260,16 +271,17 @@ export const InventoryScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetIssueItemData();
-  }, [searchPharmacists]);
+  }, [searchPharmacists, pageCount, statusId]);
 
   const onGetIssueItemData = async () => {
     try {
       const response = await onGetCommonApi(
-        `issue-item-get?search=${searchPharmacists}`,
+        `issue-item-get?search=${searchPharmacists}&page=${pageCount}&status=${statusId}`,
       );
       console.log('get Response:', response.data.data);
       if (response.data.flag === 1) {
         setIssueItemList(response.data.data.items);
+        setIssueItemPage(response.data.data.pagination.last_page);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -294,6 +306,9 @@ export const InventoryScreen = ({navigation}) => {
             setSearchBreak={setSearchAccount}
             allData={itemCategory}
             onGetData={onGetItemCategoriesData}
+            totalPage={totalPage}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
           />
         ) : selectedView == 'Items' ? (
           <ItemsList
@@ -302,6 +317,9 @@ export const InventoryScreen = ({navigation}) => {
             allData={itemList}
             onGetData={onGetItemData}
             itemCategory={itemCategory}
+            totalPage={itemPage}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
           />
         ) : selectedView == 'Item Stocks' ? (
           <ItemStocksList
@@ -311,6 +329,9 @@ export const InventoryScreen = ({navigation}) => {
             onGetData={onGetItemStockData}
             itemCategory={itemCategory}
             itemList={itemList}
+            totalPage={itemStockPage}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
           />
         ) : (
           selectedView == 'Issued Items' && (
@@ -321,6 +342,11 @@ export const InventoryScreen = ({navigation}) => {
               onGetData={onGetIssueItemData}
               itemCategory={itemCategory}
               itemList={itemList}
+              totalPage={issueItemPage}
+              pageCount={pageCount}
+              setPageCount={setPageCount}
+              statusId={statusId}
+              setStatusId={setStatusId}
             />
           )
         )}

@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
     marginVertical: hp(2),
   },
   searchView: {
-    width: '50%',
+    width: '100%',
     paddingHorizontal: wp(2),
     paddingVertical: hp(0.5),
     borderWidth: 1,
