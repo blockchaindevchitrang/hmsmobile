@@ -51,6 +51,7 @@ import FlashMessage, {
   hideMessage,
 } from 'react-native-flash-message';
 import {DeletePopup} from '../DeletePopup';
+import RNFS from 'react-native-fs';
 
 const PostalReceiveList = ({
   searchBreak,
@@ -337,6 +338,43 @@ const PostalReceiveList = ({
     );
   };
 
+  const onPatientAdmissionExcelGet = async () => {
+    try {
+      const response = await onGetCommonApi('export-postal-receive');
+      console.log('Get Repsonse Income:::', response.data.data);
+      if (response.data.flag == 1) {
+        var filename = response.data.data.substring(
+          response.data.data.lastIndexOf('/') + 1,
+        );
+        const downloadPath = `${RNFS.DownloadDirectoryPath}/${filename}`;
+
+        const result = await RNFS.downloadFile({
+          fromUrl: response.data.data,
+          toFile: downloadPath,
+        }).promise;
+
+        if (result.statusCode === 200) {
+          showMessage({
+            message: 'File Downloaded Successfully',
+            type: 'success',
+            duration: 3000,
+          });
+          console.log('File downloaded successfully to:', downloadPath);
+        } else {
+          showMessage({
+            message: 'File download failed.',
+            type: 'danger',
+            duration: 6000,
+            icon: 'danger',
+          });
+          console.log('File download failed:', result.statusCode);
+        }
+      }
+    } catch (err) {
+      console.log('Error:', err);
+    }
+  };
+
   return (
     <View style={styles.safeAreaStyle}>
       {!addCallVisible ? (
@@ -375,7 +413,7 @@ const PostalReceiveList = ({
                     setErrorMessage('');
                     setAddCallVisible(true);
                   } else {
-                    alert(`Selected number: ${value}`);
+                    onPatientAdmissionExcelGet();
                   }
                 }}>
                 <MenuTrigger text={''} />

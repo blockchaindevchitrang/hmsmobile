@@ -49,6 +49,7 @@ import {
   onGetEditAccountDataApi,
   onGetSpecificCommonApi,
 } from '../../services/Api';
+import RNFS from 'react-native-fs';
 
 const filterArray = [
   {id: 1, name: 'All'},
@@ -433,6 +434,43 @@ const PatientAdmissionList = ({
     );
   };
 
+  const onPatientAdmissionExcelGet = async () => {
+    try {
+      const response = await onGetCommonApi('export-patient-admissions');
+      console.log('Get Repsonse Income:::', response.data.data);
+      if (response.data.flag == 1) {
+        var filename = response.data.data.substring(
+          response.data.data.lastIndexOf('/') + 1,
+        );
+        const downloadPath = `${RNFS.DownloadDirectoryPath}/${filename}`;
+
+        const result = await RNFS.downloadFile({
+          fromUrl: response.data.data,
+          toFile: downloadPath,
+        }).promise;
+
+        if (result.statusCode === 200) {
+          showMessage({
+            message: 'File Downloaded Successfully',
+            type: 'success',
+            duration: 3000,
+          });
+          console.log('File downloaded successfully to:', downloadPath);
+        } else {
+          showMessage({
+            message: 'File download failed.',
+            type: 'danger',
+            duration: 6000,
+            icon: 'danger',
+          });
+          console.log('File download failed:', result.statusCode);
+        }
+      }
+    } catch (err) {
+      console.log('Error:', err);
+    }
+  };
+
   return (
     <View style={styles.safeAreaStyle}>
       {!newUserVisible ? (
@@ -468,7 +506,7 @@ const PatientAdmissionList = ({
                   if (value == 'add') {
                     setNewUserVisible(true);
                   } else {
-                    alert(`Selected number: ${value}`);
+                    onPatientAdmissionExcelGet();
                   }
                 }}>
                 <MenuTrigger text={''} />

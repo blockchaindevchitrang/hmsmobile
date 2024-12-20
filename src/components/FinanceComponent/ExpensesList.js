@@ -51,6 +51,7 @@ import {
 } from '../../services/Api';
 import photo from '../../images/photo.png';
 import draw from '../../images/draw.png';
+import RNFS from 'react-native-fs';
 
 let filterArray = [{id: 0, name: 'All'}];
 
@@ -388,6 +389,43 @@ const ExpensesList = ({
     );
   };
 
+  const onExpensesExcelGet = async () => {
+    try {
+      const response = await onGetCommonApi('export-expense');
+      console.log('Get Repsonse Income:::', response.data.data);
+      if (response.data.flag == 1) {
+        var filename = response.data.data.substring(
+          response.data.data.lastIndexOf('/') + 1,
+        );
+        const downloadPath = `${RNFS.DownloadDirectoryPath}/${filename}`;
+
+        const result = await RNFS.downloadFile({
+          fromUrl: response.data.data,
+          toFile: downloadPath,
+        }).promise;
+
+        if (result.statusCode === 200) {
+          showMessage({
+            message: 'File Downloaded Successfully',
+            type: 'success',
+            duration: 3000,
+          });
+          console.log('File downloaded successfully to:', downloadPath);
+        } else {
+          showMessage({
+            message: 'File download failed.',
+            type: 'danger',
+            duration: 6000,
+            icon: 'danger',
+          });
+          console.log('File download failed:', result.statusCode);
+        }
+      }
+    } catch (err) {
+      console.log('Error:', err);
+    }
+  };
+
   return (
     <>
       <View style={styles.safeAreaStyle}>
@@ -434,7 +472,7 @@ const ExpensesList = ({
                     setErrorMessage('');
                     setAddIncomeVisible(true);
                   } else {
-                    alert(`Selected number: ${value}`);
+                    onExpensesExcelGet();
                   }
                 }}>
                 <MenuTrigger text={''} />

@@ -47,6 +47,13 @@ let filterArray = [
   {id: 1, name: 'Discharged'},
 ];
 
+let platformArray = [{id: 1, name: 'Zoom'}];
+
+let typeArray = [
+  {id: 0, name: 'OPD'},
+  {id: 1, name: 'IPD'},
+];
+
 const ConsultationList = ({
   searchBreak,
   setSearchBreak,
@@ -64,23 +71,21 @@ const ConsultationList = ({
   const bedData = useSelector(state => state.bedData);
   const {theme} = useTheme();
   const [newBloodIssueVisible, setNewBloodIssueVisible] = useState(false);
+  const [consultationTitle, setConsultationTitle] = useState('');
+  const [consultationDate, setConsultationDate] = useState(new Date());
+  const [dateModalVisible, setDateModalVisible] = useState(false);
+  const [platformType, setPlatformType] = useState('');
+  const [duration, setDuration] = useState('');
   const [patientId, setPatientId] = useState('');
   const [patientName, setPatientName] = useState('');
-  const [caseId, setCaseId] = useState('');
-  const [caseName, setCaseName] = useState('');
-  const [height, setHeight] = useState('0');
-  const [weight, setWeight] = useState('0');
   const [doctorId, setDoctorId] = useState('');
   const [doctorName, setDoctorName] = useState('');
-  const [bloodPressure, setBloodPressure] = useState('');
-  const [admissionDate, setAdmissionDate] = useState(new Date());
-  const [dateModalVisible, setDateModalVisible] = useState(false);
-  const [bedTypeId, setBedTypeId] = useState('');
-  const [bedTypeName, setBedTypeName] = useState('');
-  const [bedId, setBedId] = useState('');
-  const [bedName, setBedName] = useState('');
-  const [oldPatient, setOldPatient] = useState(false);
-  const [symptoms, setSymptoms] = useState('');
+  const [typeId, setTypeId] = useState('');
+  const [typeName, setTypeName] = useState('');
+  const [numberId, setNumberId] = useState('');
+  const [numberName, setNumberName] = useState('');
+  const [hostVideo, setHostVideo] = useState('disabled');
+  const [clientVideo, setClientVideo] = useState('disabled');
   const [description, setDescription] = useState('');
   const [errorVisible, setErrorVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -91,238 +96,6 @@ const ConsultationList = ({
   const [refresh, setRefresh] = useState(false);
   const [filterVisible, setFilterVisible] = useState(false);
 
-  const onAddPayRollData = async () => {
-    try {
-      if (patientId == '') {
-        setErrorVisible(true);
-        setErrorMessage('Please enter patient.');
-      } else if (caseId == '') {
-        setErrorVisible(true);
-        setErrorMessage('Please select case.');
-      } else if (doctorId == '') {
-        setErrorVisible(true);
-        setErrorMessage('Please select doctor.');
-      } else if (bedTypeId == '') {
-        setErrorVisible(true);
-        setErrorMessage('Please select bed type.');
-      } else if (bedId == '') {
-        setErrorVisible(true);
-        setErrorMessage('Please select bed.');
-      } else {
-        setLoading(true);
-        setErrorVisible(false);
-        const urlData = `ipd-patient-department-store?patient_id=${patientId}&case_id=${caseId}&height=${height}&weight=${weight}&bp=${bloodPressure}&admission_date=${moment(
-          admissionDate,
-        ).format(
-          'YYYY-MM-DD',
-        )}&doctor_id=${doctorId}&bed_type_id=${bedTypeId}&bed_id=${bedId}&is_old_patient=${
-          oldPatient ? 1 : 0
-        }&symptoms=${symptoms}&notes=${description}`;
-        const response = await onAddAccountListApi(urlData);
-        if (response.data.flag == 1) {
-          onGetData();
-          setLoading(false);
-          setNewBloodIssueVisible(false);
-          showMessage({
-            message: 'Record Added Successfully',
-            type: 'success',
-            duration: 3000,
-          });
-        } else {
-          setLoading(false);
-          showMessage({
-            message: response.data.message,
-            type: 'danger',
-            duration: 6000,
-            icon: 'danger',
-          });
-        }
-      }
-    } catch (err) {
-      if (err.response.data.message) {
-        showMessage({
-          message: err.response.data.message,
-          type: 'danger',
-          duration: 6000,
-          icon: 'danger',
-        });
-      } else {
-        showMessage({
-          message: 'Something want wrong.',
-          type: 'danger',
-          duration: 6000,
-          icon: 'danger',
-        });
-      }
-      setLoading(false);
-      console.log('Error:', err);
-    }
-  };
-
-  const onEditPayRollData = async () => {
-    try {
-      if (patientId == '') {
-        setErrorVisible(true);
-        setErrorMessage('Please enter patient.');
-      } else if (caseId == '') {
-        setErrorVisible(true);
-        setErrorMessage('Please select case.');
-      } else if (doctorId == '') {
-        setErrorVisible(true);
-        setErrorMessage('Please select doctor.');
-      } else if (bedTypeId == '') {
-        setErrorVisible(true);
-        setErrorMessage('Please select bed type.');
-      } else if (bedId == '') {
-        setErrorVisible(true);
-        setErrorMessage('Please select bed.');
-      } else {
-        setLoading(true);
-        setErrorVisible(false);
-        const urlData = `ipd-patient-department-update/${userId}?patient_id=${patientId}&case_id=${caseId}&height=${height}&weight=${weight}&bp=${bloodPressure}&admission_date=${moment(
-          admissionDate,
-        ).format(
-          'YYYY-MM-DD',
-        )}&doctor_id=${doctorId}&bed_type_id=${bedTypeId}&bed_id=${bedId}&is_old_patient=${
-          oldPatient ? 1 : 0
-        }&symptoms=${symptoms}&notes=${description}`;
-        const response = await onGetEditAccountDataApi(urlData);
-        if (response.data.flag == 1) {
-          onGetData();
-          setLoading(false);
-          setNewBloodIssueVisible(false);
-          showMessage({
-            message: 'Record Edit Successfully',
-            type: 'success',
-            duration: 3000,
-          });
-        } else {
-          setLoading(false);
-          showMessage({
-            message: response.data.message,
-            type: 'danger',
-            duration: 6000,
-            icon: 'danger',
-          });
-        }
-      }
-    } catch (err) {
-      setLoading(false);
-      if (err.response.data.message) {
-        showMessage({
-          message: err.response.data.message,
-          type: 'danger',
-          duration: 6000,
-          icon: 'danger',
-        });
-      } else {
-        showMessage({
-          message: 'Something want wrong.',
-          type: 'danger',
-          duration: 6000,
-          icon: 'danger',
-        });
-      }
-      console.log('Error:', err);
-    }
-  };
-
-  const onDeletePayrollData = async id => {
-    try {
-      setLoading(true);
-      const response = await onDeleteCommonApi(
-        `ipd-patient-department-delete/${id}`,
-      );
-      if (response.data.flag == 1) {
-        onGetData();
-        setLoading(false);
-        setDeleteUser(false);
-        showMessage({
-          message: 'Record Delete Successfully',
-          type: 'success',
-          duration: 3000,
-        });
-      } else {
-        setLoading(false);
-        setDeleteUser(false);
-        showMessage({
-          message: response.data.message,
-          type: 'danger',
-          duration: 6000,
-          icon: 'danger',
-        });
-      }
-    } catch (err) {
-      setLoading(false);
-      setDeleteUser(false);
-      if (err.response.data.message) {
-        showMessage({
-          message: err.response.data.message,
-          type: 'danger',
-          duration: 6000,
-          icon: 'danger',
-        });
-      } else {
-        showMessage({
-          message: 'Something want wrong.',
-          type: 'danger',
-          duration: 6000,
-          icon: 'danger',
-        });
-      }
-      console.log('Get Error', err);
-    }
-  };
-
-  const onGetSpecificDoctor = async id => {
-    try {
-      const response = await onGetSpecificCommonApi(
-        `ipd-patient-department-edit/${id}`,
-      );
-      if (response.data.flag == 1) {
-        console.log('get ValueLL:::', response.data.data);
-        return response.data.data.ipdPatientDepartment;
-      } else {
-        return 0;
-      }
-    } catch (err) {
-      console.log('Get Error', err);
-    }
-  };
-
-  const onGetCaseData = async id => {
-    try {
-      const response = await onGetCommonApi(
-        `patient-case-list-get?patient_id=${id}`,
-      );
-      console.log('get Response:', response.data.data);
-      if (response.data.flag === 1) {
-        const matchingKey = [];
-        Object.entries(response.data.data).find(([key, value]) => {
-          matchingKey.push({id: key, name: value});
-        });
-        setCaseId('');
-        setCaseName('');
-        setAllCaseData(matchingKey);
-        setRefresh(!refresh);
-        return matchingKey;
-      }
-    } catch (err) {
-      console.log('Get Error', err);
-    }
-  };
-
-  let bedGetData = bedData.filter(user => user.bed_type === bedTypeName);
-  useEffect(() => {
-    if (bedGetData.length > 0) {
-      setBedId(bedGetData[0].id);
-      setBedName(bedGetData[0].name);
-    } else {
-      setBedId('');
-      setBedName('');
-    }
-  }, [bedGetData]);
-
   const renderItem = ({item, index}) => {
     return (
       <View
@@ -330,11 +103,23 @@ const ConsultationList = ({
           styles.dataHistoryView,
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
-        <View style={[styles.switchView, {width: wp(30)}]}>
+        <View style={[styles.switchView, {width: wp(40)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
             <Text style={[styles.dataHistoryText1]}>{item.ipd_number}</Text>
           </View>
         </View>
+        <Text style={[styles.dataHistoryText1, {width: wp(28)}]}>
+          {item.bed_type}
+        </Text>
+        <Text style={[styles.dataHistoryText1, {width: wp(32)}]}>
+          {item.bed_type}
+        </Text>
+        <Text style={[styles.dataHistoryText1, {width: wp(35)}]}>
+          {item.bed_type}
+        </Text>
+        <Text style={[styles.dataHistoryText1, {width: wp(35)}]}>
+          {item.bed_type}
+        </Text>
         <View style={styles.nameDataView}>
           <ProfilePhoto username={item.patient_name} />
           <View>
@@ -342,57 +127,13 @@ const ConsultationList = ({
             <Text style={[styles.dataHistoryText5]}>{item.patient_email}</Text>
           </View>
         </View>
-        <View style={styles.nameDataView}>
-          <ProfilePhoto username={item.doctor_name} />
-          <View>
-            <Text style={[styles.dataHistoryText2]}>{item.doctor_name}</Text>
-            <Text style={[styles.dataHistoryText5]}>{item.doctor_email}</Text>
-          </View>
-        </View>
-        <View style={[styles.switchView, {width: wp(35)}]}>
-          <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataHistoryText]}>{item.admission_date}</Text>
-          </View>
-        </View>
-        <Text style={[styles.dataHistoryText1, {width: wp(28)}]}>
-          {item.bed_type}
-        </Text>
-        <View style={[styles.switchView, {width: wp(28)}]}>
+        <View style={[styles.switchView, {width: wp(30)}]}>
           <Text style={[styles.dataListText1]}>{item.bill_status}</Text>
         </View>
         <View style={styles.actionDataView}>
           <TouchableOpacity
-            onPress={async () => {
-              let allDatas = await onGetSpecificDoctor(item.id);
+            onPress={() => {
               setUserId(item.id);
-              setPatientId(allDatas.patient_id);
-              setPatientName(item.patient_name);
-              let allDatas1 = await onGetCaseData(allDatas.patient_id);
-              const accountantData = allDatas1.filter(
-                user => user.id == allDatas.case_id,
-              );
-              if (accountantData.length > 0) {
-                setCaseName(accountantData[0].name);
-              }
-              setCaseId(allDatas.case_id);
-              setHeight(JSON.stringify(allDatas.height));
-              setWeight(JSON.stringify(allDatas.weight));
-              setBloodPressure(allDatas.bp);
-              setAdmissionDate(new Date(allDatas.admission_date));
-              setDoctorId(allDatas.doctor_id);
-              setDoctorName(item.doctor_name);
-              setBedTypeId(allDatas.bed_type_id);
-              setBedTypeName(item.bed_type);
-              setBedId(allDatas.bed_id);
-              const accountantData1 = bedData.filter(
-                user => user.id === allDatas.bed_id,
-              );
-              if (accountantData1.length > 0) {
-                setBedName(accountantData1[0].name);
-              }
-              setOldPatient(allDatas.is_old_patient);
-              setSymptoms(allDatas.symptoms);
-              setDescription(allDatas.notes);
               setNewBloodIssueVisible(true);
             }}>
             <Image
@@ -439,24 +180,6 @@ const ConsultationList = ({
               <TouchableOpacity
                 onPress={() => {
                   setUserId('');
-                  setAllCaseData([]);
-                  setPatientId('');
-                  setPatientName('');
-                  setCaseName('');
-                  setCaseId('');
-                  setHeight('0');
-                  setWeight('0');
-                  setBloodPressure('');
-                  setAdmissionDate(new Date());
-                  setDoctorId('');
-                  setDoctorName('');
-                  setBedTypeId('');
-                  setBedTypeName('');
-                  setBedId('');
-                  setBedName('');
-                  setOldPatient('');
-                  setSymptoms('');
-                  setDescription('');
                   setErrorMessage('');
                   setErrorVisible(false);
                   setNewBloodIssueVisible(true);
@@ -464,6 +187,25 @@ const ConsultationList = ({
                 style={styles.actionView}>
                 <Text style={styles.actionText}>Actions</Text>
               </TouchableOpacity>
+              {/* <Menu
+                              ref={menuRef}
+                              onSelect={value => {
+                                if (value == 'add') {
+                                  setNewUserVisible(true);
+                                } else {
+                                  alert(`Selected number: ${value}`);
+                                }
+                              }}>
+                              <MenuTrigger text={''} />
+                              <MenuOptions style={{marginVertical: hp(0.5)}}>
+                                <MenuOption value={'add'}>
+                                  <Text style={styles.dataHistoryText3}>New Bed</Text>
+                                </MenuOption>
+                                <MenuOption value={'excel'}>
+                                  <Text style={styles.dataHistoryText3}>Export to Excel</Text>
+                                </MenuOption>
+                              </MenuOptions>
+                            </Menu> */}
               <Modal
                 animationType="none"
                 transparent={true}
@@ -533,8 +275,20 @@ const ConsultationList = ({
                     styles.titleActiveView,
                     {backgroundColor: theme.headerColor},
                   ]}>
-                  <Text style={[styles.titleText, {width: wp(30)}]}>
-                    {'IPD ID'}
+                  <Text style={[styles.titleText, {width: wp(40)}]}>
+                    {'CONSULTATION TITLE'}
+                  </Text>
+                  <Text style={[styles.titleText, {width: wp(28)}]}>
+                    {'STATUS'}
+                  </Text>
+                  <Text style={[styles.titleText, {width: wp(32)}]}>
+                    {'DATE'}
+                  </Text>
+                  <Text style={[styles.titleText, {width: wp(35)}]}>
+                    {'CREATED BY'}
+                  </Text>
+                  <Text style={[styles.titleText, {width: wp(35)}]}>
+                    {'CREATED FOR'}
                   </Text>
                   <Text
                     style={[
@@ -543,21 +297,8 @@ const ConsultationList = ({
                     ]}>
                     {'PATIENT'}
                   </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: wp(55), textAlign: 'left'},
-                    ]}>
-                    {'DOCTORS'}
-                  </Text>
-                  <Text style={[styles.titleText, {width: wp(35)}]}>
-                    {'ADMISSION DATE'}
-                  </Text>
-                  <Text style={[styles.titleText, {width: wp(28)}]}>
-                    {'Bed'}
-                  </Text>
-                  <Text style={[styles.titleText, {width: wp(28)}]}>
-                    {'BILL STATUS'}
+                  <Text style={[styles.titleText, {width: wp(30)}]}>
+                    {'PASSWORD'}
                   </Text>
                   <Text style={[styles.titleText, {width: wp(16)}]}>
                     {'ACTION'}
@@ -640,7 +381,7 @@ const ConsultationList = ({
           contentContainerStyle={{paddingBottom: hp(12)}}>
           <View style={styles.subView}>
             <Text style={[styles.doctorText, {color: theme.text}]}>
-              Create IPD
+              New Live Meeting
             </Text>
             <View style={styles.filterView}>
               <TouchableOpacity
@@ -654,15 +395,101 @@ const ConsultationList = ({
           <View style={styles.profileView}>
             <View style={styles.nameView}>
               <View style={{width: '48%'}}>
-                <Text style={[styles.dataHistoryText1]}>{'Patient:'}</Text>
+                <Text style={styles.dataHistoryText1}>Consultation Title:</Text>
+                <TextInput
+                  value={consultationTitle}
+                  placeholder={'Consultation Title'}
+                  onChangeText={text => setConsultationTitle(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                />
+              </View>
+              <View style={{width: '48%'}}>
+                <Text style={[styles.dataHistoryText1]}>
+                  Consultation Date:
+                </Text>
+                <Text
+                  style={[
+                    styles.nameTextView,
+                    {width: '100%', paddingVertical: hp(1)},
+                  ]}
+                  onPress={() => setDateModalVisible(!dateModalVisible)}>
+                  {moment(consultationDate).format('YYYY-MM-DD hh:mm')}
+                </Text>
+                <DatePicker
+                  open={dateModalVisible}
+                  modal={true}
+                  date={consultationDate}
+                  mode={'date'}
+                  onConfirm={date => {
+                    console.log('Console Log>>', date);
+                    setDateModalVisible(false);
+                    setConsultationDate(date);
+                  }}
+                  onCancel={() => {
+                    setDateModalVisible(false);
+                  }}
+                />
+              </View>
+            </View>
+            <View style={styles.nameView}>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Platform Type:</Text>
+                <SelectDropdown
+                  data={platformArray}
+                  onSelect={(selectedItem, index) => {
+                    // setSelectedColor(selectedItem);
+                    setPlatformType(selectedItem.name);
+                    console.log('gert Value:::', selectedItem);
+                  }}
+                  renderButton={(selectedItem, isOpen) => {
+                    console.log('Get Response>>>', selectedItem);
+                    return (
+                      <View style={styles.dropdown2BtnStyle2}>
+                        {platformType != '' ? (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {platformType == selectedItem?.name
+                              ? selectedItem?.name
+                              : platformType}
+                          </Text>
+                        ) : (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {selectedItem?.name || 'Select Platform'}
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(item, index, isSelected) => {
+                    return (
+                      <TouchableOpacity style={styles.dropdownView}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {item.name}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                  dropdownIconPosition={'left'}
+                  dropdownStyle={styles.dropdown2DropdownStyle}
+                />
+              </View>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Duration Minutes:</Text>
+                <TextInput
+                  value={duration}
+                  placeholder={'Duration Minutes'}
+                  onChangeText={text => setDuration(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                  keyboardType={'number-pad'}
+                />
+              </View>
+            </View>
+            <View style={styles.nameView}>
+              <View style={{width: '48%'}}>
+                <Text style={[styles.dataHistoryText1]}>{'Patient Name:'}</Text>
                 <SelectDropdown
                   data={user_data}
                   onSelect={(selectedItem, index) => {
-                    // setSelectedColor(selectedItem);
-                    setAllCaseData([]);
-                    setCaseId('');
-                    setCaseName('');
-                    onGetCaseData(selectedItem.id);
                     setPatientId(selectedItem.id);
                     console.log('gert Value:::', selectedItem);
                   }}
@@ -701,119 +528,7 @@ const ConsultationList = ({
                 />
               </View>
               <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>Case:</Text>
-                <SelectDropdown
-                  data={allCaseData}
-                  disabled={allCaseData.length > 0 ? false : true}
-                  onSelect={(selectedItem, index) => {
-                    // setSelectedColor(selectedItem);
-                    setCaseId(selectedItem.id);
-                    console.log('gert Value:::', selectedItem);
-                  }}
-                  defaultValue={caseName}
-                  renderButton={(selectedItem, isOpen) => {
-                    console.log('Get Response>>>', selectedItem);
-                    return (
-                      <View
-                        style={[
-                          styles.dropdown2BtnStyle2,
-                          {
-                            backgroundColor:
-                              allCaseData.length > 0 ? '#fff' : '#c2c2c2',
-                          },
-                        ]}>
-                        {caseId != '' ? (
-                          <Text style={styles.dropdownItemTxtStyle}>
-                            {caseId == selectedItem?.id
-                              ? selectedItem?.name
-                              : caseName}
-                          </Text>
-                        ) : (
-                          <Text style={styles.dropdownItemTxtStyle}>
-                            {selectedItem?.name || 'Choose Case'}
-                          </Text>
-                        )}
-                      </View>
-                    );
-                  }}
-                  showsVerticalScrollIndicator={false}
-                  renderItem={(item, index, isSelected) => {
-                    return (
-                      <TouchableOpacity style={styles.dropdownView}>
-                        <Text style={styles.dropdownItemTxtStyle}>
-                          {item.name}
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  }}
-                  dropdownIconPosition={'left'}
-                  dropdownStyle={styles.dropdown2DropdownStyle}
-                />
-              </View>
-            </View>
-            <View style={styles.nameView}>
-              <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>Height:</Text>
-                <TextInput
-                  value={height}
-                  placeholder={''}
-                  onChangeText={text => setHeight(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                  keyboardType={'number-pad'}
-                />
-              </View>
-              <View style={{width: '48%'}}>
-                <Text style={[styles.dataHistoryText1]}>{'Weight:'}</Text>
-                <TextInput
-                  value={weight}
-                  placeholder={''}
-                  onChangeText={text => setWeight(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                  keyboardType={'number-pad'}
-                />
-              </View>
-            </View>
-            <View style={styles.nameView}>
-              <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>Blood Pressure:</Text>
-                <TextInput
-                  value={bloodPressure}
-                  placeholder={'Blood Pressure'}
-                  onChangeText={text => setBloodPressure(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                  keyboardType={'number-pad'}
-                />
-              </View>
-
-              <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>Admission Date:</Text>
-                <Text
-                  style={[
-                    styles.nameTextView,
-                    {width: '100%', paddingVertical: hp(1)},
-                  ]}
-                  onPress={() => setDateModalVisible(!dateModalVisible)}>
-                  {moment(admissionDate).format('DD/MM/YYYY')}
-                </Text>
-                <DatePicker
-                  open={dateModalVisible}
-                  modal={true}
-                  date={admissionDate}
-                  mode={'date'}
-                  onConfirm={date => {
-                    console.log('Console Log>>', date);
-                    setDateModalVisible(false);
-                    setAdmissionDate(date);
-                  }}
-                  onCancel={() => {
-                    setDateModalVisible(false);
-                  }}
-                />
-              </View>
-            </View>
-            <View style={styles.nameView}>
-              <View style={{width: '48%'}}>
-                <Text style={[styles.dataHistoryText1]}>{'Doctor:'}</Text>
+                <Text style={[styles.dataHistoryText1]}>{'Doctor Name:'}</Text>
                 <SelectDropdown
                   data={doctorData}
                   onSelect={(selectedItem, index) => {
@@ -854,82 +569,30 @@ const ConsultationList = ({
                   dropdownStyle={styles.dropdown2DropdownStyle}
                 />
               </View>
+            </View>
+            <View style={styles.nameView}>
               <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>Bed Type:</Text>
+                <Text style={[styles.dataHistoryText1]}>{'Type:'}</Text>
                 <SelectDropdown
-                  data={bedTypeData}
+                  data={typeArray}
                   onSelect={(selectedItem, index) => {
                     // setSelectedColor(selectedItem);
-                    setBedTypeName(selectedItem.title);
-                    setBedTypeId(selectedItem.id);
+                    setTypeId(selectedItem.id);
                     console.log('gert Value:::', selectedItem);
                   }}
-                  defaultValue={bedTypeName}
                   renderButton={(selectedItem, isOpen) => {
                     console.log('Get Response>>>', selectedItem);
                     return (
                       <View style={styles.dropdown2BtnStyle2}>
-                        {bedTypeId != '' ? (
+                        {typeId != '' ? (
                           <Text style={styles.dropdownItemTxtStyle}>
-                            {bedTypeId == selectedItem?.id
-                              ? selectedItem?.title
-                              : bedTypeName}
-                          </Text>
-                        ) : (
-                          <Text style={styles.dropdownItemTxtStyle}>
-                            {selectedItem?.title || 'Select Bed Type'}
-                          </Text>
-                        )}
-                      </View>
-                    );
-                  }}
-                  showsVerticalScrollIndicator={false}
-                  renderItem={(item, index, isSelected) => {
-                    return (
-                      <TouchableOpacity style={styles.dropdownView}>
-                        <Text style={styles.dropdownItemTxtStyle}>
-                          {item.title}
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  }}
-                  dropdownIconPosition={'left'}
-                  dropdownStyle={styles.dropdown2DropdownStyle}
-                />
-              </View>
-            </View>
-            <View style={styles.nameView}>
-              <View style={{width: '48%'}}>
-                <Text style={[styles.dataHistoryText1]}>{'Bed:'}</Text>
-                <SelectDropdown
-                  data={bedGetData}
-                  disabled={bedGetData.length > 0 ? false : true}
-                  onSelect={(selectedItem, index) => {
-                    // setSelectedColor(selectedItem);
-                    setBedId(selectedItem.id);
-                    console.log('gert Value:::', selectedItem);
-                  }}
-                  defaultValue={bedName}
-                  renderButton={(selectedItem, isOpen) => {
-                    console.log('Get Response>>>', selectedItem);
-                    return (
-                      <View
-                        style={[
-                          styles.dropdown2BtnStyle2,
-                          {
-                            backgroundColor:
-                              bedGetData.length > 0 ? '#fff' : '#c2c2c2',
-                          },
-                        ]}>
-                        {bedId != '' ? (
-                          <Text style={styles.dropdownItemTxtStyle}>
-                            {bedId == selectedItem?.id
+                            {typeId == selectedItem?.id
                               ? selectedItem?.name
-                              : bedName}
+                              : typeName}
                           </Text>
                         ) : (
                           <Text style={styles.dropdownItemTxtStyle}>
-                            {selectedItem?.name || 'Choose Bed'}
+                            {selectedItem?.name || 'Select Type'}
                           </Text>
                         )}
                       </View>
@@ -950,40 +613,134 @@ const ConsultationList = ({
                 />
               </View>
               <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>Is Old Patient:</Text>
+                <Text style={styles.dataHistoryText1}>Type Number:</Text>
+                <SelectDropdown
+                  data={bedTypeData}
+                  onSelect={(selectedItem, index) => {
+                    // setSelectedColor(selectedItem);
+                    setNumberName(selectedItem.name);
+                    setNumberId(selectedItem.id);
+                    console.log('gert Value:::', selectedItem);
+                  }}
+                  renderButton={(selectedItem, isOpen) => {
+                    console.log('Get Response>>>', selectedItem);
+                    return (
+                      <View style={styles.dropdown2BtnStyle2}>
+                        {numberId != '' ? (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {numberId == selectedItem?.id
+                              ? selectedItem?.name
+                              : numberName}
+                          </Text>
+                        ) : (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {selectedItem?.name || 'Select Type Number'}
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(item, index, isSelected) => {
+                    return (
+                      <TouchableOpacity style={styles.dropdownView}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {item.name}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                  dropdownIconPosition={'left'}
+                  dropdownStyle={styles.dropdown2DropdownStyle}
+                />
+              </View>
+            </View>
+            <View style={styles.nameView}>
+              <View style={{width: '48%'}}>
+                <Text style={[styles.dataHistoryText1]}>{'Host Video:'}</Text>
                 <View style={[styles.statusView, {paddingVertical: hp(1)}]}>
-                  <Switch
-                    trackColor={{
-                      false: oldPatient ? COLORS.greenColor : COLORS.errorColor,
-                      true: oldPatient ? COLORS.greenColor : COLORS.errorColor,
-                    }}
-                    thumbColor={oldPatient ? '#f4f3f4' : '#f4f3f4'}
-                    ios_backgroundColor={COLORS.errorColor}
-                    onValueChange={() => setOldPatient(!oldPatient)}
-                    value={oldPatient}
-                  />
+                  <View style={[styles.optionView, {marginLeft: wp(1)}]}>
+                    <TouchableOpacity
+                      onPress={() => setHostVideo('enable')}
+                      style={[
+                        styles.roundBorder,
+                        {
+                          backgroundColor:
+                            hostVideo == 'enable'
+                              ? COLORS.blueColor
+                              : COLORS.white,
+                          borderWidth: hostVideo == 'enable' ? 0 : 0.5,
+                        },
+                      ]}>
+                      <View style={styles.round} />
+                    </TouchableOpacity>
+                    <Text style={styles.statusText}>Enable</Text>
+                  </View>
+                  <View style={[styles.optionView]}>
+                    <TouchableOpacity
+                      onPress={() => setHostVideo('disabled')}
+                      style={[
+                        styles.roundBorder,
+                        {
+                          backgroundColor:
+                            hostVideo == 'disabled'
+                              ? COLORS.blueColor
+                              : COLORS.white,
+                          borderWidth: hostVideo == 'disabled' ? 0 : 0.5,
+                        },
+                      ]}>
+                      <View style={styles.round} />
+                    </TouchableOpacity>
+                    <Text style={styles.statusText}>Disabled</Text>
+                  </View>
+                </View>
+              </View>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Client Video:</Text>
+                <View style={[styles.statusView, {paddingVertical: hp(1)}]}>
+                  <View style={[styles.optionView, {marginLeft: wp(1)}]}>
+                    <TouchableOpacity
+                      onPress={() => setClientVideo('enable')}
+                      style={[
+                        styles.roundBorder,
+                        {
+                          backgroundColor:
+                            clientVideo == 'enable'
+                              ? COLORS.blueColor
+                              : COLORS.white,
+                          borderWidth: clientVideo == 'enable' ? 0 : 0.5,
+                        },
+                      ]}>
+                      <View style={styles.round} />
+                    </TouchableOpacity>
+                    <Text style={styles.statusText}>Enable</Text>
+                  </View>
+                  <View style={[styles.optionView]}>
+                    <TouchableOpacity
+                      onPress={() => setClientVideo('disabled')}
+                      style={[
+                        styles.roundBorder,
+                        {
+                          backgroundColor:
+                            clientVideo == 'disabled'
+                              ? COLORS.blueColor
+                              : COLORS.white,
+                          borderWidth: clientVideo == 'disabled' ? 0 : 0.5,
+                        },
+                      ]}>
+                      <View style={styles.round} />
+                    </TouchableOpacity>
+                    <Text style={styles.statusText}>Disabled</Text>
+                  </View>
                 </View>
               </View>
             </View>
             <View style={[styles.nameView]}>
               <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>Symptoms:</Text>
-                <TextInput
-                  value={symptoms}
-                  placeholder={'Symptoms'}
-                  onChangeText={text => setSymptoms(text)}
-                  style={[styles.commentTextInput]}
-                  multiline
-                  textAlignVertical="top"
-                />
-              </View>
-            </View>
-            <View style={[styles.nameView]}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>Notes:</Text>
+                <Text style={styles.dataHistoryText1}>Description:</Text>
                 <TextInput
                   value={description}
-                  placeholder={'Notes'}
+                  placeholder={'Description'}
                   onChangeText={text => setDescription(text)}
                   style={[styles.commentTextInput]}
                   multiline
@@ -999,11 +756,7 @@ const ConsultationList = ({
           </View>
 
           <View style={styles.buttonView}>
-            <TouchableOpacity
-              onPress={() => {
-                userId != '' ? onEditPayRollData() : onAddPayRollData();
-              }}
-              style={styles.nextView}>
+            <TouchableOpacity onPress={() => {}} style={styles.nextView}>
               {loading ? (
                 <ActivityIndicator size={'small'} color={COLORS.white} />
               ) : (
@@ -1021,7 +774,7 @@ const ConsultationList = ({
       <DeletePopup
         modelVisible={deleteUser}
         setModelVisible={setDeleteUser}
-        onPress={() => onDeletePayrollData(userId)}
+        onPress={() => {}}
         setUserId={setUserId}
         isLoading={loading}
       />
@@ -1046,7 +799,7 @@ const styles = StyleSheet.create({
     marginVertical: hp(2),
   },
   searchView: {
-    width: '100%',
+    width: '60%',
     paddingHorizontal: wp(2),
     paddingVertical: hp(0.5),
     borderWidth: 1,
@@ -1247,7 +1000,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    width: '94%',
+    width: '100%',
     marginVertical: hp(2),
     alignSelf: 'center',
   },

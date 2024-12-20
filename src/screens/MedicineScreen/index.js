@@ -270,6 +270,7 @@ export const MedicineScreen = ({navigation}) => {
             totalPage={purchasePage}
             pageCount={pageCount}
             setPageCount={setPageCount}
+            medicine={medicine}
           />
         ) : selectedView == 'Used Medicine' ? (
           <UsedMedicineList

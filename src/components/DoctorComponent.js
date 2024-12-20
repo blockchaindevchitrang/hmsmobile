@@ -36,9 +36,14 @@ import DatePicker from 'react-native-date-picker';
 import moment from 'moment';
 import {DeletePopup} from './DeletePopup';
 import ImagePicker from 'react-native-image-crop-picker';
-import {onGetDoctorDetailApi} from '../services/Api';
+import {onGetCommonApi, onGetDoctorDetailApi} from '../services/Api';
 import SelectDropdown from 'react-native-select-dropdown';
 import {useSelector} from 'react-redux';
+import RNFS from 'react-native-fs';
+import FlashMessage, {
+  showMessage,
+  hideMessage,
+} from 'react-native-flash-message';
 
 const filterArray = [
   {id: 1, name: 'All'},
@@ -298,6 +303,43 @@ const DoctorComponent = ({
     );
   };
 
+  const onDoctorExcelGet = async () => {
+    try {
+      const response = await onGetCommonApi('doctor-export');
+      console.log('Get Repsonse Income:::', response.data.data);
+      if (response.data.flag == 1) {
+        var filename = response.data.data.substring(
+          response.data.data.lastIndexOf('/') + 1,
+        );
+        const downloadPath = `${RNFS.DownloadDirectoryPath}/${filename}`;
+
+        const result = await RNFS.downloadFile({
+          fromUrl: response.data.data,
+          toFile: downloadPath,
+        }).promise;
+
+        if (result.statusCode === 200) {
+          showMessage({
+            message: 'File Downloaded Successfully',
+            type: 'success',
+            duration: 3000,
+          });
+          console.log('File downloaded successfully to:', downloadPath);
+        } else {
+          showMessage({
+            message: 'File download failed.',
+            type: 'danger',
+            duration: 6000,
+            icon: 'danger',
+          });
+          console.log('File download failed:', result.statusCode);
+        }
+      }
+    } catch (err) {
+      console.log('Error:', err);
+    }
+  };
+
   return (
     <View style={styles.safeAreaStyle}>
       {!addDoctorVisible ? (
@@ -352,7 +394,7 @@ const DoctorComponent = ({
                     setConfirmPassword('');
                     setAddDoctorVisible(true);
                   } else {
-                    alert(`Selected number: ${value}`);
+                    onDoctorExcelGet();
                   }
                 }}>
                 <MenuTrigger text={''} />

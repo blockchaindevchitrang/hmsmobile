@@ -21,107 +21,9 @@ import {
 } from '../../components/Pixel';
 import headerLogo from '../../images/headerLogo.png';
 import {BlurView} from '@react-native-community/blur';
-import IPDList from '../../components/IPDComponent/IPDList';
-import OPDList from '../../components/IPDComponent/OPDList';
 import {onGetCommonApi} from '../../services/Api';
 import ConsultationList from '../../components/ConsultationComponent/ConsultationList';
 import LiveMeetingList from '../../components/ConsultationComponent/LiveMeetingList';
-
-const BloodIssueData = [
-  {
-    id: 1,
-    admission: 'OMGFK57O',
-    name: 'Joey Tribiyani',
-    mail: 'joey@gmail.com',
-    date: '22:02:00 2023-05-25',
-    bed: 'Single-10',
-    status: 'Paid',
-  },
-  {
-    id: 2,
-    admission: 'OMGFK571',
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    date: '22:02:00 2023-05-25',
-    bed: 'General Ward',
-    status: 'Unpaid',
-  },
-  {
-    id: 3,
-    admission: 'OMGFK572',
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    date: '22:02:00 2023-05-25',
-    bed: 'VVIP-32',
-    status: 'Paid',
-  },
-  {
-    id: 4,
-    admission: 'OMGFK573',
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    date: '22:02:00 2023-05-25',
-    bed: 'General Ward',
-    status: 'Unpaid',
-  },
-  {
-    id: 5,
-    admission: 'OMGFK574',
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    date: '22:02:00 2023-05-25',
-    bed: 'General Ward',
-    status: 'Unpaid',
-  },
-];
-
-const ODPData = [
-  {
-    id: 1,
-    admission: 'OMGFK57O',
-    name: 'Joey Tribiyani',
-    mail: 'joey@gmail.com',
-    date: '22:02:00 2023-05-25',
-    charge: '$1,200.00',
-    payment: 'Card',
-  },
-  {
-    id: 2,
-    admission: 'OMGFK571',
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    date: '22:02:00 2023-05-25',
-    charge: '$600.00',
-    payment: 'Cash',
-  },
-  {
-    id: 3,
-    admission: 'OMGFK572',
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    date: '22:02:00 2023-05-25',
-    charge: '$1,500.00',
-    payment: 'Card',
-  },
-  {
-    id: 4,
-    admission: 'OMGFK573',
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    date: '22:02:00 2023-05-25',
-    charge: '$600.00',
-    payment: 'Cash',
-  },
-  {
-    id: 5,
-    admission: 'OMGFK574',
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    date: '22:02:00 2023-05-25',
-    charge: '$600.00',
-    payment: 'Cash',
-  },
-];
 
 export const LiveConsultationScreen = ({navigation}) => {
   const {t} = useTranslation();
@@ -246,7 +148,7 @@ export const LiveConsultationScreen = ({navigation}) => {
           <ConsultationList
             searchBreak={searchConsultation}
             setSearchBreak={setSearchConsultation}
-            allData={consultationData}
+            allData={[]}
             onGetData={onGetConsultationData}
             totalPage={totalPage}
             pageCount={pageCount}
@@ -259,7 +161,7 @@ export const LiveConsultationScreen = ({navigation}) => {
             <LiveMeetingList
               searchBreak={searchLiveMeeting}
               setSearchBreak={setSearchLiveMeeting}
-              allData={liveMeetingData}
+              allData={[]}
               onGetData={onGetLiveMeetingData}
               totalPage={meetingPage}
               pageCount={pageCount}

@@ -1,4 +1,4 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useEffect} from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -23,6 +23,8 @@ import {
   widthPercentageToDP as wp,
 } from '../../components/Pixel';
 import close from '../../images/close.png';
+import {onGetCommonApi} from '../../services/Api';
+import filter from '../../images/filter.png';
 
 const BloodIssueData = [
   {
@@ -84,6 +86,28 @@ export const TransactionsScreen = ({navigation}) => {
   const [bloodGroup, setBloodGroup] = useState('');
   const [Amount, setAmount] = useState('');
   const [Remarks, setRemarks] = useState('');
+  const [transactionList, setTransactionList] = useState([]);
+  const [refresh, setRefresh] = useState(false);
+  const [filterVisible, setFilterVisible] = useState(false);
+
+  useEffect(() => {
+    onGetTransactionData();
+  }, [searchAccount]);
+
+  const onGetTransactionData = async () => {
+    try {
+      const response = await onGetCommonApi(
+        `my-transaction?search=${searchAccount}`,
+      );
+      console.log('Response User Data', response.data.data);
+      if (response.data.flag === 1) {
+        setTransactionList(response.data.data);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Error>>', err);
+    }
+  };
 
   const renderItem = ({item, index}) => {
     return (
@@ -93,27 +117,79 @@ export const TransactionsScreen = ({navigation}) => {
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
         <View style={[styles.nameDataView, {width: wp(35)}]}>
-          <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
+          <Text style={[styles.dataHistoryText2]}>{item.hospital_name}</Text>
         </View>
-        <View style={[styles.nameDataView, {width: wp(35)}]}>
-          <Text style={[styles.dataHistoryText]}>{item.payment}</Text>
+        <View style={[styles.switchView, {width: wp(35)}]}>
+          <View
+            style={[
+              styles.dateBox1,
+              {backgroundColor: 'rgba(167, 108, 248, 0.2)'},
+            ]}>
+            <Text style={[styles.dataHistoryText, {color: COLORS.purpleColor}]}>
+              {item.payment_type}
+            </Text>
+          </View>
         </View>
         <Text style={[styles.dataHistoryText1, {width: wp(24)}]}>
           {item.amount}
         </Text>
         <View style={[styles.switchView, {width: wp(35)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataHistoryText]}>{item.date}</Text>
+            <Text style={[styles.dataHistoryText]}>
+              {item.transaction_date}
+            </Text>
           </View>
         </View>
         <View style={[styles.switchView, {width: wp(40)}]}>
-          <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataHistoryText]}>{item.approved}</Text>
+          <View
+            style={[
+              styles.dateBox1,
+              {
+                backgroundColor:
+                  item.is_manual_payment == '0'
+                    ? 'rgba(167, 108, 248, 0.2)'
+                    : item.is_manual_payment == '1'
+                    ? COLORS.errorBG
+                    : COLORS.lightGreen1,
+              },
+            ]}>
+            <Text
+              style={[
+                styles.dataHistoryText,
+                {
+                  color:
+                    item.is_manual_payment == '0'
+                      ? COLORS.purpleColor
+                      : item.is_manual_payment == '1'
+                      ? COLORS.errorColor
+                      : COLORS.greenColor,
+                },
+              ]}>
+              {item.is_manual_payment == '0'
+                ? 'Waiting for Approval'
+                : item.is_manual_payment == '1'
+                ? 'Denied'
+                : 'Approved'}
+            </Text>
           </View>
         </View>
         <View style={[styles.switchView, {width: wp(20)}]}>
-          <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataHistoryText]}>{item.status}</Text>
+          <View
+            style={[
+              styles.dateBox1,
+              {
+                backgroundColor: item.status
+                  ? COLORS.lightGreen1
+                  : COLORS.errorBG,
+              },
+            ]}>
+            <Text
+              style={[
+                styles.dataHistoryText,
+                {color: item.status ? COLORS.greenColor : COLORS.errorColor},
+              ]}>
+              {item.status ? 'Paid' : 'Unpaid'}
+            </Text>
           </View>
         </View>
       </View>
@@ -143,7 +219,11 @@ export const TransactionsScreen = ({navigation}) => {
               style={[styles.searchView, {color: theme.text}]}
             />
             {/* <View style={styles.filterView}>
-             
+              <TouchableOpacity
+                style={styles.filterView1}
+                onPress={() => setFilterVisible(true)}>
+                <Image style={styles.filterImage} source={filter} />
+              </TouchableOpacity>
             </View> */}
           </View>
           <View
@@ -167,7 +247,7 @@ export const TransactionsScreen = ({navigation}) => {
                       styles.titleText,
                       {width: wp(35), textAlign: 'left'},
                     ]}>
-                    {'PAYMENT METHOD'}
+                    {'PAYMENTS'}
                   </Text>
                   <Text style={[styles.titleText, {width: wp(24)}]}>
                     {'AMOUNT'}
@@ -184,20 +264,18 @@ export const TransactionsScreen = ({navigation}) => {
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList
-                    data={BloodIssueData}
+                    data={transactionList}
                     renderItem={renderItem}
                     bounces={false}
                     showsHorizontalScrollIndicator={false}
-                    initialNumToRender={BloodIssueData.length}
+                    initialNumToRender={transactionList.length}
                     nestedScrollEnabled
                     virtualized
                     ListEmptyComponent={() => (
                       <View key={0} style={styles.ListEmptyView}>
-                        <View style={styles.subEmptyView}>
-                          <Text style={styles.emptyText}>
-                            {'No record found'}
-                          </Text>
-                        </View>
+                        <Text style={styles.emptyText}>
+                          {'No record found'}
+                        </Text>
                       </View>
                     )}
                   />
@@ -207,135 +285,6 @@ export const TransactionsScreen = ({navigation}) => {
           </View>
         </ScrollView>
       </View>
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={newBloodIssueVisible}
-        onRequestClose={() => setNewBloodIssueVisible(false)}>
-        <View style={styles.maneModalView}>
-          <TouchableWithoutFeedback
-            onPress={() => {
-              setNewBloodIssueVisible(false);
-            }}>
-            <View style={styles.modalOverlay} />
-          </TouchableWithoutFeedback>
-          <View style={styles.container1}>
-            <View style={styles.headerView1}>
-              <Text style={styles.headerText}>New Blood Issues</Text>
-              <TouchableOpacity onPress={() => setNewBloodIssueVisible(false)}>
-                <Image style={styles.closeImage} source={close} />
-              </TouchableOpacity>
-            </View>
-            <View style={styles.nameView}>
-              <View style={{width: '48%'}}>
-                <Text style={[styles.titleText1]}>
-                  {'Issue Date:'}
-                  <Text style={styles.dataHistoryText4}>*</Text>
-                </Text>
-                <TextInput
-                  value={issueDate}
-                  placeholder={'Issue Date'}
-                  onChangeText={text => setIssueDate(text)}
-                  style={[styles.nameTextView]}
-                />
-              </View>
-              <View style={{width: '48%'}}>
-                <Text style={[styles.titleText1]}>
-                  {'Doctor Name:'}
-                  <Text style={styles.dataHistoryText4}>*</Text>
-                </Text>
-                <TextInput
-                  value={doctorName}
-                  placeholder={'Doctor Name'}
-                  onChangeText={text => setDoctorName(text)}
-                  style={[styles.nameTextView]}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '48%'}}>
-                <Text style={[styles.titleText1]}>
-                  {'Patient Name:'}
-                  <Text style={styles.dataHistoryText4}>*</Text>
-                </Text>
-                <TextInput
-                  value={patientName}
-                  placeholder={'Patient Name'}
-                  onChangeText={text => setPatientName(text)}
-                  style={[styles.nameTextView]}
-                />
-              </View>
-              <View style={{width: '48%'}}>
-                <Text style={[styles.titleText1]}>
-                  {'Doctor Name:'}
-                  <Text style={styles.dataHistoryText4}>*</Text>
-                </Text>
-                <TextInput
-                  value={doctorName}
-                  placeholder={'Doctor Name'}
-                  onChangeText={text => setDoctorName(text)}
-                  style={[styles.nameTextView]}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '48%'}}>
-                <Text style={[styles.titleText1]}>
-                  {'Blood Group:'}
-                  <Text style={styles.dataHistoryText4}>*</Text>
-                </Text>
-                <TextInput
-                  value={bloodGroup}
-                  placeholder={'Blood Group'}
-                  onChangeText={text => setBloodGroup(text)}
-                  style={[styles.nameTextView]}
-                />
-              </View>
-              <View style={{width: '48%'}}>
-                <Text style={[styles.titleText1]}>
-                  {'Amount:'}
-                  <Text style={styles.dataHistoryText4}>*</Text>
-                </Text>
-                <TextInput
-                  value={Amount}
-                  placeholder={'Amount'}
-                  onChangeText={text => setAmount(text)}
-                  style={[styles.nameTextView]}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={[styles.titleText1]}>
-                  {'Remarks:'}
-                  <Text style={styles.dataHistoryText4}>*</Text>
-                </Text>
-                <TextInput
-                  value={Remarks}
-                  placeholder={'Enter Remarks'}
-                  onChangeText={text => setRemarks(text)}
-                  style={[styles.commentTextInput]}
-                  multiline
-                  textAlignVertical="top"
-                />
-              </View>
-            </View>
-            <View style={styles.buttonView}>
-              <TouchableOpacity onPress={() => {}} style={styles.nextView}>
-                <Text style={styles.nextText}>Save</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => setNewBloodIssueVisible(false)}
-                style={styles.prevView}>
-                <Text style={styles.prevText}>Cancel</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
     </View>
   );
 };
