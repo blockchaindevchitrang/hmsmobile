@@ -19,7 +19,6 @@ import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from '../../components/Pixel';
-import {TabView, SceneMap} from 'react-native-tab-view';
 import {COLORS} from '../../utils';
 import DoctorComponent from '../../components/DoctorComponent';
 import DepartmentComponent from '../../components/DepartmentComponent';
@@ -49,72 +48,6 @@ import FlashMessage, {
   hideMessage,
 } from 'react-native-flash-message';
 import moment from 'moment';
-
-const allData = [
-  {
-    id: 1,
-    name: 'Joey Tribiyani',
-    mail: 'joey@gmail.com',
-    specialist: 'Onco',
-    qualification: 'MBBS',
-    status: true,
-  },
-  {
-    id: 2,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    specialist: 'Pediatrician',
-    qualification: 'MBBS',
-    status: true,
-  },
-  {
-    id: 3,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    specialist: 'Pediatrician',
-    qualification: 'Phd',
-    status: false,
-  },
-  {
-    id: 4,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    specialist: 'Pediatrician',
-    qualification: 'MBBS',
-    status: true,
-  },
-  {
-    id: 5,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    specialist: 'Pediatrician',
-    qualification: 'Phd',
-    status: false,
-  },
-];
-
-const departmentData = [
-  {
-    id: 1,
-    name: 'General Medicine',
-  },
-  {
-    id: 2,
-    name: 'Pediatrics',
-  },
-  {
-    id: 3,
-    name: 'Psychiatrists',
-  },
-  {
-    id: 4,
-    name: 'Radiologist',
-  },
-  {
-    id: 5,
-    name: 'Ophthalmology',
-  },
-];
 
 const scheduleData = [
   {
@@ -253,6 +186,10 @@ export const DoctorScreen = ({navigation}) => {
   const [holidayPage, setHolidayPage] = useState('1');
   const [breakPage, setBreakPage] = useState('1');
   const [statusId, setStatusId] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [errorVisible, setErrorVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [scheduleList, setScheduleList] = useState([]);
   const {t} = useTranslation();
   const {theme} = useTheme();
 
@@ -428,7 +365,7 @@ export const DoctorScreen = ({navigation}) => {
       formdata.append('address2', address2);
       formdata.append('city', doctorCity);
       formdata.append('zip', doctorZip);
-      formdata.append('blood_group', 1);
+      formdata.append('blood_group', doctorBlood);
       // if (avatar != null) {
       //   formdata.append('image', avatar);
       // }
@@ -680,6 +617,24 @@ export const DoctorScreen = ({navigation}) => {
     }
   };
 
+  useEffect(() => {
+    onGetDoctorScheduleData();
+  }, [searchSchedule, pageCount]);
+
+  const onGetDoctorScheduleData = async () => {
+    try {
+      let urlData = `get-schedules?search=${searchBreak}&page=${pageCount}`;
+      const response = await onGetCommonApi(urlData);
+      if (response.data.flag == 1) {
+        setScheduleList(response.data.data.items);
+        setSchedulePage(response.data.pagination.last_page);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Get Error:', err);
+    }
+  };
+
   return (
     <View style={[styles.container, {backgroundColor: theme.lightColor}]}>
       <View style={styles.headerView}>
@@ -795,14 +750,17 @@ export const DoctorScreen = ({navigation}) => {
             pageCount={pageCount}
             setPageCount={setPageCount}
             totalPage={departmentPage}
+            loading={isLoading}
+            setLoading={setIsLoading}
           />
         ) : selectedView == 'Schedules' ? (
           <ScheduleComponent
             searchDepartment={searchSchedule}
             setSearchDepartment={setSearchSchedule}
-            allData={scheduleData}
+            allData={scheduleList}
             addScheduleVisible={addScheduleVisible}
             setAddScheduleVisible={setAddScheduleVisible}
+            onGetData={onGetDoctorScheduleData}
           />
         ) : selectedView == 'Doctor Holidays' ? (
           <HolidayComponent
@@ -828,6 +786,8 @@ export const DoctorScreen = ({navigation}) => {
             pageCount={pageCount}
             setPageCount={setPageCount}
             totalPage={holidayPage}
+            loading={isLoading}
+            setLoading={setIsLoading}
           />
         ) : (
           selectedView == 'Breaks' && (
@@ -839,6 +799,8 @@ export const DoctorScreen = ({navigation}) => {
               pageCount={pageCount}
               setPageCount={setPageCount}
               totalPage={breakPage}
+              loading={isLoading}
+              setLoading={setIsLoading}
             />
           )
         )}

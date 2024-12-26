@@ -126,7 +126,7 @@ export const onUpdateUserDataApi = async (id, body) => {
   const url = Api.baseUrl1 + `update-user/${id}`;
   return new Promise((resolve, reject) => {
     axios
-      .patch(url, body, {
+      .post(url, body, {
         headers: {
           'Content-Type': 'multipart/form-data',
           Accept: 'application/json',

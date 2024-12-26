@@ -76,5 +76,7 @@
   "transactions": "Transactions",
   "service": "Service",
   "sms": "SMS",
-  "live_consultations": "Live Consultations"
+  "live_consultations": "Live Consultations",
+  "update_password": "Change Password",
+  "update_profile": "Update Profile"
 }

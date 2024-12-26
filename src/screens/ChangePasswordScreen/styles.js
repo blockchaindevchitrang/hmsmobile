@@ -1,177 +1,9 @@
-import {
-  Text,
-  View,
-  Switch,
-  TouchableOpacity,
-  Image,
-  StyleSheet,
-  ScrollView,
-  TextInput,
-  FlatList,
-} from 'react-native';
-import React, {useRef, useState} from 'react';
+import {StyleSheet} from 'react-native';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
-} from './../Pixel/index';
-import {COLORS, Fonts} from '../../utils';
-import {useTheme} from '../../utils/ThemeProvider';
-import ProfilePhoto from './../ProfilePhoto';
-import deleteIcon from '../../images/delete.png';
-import moment from 'moment';
-
-const UsedMedicineList = ({
-  searchBreak,
-  setSearchBreak,
-  allData,
-  totalPage,
-  pageCount,
-  setPageCount,
-}) => {
-  const {theme} = useTheme();
-
-  const renderItem = ({item, index}) => {
-    return (
-      <View
-        style={[
-          styles.dataHistoryView,
-          {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
-        ]}>
-        <View style={styles.nameDataView}>
-          <Text style={[styles.dataHistoryText2]}>{item.medicine}</Text>
-        </View>
-        <View style={[styles.switchView, {width: wp(35)}]}>
-          <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataListText1]}>{item.quantity}</Text>
-          </View>
-        </View>
-        <Text style={[styles.dataHistoryText1, {width: wp(28)}]}>
-          {item.used_at}
-        </Text>
-        <View style={[styles.switchView]}>
-          <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={styles.dateText1} numberOfLines={2}>
-              {item.date}
-            </Text>
-          </View>
-        </View>
-      </View>
-    );
-  };
-
-  return (
-    <View style={styles.safeAreaStyle}>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{paddingBottom: hp(12)}}>
-        <View style={styles.subView}>
-          <TextInput
-            value={searchBreak}
-            placeholder={'Search'}
-            placeholderTextColor={theme.text}
-            onChangeText={text => setSearchBreak(text)}
-            style={[styles.searchView, {color: theme.text}]}
-          />
-        </View>
-        <View style={[styles.activeView, {backgroundColor: theme.headerColor}]}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <View>
-              <View
-                style={[
-                  styles.titleActiveView,
-                  {backgroundColor: theme.headerColor},
-                ]}>
-                <Text
-                  style={[
-                    styles.titleText,
-                    {width: wp(30), textAlign: 'left'},
-                  ]}>
-                  {'MEDICINES'}
-                </Text>
-                <Text style={[styles.titleText, {width: wp(35)}]}>
-                  {'USED QUANTITY'}
-                </Text>
-                <Text style={[styles.titleText, {width: wp(28)}]}>
-                  {'USED AT'}
-                </Text>
-                <Text style={[styles.titleText, {width: wp(30)}]}>
-                  {'DATE'}
-                </Text>
-              </View>
-              <View style={styles.mainDataView}>
-                <FlatList
-                  data={allData}
-                  renderItem={renderItem}
-                  bounces={false}
-                  showsHorizontalScrollIndicator={false}
-                  initialNumToRender={allData.length}
-                  nestedScrollEnabled
-                  virtualized
-                  ListEmptyComponent={() => (
-                    <View key={0} style={styles.ListEmptyView}>
-                      <Text style={styles.emptyText}>{'No record found'}</Text>
-                    </View>
-                  )}
-                />
-              </View>
-            </View>
-          </ScrollView>
-        </View>
-        <View style={styles.nextView1}>
-          <View style={styles.prevViewData}>
-            <Text
-              style={[
-                styles.prevButtonView,
-                {opacity: pageCount == '1' ? 0.7 : 1},
-              ]}
-              disabled={pageCount == '1'}
-              onPress={() => setPageCount('1')}>
-              {'<<'}
-            </Text>
-            <Text
-              style={[
-                styles.prevButtonView,
-                {marginLeft: wp(3), opacity: pageCount == '1' ? 0.7 : 1},
-              ]}
-              disabled={pageCount == '1'}
-              onPress={() => setPageCount(parseFloat(pageCount) - 1)}>
-              {'<'}
-            </Text>
-          </View>
-          <Text
-            style={
-              styles.totalCountText
-            }>{`Page ${pageCount} to ${totalPage}`}</Text>
-          <View style={styles.prevViewData}>
-            <Text
-              style={[
-                styles.prevButtonView,
-                {opacity: pageCount >= totalPage ? 0.7 : 1},
-              ]}
-              disabled={pageCount >= totalPage}
-              onPress={() => setPageCount(parseFloat(pageCount) + 1)}>
-              {'>'}
-            </Text>
-            <Text
-              style={[
-                styles.prevButtonView,
-                {
-                  marginLeft: wp(3),
-                  opacity: pageCount >= totalPage ? 0.7 : 1,
-                },
-              ]}
-              disabled={pageCount >= totalPage}
-              onPress={() => setPageCount(totalPage)}>
-              {'>>'}
-            </Text>
-          </View>
-        </View>
-      </ScrollView>
-    </View>
-  );
-};
-
-export default UsedMedicineList;
+} from '../../components/Pixel/index';
+import {COLORS, Fonts} from '../../utils/index';
 
 const styles = StyleSheet.create({
   safeAreaStyle: {
@@ -179,16 +11,26 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: '100%',
   },
+  headerView: {
+    flex: 0.1,
+    width: '100%',
+  },
+  mainView: {
+    flex: 0.9,
+    alignItems: 'center',
+    width: '100%',
+    backgroundColor: COLORS.white,
+  },
   subView: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     width: '100%',
-    paddingHorizontal: wp(3),
-    marginVertical: hp(2),
+    // paddingHorizontal: wp(3),
+    marginVertical: hp(1),
   },
   searchView: {
-    width: '100%',
+    width: '50%',
     paddingHorizontal: wp(2),
     paddingVertical: hp(0.5),
     borderWidth: 1,
@@ -266,7 +108,7 @@ const styles = StyleSheet.create({
   },
   dataHistoryView: {
     width: '100%',
-    height: hp(8),
+    paddingVertical: hp(1),
     alignItems: 'center',
     flexDirection: 'row',
     alignSelf: 'flex-start',
@@ -279,10 +121,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   dataHistoryText1: {
-    fontSize: hp(1.8),
-    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.7),
+    fontFamily: Fonts.FONTS.PoppinsBold,
     color: COLORS.black,
-    paddingHorizontal: wp(2),
+    width: wp(45),
   },
   dataHistoryText2: {
     fontSize: hp(1.8),
@@ -300,6 +142,11 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.errorColor,
   },
+  dataHistoryText5: {
+    fontSize: hp(1.7),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+  },
   mainDataView: {
     minHeight: hp(29),
     maxHeight: hp(74),
@@ -312,17 +159,17 @@ const styles = StyleSheet.create({
   nameDataView: {
     flexDirection: 'row',
     alignItems: 'center',
-    width: wp(30),
+    width: wp(60),
     marginHorizontal: wp(2),
   },
   switchView: {
-    width: wp(30),
-    alignItems: 'flex-start',
+    width: wp(24),
     justifyContent: 'center',
     marginHorizontal: wp(2),
+    alignItems: 'flex-start',
   },
   actionDataView: {
-    width: wp(20),
+    width: wp(16),
     alignItems: 'center',
     justifyContent: 'center',
     marginHorizontal: wp(2),
@@ -352,8 +199,7 @@ const styles = StyleSheet.create({
     color: COLORS.black,
   },
   profileView: {
-    width: '94%',
-    backgroundColor: '#eeeeee',
+    width: '100%',
     paddingVertical: hp(1),
     paddingHorizontal: wp(3),
     alignSelf: 'center',
@@ -362,7 +208,7 @@ const styles = StyleSheet.create({
   nameTextView: {
     width: '50%',
     paddingHorizontal: wp(2),
-    paddingVertical: hp(0.5),
+    paddingVertical: hp(1),
     borderWidth: 1,
     borderColor: COLORS.greyColor,
     fontFamily: Fonts.FONTS.PoppinsMedium,
@@ -376,7 +222,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    width: '94%',
+    width: '100%',
     marginVertical: hp(2),
     alignSelf: 'center',
   },
@@ -393,6 +239,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     alignItems: 'center',
+    marginTop: hp(1),
   },
   nextView: {
     height: hp(4.5),
@@ -426,18 +273,13 @@ const styles = StyleSheet.create({
     fontSize: hp(1.7),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
-  },
-  dateText1: {
-    fontSize: hp(1.7),
-    fontFamily: Fonts.FONTS.PoppinsMedium,
-    color: COLORS.black,
-    textAlign: 'center',
+    textAlign: 'left',
   },
   dateBox1: {
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 5,
-    padding: 10,
+    padding: 5,
   },
   startDateText: {
     fontSize: hp(2),
@@ -507,6 +349,38 @@ const styles = StyleSheet.create({
     borderRadius: wp(1.5),
     backgroundColor: COLORS.white,
   },
+  statusView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+  },
+  profilePhotoView: {
+    borderWidth: 0.5,
+    marginTop: hp(1),
+  },
+  profileImage: {
+    width: wp(28),
+    height: hp(13.5),
+    resizeMode: 'contain',
+  },
+  editView: {
+    width: wp(7),
+    height: wp(7),
+    borderRadius: wp(7),
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 0.5,
+    position: 'absolute',
+    zIndex: 1,
+    right: -wp(3),
+    top: -hp(2),
+    backgroundColor: COLORS.white,
+  },
+  editImage1: {
+    width: wp(3),
+    height: hp(2.5),
+    resizeMode: 'contain',
+  },
   ListEmptyView: {
     width: '100%',
     alignItems: 'center',
@@ -517,6 +391,35 @@ const styles = StyleSheet.create({
     fontSize: hp(2.5),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
+  },
+  dropdown2DropdownStyle: {
+    backgroundColor: COLORS.white,
+    borderRadius: 4,
+    height: hp(25),
+    // borderRadius: 12,
+  },
+  dropdownItemTxtStyle: {
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    marginLeft: wp(2),
+  },
+  dropdownView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: hp(4),
+    borderBottomWidth: 0,
+  },
+  dropdown2BtnStyle2: {
+    width: '100%',
+    height: hp(4.2),
+    backgroundColor: COLORS.white,
+    borderRadius: 5,
+    alignItems: 'center',
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    marginTop: hp(1),
   },
   nextView1: {
     width: '92%',
@@ -544,4 +447,44 @@ const styles = StyleSheet.create({
     color: COLORS.black,
     fontFamily: Fonts.FONTS.PoppinsMedium,
   },
+  countryCodeStyle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+  },
+  textInput: {
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+    fontSize: hp(1.8),
+    // width: '20%',
+    // paddingHorizontal: wp(1)
+  },
+  countryCodeText: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '25%',
+    paddingVertical: hp(1.2),
+    backgroundColor: COLORS.lightGreyColor,
+    marginTop: hp(1),
+    borderTopLeftRadius: 5,
+    borderBottomLeftRadius: 5,
+  },
+  numberTextView: {
+    width: '100%',
+    paddingHorizontal: wp(2),
+    paddingVertical: hp(0.5),
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    color: COLORS.black,
+    borderTopRightRadius: 5,
+    borderBottomRightRadius: 5,
+    marginTop: hp(1),
+    backgroundColor: COLORS.white,
+  },
 });
+
+export default styles;

@@ -53,8 +53,9 @@ const BloodIssueList = ({
   pageCount,
   setPageCount,
   totalPage,
+  bloodDonorData,
+  bloodBankData,
 }) => {
-  const bloodDonor = useSelector(state => state.bloodDonor);
   const doctorData = useSelector(state => state.doctorData);
   const user_data = useSelector(state => state.user_data);
   const {theme} = useTheme();
@@ -74,6 +75,7 @@ const BloodIssueList = ({
   const [deleteUser, setDeleteUser] = useState(false);
   const [userId, setUserId] = useState('');
   const [dateModalVisible, setDateModalVisible] = useState(false);
+  const [bloodSelected, setBloodSelected] = useState('');
 
   const onAddBloodIssue = async () => {
     try {
@@ -476,12 +478,6 @@ const BloodIssueList = ({
                   {'Issue Date:'}
                   <Text style={styles.dataHistoryText4}>*</Text>
                 </Text>
-                {/* <TextInput
-                  value={issueDate}
-                  placeholder={'Issue Date'}
-                  onChangeText={text => setIssueDate(text)}
-                  style={[styles.nameTextView]}
-                /> */}
                 <Text
                   style={[styles.eventTextInput]}
                   onPress={() => setDateModalVisible(!dateModalVisible)}>
@@ -507,11 +503,34 @@ const BloodIssueList = ({
                   {'Doctor Name:'}
                   <Text style={styles.dataHistoryText4}>*</Text>
                 </Text>
-                <TextInput
-                  value={doctorName}
-                  placeholder={'Doctor Name'}
-                  onChangeText={text => setDoctorName(text)}
-                  style={[styles.nameTextView]}
+                <SelectDropdown
+                  data={doctorData}
+                  onSelect={(selectedItem, index) => {
+                    setDoctorId(selectedItem.id);
+                    console.log('gert Value:::', selectedItem);
+                  }}
+                  renderButton={(selectedItem, isOpen) => {
+                    console.log('Get Response>>>', selectedItem);
+                    return (
+                      <View style={styles.dropdown2BtnStyle2}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {selectedItem?.name || 'Select Doctor'}
+                        </Text>
+                      </View>
+                    );
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(item, index, isSelected) => {
+                    return (
+                      <TouchableOpacity style={styles.dropdownView}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {item.name}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                  dropdownIconPosition={'left'}
+                  dropdownStyle={styles.dropdown2DropdownStyle}
                 />
               </View>
             </View>
@@ -522,23 +541,81 @@ const BloodIssueList = ({
                   {'Patient Name:'}
                   <Text style={styles.dataHistoryText4}>*</Text>
                 </Text>
-                <TextInput
-                  value={patientName}
-                  placeholder={'Patient Name'}
-                  onChangeText={text => setPatientName(text)}
-                  style={[styles.nameTextView]}
+                <SelectDropdown
+                  data={user_data}
+                  onSelect={(selectedItem, index) => {
+                    setPatientId(selectedItem.id);
+                    console.log('gert Value:::', selectedItem);
+                  }}
+                  defaultValue={patientName}
+                  renderButton={(selectedItem, isOpen) => {
+                    console.log('Get Response>>>', selectedItem);
+                    return (
+                      <View style={styles.dropdown2BtnStyle2}>
+                        {patientId != '' ? (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {patientId == selectedItem?.id
+                              ? `${selectedItem?.patient_user?.first_name} ${selectedItem?.patient_user?.last_name}`
+                              : patientName}
+                          </Text>
+                        ) : (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {selectedItem?.patient_user?.first_name ||
+                              'Select Patient'}
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(item, index, isSelected) => {
+                    return (
+                      <TouchableOpacity style={styles.dropdownView}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {`${item?.patient_user?.first_name} ${item?.patient_user?.last_name}`}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                  dropdownIconPosition={'left'}
+                  dropdownStyle={styles.dropdown2DropdownStyle}
                 />
               </View>
               <View style={{width: '48%'}}>
                 <Text style={[styles.titleText1]}>
-                  {'Doctor Name:'}
+                  {'Donor Name:'}
                   <Text style={styles.dataHistoryText4}>*</Text>
                 </Text>
-                <TextInput
-                  value={doctorName}
-                  placeholder={'Doctor Name'}
-                  onChangeText={text => setDoctorName(text)}
-                  style={[styles.nameTextView]}
+                <SelectDropdown
+                  data={bloodDonorData}
+                  onSelect={(selectedItem, index) => {
+                    setDonorId(selectedItem.id);
+                    // setDonorName(selectedItem.id);
+                    setBloodSelected(selectedItem.blood_group);
+                    console.log('gert Value:::', selectedItem);
+                  }}
+                  renderButton={(selectedItem, isOpen) => {
+                    console.log('Get Response>>>', selectedItem);
+                    return (
+                      <View style={styles.dropdown2BtnStyle2}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {selectedItem?.name || 'Select Donor'}
+                        </Text>
+                      </View>
+                    );
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(item, index, isSelected) => {
+                    return (
+                      <TouchableOpacity style={styles.dropdownView}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {item.name}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                  dropdownIconPosition={'left'}
+                  dropdownStyle={styles.dropdown2DropdownStyle}
                 />
               </View>
             </View>
@@ -549,11 +626,45 @@ const BloodIssueList = ({
                   {'Blood Group:'}
                   <Text style={styles.dataHistoryText4}>*</Text>
                 </Text>
-                <TextInput
-                  value={bloodGroup}
-                  placeholder={'Blood Group'}
-                  onChangeText={text => setBloodGroup(text)}
-                  style={[styles.nameTextView]}
+                <SelectDropdown
+                  data={bloodBankData}
+                  onSelect={(selectedItem, index) => {
+                    // setSelectedColor(selectedItem);
+                    setBloodGroup(selectedItem.id);
+                    setBloodSelected(selectedItem.blood_group);
+                    console.log('gert Value:::', selectedItem);
+                  }}
+                  defaultValue={bloodSelected}
+                  renderButton={(selectedItem, isOpen) => {
+                    console.log('Get Response>>>', selectedItem);
+                    return (
+                      <View style={styles.dropdown2BtnStyle2}>
+                        {bloodSelected != '' ? (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {bloodSelected == selectedItem?.blood_group
+                              ? selectedItem?.blood_group
+                              : bloodSelected}
+                          </Text>
+                        ) : (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {selectedItem?.blood_group || 'Select'}
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(item, index, isSelected) => {
+                    return (
+                      <TouchableOpacity style={styles.dropdownView}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {item.blood_group}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                  dropdownIconPosition={'left'}
+                  dropdownStyle={styles.dropdown2DropdownStyle}
                 />
               </View>
               <View style={{width: '48%'}}>
@@ -992,7 +1103,7 @@ const styles = StyleSheet.create({
     color: COLORS.black,
     borderRadius: 5,
     alignSelf: 'center',
-    marginBottom: hp(3),
+    // marginBottom: hp(3),
     marginTop: hp(1),
   },
   commentTextInput: {
@@ -1050,5 +1161,34 @@ const styles = StyleSheet.create({
     fontSize: hp(2),
     color: COLORS.black,
     fontFamily: Fonts.FONTS.PoppinsMedium,
+  },
+  dropdown2DropdownStyle: {
+    backgroundColor: COLORS.white,
+    borderRadius: 4,
+    height: hp(25),
+    // borderRadius: 12,
+  },
+  dropdownItemTxtStyle: {
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    marginLeft: wp(2),
+  },
+  dropdownView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: hp(4),
+    borderBottomWidth: 0,
+  },
+  dropdown2BtnStyle2: {
+    width: '100%',
+    height: hp(4.8),
+    backgroundColor: COLORS.white,
+    borderRadius: 5,
+    alignItems: 'center',
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    marginTop: hp(1),
   },
 });

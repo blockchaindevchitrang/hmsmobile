@@ -746,12 +746,6 @@ const DoctorComponent = ({
                 <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
                   Blood Group:<Text style={styles.dataHistoryText4}>*</Text>
                 </Text>
-                {/* <TextInput
-                  value={doctorBlood}
-                  placeholder={'Select Blood'}
-                  onChangeText={text => setDoctorBlood(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                /> */}
                 <SelectDropdown
                   data={bloodData}
                   onSelect={(selectedItem, index) => {

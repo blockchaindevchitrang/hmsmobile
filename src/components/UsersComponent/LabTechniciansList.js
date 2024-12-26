@@ -9,6 +9,9 @@ import {
   TextInput,
   FlatList,
   Platform,
+  ActivityIndicator,
+  Modal,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import React, {useRef, useState} from 'react';
 import {
@@ -41,6 +44,16 @@ import {
 import {DeletePopup} from '../DeletePopup';
 import SelectDropdown from 'react-native-select-dropdown';
 import {useSelector} from 'react-redux';
+import FlashMessage, {
+  showMessage,
+  hideMessage,
+} from 'react-native-flash-message';
+
+const filterArray = [
+  {id: 1, name: 'All'},
+  {id: 2, name: 'Active'},
+  {id: 3, name: 'Deactive'},
+];
 
 const LabTechniciansList = ({
   searchBreak,
@@ -50,6 +63,8 @@ const LabTechniciansList = ({
   pageCount,
   setPageCount,
   totalPage,
+  setStatusId,
+  statusId,
 }) => {
   const bloodData = useSelector(state => state.bloodData);
   const {theme} = useTheme();
@@ -77,6 +92,10 @@ const LabTechniciansList = ({
   const [userId, setUserId] = useState('');
   const [deleteUser, setDeleteUser] = useState(false);
   const [bloodSelected, setBloodSelected] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [errorVisible, setErrorVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [filterVisible, setFilterVisible] = useState(false);
 
   const openProfileImagePicker = async () => {
     try {
@@ -108,81 +127,228 @@ const LabTechniciansList = ({
     }
   };
 
+  const validateEmail = email => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email); // Returns true if valid
+  };
+
   const onAddUsers = async () => {
     try {
-      const formdata = new FormData();
-      formdata.append('first_name', firstName);
-      formdata.append('last_name', lastName);
-      formdata.append('email', email);
-      formdata.append('department_id', '9');
-      formdata.append('phone', number);
-      if (avatar != null) {
-        formdata.append('image', avatar);
-      }
-      formdata.append('blood_group', bloodSelected);
-      formdata.append('designation', designation);
-      formdata.append('qualification', qualification);
-      formdata.append('status', status ? 1 : 2);
-      formdata.append('password', password);
-      formdata.append('password_confirmation', confirmPassword);
-      formdata.append('address2', address1);
-      formdata.append('city', city);
-      formdata.append('country', country);
-      formdata.append('postal_code', postalCode);
-      formdata.append('address1', address);
-      formdata.append('gender', genderType == 'female' ? 1 : 0);
-      const response = await onAddUsersApi(formdata);
+      if (firstName == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter first name.');
+      } else if (lastName == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter last name.');
+      } else if (email == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter email address.');
+      } else if (!validateEmail(email)) {
+        setErrorVisible(true);
+        setErrorMessage('Please enter valid email address.');
+      } else if (designation == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter user designation.');
+      } else if (qualification == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter user qualification.');
+      } else if (bloodSelected == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select blood group.');
+      } else if (password == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter password.');
+      } else if (confirmPassword == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter confirm password.');
+      } else {
+        setLoading(true);
+        setErrorVisible(false);
+        setErrorMessage('');
+        const formdata = new FormData();
+        formdata.append('first_name', firstName);
+        formdata.append('last_name', lastName);
+        formdata.append('email', email);
+        formdata.append('department_id', '9');
+        formdata.append('phone', number);
+        if (avatar != null) {
+          formdata.append('image', avatar);
+        }
+        formdata.append('blood_group', bloodSelected);
+        formdata.append('designation', designation);
+        formdata.append('qualification', qualification);
+        formdata.append('status', status ? 1 : 2);
+        formdata.append('password', password);
+        formdata.append('password_confirmation', confirmPassword);
+        formdata.append('address2', address1);
+        formdata.append('city', city);
+        formdata.append('country', country);
+        formdata.append('postal_code', postalCode);
+        formdata.append('address1', address);
+        formdata.append('gender', genderType == 'female' ? 1 : 0);
+        const response = await onAddUsersApi(formdata);
 
-      if (response.status === 200) {
-        onGetData();
-        setNewUserVisible(false);
+        if (response.data.flag == 1) {
+          onGetData();
+          showMessage({
+            message: 'Record Added Successfully',
+            type: 'success',
+            duration: 3000,
+          });
+          setLoading(false);
+          setNewUserVisible(false);
+        } else {
+          setLoading(false);
+          showMessage({
+            message: response.data.message,
+            type: 'danger',
+            duration: 6000,
+            icon: 'danger',
+          });
+        }
       }
     } catch (err) {
+      if (err.response.data) {
+        showMessage({
+          message: err.response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      } else {
+        showMessage({
+          message: 'Something want wrong.',
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
+      setLoading(false);
       console.log('Add User Error:', err.response.data);
     }
   };
 
   const onEditUsers = async () => {
     try {
-      const formdata = new FormData();
-      formdata.append('first_name', firstName);
-      formdata.append('last_name', lastName);
-      formdata.append('email', email);
-      formdata.append('phone', number);
-      if (avatar != null) {
-        formdata.append('image', avatar);
-      }
-      formdata.append('designation', designation);
-      formdata.append('qualification', qualification);
-      formdata.append('status', status ? 1 : 2);
-      formdata.append('department_id', '9');
-      formdata.append('address2', address1);
-      formdata.append('city', city);
-      formdata.append('country', country);
-      formdata.append('postal_code', postalCode);
-      formdata.append('address1', address);
-      formdata.append('gender', genderType == 'female' ? 1 : 0);
-      const response = await onUpdateUserDataApi(userId, formdata);
+      if (firstName == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter first name.');
+      } else if (lastName == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter last name.');
+      } else if (email == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter email address.');
+      } else if (!validateEmail(email)) {
+        setErrorVisible(true);
+        setErrorMessage('Please enter valid email address.');
+      } else if (designation == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter user designation.');
+      } else if (qualification == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter user qualification.');
+      } else if (bloodSelected == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select blood group.');
+      } else {
+        setLoading(true);
+        setErrorVisible(false);
+        setErrorMessage('');
+        const formdata = new FormData();
+        formdata.append('first_name', firstName);
+        formdata.append('last_name', lastName);
+        formdata.append('email', email);
+        formdata.append('phone', number);
+        if (avatar != null) {
+          formdata.append('image', avatar);
+        }
+        formdata.append('designation', designation);
+        formdata.append('qualification', qualification);
+        formdata.append('status', status ? 1 : 2);
+        formdata.append('department_id', '9');
+        formdata.append('address2', address1);
+        formdata.append('city', city);
+        formdata.append('country', country);
+        formdata.append('postal_code', postalCode);
+        formdata.append('address1', address);
+        formdata.append('gender', genderType == 'female' ? 1 : 0);
+        const response = await onUpdateUserDataApi(userId, formdata);
 
-      if (response.status === 200) {
-        onGetData();
-        setUserId('');
-        setNewUserVisible(false);
+        if (response.data.flag == 1) {
+          onGetData();
+          setUserId('');
+          showMessage({
+            message: 'Record Edited Successfully',
+            type: 'success',
+            duration: 3000,
+          });
+          setLoading(false);
+          setNewUserVisible(false);
+        } else {
+          setLoading(false);
+          showMessage({
+            message: response.data.message,
+            type: 'danger',
+            duration: 6000,
+            icon: 'danger',
+          });
+        }
       }
     } catch (err) {
+      if (err.response.data) {
+        showMessage({
+          message: err.response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      } else {
+        showMessage({
+          message: 'Something want wrong.',
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
+      setLoading(false);
       console.log('Add User Error:', err);
     }
   };
 
   const onDeleteRecord = async () => {
     try {
+      setLoading(true);
       const response = await onDeleteUserDataApi(userId);
-      if (response.status == 200) {
+      if (response.data.flag == 1) {
         onGetData();
         setUserId('');
         setDeleteUser(false);
+        setLoading(false);
+        showMessage({
+          message: 'Record Delete Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      } else {
+        setLoading(false);
+        setDeleteUser(false);
+        showMessage({
+          message: response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
       }
     } catch (err) {
+      setLoading(false);
+      setDeleteUser(false);
+      showMessage({
+        message: 'Something want wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
       console.log('Error Delete', err);
     }
   };
@@ -334,60 +500,99 @@ const LabTechniciansList = ({
               onChangeText={text => setSearchBreak(text)}
               style={[styles.searchView, {color: theme.text}]}
             />
-            <View style={styles.filterView}>
-              <TouchableOpacity style={styles.filterView1}>
-                <Image style={styles.filterImage} source={filter} />
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => {
-                  if (menuRef.current) {
-                    menuRef.current.open(); // Open the menu on button press
-                  }
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>Action</Text>
-              </TouchableOpacity>
-              <Menu
-                ref={menuRef}
-                onSelect={value => {
-                  if (value == 'add') {
-                    setUserId('');
-                    setFirstName('');
-                    setLastName('');
-                    setEmail('');
-                    setDesignation('');
-                    setDateOfBirth(new Date());
-                    setGenderType('female');
-                    setAddress('');
-                    setCity('');
-                    setCountry('');
-                    setPostalCode('');
-                    setAvatar(null);
-                    setAddress1('');
-                    setPassword('');
-                    setConfirmPassword('');
-                    setBloodSelected('');
-                    setQualification('');
-                    setNewUserVisible(true);
-                  } else {
-                    alert(`Selected number: ${value}`);
-                  }
-                }}>
-                <MenuTrigger text={''} />
-                <MenuOptions style={{marginVertical: hp(0.5)}}>
-                  <MenuOption value={'add'}>
-                    <Text style={styles.dataHistoryText3}>
-                      New Lab Technician
-                    </Text>
-                  </MenuOption>
-                  <MenuOption value={'excel'}>
-                    <Text style={styles.dataHistoryText3}>Export to Excel</Text>
-                  </MenuOption>
-                </MenuOptions>
-              </Menu>
-            </View>
           </View>
-
+          <View style={styles.filterView}>
+            <TouchableOpacity
+              onPress={() => setFilterVisible(true)}
+              style={styles.filterView1}>
+              <Image style={styles.filterImage} source={filter} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                setUserId('');
+                setFirstName('');
+                setLastName('');
+                setEmail('');
+                setDesignation('');
+                setDateOfBirth(new Date());
+                setGenderType('female');
+                setAddress('');
+                setCity('');
+                setCountry('');
+                setPostalCode('');
+                setAvatar(null);
+                setAddress1('');
+                setPassword('');
+                setConfirmPassword('');
+                setBloodSelected('');
+                setQualification('');
+                setErrorMessage('');
+                setErrorVisible(false);
+                setNewUserVisible(true);
+              }}
+              style={styles.actionView}>
+              <Text style={styles.actionText}>New Lab Technician</Text>
+            </TouchableOpacity>
+            <Modal
+              animationType="none"
+              transparent={true}
+              visible={filterVisible}
+              onRequestClose={() => setFilterVisible(false)}>
+              <View style={styles.filterModal}>
+                <TouchableWithoutFeedback
+                  onPress={() => {
+                    setFilterVisible(false);
+                  }}>
+                  <View style={styles.modalOverlay1} />
+                </TouchableWithoutFeedback>
+                <View style={styles.filterFirstView}>
+                  <Text style={styles.filterTitle}>Filter Options</Text>
+                  <View style={styles.secondFilterView}>
+                    <Text style={styles.secondTitleFilter}>Status:</Text>
+                    <SelectDropdown
+                      data={filterArray}
+                      onSelect={(selectedItem, index) => {
+                        setStatusId(selectedItem.id);
+                        console.log('gert Value:::', selectedItem);
+                      }}
+                      defaultValueByIndex={statusId - 1}
+                      renderButton={(selectedItem, isOpen) => {
+                        console.log('Get Response>>>', selectedItem);
+                        return (
+                          <View style={styles.dropdown2BtnStyle2}>
+                            <Text style={styles.dropdownItemTxtStyle}>
+                              {selectedItem?.name || 'Select'}
+                            </Text>
+                          </View>
+                        );
+                      }}
+                      showsVerticalScrollIndicator={false}
+                      renderItem={(item, index, isSelected) => {
+                        return (
+                          <TouchableOpacity style={styles.dropdownView}>
+                            <Text style={styles.dropdownItemTxtStyle}>
+                              {item.name}
+                            </Text>
+                          </TouchableOpacity>
+                        );
+                      }}
+                      dropdownIconPosition={'left'}
+                      dropdownStyle={styles.dropdown2DropdownStyle}
+                    />
+                    <View>
+                      <TouchableOpacity
+                        onPress={() => {
+                          setStatusId(1);
+                        }}
+                        style={styles.resetButton}>
+                        <Text style={styles.resetText}>Reset</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </View>
+              </View>
+            </Modal>
+          </View>
           <View
             style={[styles.activeView, {backgroundColor: theme.headerColor}]}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -811,6 +1016,9 @@ const LabTechniciansList = ({
                 />
               </View>
             </View>
+            {errorVisible ? (
+              <Text style={styles.dataHistoryText4}>{errorMessage}</Text>
+            ) : null}
           </View>
 
           <View style={styles.buttonView}>
@@ -819,21 +1027,14 @@ const LabTechniciansList = ({
                 userId ? onEditUsers() : onAddUsers();
               }}
               style={styles.nextView}>
-              <Text style={styles.nextText}>Save</Text>
+              {loading ? (
+                <ActivityIndicator size={'small'} color={COLORS.white} />
+              ) : (
+                <Text style={styles.nextText}>Save</Text>
+              )}
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => {
-                setUserId('');
-                setFirstName('');
-                setLastName('');
-                setEmail('');
-                setDesignation('');
-                setDateOfBirth(new Date());
-                setGenderType('female');
-                setAddress('');
-                setCity('');
-                setCountry('');
-                setPostalCode('');
                 setNewUserVisible(false);
               }}
               style={styles.prevView}>
@@ -847,6 +1048,7 @@ const LabTechniciansList = ({
         setModelVisible={setDeleteUser}
         onPress={() => onDeleteRecord()}
         setUserId={setUserId}
+        isLoading={loading}
       />
     </View>
   );
@@ -869,7 +1071,7 @@ const styles = StyleSheet.create({
     marginVertical: hp(2),
   },
   searchView: {
-    width: '50%',
+    width: '100%',
     paddingHorizontal: wp(3),
     paddingVertical: hp(0.5),
     borderWidth: 1,
@@ -884,6 +1086,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-end',
     paddingHorizontal: wp(3),
+    marginBottom: hp(2),
   },
   filterView1: {
     height: hp(5),
@@ -1286,5 +1489,54 @@ const styles = StyleSheet.create({
     fontSize: hp(2),
     color: COLORS.black,
     fontFamily: Fonts.FONTS.PoppinsMedium,
+  },
+  modalOverlay1: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+  },
+  filterModal: {
+    flex: 1,
+    alignItems: 'flex-end',
+  },
+  filterFirstView: {
+    width: '60%',
+    backgroundColor: 'white',
+    borderRadius: 5,
+    marginTop: hp(24),
+    marginRight: wp(2),
+  },
+  filterTitle: {
+    fontSize: hp(2.2),
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    color: COLORS.black,
+    padding: hp(2),
+    borderBottomWidth: 0.5,
+  },
+  secondFilterView: {
+    padding: hp(2),
+  },
+  secondTitleFilter: {
+    fontSize: hp(2),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+    marginTop: hp(2),
+  },
+  resetButton: {
+    width: wp(22),
+    height: hp(4.5),
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'flex-end',
+    backgroundColor: COLORS.greyColor,
+    marginTop: hp(4),
+    borderRadius: 5,
+  },
+  resetText: {
+    fontSize: hp(2),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
   },
 });

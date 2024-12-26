@@ -235,7 +235,9 @@ const AccountList = ({
               style={[styles.searchView, {color: theme.text}]}
             />
             <View style={styles.filterView}>
-              <TouchableOpacity style={styles.filterView1} onPress={() => setFilterVisible(true)}>
+              <TouchableOpacity
+                style={styles.filterView1}
+                onPress={() => setFilterVisible(true)}>
                 <Image style={styles.filterImage} source={filter} />
               </TouchableOpacity>
               <TouchableOpacity
@@ -287,15 +289,6 @@ const AccountList = ({
                         onSelect={(selectedItem, index) => {
                           // setSelectedColor(selectedItem);
                           setStatusId(selectedItem.id);
-                          // setStatusShow(
-                          //   selectedItem.id == 2
-                          //     ? 'pending'
-                          //     : selectedItem.id == 3
-                          //     ? 'completed'
-                          //     : selectedItem.id == 4
-                          //     ? 'cancelled'
-                          //     : '',
-                          // );
                           console.log('gert Value:::', selectedItem);
                         }}
                         defaultValueByIndex={statusId - 1}
@@ -328,15 +321,6 @@ const AccountList = ({
                         onSelect={(selectedItem, index) => {
                           // setSelectedColor(selectedItem);
                           setTypeId(selectedItem.id);
-                          // setStatusShow(
-                          //   selectedItem.id == 2
-                          //     ? 'pending'
-                          //     : selectedItem.id == 3
-                          //     ? 'completed'
-                          //     : selectedItem.id == 4
-                          //     ? 'cancelled'
-                          //     : '',
-                          // );
                           console.log('gert Value:::', selectedItem);
                         }}
                         defaultValueByIndex={typeId - 1}
@@ -365,7 +349,10 @@ const AccountList = ({
                       />
                       <View>
                         <TouchableOpacity
-                          onPress={() => setStatusId(1)}
+                          onPress={() => {
+                            setStatusId(1);
+                            setTypeId(1);
+                          }}
                           style={styles.resetButton}>
                           <Text style={styles.resetText}>Reset</Text>
                         </TouchableOpacity>

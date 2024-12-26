@@ -53,6 +53,8 @@ import RadiologyScreen from './src/screens/RadiologyScreen';
 import ServiceScreen from './src/screens/ServiceScreen';
 import SMSScreen from './src/screens/SMSScreen';
 import LiveConsultationScreen from './src/screens/LiveConsultationScreen';
+import ProfileScreen from './src/screens/ProfileScreen';
+import ChangePasswordScreen from './src/screens/ChangePasswordScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -293,6 +295,16 @@ function SettingStack() {
       <Stack.Screen
         name="LiveConsultationScreen"
         component={LiveConsultationScreen}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="ProfileScreen"
+        component={ProfileScreen}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="ChangePasswordScreen"
+        component={ChangePasswordScreen}
         options={{headerShown: false}}
       />
     </Stack.Navigator>

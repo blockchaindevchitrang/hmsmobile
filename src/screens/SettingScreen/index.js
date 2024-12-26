@@ -300,6 +300,21 @@ export const SettingScreen = ({navigation}) => {
               dropdownStyle={styles.dropdown2DropdownStyle}
             />
           </View>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('ProfileScreen')}
+            style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
+            <Text style={[styles.text, {color: theme.text}]}>
+              {'Update Profile'}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => navigation.navigate('ChangePasswordScreen')}
+            style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
+            <Text style={[styles.text, {color: theme.text}]}>
+              {'Change Password'}
+            </Text>
+          </TouchableOpacity>
 
           <TouchableOpacity
             onPress={() => navigation.navigate('BillingScreen')}

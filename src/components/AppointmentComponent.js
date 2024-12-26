@@ -10,6 +10,7 @@ import {
   FlatList,
   Modal,
   TouchableWithoutFeedback,
+  ActivityIndicator,
 } from 'react-native';
 import React, {useRef, useState} from 'react';
 import {
@@ -859,7 +860,11 @@ const AppointmentComponent = ({
                 userId != '' ? onEditAccountData() : onAddAppointmentData();
               }}
               style={styles.nextView}>
-              <Text style={styles.nextText}>Save</Text>
+              {loading ? (
+                <ActivityIndicator size={'small'} color={COLORS.white} />
+              ) : (
+                <Text style={styles.nextText}>Save</Text>
+              )}
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => setAddHolidayVisible(false)}

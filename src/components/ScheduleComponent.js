@@ -51,16 +51,15 @@ const ScheduleComponent = ({
 }) => {
   const doctorData = useSelector(state => state.doctorData);
   const {theme} = useTheme();
-  const menuRef = useRef(null);
   const [doctorId, setDoctorId] = useState('');
   const [doctorName, setDoctorName] = useState('');
   const [dateModalVisible, setDateModalVisible] = useState(false);
   const [admissionDate, setAdmissionDate] = useState(null);
+  const [viewSchedule, setViewSchedule] = useState(false);
   const [refresh, setRefresh] = useState(false);
   const [errorVisible, setErrorVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [userId, setUserId] = useState('');
-  const [deleteUser, setDeleteUser] = useState(false);
   const [loading, setLoading] = useState(false);
   const [parameterArray, setParameterArray] = useState([
     {
@@ -314,23 +313,34 @@ const ScheduleComponent = ({
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
         <View style={styles.nameDataView}>
-          <ProfilePhoto username={item.name} />
+          <ProfilePhoto username={item.doctor_name} />
           <View>
-            <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
-            <Text style={[styles.dataHistoryText1]}>{item.mail}</Text>
+            <Text style={[styles.dataHistoryText2]}>{item.doctor_name}</Text>
+            <Text style={[styles.dataHistoryText1]}>{item.doctor_email}</Text>
           </View>
         </View>
         <Text style={[styles.dataHistoryText, {width: wp(25)}]}>
-          {item.time}
+          {item.per_patient_time}
         </Text>
         <View style={styles.actionDataView}>
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              setAddScheduleVisible(false);
+              setViewSchedule(true);
+            }}>
             <Image
               style={[styles.editImage, {tintColor: theme.headerColor}]}
               source={view}
             />
           </TouchableOpacity>
-          <TouchableOpacity style={{marginLeft: wp(2)}}>
+          <TouchableOpacity
+            onPress={() => {
+              setUserId(item.id);
+              setDoctorName(item.doctor_name);
+              setAdmissionDate(moment(new Date()).format('hh:mm:ss'));
+              setAddScheduleVisible(true);
+            }}
+            style={{marginLeft: wp(2)}}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.blueColor}]}
               source={editing}
@@ -367,76 +377,382 @@ const ScheduleComponent = ({
 
   return (
     <View style={styles.safeAreaStyle}>
-      {!addScheduleVisible ? (
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{paddingBottom: hp(12)}}>
-          <View style={styles.subView}>
-            <TextInput
-              value={searchDepartment}
-              placeholder={'Search'}
-              placeholderTextColor={theme.text}
-              onChangeText={text => setSearchDepartment(text)}
-              style={[styles.searchView, {color: theme.text}]}
-            />
-            <View style={styles.filterView}>
+      {!viewSchedule ? (
+        !addScheduleVisible ? (
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{paddingBottom: hp(12)}}>
+            <View style={styles.subView}>
+              <TextInput
+                value={searchDepartment}
+                placeholder={'Search'}
+                placeholderTextColor={theme.text}
+                onChangeText={text => setSearchDepartment(text)}
+                style={[styles.searchView, {color: theme.text}]}
+              />
+              <View style={styles.filterView}>
+                <TouchableOpacity
+                  onPress={() => {
+                    setDoctorId('');
+                    setDoctorName('');
+                    setAdmissionDate(null);
+                    setParameterArray([
+                      {
+                        name: 'Monday',
+                        from: null,
+                        to: null,
+                        fromVisible: false,
+                        toVisible: false,
+                      },
+                      {
+                        name: 'Tuesday',
+                        from: null,
+                        to: null,
+                        fromVisible: false,
+                        toVisible: false,
+                      },
+                      {
+                        name: 'Wednesday',
+                        from: null,
+                        to: null,
+                        fromVisible: false,
+                        toVisible: false,
+                      },
+                      {
+                        name: 'Thursday',
+                        from: null,
+                        to: null,
+                        fromVisible: false,
+                        toVisible: false,
+                      },
+                      {
+                        name: 'Friday',
+                        from: null,
+                        to: null,
+                        fromVisible: false,
+                        toVisible: false,
+                      },
+                      {
+                        name: 'Saturday',
+                        from: null,
+                        to: null,
+                        fromVisible: false,
+                        toVisible: false,
+                      },
+                      {
+                        name: 'Sunday',
+                        from: null,
+                        to: null,
+                        fromVisible: false,
+                        toVisible: false,
+                      },
+                    ]);
+                    setDateModalVisible(false);
+                    setAddScheduleVisible(true);
+                  }}
+                  style={styles.actionView}>
+                  <Text style={styles.actionText}>New Schedule</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+            <View
+              style={[styles.activeView, {backgroundColor: theme.headerColor}]}>
+              <View>
+                <View
+                  style={[
+                    styles.titleActiveView,
+                    {backgroundColor: theme.headerColor},
+                  ]}>
+                  <Text style={[styles.titleText, {width: wp(44)}]}>
+                    {'DOCTOR'}
+                  </Text>
+                  <Text style={[styles.titleText, {width: wp(23)}]}>
+                    {'PER PATIENT TIME'}
+                  </Text>
+                  <Text style={[styles.titleText, {width: wp(15)}]}>
+                    {'ACTION'}
+                  </Text>
+                </View>
+                <View style={styles.mainDataView}>
+                  <FlatList
+                    data={allData}
+                    renderItem={renderItem}
+                    bounces={false}
+                    showsHorizontalScrollIndicator={false}
+                    initialNumToRender={allData.length}
+                    nestedScrollEnabled
+                    virtualized
+                    ListEmptyComponent={() => (
+                      <View key={0} style={styles.ListEmptyView}>
+                        <Text style={styles.emptyText}>
+                          {'No record found'}
+                        </Text>
+                      </View>
+                    )}
+                  />
+                </View>
+              </View>
+            </View>
+          </ScrollView>
+        ) : (
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{paddingBottom: hp(12)}}>
+            <View style={styles.subView}>
+              <Text style={[styles.doctorText, {color: theme.text}]}>
+                {userId != '' ? 'Edit Schedule' : 'Add Schedule'}
+              </Text>
+              <View style={styles.filterView}>
+                <TouchableOpacity
+                  onPress={() => {
+                    setParameterArray([
+                      {
+                        name: 'Monday',
+                        from: null,
+                        to: null,
+                        fromVisible: false,
+                        toVisible: false,
+                      },
+                      {
+                        name: 'Tuesday',
+                        from: null,
+                        to: null,
+                        fromVisible: false,
+                        toVisible: false,
+                      },
+                      {
+                        name: 'Wednesday',
+                        from: null,
+                        to: null,
+                        fromVisible: false,
+                        toVisible: false,
+                      },
+                      {
+                        name: 'Thursday',
+                        from: null,
+                        to: null,
+                        fromVisible: false,
+                        toVisible: false,
+                      },
+                      {
+                        name: 'Friday',
+                        from: null,
+                        to: null,
+                        fromVisible: false,
+                        toVisible: false,
+                      },
+                      {
+                        name: 'Saturday',
+                        from: null,
+                        to: null,
+                        fromVisible: false,
+                        toVisible: false,
+                      },
+                      {
+                        name: 'Sunday',
+                        from: null,
+                        to: null,
+                        fromVisible: false,
+                        toVisible: false,
+                      },
+                    ]);
+                    setAddScheduleVisible(false);
+                  }}
+                  style={styles.backButtonView}>
+                  <Text style={styles.backText}>BACK</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <View style={styles.profileView}>
+              <View style={styles.nameView}>
+                <View style={{width: '48%'}}>
+                  <Text style={styles.dataHistoryText1}>Doctor:</Text>
+                  <SelectDropdown
+                    data={doctorData}
+                    onSelect={(selectedItem, index) => {
+                      // setSelectedColor(selectedItem);
+                      setDoctorId(selectedItem.id);
+                      console.log('gert Value:::', selectedItem);
+                    }}
+                    defaultValue={doctorName}
+                    renderButton={(selectedItem, isOpen) => {
+                      console.log('Get Response>>>', selectedItem);
+                      return (
+                        <View style={styles.dropdown2BtnStyle2}>
+                          {doctorId != '' ? (
+                            <Text style={styles.dropdownItemTxtStyle}>
+                              {doctorId == selectedItem?.id
+                                ? selectedItem?.name
+                                : doctorName}
+                            </Text>
+                          ) : (
+                            <Text style={styles.dropdownItemTxtStyle}>
+                              {selectedItem?.name || 'Select Doctor'}
+                            </Text>
+                          )}
+                        </View>
+                      );
+                    }}
+                    showsVerticalScrollIndicator={false}
+                    renderItem={(item, index, isSelected) => {
+                      return (
+                        <TouchableOpacity style={styles.dropdownView}>
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {item.name}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    }}
+                    dropdownIconPosition={'left'}
+                    dropdownStyle={styles.dropdown2DropdownStyle}
+                  />
+                </View>
+
+                <View style={{width: '48%'}}>
+                  <Text style={styles.dataHistoryText1}>Per Patient Time:</Text>
+                  <Text
+                    style={[
+                      styles.nameTextView,
+                      {width: '100%', paddingVertical: hp(1)},
+                    ]}
+                    onPress={() => setDateModalVisible(!dateModalVisible)}>
+                    {admissionDate != null
+                      ? moment(admissionDate).format('hh:mm:ss')
+                      : 'Per Patient Time'}
+                  </Text>
+                  <DatePicker
+                    open={dateModalVisible}
+                    modal={true}
+                    date={admissionDate || new Date()}
+                    mode={'time'}
+                    is24hourSource={'locale'}
+                    onConfirm={date => {
+                      console.log('Console Log>>', date);
+                      setDateModalVisible(false);
+                      setAdmissionDate(date);
+                    }}
+                    onCancel={() => {
+                      setDateModalVisible(false);
+                    }}
+                  />
+                </View>
+              </View>
+              <View style={styles.parameterView}>
+                <Text
+                  style={[styles.monthText, {width: '30%', marginLeft: wp(1)}]}>
+                  Available On:
+                </Text>
+                <Text style={[styles.monthText, {width: '33%'}]}>
+                  Available From:
+                </Text>
+                <Text style={[styles.monthText, {width: '33%'}]}>
+                  Available To:
+                </Text>
+              </View>
+              <FlatList
+                data={parameterArray}
+                renderItem={({item, index}) => {
+                  return (
+                    <View
+                      style={{
+                        backgroundColor:
+                          index % 2 == 0 ? '#eeeeee' : COLORS.white,
+                        paddingBottom: hp(1),
+                        marginVertical: hp(1),
+                      }}>
+                      <View style={styles.nameView}>
+                        <View style={styles.monthName}>
+                          <Text style={[styles.monthText, {width: '100%'}]}>
+                            {item.name}
+                          </Text>
+                        </View>
+
+                        <View style={{width: '33%'}}>
+                          <Text
+                            style={[styles.fromTimeText, {width: '100%'}]}
+                            onPress={() => {
+                              parameterArray[index].fromVisible = true;
+                              setRefresh(!refresh);
+                            }}>
+                            {item.from
+                              ? moment(item.from).format('HH:mm:ss')
+                              : '00:00:00'}
+                          </Text>
+                          <DatePicker
+                            open={item.fromVisible}
+                            modal={true}
+                            date={item.from || new Date()}
+                            mode={'time'}
+                            is24hourSource={'locale'}
+                            onConfirm={date =>
+                              handleConfirm(index, date, 'from')
+                            }
+                            onCancel={() => handleCancel(index, 'from')}
+                          />
+                        </View>
+
+                        <View style={{width: '33%'}}>
+                          <Text
+                            style={[styles.fromTimeText, {width: '100%'}]}
+                            onPress={() => {
+                              setRefresh(!refresh);
+                              parameterArray[index].toVisible = true;
+                            }}>
+                            {item.to
+                              ? moment(item.to).format('HH:mm:ss')
+                              : '00:00:00'}
+                          </Text>
+                          <DatePicker
+                            open={item.toVisible}
+                            modal={true}
+                            date={item.to || new Date()}
+                            mode={'time'}
+                            is24hourSource={'locale'}
+                            onConfirm={date => handleConfirm(index, date, 'to')}
+                            onCancel={() => handleCancel(index, 'to')}
+                          />
+                        </View>
+                      </View>
+                    </View>
+                  );
+                }}
+                keyExtractor={(item, index) => index.toString()}
+                contentContainerStyle={{paddingBottom: hp(3)}}
+              />
+              {errorVisible ? (
+                <Text style={styles.dataHistoryText4}>{errorMessage}</Text>
+              ) : null}
+            </View>
+            <View style={styles.buttonView}>
               <TouchableOpacity
                 onPress={() => {
-                  setDoctorId('');
-                  setDoctorName('');
-                  setAdmissionDate(null);
-                  setDateModalVisible(false);
-                  setAddScheduleVisible(true);
+                  userId != '' ? onEditPayRollData() : onAddPayRollData();
                 }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>New Schedule</Text>
+                style={styles.nextView}>
+                {loading ? (
+                  <ActivityIndicator size={'small'} color={COLORS.white} />
+                ) : (
+                  <Text style={styles.nextText}>Save</Text>
+                )}
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  setAddScheduleVisible(false);
+                }}
+                style={styles.prevView}>
+                <Text style={styles.prevText}>Cancel</Text>
               </TouchableOpacity>
             </View>
-          </View>
-          <View
-            style={[styles.activeView, {backgroundColor: theme.headerColor}]}>
-            <View>
-              <View
-                style={[
-                  styles.titleActiveView,
-                  {backgroundColor: theme.headerColor},
-                ]}>
-                <Text style={[styles.titleText, {width: wp(44)}]}>
-                  {'DOCTOR'}
-                </Text>
-                <Text style={[styles.titleText, {width: wp(23)}]}>
-                  {'PER PATIENT TIME'}
-                </Text>
-                <Text style={[styles.titleText, {width: wp(15)}]}>
-                  {'ACTION'}
-                </Text>
-              </View>
-              <View style={styles.mainDataView}>
-                <FlatList
-                  data={allData}
-                  renderItem={renderItem}
-                  bounces={false}
-                  showsHorizontalScrollIndicator={false}
-                  initialNumToRender={allData.length}
-                  nestedScrollEnabled
-                  virtualized
-                  ListEmptyComponent={() => (
-                    <View key={0} style={styles.ListEmptyView}>
-                      <Text style={styles.emptyText}>{'No record found'}</Text>
-                    </View>
-                  )}
-                />
-              </View>
-            </View>
-          </View>
-        </ScrollView>
+          </ScrollView>
+        )
       ) : (
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{paddingBottom: hp(12)}}>
           <View style={styles.subView}>
             <Text style={[styles.doctorText, {color: theme.text}]}>
-              Edit Schedule
+              {'Schedule Details'}
             </Text>
             <View style={styles.filterView}>
               <TouchableOpacity
@@ -492,10 +808,17 @@ const ScheduleComponent = ({
                       toVisible: false,
                     },
                   ]);
-                  setAddScheduleVisible(false);
+                  setAddScheduleVisible(true);
                 }}
                 style={styles.backButtonView}>
-                <Text style={styles.backText}>BACK</Text>
+                <Text style={styles.backText}>Edit</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  setViewSchedule(false);
+                }}
+                style={styles.prevView}>
+                <Text style={styles.prevText}>Back</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -503,85 +826,51 @@ const ScheduleComponent = ({
           <View style={styles.profileView}>
             <View style={styles.nameView}>
               <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>Doctor:</Text>
-                <SelectDropdown
-                  data={doctorData}
-                  onSelect={(selectedItem, index) => {
-                    // setSelectedColor(selectedItem);
-                    setDoctorId(selectedItem.id);
-                    console.log('gert Value:::', selectedItem);
-                  }}
-                  defaultValue={doctorName}
-                  renderButton={(selectedItem, isOpen) => {
-                    console.log('Get Response>>>', selectedItem);
-                    return (
-                      <View style={styles.dropdown2BtnStyle2}>
-                        {doctorId != '' ? (
-                          <Text style={styles.dropdownItemTxtStyle}>
-                            {doctorId == selectedItem?.id
-                              ? selectedItem?.name
-                              : doctorName}
-                          </Text>
-                        ) : (
-                          <Text style={styles.dropdownItemTxtStyle}>
-                            {selectedItem?.name || 'Select Doctor'}
-                          </Text>
-                        )}
-                      </View>
-                    );
-                  }}
-                  showsVerticalScrollIndicator={false}
-                  renderItem={(item, index, isSelected) => {
-                    return (
-                      <TouchableOpacity style={styles.dropdownView}>
-                        <Text style={styles.dropdownItemTxtStyle}>
-                          {item.name}
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  }}
-                  dropdownIconPosition={'left'}
-                  dropdownStyle={styles.dropdown2DropdownStyle}
-                />
+                <Text style={styles.dataHistoryText1}>Doctor</Text>
+                <Text
+                  style={[
+                    styles.nameTextVie1,
+                    {width: '100%', paddingVertical: hp(1)},
+                  ]}>
+                  {admissionDate != null
+                    ? moment(admissionDate).format('hh:mm:ss')
+                    : 'Per Patient Time'}
+                </Text>
               </View>
 
               <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>Per Patient Time:</Text>
+                <Text style={styles.dataHistoryText1}>Per Patient Time</Text>
                 <Text
                   style={[
-                    styles.nameTextView,
+                    styles.nameTextVie1,
                     {width: '100%', paddingVertical: hp(1)},
-                  ]}
-                  onPress={() => setDateModalVisible(!dateModalVisible)}>
-                  {admissionDate ? moment(admissionDate).format('hh:mm:ss') : 'Per Patient Time'}
+                  ]}>
+                  {admissionDate != null
+                    ? moment(admissionDate).format('hh:mm:ss')
+                    : 'Per Patient Time'}
                 </Text>
-                <DatePicker
-                  open={dateModalVisible}
-                  modal={true}
-                  date={admissionDate || new Date()}
-                  mode={'time'}
-                  is24hourSource={'locale'}
-                  onConfirm={date => {
-                    console.log('Console Log>>', date);
-                    setDateModalVisible(false);
-                    setAdmissionDate(date);
-                  }}
-                  onCancel={() => {
-                    setDateModalVisible(false);
-                  }}
-                />
               </View>
             </View>
-            <View style={styles.parameterView}>
+
+            {/* <View style={styles.subView}> */}
+            <Text
+              style={[
+                styles.doctorText,
+                {color: theme.text, marginTop: hp(2)},
+              ]}>
+              {'Schedule'}
+            </Text>
+            {/* </View> */}
+            <View style={styles.parameterView1}>
               <Text
                 style={[styles.monthText, {width: '30%', marginLeft: wp(1)}]}>
-                Available On:
+                Available On
               </Text>
               <Text style={[styles.monthText, {width: '33%'}]}>
-                Available From:
+                Available From
               </Text>
               <Text style={[styles.monthText, {width: '33%'}]}>
-                Available To:
+                Available To
               </Text>
             </View>
             <FlatList
@@ -591,59 +880,30 @@ const ScheduleComponent = ({
                   <View
                     style={{
                       backgroundColor:
-                        index % 2 == 0 ? '#eeeeee' : COLORS.white,
+                        index % 2 == 0 ? COLORS.white : '#eeeeee',
                       paddingBottom: hp(1),
-                      marginVertical: hp(1),
                     }}>
-                    <View style={styles.nameView}>
-                      <View style={styles.monthName}>
+                    <View style={styles.nameView1}>
+                      <View style={styles.monthName1}>
                         <Text style={[styles.monthText, {width: '100%'}]}>
                           {item.name}
                         </Text>
                       </View>
 
                       <View style={{width: '33%'}}>
-                        <Text
-                          style={[styles.fromTimeText, {width: '100%'}]}
-                          onPress={() => {
-                            parameterArray[index].fromVisible = true;
-                            setRefresh(!refresh);
-                          }}>
+                        <Text style={[styles.fromTimeText1, {width: '100%'}]}>
                           {item.from
                             ? moment(item.from).format('HH:mm:ss')
                             : '00:00:00'}
                         </Text>
-                        <DatePicker
-                          open={item.fromVisible}
-                          modal={true}
-                          date={item.from || new Date()}
-                          mode={'time'}
-                          is24hourSource={'locale'}
-                          onConfirm={date => handleConfirm(index, date, 'from')}
-                          onCancel={() => handleCancel(index, 'from')}
-                        />
                       </View>
 
                       <View style={{width: '33%'}}>
-                        <Text
-                          style={[styles.fromTimeText, {width: '100%'}]}
-                          onPress={() => {
-                            setRefresh(!refresh);
-                            parameterArray[index].toVisible = true;
-                          }}>
+                        <Text style={[styles.fromTimeText1, {width: '100%'}]}>
                           {item.to
                             ? moment(item.to).format('HH:mm:ss')
                             : '00:00:00'}
                         </Text>
-                        <DatePicker
-                          open={item.toVisible}
-                          modal={true}
-                          date={item.to || new Date()}
-                          mode={'time'}
-                          is24hourSource={'locale'}
-                          onConfirm={date => handleConfirm(index, date, 'to')}
-                          onCancel={() => handleCancel(index, 'to')}
-                        />
                       </View>
                     </View>
                   </View>
@@ -655,27 +915,6 @@ const ScheduleComponent = ({
             {errorVisible ? (
               <Text style={styles.dataHistoryText4}>{errorMessage}</Text>
             ) : null}
-          </View>
-          <View style={styles.buttonView}>
-            <TouchableOpacity
-              onPress={() => {
-                userId != '' ? onEditPayRollData() : onAddPayRollData();
-              }}
-              style={styles.nextView}>
-              {loading ? (
-                <ActivityIndicator size={'small'} color={COLORS.white} />
-              ) : (
-                <Text style={styles.nextText}>Save</Text>
-              )}
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => {
-                setParameterArray([]);
-                setAddScheduleVisible(false);
-              }}
-              style={styles.prevView}>
-              <Text style={styles.prevText}>Cancel</Text>
-            </TouchableOpacity>
           </View>
         </ScrollView>
       )}
@@ -764,7 +1003,7 @@ const styles = StyleSheet.create({
   },
   dataHistoryView: {
     width: '100%',
-    height: hp(8),
+    paddingVertical: hp(1),
     alignItems: 'center',
     flexDirection: 'row',
     alignSelf: 'flex-start',
@@ -773,6 +1012,7 @@ const styles = StyleSheet.create({
     fontSize: hp(1.7),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
+    width: wp(35),
   },
   dataHistoryText2: {
     fontSize: hp(1.7),
@@ -803,7 +1043,7 @@ const styles = StyleSheet.create({
   nameDataView: {
     flexDirection: 'row',
     alignItems: 'center',
-    width: wp(45),
+    width: wp(44),
   },
   actionDataView: {
     width: wp(15),
@@ -1007,8 +1247,6 @@ const styles = StyleSheet.create({
     width: '50%',
     paddingHorizontal: wp(2),
     paddingVertical: hp(0.5),
-    borderWidth: 1,
-    borderColor: COLORS.greyColor,
     fontFamily: Fonts.FONTS.PoppinsMedium,
     fontSize: hp(1.8),
     color: COLORS.black,
@@ -1022,6 +1260,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     width: '100%',
     marginVertical: hp(1),
+    alignSelf: 'center',
+  },
+  nameView1: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
     alignSelf: 'center',
   },
   contactView: {
@@ -1145,6 +1390,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  parameterView1: {
+    width: '100%',
+    backgroundColor: '#eeeeee',
+    paddingVertical: hp(2),
+    marginTop: hp(3),
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   monthName: {
     width: '30%',
     paddingHorizontal: wp(2),
@@ -1153,6 +1407,15 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginTop: hp(1),
     backgroundColor: COLORS.lightGrey,
+    height: hp(4.7),
+    justifyContent: 'center',
+  },
+  monthName1: {
+    width: '30%',
+    paddingHorizontal: wp(2),
+    borderRadius: 5,
+    marginTop: hp(1),
+    // backgroundColor: COLORS.lightGrey,
     height: hp(4.7),
     justifyContent: 'center',
   },
@@ -1173,5 +1436,15 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginTop: hp(1),
     backgroundColor: COLORS.white,
+  },
+  fromTimeText1: {
+    width: '50%',
+    paddingHorizontal: wp(2),
+    paddingVertical: hp(1.2),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    color: COLORS.black,
+    borderRadius: 5,
+    marginTop: hp(1),
   },
 });

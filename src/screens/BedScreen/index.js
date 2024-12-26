@@ -27,6 +27,7 @@ import {
   onGetBedTypeApi,
   onGetCommonApi,
 } from '../../services/Api';
+import BedStatus from '../../components/BedComponent/BedStatus';
 
 const allData = [
   {
@@ -381,11 +382,7 @@ export const BedScreen = ({navigation}) => {
           />
         ) : (
           selectedView == 'Bed Status' && (
-            <ManualList
-              searchBreak={searchPharmacists}
-              setSearchBreak={setSearchPharmacists}
-              allData={ManualData}
-            />
+            <BedStatus BedTypeData={BedTypeData} bedData={bedData} />
           )
         )}
       </View>

@@ -237,6 +237,8 @@ export const BloodBankScreen = ({navigation}) => {
               pageCount={pageCount}
               setPageCount={setPageCount}
               totalPage={bloodIssuePage}
+              bloodDonorData={bloodDonorData}
+              bloodBankData={bloodBankData}
             />
           )
         )}

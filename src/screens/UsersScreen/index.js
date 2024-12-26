@@ -325,12 +325,14 @@ export const UsersScreen = ({navigation}) => {
   const [receptionistTotalPage, setReceptionistTotalPage] = useState('1');
   const [labTechnicianTotalPage, setLabTechnicianTotalPage] = useState('1');
   const [pharmacistTotalPage, setPharmacistTotalPage] = useState('1');
-  const [userActive, setUserActive] = useState('');
-  const [nurseActive, setNurseActive] = useState('');
-  const [accountantActive, setAccountantActive] = useState('');
-  const [receptionistActive, setReceptionistActive] = useState('');
-  const [labTechnicianActive, setLabTechnicianActive] = useState('');
-  const [pharmacistActive, setPharmacistActive] = useState('');
+  const [userActive, setUserActive] = useState(1);
+  const [userType, setUserType] = useState(0);
+  const [userTypeName, setUserTypeName] = useState('All');
+  const [nurseActive, setNurseActive] = useState(1);
+  const [accountantActive, setAccountantActive] = useState(1);
+  const [receptionistActive, setReceptionistActive] = useState(1);
+  const [labTechnicianActive, setLabTechnicianActive] = useState(1);
+  const [pharmacistActive, setPharmacistActive] = useState(1);
   const [userDepartment, setUserDepartment] = useState('');
   const [refresh, setRefresh] = useState(false);
 
@@ -441,7 +443,7 @@ export const UsersScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetUserData();
-  }, [searchUser, pageCount, userDepartment, userActive]);
+  }, [searchUser, pageCount, userTypeName, userActive]);
 
   useEffect(() => {
     onGetRolePermissionData();
@@ -505,27 +507,12 @@ export const UsersScreen = ({navigation}) => {
 
   const onGetUserData = async () => {
     try {
-      let urlData = `get-users?search=${searchUser}&page=${pageCount}&department_name=${userDepartment}&${userActive == 'active' ? 'active=1' : userActive == 'deactive' && 'deactive=0'}`;
+      let urlData = `get-users?search=${searchUser}&page=${pageCount}&department_name=${userTypeName == 'All' ? '' : userTypeName}&${userActive == 2 ? 'active=1' : userActive == 3 && 'deactive=0'}`;
       // const response = await onGetAllUsersDataApi();
       const response = await onGetCommonApi(urlData);
       console.log('Response User Data', response.data);
       if (response.status === 200) {
         const usersData = response.data.data;
-        const accountantData = usersData.filter(
-          user => user.department === 'Accountant',
-        );
-        const nursesData = usersData.filter(
-          user => user.department === 'Nurse',
-        );
-        const receptionistData = usersData.filter(
-          user => user.department === 'Receptionist',
-        );
-        const labTechniciansData = usersData.filter(
-          user => user.department === 'Lab Technician',
-        );
-        const pharmacistsData = usersData.filter(
-          user => user.department === 'Pharmacist',
-        );
 
         // Set data to respective states
         // setAccountantData(accountantData);
@@ -548,7 +535,7 @@ export const UsersScreen = ({navigation}) => {
 
   const onGetNurseData = async () => {
     try {
-      let urlData = `get-users?search=${searchNurse}&page=${pageCount}&department_name=Nurse&${nurseActive == 'active' ? 'active=1' : nurseActive == 'deactive' && 'deactive=0'}`;
+      let urlData = `get-users?search=${searchNurse}&page=${pageCount}&department_name=Nurse&${nurseActive == 2 ? 'active=1' : nurseActive == 3 && 'deactive=0'}`;
       // const response = await onGetAllUsersDataApi();
       const response = await onGetCommonApi(urlData);
       console.log('Response User Data', response.data);
@@ -569,7 +556,7 @@ export const UsersScreen = ({navigation}) => {
 
   const onGetAccountantData = async () => {
     try {
-      let urlData = `get-users?search=${searchAccountant}&page=${pageCount}&department_name=Accountant&${accountantActive == 'active' ? 'active=1' : accountantActive == 'deactive' && 'deactive=0'}`;
+      let urlData = `get-users?search=${searchAccountant}&page=${pageCount}&department_name=Accountant&${accountantActive == 2 ? 'active=1' : accountantActive == 3 && 'deactive=0'}`;
       // const response = await onGetAllUsersDataApi();
       const response = await onGetCommonApi(urlData);
       console.log('Response User Data', response.data);
@@ -590,7 +577,7 @@ export const UsersScreen = ({navigation}) => {
 
   const onGetReceptionistData = async () => {
     try {
-      let urlData = `get-users?search=${searchReceptionist}&page=${pageCount}&department_name=Receptionist&${receptionistActive == 'active' ? 'active=1' : receptionistActive == 'deactive' && 'deactive=0'}`;
+      let urlData = `get-users?search=${searchReceptionist}&page=${pageCount}&department_name=Receptionist&${receptionistActive == 2 ? 'active=1' : receptionistActive == 3 && 'deactive=0'}`;
       // const response = await onGetAllUsersDataApi();
       const response = await onGetCommonApi(urlData);
       console.log('Response User Data', response.data);
@@ -611,7 +598,7 @@ export const UsersScreen = ({navigation}) => {
 
   const onGetPharmacistData = async () => {
     try {
-      let urlData = `get-users?search=${searchPharmacists}&page=${pageCount}&department_name=Pharmacist&${pharmacistActive == 'active' ? 'active=1' : pharmacistActive == 'deactive' && 'deactive=0'}`;
+      let urlData = `get-users?search=${searchPharmacists}&page=${pageCount}&department_name=Pharmacist&${pharmacistActive == 2 ? 'active=1' : pharmacistActive == 3 && 'deactive=0'}`;
       // const response = await onGetAllUsersDataApi();
       const response = await onGetCommonApi(urlData);
       console.log('Response User Data', response.data);
@@ -632,7 +619,7 @@ export const UsersScreen = ({navigation}) => {
 
   const onGetLabTechniciansData = async () => {
     try {
-      let urlData = `get-users?search=${searchLabTechnician}&page=${pageCount}&department_name=Lab Technician&${labTechnicianActive == 'active' ? 'active=1' : labTechnicianActive == 'deactive' && 'deactive=0'}`;
+      let urlData = `get-users?search=${searchLabTechnician}&page=${pageCount}&department_name=Lab Technician&${labTechnicianActive == 2 ? 'active=1' : labTechnicianActive == 3 && 'deactive=0'}`;
       // const response = await onGetAllUsersDataApi();
       const response = await onGetCommonApi(urlData);
       console.log('Response User Data', response.data);
@@ -689,6 +676,12 @@ export const UsersScreen = ({navigation}) => {
             pageCount={pageCount}
             setPageCount={setPageCount}
             totalPage={totalPage}
+            setStatusId={setUserActive}
+            statusId={userActive}
+            setTypeId={setUserType}
+            typeId={userType}
+            setUserTypeName={setUserTypeName}
+            userTypeName={userTypeName}
           />
         ) : selectedView == 'Accountant' ? (
           <AccountantList
@@ -699,6 +692,8 @@ export const UsersScreen = ({navigation}) => {
             pageCount={pageCount}
             setPageCount={setPageCount}
             totalPage={accountantTotalPage}
+            setStatusId={setAccountantActive}
+            statusId={accountantActive}
           />
         ) : selectedView == 'Nurses' ? (
           <NursesList
@@ -709,6 +704,8 @@ export const UsersScreen = ({navigation}) => {
             pageCount={pageCount}
             setPageCount={setPageCount}
             totalPage={nurseTotalPage}
+            setStatusId={setNurseActive}
+            statusId={nurseActive}
           />
         ) : selectedView == 'Receptionists' ? (
           <ReceptionistsList
@@ -719,6 +716,8 @@ export const UsersScreen = ({navigation}) => {
             pageCount={pageCount}
             setPageCount={setPageCount}
             totalPage={receptionistTotalPage}
+            setStatusId={setReceptionistActive}
+            statusId={receptionistActive}
           />
         ) : selectedView == 'Lab Technicians' ? (
           <LabTechniciansList
@@ -729,6 +728,8 @@ export const UsersScreen = ({navigation}) => {
             pageCount={pageCount}
             setPageCount={setPageCount}
             totalPage={labTechnicianTotalPage}
+            setStatusId={setLabTechnicianActive}
+            statusId={labTechnicianActive}
           />
         ) : (
           selectedView == 'Pharmacists' && (
@@ -740,6 +741,8 @@ export const UsersScreen = ({navigation}) => {
               pageCount={pageCount}
               setPageCount={setPageCount}
               totalPage={pharmacistTotalPage}
+              setStatusId={setPharmacistActive}
+              statusId={pharmacistActive}
             />
           )
         )}

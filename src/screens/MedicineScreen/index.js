@@ -21,10 +21,6 @@ import {
 } from '../../components/Pixel';
 import headerLogo from '../../images/headerLogo.png';
 import {BlurView} from '@react-native-community/blur';
-import BloodBanksList from '../../components/BloodComponent/BloodBanksList';
-import BloodDonorList from '../../components/BloodComponent/BloodDonorList';
-import BloodDonationList from '../../components/BloodComponent/BloodDonationList';
-import BloodIssueList from '../../components/BloodComponent/BloodIssueList';
 import MedicineCategoryList from '../../components/MedicineComponent/MedicineCategoryList';
 import MedicinesBrandList from '../../components/MedicineComponent/MedicinesBrandList';
 import MedicineList from '../../components/MedicineComponent/MedicineList';
@@ -197,6 +193,26 @@ export const MedicineScreen = ({navigation}) => {
   };
 
   useEffect(() => {
+    onGetUsedMedicineData();
+  }, [searchUsed, pageCount]);
+
+  const onGetUsedMedicineData = async () => {
+    try {
+      const response = await onGetCommonApi(
+        `used-medicine-get?search=${searchUsed}&page=${pageCount}`,
+      );
+      console.log('Response User Data', response.data);
+      if (response.data.flag === 1) {
+        setMedicineUsed(response.data.data.items);
+        setUsedPage(response.data.data.pagination.last_page);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Error>>', err);
+    }
+  };
+
+  useEffect(() => {
     onGetMedicineBillData();
   }, [searchBill, pageCount]);
 
@@ -277,8 +293,8 @@ export const MedicineScreen = ({navigation}) => {
             searchBreak={searchUsed}
             setSearchBreak={setSearchUsed}
             allData={medicineUsed}
-            onGetData={onGetPurchaseMedicineData}
-            totalPage={purchasePage}
+            onGetData={onGetUsedMedicineData}
+            totalPage={usedPage}
             pageCount={pageCount}
             setPageCount={setPageCount}
           />
