@@ -275,7 +275,9 @@ export const PathologyScreen = ({navigation}) => {
 
   const onGetTestData = async () => {
     try {
-      const response = await onGetCommonApi(`pathology-test-get?search=${searchPharmacists}&page=${pageCount}`);
+      const response = await onGetCommonApi(
+        `pathology-test-get?search=${searchPharmacists}&page=${pageCount}`,
+      );
       console.log('get Response:', response.data.data);
       if (response.data.flag === 1) {
         setTest(response.data.data.items);

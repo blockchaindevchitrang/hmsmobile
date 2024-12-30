@@ -34,6 +34,7 @@ import PathologyTest from '../../components/PathologyComponent/PathologyTest';
 import PathologyUnit from '../../components/PathologyComponent/PathologyUnit';
 import {onGetCommonApi} from '../../services/Api';
 import SMSList from '../../components/SMSComponent/SMSList';
+import MailList from '../../components/SMSComponent/MailList';
 
 const allData = [
   {
@@ -143,15 +144,11 @@ export const SMSScreen = ({navigation}) => {
   const {t} = useTranslation();
   const {theme} = useTheme();
   const [searchAccount, setSearchAccount] = useState('');
-  const [searchPayroll, setSearchPayroll] = useState('');
-  const [searchUnit, setSearchUnit] = useState('');
-  const [searchPharmacists, setSearchPharmacists] = useState('');
+  const [pageCount, setPageCount] = useState('1');
+  const [smsPage, setSmsPage] = useState('1');
   const [optionModalView, setOptionModalView] = useState(false);
   const [selectedView, setSelectedView] = useState('SMS');
   const [pathologyCategories, setPathologyCategories] = useState([]);
-  const [parameter, setParameter] = useState([]);
-  const [unit, setUnit] = useState([]);
-  const [test, setTest] = useState([]);
   const [refresh, setRefresh] = useState(false);
 
   const animations = useRef(
@@ -211,31 +208,17 @@ export const SMSScreen = ({navigation}) => {
 
   useEffect(() => {
     onGetPathologyCategoriesData();
-  }, [searchAccount]);
+  }, [searchAccount, pageCount]);
 
   const onGetPathologyCategoriesData = async () => {
     try {
-      const response = await onGetCommonApi(`pathology-category-get?search=${searchAccount}`);
+      const response = await onGetCommonApi(
+        `sms-get?search=${searchAccount}&page=${pageCount}`,
+      );
       console.log('get Response:', response.data.data);
       if (response.data.flag === 1) {
         setPathologyCategories(response.data.data.items);
-        setRefresh(!refresh);
-      }
-    } catch (err) {
-      console.log('Error>>', err);
-    }
-  };
-
-  useEffect(() => {
-    onGetTestData();
-  }, [searchPharmacists]);
-
-  const onGetTestData = async () => {
-    try {
-      const response = await onGetCommonApi(`pathology-test-get?search=${searchPharmacists}`);
-      console.log('get Response:', response.data.data);
-      if (response.data.flag === 1) {
-        setTest(response.data.data.items);
+        setSmsPage(response.data.data.pagination.last_page);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -260,18 +243,12 @@ export const SMSScreen = ({navigation}) => {
             setSearchBreak={setSearchAccount}
             allData={pathologyCategories}
             onGetData={onGetPathologyCategoriesData}
+            pageCount={pageCount}
+            setPageCount={setPageCount}
+            smsPage={smsPage}
           />
         ) : (
-          selectedView == 'Mail' && (
-            <PathologyTest
-              searchBreak={searchPharmacists}
-              setSearchBreak={setSearchPharmacists}
-              allData={test}
-              onGetData={onGetTestData}
-              category={pathologyCategories}
-              parameter={parameter}
-            />
-          )
+          selectedView == 'Mail' && <MailList />
         )}
       </View>
       <Modal

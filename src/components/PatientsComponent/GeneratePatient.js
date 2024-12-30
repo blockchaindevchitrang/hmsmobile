@@ -9,6 +9,9 @@ import {
   TextInput,
   FlatList,
   Platform,
+  ActivityIndicator,
+  Modal,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import React, {useRef, useState} from 'react';
 import {
@@ -18,67 +21,97 @@ import {
 import {COLORS, Fonts} from '../../utils';
 import {useTheme} from '../../utils/ThemeProvider';
 import ProfilePhoto from './../ProfilePhoto';
-import moment from 'moment';
 import deleteIcon from '../../images/delete.png';
 import editing from '../../images/editing.png';
-import filter from '../../images/filter.png';
-import man from '../../images/man.png';
-import draw from '../../images/draw.png';
-import DatePicker from 'react-native-date-picker';
-import ImagePicker from 'react-native-image-crop-picker';
+import close from '../../images/close.png';
+import SelectDropdown from 'react-native-select-dropdown';
+import {DeletePopup} from '../DeletePopup';
+import FlashMessage, {
+  showMessage,
+  hideMessage,
+} from 'react-native-flash-message';
+import {onAddAccountListApi, onDeleteCommonApi} from '../../services/Api';
 
 const GeneratePatient = ({
   searchBreak,
   setSearchBreak,
   allData,
+  onGetData,
   totalPage,
   pageCount,
   setPageCount,
+  smartCardTempList,
 }) => {
   const {theme} = useTheme();
   const [newUserVisible, setNewUserVisible] = useState(false);
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [role, setRole] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [address, setAddress] = useState('');
-  const [city, setCity] = useState('');
-  const [country, setCountry] = useState('');
-  const [postalCode, setPostalCode] = useState('');
-  const [genderType, setGenderType] = useState('female');
-  const [dateOfBirth, setDateOfBirth] = useState(new Date());
-  const [dateModalVisible, setDateModalVisible] = useState(false);
-  const [avatar, setAvatar] = useState(null);
+  const [templateId, setTemplateId] = useState('');
+  const [templateName, setTemplateName] = useState('');
+  const [genderType, setGenderType] = useState('all');
+  const [errorVisible, setErrorVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [userId, setUserId] = useState('');
+  const [deleteUser, setDeleteUser] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const openProfileImagePicker = async () => {
+  const onAddPayRollData = async () => {
     try {
-      const image = await ImagePicker.openPicker({
-        width: 300,
-        height: 400,
-        cropping: false,
-        multiple: false, // Allow selecting only one image
-        compressImageQuality: 0.5,
-      });
-
-      if (image && image.path) {
-        if (image && image.path) {
-          var filename = image.path.substring(image.path.lastIndexOf('/') + 1);
-          let imageData = {
-            uri: Platform.OS === 'ios' ? image.sourceURL : image.path,
-            type: image.mime,
-            name: Platform.OS === 'ios' ? image.filename : filename,
-          };
-          setAvatar(imageData);
-
-          console.log('Selected image:', avatar);
-        }
+      if (templateId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select template.');
       } else {
-        console.log('No image selected');
+        setLoading(true);
+        setErrorVisible(false);
+        const urlData = `patient-smart-card-store?template_id=${templateId}&patient=${genderType}`;
+        const response = await onAddAccountListApi(urlData);
+        if (response.status == 200) {
+          onGetData();
+          setLoading(false);
+          setNewUserVisible(false);
+          showMessage({
+            message: 'Record Added Successfully',
+            type: 'success',
+            duration: 3000,
+          });
+        }
       }
-    } catch (error) {
-      console.log('Error selecting image:', error);
+    } catch (err) {
+      showMessage({
+        message: 'Something want wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      setLoading(false);
+      console.log('Error:', err);
+    }
+  };
+
+  const onDeletePayrollData = async id => {
+    try {
+      setLoading(true);
+      const response = await onDeleteCommonApi(
+        `patient-smart-card-delete/${id}`,
+      );
+      if (response.status == 200) {
+        onGetData();
+        setLoading(false);
+        setDeleteUser(false);
+        showMessage({
+          message: 'Record Delete Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      }
+    } catch (err) {
+      setLoading(false);
+      setDeleteUser(false);
+      showMessage({
+        message: 'Something want wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Get Error', err);
     }
   };
 
@@ -107,13 +140,12 @@ const GeneratePatient = ({
           </View>
         </View>
         <View style={styles.actionDataView}>
-          <TouchableOpacity>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity style={{marginLeft: wp(2)}}>
+          <TouchableOpacity
+            onPress={() => {
+              setUserId(item.id);
+              setDeleteUser(true);
+            }}
+            style={{marginLeft: wp(2)}}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.errorColor}]}
               source={deleteIcon}
@@ -125,8 +157,8 @@ const GeneratePatient = ({
   };
 
   return (
-    <View style={styles.safeAreaStyle}>
-      {!newUserVisible ? (
+    <>
+      <View style={styles.safeAreaStyle}>
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{paddingBottom: hp(12)}}>
@@ -183,11 +215,9 @@ const GeneratePatient = ({
                     virtualized
                     ListEmptyComponent={() => (
                       <View key={0} style={styles.ListEmptyView}>
-                        <View style={styles.subEmptyView}>
-                          <Text style={styles.emptyText}>
-                            {'No record found'}
-                          </Text>
-                        </View>
+                        <Text style={styles.emptyText}>
+                          {'No record found'}
+                        </Text>
                       </View>
                     )}
                   />
@@ -245,243 +275,147 @@ const GeneratePatient = ({
             </View>
           </View>
         </ScrollView>
-      ) : (
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{paddingBottom: hp(12)}}>
-          <View style={styles.subView}>
-            <Text style={[styles.doctorText, {color: theme.text}]}>
-              Add New Patient Cases
+      </View>
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={newUserVisible}
+        onRequestClose={() => setNewUserVisible(false)}>
+        <View style={styles.maneModalView}>
+          <TouchableWithoutFeedback
+            onPress={() => {
+              setNewUserVisible(false);
+            }}>
+            <View style={styles.modalOverlay} />
+          </TouchableWithoutFeedback>
+          <View style={styles.container}>
+            <View style={styles.headerView}>
+              <Text style={styles.headerText}>New Patient Smart Card</Text>
+              <TouchableOpacity onPress={() => setNewUserVisible(false)}>
+                <Image style={styles.closeImage} source={close} />
+              </TouchableOpacity>
+            </View>
+            <Text style={[styles.titleText1, {marginTop: hp(1.5)}]}>
+              {'Template Name:'}
             </Text>
-            <View style={styles.filterView}>
+            <SelectDropdown
+              data={smartCardTempList}
+              onSelect={(selectedItem, index) => {
+                setTemplateId(selectedItem.id);
+                setTemplateName(selectedItem.template_name);
+                console.log('gert Value:::', selectedItem);
+              }}
+              renderButton={(selectedItem, isOpen) => {
+                console.log('Get Response>>>', selectedItem);
+                return (
+                  <View style={styles.dropdown2BtnStyle2}>
+                    {templateId != '' ? (
+                      <Text style={styles.dropdownItemTxtStyle}>
+                        {templateId == selectedItem?.name
+                          ? selectedItem?.name
+                          : templateName}
+                      </Text>
+                    ) : (
+                      <Text style={styles.dropdownItemTxtStyle}>
+                        {selectedItem?.name || 'Select Template'}
+                      </Text>
+                    )}
+                  </View>
+                );
+              }}
+              showsVerticalScrollIndicator={false}
+              renderItem={(item, index, isSelected) => {
+                return (
+                  <TouchableOpacity style={styles.dropdownView}>
+                    <Text style={styles.dropdownItemTxtStyle}>{item.name}</Text>
+                  </TouchableOpacity>
+                );
+              }}
+              dropdownIconPosition={'left'}
+              dropdownStyle={styles.dropdown2DropdownStyle}
+            />
+            <Text style={[styles.titleText1, {marginTop: hp(2.5)}]}>
+              {'Select Type:'}
+            </Text>
+            <View style={[styles.statusView, {paddingVertical: hp(1)}]}>
+              <View style={[styles.optionView]}>
+                <TouchableOpacity
+                  onPress={() => setGenderType('all')}
+                  style={[
+                    styles.roundBorder,
+                    {
+                      backgroundColor:
+                        genderType == 'all' ? COLORS.blueColor : COLORS.white,
+                      borderWidth: genderType == 'all' ? 0 : 0.5,
+                    },
+                  ]}>
+                  <View style={styles.round} />
+                </TouchableOpacity>
+                <Text style={styles.statusText}>For All Patient</Text>
+              </View>
+              <View style={[styles.optionView]}>
+                <TouchableOpacity
+                  onPress={() => setGenderType('remaining')}
+                  style={[
+                    styles.roundBorder,
+                    {
+                      backgroundColor:
+                        genderType == 'remaining'
+                          ? COLORS.blueColor
+                          : COLORS.white,
+                      borderWidth: genderType == 'remaining' ? 0 : 0.5,
+                    },
+                  ]}>
+                  <View style={styles.round} />
+                </TouchableOpacity>
+                <Text style={styles.statusText}>Remaining Patient</Text>
+              </View>
+              <View style={[styles.optionView]}>
+                <TouchableOpacity
+                  onPress={() => setGenderType('one')}
+                  style={[
+                    styles.roundBorder,
+                    {
+                      backgroundColor:
+                        genderType == 'one' ? COLORS.blueColor : COLORS.white,
+                      borderWidth: genderType == 'one' ? 0 : 0.5,
+                    },
+                  ]}>
+                  <View style={styles.round} />
+                </TouchableOpacity>
+                <Text style={styles.statusText}>Only One Patient</Text>
+              </View>
+            </View>
+            {errorVisible ? (
+              <Text style={styles.dataHistoryText4}>{errorMessage}</Text>
+            ) : null}
+            <View style={styles.buttonView}>
+              <TouchableOpacity
+                onPress={() => onAddPayRollData()}
+                style={styles.nextView}>
+                {loading ? (
+                  <ActivityIndicator size={'small'} color={COLORS.white} />
+                ) : (
+                  <Text style={styles.nextText}>Save</Text>
+                )}
+              </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => setNewUserVisible(false)}
-                style={styles.backButtonView}>
-                <Text style={styles.backText}>BACK</Text>
+                style={styles.prevView}>
+                <Text style={styles.prevText}>Cancel</Text>
               </TouchableOpacity>
             </View>
           </View>
-
-          <View style={styles.profileView}>
-            <View style={styles.nameView}>
-              <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>FIRST NAME</Text>
-                <TextInput
-                  value={firstName}
-                  placeholder={'Enter first name'}
-                  onChangeText={text => setFirstName(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-
-              <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>LAST NAME</Text>
-                <TextInput
-                  value={lastName}
-                  placeholder={'Enter last name'}
-                  onChangeText={text => setLastName(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>EMAIL ADDRESS</Text>
-                <TextInput
-                  value={email}
-                  placeholder={'Enter email'}
-                  onChangeText={text => setEmail(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>ROLE</Text>
-                <TextInput
-                  value={role}
-                  placeholder={'Select'}
-                  onChangeText={text => setRole(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>PASSWORD</Text>
-                <TextInput
-                  value={password}
-                  placeholder={'******'}
-                  onChangeText={text => setPassword(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                  secureTextEntry={true}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>CONFIRM PASSWORD</Text>
-                <TextInput
-                  value={confirmPassword}
-                  placeholder={'******'}
-                  onChangeText={text => setConfirmPassword(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                  secureTextEntry={true}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>DATE OF BIRTH</Text>
-                {/* <TextInput
-                      value={firstName}
-                      placeholder={'Enter first name'}
-                      onChangeText={text => setFirstName(text)}
-                      style={[styles.nameTextView, {width: '100%'}]}
-                    /> */}
-                <Text
-                  style={[
-                    styles.nameTextView,
-                    {width: '100%', paddingVertical: hp(1)},
-                  ]}
-                  onPress={() => setDateModalVisible(!dateModalVisible)}>
-                  {moment(dateOfBirth).format('DD/MM/YYYY')}
-                </Text>
-                <DatePicker
-                  open={dateModalVisible}
-                  modal={true}
-                  date={dateOfBirth}
-                  mode={'date'}
-                  onConfirm={date => {
-                    console.log('Console Log>>', date);
-                    setDateModalVisible(false);
-                    setDateOfBirth(date);
-                  }}
-                  onCancel={() => {
-                    setDateModalVisible(false);
-                  }}
-                />
-              </View>
-
-              <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>GENDER</Text>
-                <View style={[styles.statusView, {paddingVertical: hp(1)}]}>
-                  <View style={[styles.optionView]}>
-                    <TouchableOpacity
-                      onPress={() => setGenderType('female')}
-                      style={[
-                        styles.roundBorder,
-                        {
-                          backgroundColor:
-                            genderType == 'female'
-                              ? COLORS.blueColor
-                              : COLORS.white,
-                          borderWidth: genderType == 'female' ? 0 : 0.5,
-                        },
-                      ]}>
-                      <View style={styles.round} />
-                    </TouchableOpacity>
-                    <Text style={styles.statusText}>Female</Text>
-                  </View>
-                  <View style={[styles.optionView]}>
-                    <TouchableOpacity
-                      onPress={() => setGenderType('male')}
-                      style={[
-                        styles.roundBorder,
-                        {
-                          backgroundColor:
-                            genderType == 'male'
-                              ? COLORS.blueColor
-                              : COLORS.white,
-                          borderWidth: genderType == 'male' ? 0 : 0.5,
-                        },
-                      ]}>
-                      <View style={styles.round} />
-                    </TouchableOpacity>
-                    <Text style={styles.statusText}>Male</Text>
-                  </View>
-                </View>
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>ADDRESS</Text>
-                <TextInput
-                  value={address}
-                  placeholder={'******'}
-                  onChangeText={text => setAddress(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                  secureTextEntry={true}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>CITY</Text>
-                <TextInput
-                  value={city}
-                  placeholder={'Enter city'}
-                  onChangeText={text => setCity(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-
-              <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>COUNTRY</Text>
-                <TextInput
-                  value={country}
-                  placeholder={'Enter country'}
-                  onChangeText={text => setCountry(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>POSTAL CODE</Text>
-                <TextInput
-                  value={postalCode}
-                  placeholder={'Postal Code'}
-                  onChangeText={text => setPostalCode(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View>
-                <Text style={styles.dataHistoryText1}>PROFILE</Text>
-                <View style={styles.profilePhotoView}>
-                  <TouchableOpacity
-                    style={styles.editView}
-                    onPress={() => openProfileImagePicker()}>
-                    <Image style={styles.editImage1} source={draw} />
-                  </TouchableOpacity>
-                  <Image style={styles.profileImage} source={man} />
-                </View>
-              </View>
-            </View>
-          </View>
-
-          <View style={styles.buttonView}>
-            <TouchableOpacity onPress={() => {}} style={styles.nextView}>
-              <Text style={styles.nextText}>Save</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => {}} style={styles.prevView}>
-              <Text style={styles.prevText}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      )}
-    </View>
+        </View>
+      </Modal>
+      <DeletePopup
+        modelVisible={deleteUser}
+        setModelVisible={setDeleteUser}
+        onPress={() => onDeletePayrollData(userId)}
+        setUserId={setUserId}
+        isLoading={loading}
+      />
+    </>
   );
 };
 
@@ -651,6 +585,13 @@ const styles = StyleSheet.create({
     marginHorizontal: wp(2),
     flexDirection: 'row',
   },
+  titleText1: {
+    fontSize: hp(1.8),
+    fontFamily: Fonts.FONTS.PoppinsSemiBold,
+    color: COLORS.black,
+    marginHorizontal: wp(3),
+    textAlign: 'left',
+  },
   editImage: {
     width: wp(4),
     height: hp(2.5),
@@ -715,6 +656,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     alignItems: 'center',
+    marginTop: hp(2),
   },
   nextView: {
     height: hp(4.5),
@@ -807,7 +749,8 @@ const styles = StyleSheet.create({
   optionView: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginLeft: wp(3),
+    marginLeft: wp(5),
+    height: hp(4),
   },
   roundBorder: {
     height: wp(4),
@@ -828,6 +771,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
+    flexWrap: 'wrap',
   },
   profilePhotoView: {
     borderWidth: 0.5,
@@ -881,5 +825,96 @@ const styles = StyleSheet.create({
     fontSize: hp(2),
     color: COLORS.black,
     fontFamily: Fonts.FONTS.PoppinsMedium,
+  },
+  ListEmptyView: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: hp(15),
+  },
+  emptyText: {
+    fontSize: hp(2.5),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+  },
+  container: {
+    width: '94%',
+    // height: hp(22),
+    paddingVertical: hp(2),
+    backgroundColor: COLORS.white,
+    borderRadius: 10,
+    // marginLeft: -wp(2.5),
+    // paddingTop: hp(3),
+  },
+  modalOverlay: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+  },
+  maneModalView: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    height: '100%',
+  },
+  headerView: {
+    width: '96%',
+    alignSelf: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginVertical: hp(1),
+    paddingHorizontal: wp(2),
+  },
+  headerText: {
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    fontSize: hp(2.2),
+    color: COLORS.black,
+  },
+  eventTextInput: {
+    width: '92%',
+    paddingHorizontal: wp(3),
+    paddingVertical: hp(1),
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(2),
+    color: COLORS.black,
+    borderRadius: 5,
+    alignSelf: 'center',
+    marginTop: hp(1),
+    marginBottom: hp(1),
+  },
+  dropdown2DropdownStyle: {
+    backgroundColor: COLORS.white,
+    borderRadius: 4,
+    height: hp(25),
+  },
+  dropdownItemTxtStyle: {
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    marginLeft: wp(2),
+  },
+  dropdownView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: hp(4),
+    borderBottomWidth: 0,
+  },
+  dropdown2BtnStyle2: {
+    width: '94%',
+    height: hp(4.2),
+    backgroundColor: COLORS.white,
+    borderRadius: 5,
+    alignItems: 'center',
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    marginTop: hp(1),
+    alignSelf: 'center',
   },
 });

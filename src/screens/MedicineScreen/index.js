@@ -308,6 +308,8 @@ export const MedicineScreen = ({navigation}) => {
               totalPage={medicineBillPage}
               pageCount={pageCount}
               setPageCount={setPageCount}
+              medicine={medicine}
+              medicineCategory={medicineCategory}
             />
           )
         )}

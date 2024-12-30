@@ -698,6 +698,7 @@ export const PatientsScreen = ({navigation}) => {
               pageCount={pageCount}
               setPageCount={setPageCount}
               totalPage={smartCardPage}
+              smartCardTempList={smartCardTempList}
             />
           )
         )}
