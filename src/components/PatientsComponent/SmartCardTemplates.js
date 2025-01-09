@@ -90,7 +90,7 @@ const SmartCardTemplates = ({
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
         <Text style={[styles.dataHistoryText1, {width: wp(32)}]}>
-          {item.name}
+          {item.template_name}
         </Text>
         <Text style={[styles.dataHistoryText1, {width: wp(32)}]}>
           {item.header_color}

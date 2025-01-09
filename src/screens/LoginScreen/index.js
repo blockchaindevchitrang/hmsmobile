@@ -19,12 +19,16 @@ import view from '../../images/view.png';
 import hidden from '../../images/hidden.png';
 import facebook from '../../images/facebook.png';
 import google from '../../images/google.png';
-import styles from './styles';
+import {portraitStyles, landscapeStyles} from './styles';
 import {onLoginApi} from '../../services/Api';
 import {ErrorComponent} from '../../components/ErrorComponent';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import useOrientation from '../../components/OrientationComponent';
 
 export const LoginScreen = ({navigation}) => {
+  const orientation = useOrientation(); // Get current orientation
+  const isPortrait = orientation === 'portrait';
+  const styles = isPortrait ? portraitStyles : landscapeStyles;
   const {t} = useTranslation();
   const {theme, colorTheme} = useTheme();
   const [email, setEmail] = useState('');
@@ -202,14 +206,14 @@ export const LoginScreen = ({navigation}) => {
           </Text>
         </Text> */}
 
-        <View style={styles.socialView}>
+        {/* <View style={styles.socialView}>
           <TouchableOpacity style={styles.googleView}>
             <Image style={styles.googleImage} source={google} />
           </TouchableOpacity>
           <TouchableOpacity style={styles.facebookView}>
             <Image style={styles.facebookImage} source={facebook} />
           </TouchableOpacity>
-        </View>
+        </View> */}
       </View>
     </View>
   );

@@ -12,7 +12,7 @@ import {
   Image,
 } from 'react-native';
 import {useTheme} from '../../utils/ThemeProvider';
-import styles from './styles';
+import {landscapeStyles, portraitStyles} from './styles';
 import Header from '../../components/Header';
 import {useTranslation} from 'react-i18next';
 import {
@@ -33,6 +33,7 @@ import PathologyParameter from '../../components/PathologyComponent/PathologyPar
 import PathologyTest from '../../components/PathologyComponent/PathologyTest';
 import PathologyUnit from '../../components/PathologyComponent/PathologyUnit';
 import {onGetCommonApi} from '../../services/Api';
+import useOrientation from '../../components/OrientationComponent';
 
 const allData = [
   {
@@ -141,6 +142,9 @@ const BloodIssueData = [
 export const PathologyScreen = ({navigation}) => {
   const {t} = useTranslation();
   const {theme} = useTheme();
+  const orientation = useOrientation(); // Get current orientation
+  const isPortrait = orientation === 'portrait';
+  const styles = isPortrait ? portraitStyles : landscapeStyles;
   const [searchAccount, setSearchAccount] = useState('');
   const [searchPayroll, setSearchPayroll] = useState('');
   const [searchUnit, setSearchUnit] = useState('');
@@ -221,7 +225,9 @@ export const PathologyScreen = ({navigation}) => {
 
   const onGetPathologyCategoriesData = async () => {
     try {
-      const response = await onGetCommonApi(`pathology-category-get?search=${searchAccount}&page=${pageCount}`);
+      const response = await onGetCommonApi(
+        `pathology-category-get?search=${searchAccount}&page=${pageCount}`,
+      );
       console.log('get Response:', response.data.data);
       if (response.data.flag === 1) {
         setPathologyCategories(response.data.data.items);
@@ -239,7 +245,9 @@ export const PathologyScreen = ({navigation}) => {
 
   const onGetParameterData = async () => {
     try {
-      const response = await onGetCommonApi(`pathology-parameter-get?search=${searchPayroll}&page=${pageCount}`);
+      const response = await onGetCommonApi(
+        `pathology-parameter-get?search=${searchPayroll}&page=${pageCount}`,
+      );
       console.log('get Response:', response.data.data);
       if (response.data.flag === 1) {
         setParameter(response.data.data.items);
@@ -257,7 +265,9 @@ export const PathologyScreen = ({navigation}) => {
 
   const onGetUnitData = async () => {
     try {
-      const response = await onGetCommonApi(`pathology-unit-get?search=${searchUnit}&page=${pageCount}`);
+      const response = await onGetCommonApi(
+        `pathology-unit-get?search=${searchUnit}&page=${pageCount}`,
+      );
       console.log('get Response:', response.data.data);
       if (response.data.flag === 1) {
         setUnit(response.data.data.items);
@@ -374,6 +384,7 @@ export const PathologyScreen = ({navigation}) => {
                   <Animated.View
                     key={index}
                     style={[
+                      styles.logoMenu,
                       {
                         transform: [{translateY: animations[index]}],
                         opacity: opacities[index],
@@ -405,11 +416,13 @@ export const PathologyScreen = ({navigation}) => {
               </>
             ))}
 
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => toggleMenu(false)}>
-              <Text style={styles.closeButtonText}>Close</Text>
-            </TouchableOpacity>
+            <View style={styles.logoMenu}>
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={() => toggleMenu(false)}>
+                <Text style={styles.closeButtonText}>Close</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>

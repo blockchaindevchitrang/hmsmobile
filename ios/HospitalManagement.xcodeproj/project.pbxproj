@@ -14,6 +14,20 @@
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		7699B88040F8A987B510C191 /* libPods-HospitalManagement-HospitalManagementTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 19F6CBCC0A4E27FBF8BF4A61 /* libPods-HospitalManagement-HospitalManagementTests.a */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		88D3D3482D2E5753004C62CB /* DMSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 88D3D33E2D2E5739004C62CB /* DMSans-Bold.ttf */; };
+		88D3D3492D2E5753004C62CB /* DMSans-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 88D3D33A2D2E5739004C62CB /* DMSans-Medium.ttf */; };
+		88D3D34A2D2E5753004C62CB /* DMSans-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 88D3D33D2D2E5739004C62CB /* DMSans-Regular.ttf */; };
+		88D3D34B2D2E5753004C62CB /* Poppins-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 88D3D3422D2E573A004C62CB /* Poppins-Bold.ttf */; };
+		88D3D34C2D2E5753004C62CB /* Poppins-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 88D3D3452D2E573A004C62CB /* Poppins-ExtraBold.ttf */; };
+		88D3D34D2D2E5753004C62CB /* Poppins-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 88D3D3442D2E573A004C62CB /* Poppins-Light.ttf */; };
+		88D3D34E2D2E5753004C62CB /* Poppins-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 88D3D3412D2E5739004C62CB /* Poppins-Medium.ttf */; };
+		88D3D34F2D2E5753004C62CB /* Poppins-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 88D3D33B2D2E5739004C62CB /* Poppins-Regular.ttf */; };
+		88D3D3502D2E5753004C62CB /* Poppins-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 88D3D3462D2E573A004C62CB /* Poppins-SemiBold.ttf */; };
+		88D3D3512D2E5753004C62CB /* ProximaNova-Bold.otf in Resources */ = {isa = PBXBuildFile; fileRef = 88D3D33C2D2E5739004C62CB /* ProximaNova-Bold.otf */; };
+		88D3D3522D2E5753004C62CB /* ProximaNova-Light.otf in Resources */ = {isa = PBXBuildFile; fileRef = 88D3D3432D2E573A004C62CB /* ProximaNova-Light.otf */; };
+		88D3D3532D2E5753004C62CB /* ProximaNova-Medium.otf in Resources */ = {isa = PBXBuildFile; fileRef = 88D3D33F2D2E5739004C62CB /* ProximaNova-Medium.otf */; };
+		88D3D3542D2E5753004C62CB /* ProximaNova-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = 88D3D3472D2E573A004C62CB /* ProximaNova-Regular.otf */; };
+		88D3D3552D2E5753004C62CB /* ProximaNova-Semibold.otf in Resources */ = {isa = PBXBuildFile; fileRef = 88D3D3402D2E5739004C62CB /* ProximaNova-Semibold.otf */; };
 		E08CD837E7FD1DEBB4821C43 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = FF24C71E34086F3D317111DF /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
@@ -44,9 +58,23 @@
 		5B7EB9410499542E8C5724F5 /* Pods-HospitalManagement-HospitalManagementTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HospitalManagement-HospitalManagementTests.debug.xcconfig"; path = "Target Support Files/Pods-HospitalManagement-HospitalManagementTests/Pods-HospitalManagement-HospitalManagementTests.debug.xcconfig"; sourceTree = "<group>"; };
 		5DCACB8F33CDC322A6C60F78 /* libPods-HospitalManagement.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-HospitalManagement.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = HospitalManagement/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		88D3D33A2D2E5739004C62CB /* DMSans-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "DMSans-Medium.ttf"; path = "../assets/fonts/DMSans-Medium.ttf"; sourceTree = "<group>"; };
+		88D3D33B2D2E5739004C62CB /* Poppins-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Poppins-Regular.ttf"; path = "../assets/fonts/Poppins-Regular.ttf"; sourceTree = "<group>"; };
+		88D3D33C2D2E5739004C62CB /* ProximaNova-Bold.otf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "ProximaNova-Bold.otf"; path = "../assets/fonts/ProximaNova-Bold.otf"; sourceTree = "<group>"; };
+		88D3D33D2D2E5739004C62CB /* DMSans-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "DMSans-Regular.ttf"; path = "../assets/fonts/DMSans-Regular.ttf"; sourceTree = "<group>"; };
+		88D3D33E2D2E5739004C62CB /* DMSans-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "DMSans-Bold.ttf"; path = "../assets/fonts/DMSans-Bold.ttf"; sourceTree = "<group>"; };
+		88D3D33F2D2E5739004C62CB /* ProximaNova-Medium.otf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "ProximaNova-Medium.otf"; path = "../assets/fonts/ProximaNova-Medium.otf"; sourceTree = "<group>"; };
+		88D3D3402D2E5739004C62CB /* ProximaNova-Semibold.otf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "ProximaNova-Semibold.otf"; path = "../assets/fonts/ProximaNova-Semibold.otf"; sourceTree = "<group>"; };
+		88D3D3412D2E5739004C62CB /* Poppins-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Poppins-Medium.ttf"; path = "../assets/fonts/Poppins-Medium.ttf"; sourceTree = "<group>"; };
+		88D3D3422D2E573A004C62CB /* Poppins-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Poppins-Bold.ttf"; path = "../assets/fonts/Poppins-Bold.ttf"; sourceTree = "<group>"; };
+		88D3D3432D2E573A004C62CB /* ProximaNova-Light.otf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "ProximaNova-Light.otf"; path = "../assets/fonts/ProximaNova-Light.otf"; sourceTree = "<group>"; };
+		88D3D3442D2E573A004C62CB /* Poppins-Light.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Poppins-Light.ttf"; path = "../assets/fonts/Poppins-Light.ttf"; sourceTree = "<group>"; };
+		88D3D3452D2E573A004C62CB /* Poppins-ExtraBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Poppins-ExtraBold.ttf"; path = "../assets/fonts/Poppins-ExtraBold.ttf"; sourceTree = "<group>"; };
+		88D3D3462D2E573A004C62CB /* Poppins-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Poppins-SemiBold.ttf"; path = "../assets/fonts/Poppins-SemiBold.ttf"; sourceTree = "<group>"; };
+		88D3D3472D2E573A004C62CB /* ProximaNova-Regular.otf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "ProximaNova-Regular.otf"; path = "../assets/fonts/ProximaNova-Regular.otf"; sourceTree = "<group>"; };
 		89C6BE57DB24E9ADA2F236DE /* Pods-HospitalManagement-HospitalManagementTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HospitalManagement-HospitalManagementTests.release.xcconfig"; path = "Target Support Files/Pods-HospitalManagement-HospitalManagementTests/Pods-HospitalManagement-HospitalManagementTests.release.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
-		FF24C71E34086F3D317111DF /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = HospitalManagement/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		FF24C71E34086F3D317111DF /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = HospitalManagement/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -121,6 +149,20 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
+				88D3D33E2D2E5739004C62CB /* DMSans-Bold.ttf */,
+				88D3D33A2D2E5739004C62CB /* DMSans-Medium.ttf */,
+				88D3D33D2D2E5739004C62CB /* DMSans-Regular.ttf */,
+				88D3D3422D2E573A004C62CB /* Poppins-Bold.ttf */,
+				88D3D3452D2E573A004C62CB /* Poppins-ExtraBold.ttf */,
+				88D3D3442D2E573A004C62CB /* Poppins-Light.ttf */,
+				88D3D3412D2E5739004C62CB /* Poppins-Medium.ttf */,
+				88D3D33B2D2E5739004C62CB /* Poppins-Regular.ttf */,
+				88D3D3462D2E573A004C62CB /* Poppins-SemiBold.ttf */,
+				88D3D33C2D2E5739004C62CB /* ProximaNova-Bold.otf */,
+				88D3D3432D2E573A004C62CB /* ProximaNova-Light.otf */,
+				88D3D33F2D2E5739004C62CB /* ProximaNova-Medium.otf */,
+				88D3D3472D2E573A004C62CB /* ProximaNova-Regular.otf */,
+				88D3D3402D2E5739004C62CB /* ProximaNova-Semibold.otf */,
 				13B07FAE1A68108700A75B9A /* HospitalManagement */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				00E356EF1AD99517003FC87E /* HospitalManagementTests */,
@@ -246,6 +288,20 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				88D3D3482D2E5753004C62CB /* DMSans-Bold.ttf in Resources */,
+				88D3D3492D2E5753004C62CB /* DMSans-Medium.ttf in Resources */,
+				88D3D34A2D2E5753004C62CB /* DMSans-Regular.ttf in Resources */,
+				88D3D34B2D2E5753004C62CB /* Poppins-Bold.ttf in Resources */,
+				88D3D34C2D2E5753004C62CB /* Poppins-ExtraBold.ttf in Resources */,
+				88D3D34D2D2E5753004C62CB /* Poppins-Light.ttf in Resources */,
+				88D3D34E2D2E5753004C62CB /* Poppins-Medium.ttf in Resources */,
+				88D3D34F2D2E5753004C62CB /* Poppins-Regular.ttf in Resources */,
+				88D3D3502D2E5753004C62CB /* Poppins-SemiBold.ttf in Resources */,
+				88D3D3512D2E5753004C62CB /* ProximaNova-Bold.otf in Resources */,
+				88D3D3522D2E5753004C62CB /* ProximaNova-Light.otf in Resources */,
+				88D3D3532D2E5753004C62CB /* ProximaNova-Medium.otf in Resources */,
+				88D3D3542D2E5753004C62CB /* ProximaNova-Regular.otf in Resources */,
+				88D3D3552D2E5753004C62CB /* ProximaNova-Semibold.otf in Resources */,
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				E08CD837E7FD1DEBB4821C43 /* PrivacyInfo.xcprivacy in Resources */,
@@ -486,8 +542,11 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = HospitalManagement;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Debug;
@@ -512,7 +571,10 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = HospitalManagement;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Release;
@@ -590,10 +652,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;
@@ -665,10 +724,7 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;

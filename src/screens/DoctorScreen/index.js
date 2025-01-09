@@ -12,7 +12,7 @@ import {
   Image,
 } from 'react-native';
 import {useTheme} from '../../utils/ThemeProvider';
-import styles from './styles';
+import {landscapeStyles, portraitStyles} from './styles';
 import Header from '../../components/Header';
 import {useTranslation} from 'react-i18next';
 import {
@@ -48,6 +48,7 @@ import FlashMessage, {
   hideMessage,
 } from 'react-native-flash-message';
 import moment from 'moment';
+import useOrientation from '../../components/OrientationComponent';
 
 const scheduleData = [
   {
@@ -126,6 +127,9 @@ const breakData = [
 ];
 
 export const DoctorScreen = ({navigation}) => {
+  const orientation = useOrientation(); // Get current orientation
+  const isPortrait = orientation === 'portrait';
+  const styles = isPortrait ? portraitStyles : landscapeStyles;
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('');
   const [practice, setPractice] = useState('');
@@ -832,6 +836,7 @@ export const DoctorScreen = ({navigation}) => {
                   <Animated.View
                     key={index}
                     style={[
+                      styles.logoMenu,
                       {
                         transform: [{translateY: animations[index]}],
                         opacity: opacities[index],
@@ -865,11 +870,13 @@ export const DoctorScreen = ({navigation}) => {
               </>
             ))}
 
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => toggleMenu(false)}>
-              <Text style={styles.closeButtonText}>Close</Text>
-            </TouchableOpacity>
+            <View style={styles.logoMenu}>
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={() => toggleMenu(false)}>
+                <Text style={styles.closeButtonText}>Close</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>

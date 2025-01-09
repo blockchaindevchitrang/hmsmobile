@@ -55,11 +55,14 @@ import SMSScreen from './src/screens/SMSScreen';
 import LiveConsultationScreen from './src/screens/LiveConsultationScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import ChangePasswordScreen from './src/screens/ChangePasswordScreen';
+import useOrientation from './src/components/OrientationComponent';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
 const TabStack = () => {
+  const orientation = useOrientation(); // Get current orientation
+  const isPortrait = orientation === 'portrait';
   const {theme} = useTheme();
   return (
     <Tab.Navigator
@@ -99,7 +102,7 @@ const TabStack = () => {
           tabBarIcon: ({focused}) => (
             <View
               style={[
-                styles.bottomView,
+                isPortrait ? styles.bottomView : styles.bottomView1,
                 {backgroundColor: focused ? COLORS.white : theme.headerColor},
               ]}>
               <Image style={styles.imageView} source={chart} />
@@ -115,7 +118,7 @@ const TabStack = () => {
           tabBarIcon: ({focused}) => (
             <View
               style={[
-                styles.bottomView,
+                isPortrait ? styles.bottomView : styles.bottomView1,
                 {
                   backgroundColor: focused ? COLORS.white : theme.headerColor,
                 },
@@ -133,7 +136,7 @@ const TabStack = () => {
           tabBarIcon: ({focused}) => (
             <View
               style={[
-                styles.bottomView,
+                isPortrait ? styles.bottomView : styles.bottomView1,
                 {
                   backgroundColor: focused ? COLORS.white : theme.headerColor,
                 },
@@ -151,7 +154,7 @@ const TabStack = () => {
           tabBarIcon: ({focused}) => (
             <View
               style={[
-                styles.bottomView,
+                isPortrait ? styles.bottomView : styles.bottomView1,
                 {backgroundColor: focused ? COLORS.white : theme.headerColor},
               ]}>
               <Image style={styles.imageView1} source={people} />
@@ -167,7 +170,7 @@ const TabStack = () => {
           tabBarIcon: ({focused}) => (
             <View
               style={[
-                styles.bottomView,
+                isPortrait ? styles.bottomView : styles.bottomView1,
                 {backgroundColor: focused ? COLORS.white : theme.headerColor},
               ]}>
               <Image style={styles.imageView} source={setting} />
@@ -370,11 +373,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   bottomView1: {
-    width: wp(12.5),
-    height: wp(12.5),
-    borderRadius: wp(12.5),
+    width: wp(8),
+    height: wp(8),
+    borderRadius: wp(8),
     alignItems: 'center',
     justifyContent: 'center',
+    marginTop: hp(1.5),
   },
   AIRoundView: {
     width: wp(20),
@@ -397,7 +401,7 @@ const styles = StyleSheet.create({
   },
   imageView2: {
     width: wp(6.5),
-    height: hp(4),
+    height: hp(3),
     resizeMode: 'contain',
     tintColor: COLORS.black,
   },

@@ -12,7 +12,7 @@ import {
   Image,
 } from 'react-native';
 import {useTheme} from '../../utils/ThemeProvider';
-import styles from './styles';
+import {landscapeStyles, portraitStyles} from './styles';
 import Header from '../../components/Header';
 import {useTranslation} from 'react-i18next';
 import {
@@ -23,7 +23,8 @@ import headerLogo from '../../images/headerLogo.png';
 import {BlurView} from '@react-native-community/blur';
 import IPDList from '../../components/IPDComponent/IPDList';
 import OPDList from '../../components/IPDComponent/OPDList';
-import { onGetCommonApi } from '../../services/Api';
+import {onGetCommonApi} from '../../services/Api';
+import useOrientation from '../../components/OrientationComponent';
 
 const BloodIssueData = [
   {
@@ -124,6 +125,9 @@ const ODPData = [
 export const IPDScreen = ({navigation}) => {
   const {t} = useTranslation();
   const {theme} = useTheme();
+  const orientation = useOrientation(); // Get current orientation
+  const isPortrait = orientation === 'portrait';
+  const styles = isPortrait ? portraitStyles : landscapeStyles;
   const [searchAccount, setSearchAccount] = useState('');
   const [searchPharmacists, setSearchPharmacists] = useState('');
   const [optionModalView, setOptionModalView] = useState(false);
@@ -287,6 +291,7 @@ export const IPDScreen = ({navigation}) => {
                   <Animated.View
                     key={index}
                     style={[
+                      styles.logoMenu,
                       {
                         transform: [{translateY: animations[index]}],
                         opacity: opacities[index],
@@ -320,11 +325,13 @@ export const IPDScreen = ({navigation}) => {
               </>
             ))}
 
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => toggleMenu(false)}>
-              <Text style={styles.closeButtonText}>Close</Text>
-            </TouchableOpacity>
+            <View style={styles.logoMenu}>
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={() => toggleMenu(false)}>
+                <Text style={styles.closeButtonText}>Close</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>

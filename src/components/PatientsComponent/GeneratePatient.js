@@ -31,6 +31,7 @@ import FlashMessage, {
   hideMessage,
 } from 'react-native-flash-message';
 import {onAddAccountListApi, onDeleteCommonApi} from '../../services/Api';
+import {useSelector} from 'react-redux';
 
 const GeneratePatient = ({
   searchBreak,
@@ -42,11 +43,14 @@ const GeneratePatient = ({
   setPageCount,
   smartCardTempList,
 }) => {
+  const user_data = useSelector(state => state.user_data);
   const {theme} = useTheme();
   const [newUserVisible, setNewUserVisible] = useState(false);
   const [templateId, setTemplateId] = useState('');
   const [templateName, setTemplateName] = useState('');
   const [genderType, setGenderType] = useState('all');
+  const [patientId, setPatientId] = useState('');
+  const [patientName, setPatientName] = useState('');
   const [errorVisible, setErrorVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [userId, setUserId] = useState('');
@@ -61,8 +65,9 @@ const GeneratePatient = ({
       } else {
         setLoading(true);
         setErrorVisible(false);
-        const urlData = `patient-smart-card-store?template_id=${templateId}&patient=${genderType}`;
+        const urlData = `patient-smart-card-store?template_id=${templateId}&patient=${genderType}${genderType == 'one' ? `&patient_id=${patientId}` : ''}`;
         const response = await onAddAccountListApi(urlData);
+        console.log('Get Value:::', response.data);
         if (response.status == 200) {
           onGetData();
           setLoading(false);
@@ -131,7 +136,9 @@ const GeneratePatient = ({
         </View>
         <View style={[styles.switchView, {width: wp(35)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-            <Text style={[styles.dataHistoryText1]}>{item.unique_id}</Text>
+            <Text style={[styles.dataHistoryText1]}>
+              {item.patient_unique_id}
+            </Text>
           </View>
         </View>
         <View style={[styles.switchView, {width: wp(30)}]}>
@@ -311,13 +318,13 @@ const GeneratePatient = ({
                   <View style={styles.dropdown2BtnStyle2}>
                     {templateId != '' ? (
                       <Text style={styles.dropdownItemTxtStyle}>
-                        {templateId == selectedItem?.name
-                          ? selectedItem?.name
+                        {templateId == selectedItem?.id
+                          ? selectedItem?.template_name
                           : templateName}
                       </Text>
                     ) : (
                       <Text style={styles.dropdownItemTxtStyle}>
-                        {selectedItem?.name || 'Select Template'}
+                        {selectedItem?.template_name || 'Select Template'}
                       </Text>
                     )}
                   </View>
@@ -327,14 +334,16 @@ const GeneratePatient = ({
               renderItem={(item, index, isSelected) => {
                 return (
                   <TouchableOpacity style={styles.dropdownView}>
-                    <Text style={styles.dropdownItemTxtStyle}>{item.name}</Text>
+                    <Text style={styles.dropdownItemTxtStyle}>
+                      {item.template_name}
+                    </Text>
                   </TouchableOpacity>
                 );
               }}
               dropdownIconPosition={'left'}
               dropdownStyle={styles.dropdown2DropdownStyle}
             />
-            <Text style={[styles.titleText1, {marginTop: hp(2.5)}]}>
+            <Text style={[styles.titleText1, {marginTop: hp(3)}]}>
               {'Select Type:'}
             </Text>
             <View style={[styles.statusView, {paddingVertical: hp(1)}]}>
@@ -386,6 +395,53 @@ const GeneratePatient = ({
                 <Text style={styles.statusText}>Only One Patient</Text>
               </View>
             </View>
+            {genderType == 'one' ? (
+              <>
+                <Text style={[styles.titleText1, {marginTop: hp(2)}]}>
+                  {'Select Patient:'}
+                </Text>
+                <SelectDropdown
+                  data={user_data}
+                  onSelect={(selectedItem, index) => {
+                    // setSelectedColor(selectedItem);
+                    setPatientId(selectedItem.id);
+                    console.log('gert Value:::', selectedItem);
+                  }}
+                  defaultValue={patientName}
+                  renderButton={(selectedItem, isOpen) => {
+                    console.log('Get Response>>>', selectedItem);
+                    return (
+                      <View style={styles.dropdown2BtnStyle2}>
+                        {patientId != '' ? (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {patientId == selectedItem?.id
+                              ? `${selectedItem?.patient_user?.first_name} ${selectedItem?.patient_user?.last_name}`
+                              : patientName}
+                          </Text>
+                        ) : (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {selectedItem?.patient_user?.first_name ||
+                              'Select Patient'}
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(item, index, isSelected) => {
+                    return (
+                      <TouchableOpacity style={styles.dropdownView}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {`${item?.patient_user?.first_name} ${item?.patient_user?.last_name}`}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                  dropdownIconPosition={'left'}
+                  dropdownStyle={styles.dropdown2DropdownStyle}
+                />
+              </>
+            ) : null}
             {errorVisible ? (
               <Text style={styles.dataHistoryText4}>{errorMessage}</Text>
             ) : null}

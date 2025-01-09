@@ -12,7 +12,7 @@ import {
   Image,
 } from 'react-native';
 import {useTheme} from '../../utils/ThemeProvider';
-import styles from './styles';
+import {landscapeStyles, portraitStyles} from './styles';
 import Header from '../../components/Header';
 import {useTranslation} from 'react-i18next';
 import {
@@ -21,20 +21,10 @@ import {
 } from '../../components/Pixel';
 import headerLogo from '../../images/headerLogo.png';
 import {BlurView} from '@react-native-community/blur';
-import ChargeCategoriesList from '../../components/HospitalChargesComponent/ChargeCategoriesList';
-import ChargesComponent from '../../components/HospitalChargesComponent/ChargesComponent';
-import DoctorChargesList from '../../components/HospitalChargesComponent/DoctorChargesList';
-import ItemCategoriesList from '../../components/InventoryComponent/ItemCategoriesList';
-import ItemsList from '../../components/InventoryComponent/ItemsList';
-import IssuedItemsList from '../../components/InventoryComponent/IssuedItemsList';
-import ItemStocksList from '../../components/InventoryComponent/ItemStocksList';
-import PathologyCategories from '../../components/PathologyComponent/PathologyCategories';
-import PathologyParameter from '../../components/PathologyComponent/PathologyParameter';
-import PathologyTest from '../../components/PathologyComponent/PathologyTest';
-import PathologyUnit from '../../components/PathologyComponent/PathologyUnit';
 import {onGetCommonApi} from '../../services/Api';
 import SMSList from '../../components/SMSComponent/SMSList';
 import MailList from '../../components/SMSComponent/MailList';
+import useOrientation from '../../components/OrientationComponent';
 
 const allData = [
   {
@@ -143,6 +133,9 @@ const BloodIssueData = [
 export const SMSScreen = ({navigation}) => {
   const {t} = useTranslation();
   const {theme} = useTheme();
+  const orientation = useOrientation(); // Get current orientation
+  const isPortrait = orientation === 'portrait';
+  const styles = isPortrait ? portraitStyles : landscapeStyles;
   const [searchAccount, setSearchAccount] = useState('');
   const [pageCount, setPageCount] = useState('1');
   const [smsPage, setSmsPage] = useState('1');
@@ -272,6 +265,7 @@ export const SMSScreen = ({navigation}) => {
                   <Animated.View
                     key={index}
                     style={[
+                      styles.logoMenu,
                       {
                         transform: [{translateY: animations[index]}],
                         opacity: opacities[index],
@@ -303,11 +297,13 @@ export const SMSScreen = ({navigation}) => {
               </>
             ))}
 
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => toggleMenu(false)}>
-              <Text style={styles.closeButtonText}>Close</Text>
-            </TouchableOpacity>
+            <View style={styles.logoMenu}>
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={() => toggleMenu(false)}>
+                <Text style={styles.closeButtonText}>Close</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>

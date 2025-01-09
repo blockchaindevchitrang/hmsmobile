@@ -12,7 +12,7 @@ import {
   Image,
 } from 'react-native';
 import {useTheme} from '../../utils/ThemeProvider';
-import styles from './styles';
+import {landscapeStyles, portraitStyles} from './styles';
 import Header from '../../components/Header';
 import {useTranslation} from 'react-i18next';
 import {
@@ -28,6 +28,7 @@ import GeneratePatient from '../../components/PatientsComponent/GeneratePatient'
 import RadiologyTests from '../../components/RadiologyComponent/RadiologyTests';
 import RadiologyCategories from '../../components/RadiologyComponent/RadiologyCategories';
 import {onGetCommonApi} from '../../services/Api';
+import useOrientation from '../../components/OrientationComponent';
 
 const allData = [
   {
@@ -113,6 +114,9 @@ const PharmacistsData = [
 export const RadiologyScreen = ({navigation}) => {
   const {t} = useTranslation();
   const {theme} = useTheme();
+  const orientation = useOrientation(); // Get current orientation
+  const isPortrait = orientation === 'portrait';
+  const styles = isPortrait ? portraitStyles : landscapeStyles;
   const [searchUser, setSearchUser] = useState('');
   const [searchPharmacists, setSearchPharmacists] = useState('');
   const [refresh, setRefresh] = useState(false);
@@ -277,6 +281,7 @@ export const RadiologyScreen = ({navigation}) => {
                     <Animated.View
                       key={index}
                       style={[
+                        styles.logoMenu,
                         {
                           transform: [{translateY: animations[index]}],
                           opacity: opacities[index],
@@ -312,11 +317,13 @@ export const RadiologyScreen = ({navigation}) => {
               ),
             )}
 
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => toggleMenu(false)}>
-              <Text style={styles.closeButtonText}>Close</Text>
-            </TouchableOpacity>
+            <View style={styles.logoMenu}>
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={() => toggleMenu(false)}>
+                <Text style={styles.closeButtonText}>Close</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>

@@ -26,12 +26,28 @@
 	<true/>
 	<key>NSAppTransportSecurity</key>
 	<dict>
-	  <!-- Do not change NSAllowsArbitraryLoads to true, or you will risk app rejection! -->
 		<key>NSAllowsArbitraryLoads</key>
 		<false/>
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+  <key>UIAppFonts</key>
+  <array>
+    <string>Poppins-Bold.ttf</string>
+    <string>Poppins-Light.ttf</string>
+    <string>Poppins-Regular.ttf</string>
+    <string>Poppins-Medium.ttf</string>
+    <string>Poppins-SemiBold.ttf</string>
+    <string>Poppins-ExtraBold.ttf</string>
+    <string>DMSans-Bold.ttf</string>
+    <string>DMSans-Regular.ttf</string>
+    <string>DMSans-Medium.ttf</string>
+    <string>ProximaNova-Bold.otf</string>
+    <string>ProximaNova-Light.otf</string>
+    <string>ProximaNova-Regular.otf</string>
+    <string>ProximaNova-Medium.otf</string>
+    <string>ProximaNova-Semibold.otf</string>
+  </array>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string></string>
 	<key>UILaunchStoryboardName</key>
@@ -43,8 +59,13 @@
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
+	</array>
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>

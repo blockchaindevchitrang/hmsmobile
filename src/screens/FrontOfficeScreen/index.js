@@ -12,7 +12,7 @@ import {
   Image,
 } from 'react-native';
 import {useTheme} from '../../utils/ThemeProvider';
-import styles from './styles';
+import {landscapeStyles, portraitStyles} from './styles';
 import Header from '../../components/Header';
 import {useTranslation} from 'react-i18next';
 import {
@@ -26,10 +26,14 @@ import VisitorList from '../../components/FrontOfficeComponent/VisitorList';
 import {onGetCommonApi} from '../../services/Api';
 import PostalReceiveList from '../../components/FrontOfficeComponent/PostalReceiveList';
 import PostalDispatchList from '../../components/FrontOfficeComponent/PostalDispatchList';
+import useOrientation from '../../components/OrientationComponent';
 
 export const FrontOfficeScreen = ({navigation}) => {
   const {t} = useTranslation();
   const {theme} = useTheme();
+  const orientation = useOrientation(); // Get current orientation
+  const isPortrait = orientation === 'portrait';
+  const styles = isPortrait ? portraitStyles : landscapeStyles;
   const [searchCallLog, setSearchCallLog] = useState('');
   const [searchVisitor, setSearchVisitor] = useState('');
   const [searchReceive, setSearchReceive] = useState('');
@@ -272,6 +276,7 @@ export const FrontOfficeScreen = ({navigation}) => {
                   <Animated.View
                     key={index}
                     style={[
+                      styles.logoMenu,
                       {
                         transform: [{translateY: animations[index]}],
                         opacity: opacities[index],
@@ -303,11 +308,13 @@ export const FrontOfficeScreen = ({navigation}) => {
               </>
             ))}
 
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => toggleMenu(false)}>
-              <Text style={styles.closeButtonText}>Close</Text>
-            </TouchableOpacity>
+            <View style={styles.logoMenu}>
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={() => toggleMenu(false)}>
+                <Text style={styles.closeButtonText}>Close</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>

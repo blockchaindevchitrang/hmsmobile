@@ -12,7 +12,7 @@ import {
   Image,
 } from 'react-native';
 import {useTheme} from '../../utils/ThemeProvider';
-import styles from './styles';
+import {landscapeStyles, portraitStyles} from './styles';
 import Header from '../../components/Header';
 import {useTranslation} from 'react-i18next';
 import {
@@ -37,259 +37,15 @@ import {
 } from '../../services/Api';
 import RoleList from '../../components/UsersComponent/RoleList';
 import {useSelector} from 'react-redux';
-
-const allData = [
-  {
-    id: 1,
-    name: 'Joey Tribiyani',
-    mail: 'joey@gmail.com',
-    role: 'Admin',
-    verify: false,
-    status: true,
-  },
-  {
-    id: 2,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    role: 'Admin',
-    verify: false,
-    status: true,
-  },
-  {
-    id: 3,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    role: 'Doctor',
-    verify: true,
-    status: true,
-  },
-  {
-    id: 4,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    role: 'Doctor',
-    verify: false,
-    status: true,
-  },
-  {
-    id: 5,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    role: 'Lab Technicians',
-    verify: false,
-    status: true,
-  },
-];
-
-const AccountantData = [
-  {
-    id: 1,
-    name: 'Joey Tribiyani',
-    mail: 'joey@gmail.com',
-    phone: '9876543210',
-    status: true,
-  },
-  {
-    id: 2,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    phone: '9876543210',
-    status: true,
-  },
-  {
-    id: 3,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    phone: 'NA',
-    status: true,
-  },
-  {
-    id: 4,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    phone: '9876543210',
-    status: true,
-  },
-  {
-    id: 5,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    phone: '9876543210',
-    status: true,
-  },
-];
-
-const NurseData = [
-  {
-    id: 1,
-    name: 'Joey Tribiyani',
-    mail: 'joey@gmail.com',
-    phone: '9876543210',
-    status: true,
-    qualification: 'mca',
-    bod: 'N/A',
-  },
-  {
-    id: 2,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    phone: '9876543210',
-    status: true,
-    qualification: 'bsc',
-    bod: 'N/A',
-  },
-  {
-    id: 3,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    phone: 'NA',
-    status: false,
-    qualification: 'mca',
-    bod: '8th April, 1999',
-  },
-  {
-    id: 4,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    phone: '9876543210',
-    status: true,
-    qualification: 'bsc',
-    bod: '10th May, 1998',
-  },
-  {
-    id: 5,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    phone: '9876543210',
-    status: false,
-    qualification: 'msc',
-    bod: 'N/A',
-  },
-];
-
-const ReceptionistsData = [
-  {
-    id: 1,
-    name: 'Joey Tribiyani',
-    mail: 'joey@gmail.com',
-    phone: '9876543210',
-    status: true,
-    designation: 'Jr',
-  },
-  {
-    id: 2,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    phone: '9876543210',
-    status: true,
-    designation: 'Doctor',
-  },
-  {
-    id: 3,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    phone: 'NA',
-    status: false,
-    designation: 'Receptionist',
-  },
-  {
-    id: 4,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    phone: '9876543210',
-    status: true,
-    designation: 'N/A',
-  },
-  {
-    id: 5,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    phone: '9876543210',
-    status: false,
-    designation: 'Lab Technician',
-  },
-];
-
-const LabTechniciansData = [
-  {
-    id: 1,
-    name: 'Joey Tribiyani',
-    mail: 'joey@gmail.com',
-    status: true,
-    designation: 'Lab',
-  },
-  {
-    id: 2,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    status: true,
-    designation: 'Moderator',
-  },
-  {
-    id: 3,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    status: false,
-    designation: 'N/A',
-  },
-  {
-    id: 4,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    status: true,
-    designation: 'N/A',
-  },
-  {
-    id: 5,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    status: false,
-    designation: 'Lab',
-  },
-];
-
-const PharmacistsData = [
-  {
-    id: 1,
-    name: 'Joey Tribiyani',
-    mail: 'joey@gmail.com',
-    status: true,
-    blood: 'N/A',
-  },
-  {
-    id: 2,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    status: true,
-    blood: 'O+',
-  },
-  {
-    id: 3,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    status: false,
-    blood: 'N/A',
-  },
-  {
-    id: 4,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    status: true,
-    blood: 'AB-',
-  },
-  {
-    id: 5,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    status: false,
-    blood: 'A+',
-  },
-];
+import useOrientation from '../../components/OrientationComponent';
 
 export const UsersScreen = ({navigation}) => {
   const roleData = useSelector(state => state.roleData);
   const {t} = useTranslation();
   const {theme} = useTheme();
+  const orientation = useOrientation(); // Get current orientation
+  const isPortrait = orientation === 'portrait';
+  const styles = isPortrait ? portraitStyles : landscapeStyles;
   const [index, setIndex] = React.useState(0);
   const [routes] = React.useState([
     {key: 'user', title: 'Users'},
@@ -657,15 +413,6 @@ export const UsersScreen = ({navigation}) => {
           moreButtonClick={() => toggleMenu(true)}
         />
       </View>
-      {/* <TabView
-        navigationState={{index, routes}}
-        renderScene={renderScene}
-        onIndexChange={setIndex}
-        pagerStyle={{backgroundColor: theme.background}}
-        style={{backgroundColor: 'red'}}
-        renderTabBar={renderTabBar}
-        swipeEnabled={false}
-      /> */}
       <View style={styles.mainView}>
         {selectedView == 'Users' ? (
           <UserList
@@ -776,6 +523,7 @@ export const UsersScreen = ({navigation}) => {
                   <Animated.View
                     key={index}
                     style={[
+                      styles.logoMenu,
                       {
                         transform: [{translateY: animations[index]}],
                         opacity: opacities[index],
@@ -809,11 +557,13 @@ export const UsersScreen = ({navigation}) => {
               </>
             ))}
 
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => toggleMenu(false)}>
-              <Text style={styles.closeButtonText}>Close</Text>
-            </TouchableOpacity>
+            <View style={styles.logoMenu}>
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={() => toggleMenu(false)}>
+                <Text style={styles.closeButtonText}>Close</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>

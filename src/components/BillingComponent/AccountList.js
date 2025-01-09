@@ -45,6 +45,7 @@ import {
 import {DeletePopup} from '../DeletePopup';
 import {showMessage} from 'react-native-flash-message';
 import SelectDropdown from 'react-native-select-dropdown';
+import useOrientation from '../OrientationComponent';
 
 const filterArray = [
   {id: 1, name: 'All'},
@@ -73,6 +74,8 @@ const AccountList = ({
 }) => {
   const {theme} = useTheme();
   const menuRef = useRef(null);
+  const orientation = useOrientation(); // Get current orientation
+  const isPortrait = orientation === 'portrait';
   const [newAccountVisible, setNewAccountVisible] = useState(false);
   const [eventTitle, setEventTitle] = useState('');
   const [departmentComment, setDepartmentComment] = useState('');
@@ -148,15 +151,18 @@ const AccountList = ({
           styles.dataHistoryView,
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
-        <View style={[styles.nameDataView]}>
+        <View
+          style={[styles.nameDataView, {width: isPortrait ? wp(35) : wp(40)}]}>
           <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
         </View>
-        <View style={[styles.switchView, {width: wp(22)}]}>
+        <View
+          style={[styles.switchView, {width: isPortrait ? wp(22) : wp(30)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
             <Text style={[styles.dataHistoryText]}>{item.type}</Text>
           </View>
         </View>
-        <View style={[styles.switchView]}>
+        <View
+          style={[styles.switchView, {width: isPortrait ? wp(20) : wp(30.5)}]}>
           <Switch
             trackColor={{
               false:
@@ -372,13 +378,25 @@ const AccountList = ({
                     styles.titleActiveView,
                     {backgroundColor: theme.headerColor},
                   ]}>
-                  <Text style={[styles.titleText, {width: wp(35)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {width: isPortrait ? wp(35) : wp(40)},
+                    ]}>
                     {'ACCOUNTS'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(22)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {width: isPortrait ? wp(22) : wp(30)},
+                    ]}>
                     {'TYPE'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(20)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {width: isPortrait ? wp(20) : wp(30.5)},
+                    ]}>
                     {'STATUS'}
                   </Text>
                   <Text style={[styles.titleText, {width: wp(16)}]}>

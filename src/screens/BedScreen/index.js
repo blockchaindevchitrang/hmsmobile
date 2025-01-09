@@ -8,7 +8,7 @@ import {
   Image,
 } from 'react-native';
 import {useTheme} from '../../utils/ThemeProvider';
-import styles from './styles';
+import {landscapeStyles, portraitStyles} from './styles';
 import Header from '../../components/Header';
 import {useTranslation} from 'react-i18next';
 import {
@@ -28,6 +28,7 @@ import {
   onGetCommonApi,
 } from '../../services/Api';
 import BedStatus from '../../components/BedComponent/BedStatus';
+import useOrientation from '../../components/OrientationComponent';
 
 const allData = [
   {
@@ -194,6 +195,9 @@ const ManualData = [
 export const BedScreen = ({navigation}) => {
   const {t} = useTranslation();
   const {theme} = useTheme();
+  const orientation = useOrientation(); // Get current orientation
+  const isPortrait = orientation === 'portrait';
+  const styles = isPortrait ? portraitStyles : landscapeStyles;
   const [index, setIndex] = React.useState(0);
 
   const [searchAccount, setSearchAccount] = useState('');
@@ -408,6 +412,7 @@ export const BedScreen = ({navigation}) => {
                     <Animated.View
                       key={index}
                       style={[
+                        styles.logoMenu,
                         {
                           transform: [{translateY: animations[index]}],
                           opacity: opacities[index],
@@ -445,11 +450,13 @@ export const BedScreen = ({navigation}) => {
               ),
             )}
 
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => toggleMenu(false)}>
-              <Text style={styles.closeButtonText}>Close</Text>
-            </TouchableOpacity>
+            <View style={styles.logoMenu}>
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={() => toggleMenu(false)}>
+                <Text style={styles.closeButtonText}>Close</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>

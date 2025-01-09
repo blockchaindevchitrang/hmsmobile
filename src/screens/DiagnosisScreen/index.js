@@ -12,7 +12,7 @@ import {
   Image,
 } from 'react-native';
 import {useTheme} from '../../utils/ThemeProvider';
-import styles from './styles';
+import {landscapeStyles, portraitStyles} from './styles';
 import Header from '../../components/Header';
 import {useTranslation} from 'react-i18next';
 import {
@@ -28,7 +28,8 @@ import BloodIssueList from '../../components/BloodComponent/BloodIssueList';
 import DiagnosisList from '../../components/DiagnosisComponent/DiagnosisList';
 import DiagnosisCategoriesList from '../../components/DiagnosisComponent/DiagnosisCategoriesList';
 import DiagnosisTestsList from '../../components/DiagnosisComponent/DiagnosisTestsList';
-import { onGetCommonApi } from '../../services/Api';
+import {onGetCommonApi} from '../../services/Api';
+import useOrientation from '../../components/OrientationComponent';
 
 const allData = [
   {
@@ -147,6 +148,9 @@ const BloodIssueData = [
 export const DiagnosisScreen = ({navigation}) => {
   const {t} = useTranslation();
   const {theme} = useTheme();
+  const orientation = useOrientation(); // Get current orientation
+  const isPortrait = orientation === 'portrait';
+  const styles = isPortrait ? portraitStyles : landscapeStyles;
   const [searchAccount, setSearchAccount] = useState('');
   const [searchPayroll, setSearchPayroll] = useState('');
   const [searchPharmacists, setSearchPharmacists] = useState('');
@@ -350,6 +354,7 @@ export const DiagnosisScreen = ({navigation}) => {
                   <Animated.View
                     key={index}
                     style={[
+                      styles.logoMenu,
                       {
                         transform: [{translateY: animations[index]}],
                         opacity: opacities[index],
@@ -381,11 +386,13 @@ export const DiagnosisScreen = ({navigation}) => {
               </>
             ))}
 
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => toggleMenu(false)}>
-              <Text style={styles.closeButtonText}>Close</Text>
-            </TouchableOpacity>
+            <View style={styles.logoMenu}>
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={() => toggleMenu(false)}>
+                <Text style={styles.closeButtonText}>Close</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
