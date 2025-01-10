@@ -20,8 +20,11 @@ import {showMessage} from 'react-native-flash-message';
 import ImagePicker from 'react-native-image-crop-picker';
 import man from '../../images/man.png';
 import draw from '../../images/draw.png';
+import useOrientation from '../OrientationComponent';
 
 const MailList = () => {
+  const orientation = useOrientation(); // Get current orientation
+  const isPortrait = orientation === 'portrait';
   const [toSend, setToSend] = useState('');
   const [subject, setSubject] = useState(false);
   const [message, setMessage] = useState('');
@@ -30,11 +33,19 @@ const MailList = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const validateEmail = email => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email); // Returns true if valid
+  };
+
   const onAddPayRollData = async () => {
     try {
       if (toSend == '') {
         setErrorVisible(true);
         setErrorMessage('Please enter send to.');
+      } else if (!validateEmail(toSend)) {
+        setErrorVisible(true);
+        setErrorMessage('Please enter valid email address for send to.');
       } else if (subject == '') {
         setErrorVisible(true);
         setErrorMessage('Please enter subject.');
@@ -172,12 +183,14 @@ const MailList = () => {
               <Text style={[styles.titleText1]}>{'Attachment:'}</Text>
               <View style={styles.profilePhotoView}>
                 <TouchableOpacity
-                  style={styles.editView}
+                  style={isPortrait ? styles.editView : styles.editView1}
                   onPress={() => openProfileImagePicker()}>
                   <Image style={styles.editImage1} source={draw} />
                 </TouchableOpacity>
                 <Image
-                  style={styles.profileImage}
+                  style={
+                    isPortrait ? styles.profileImage : styles.profileImage1
+                  }
                   source={avatar != null ? {uri: avatar?.uri} : man}
                 />
               </View>
@@ -601,6 +614,11 @@ const styles = StyleSheet.create({
     height: hp(13.5),
     resizeMode: 'contain',
   },
+  profileImage1: {
+    width: wp(20),
+    height: hp(13.5),
+    resizeMode: 'contain',
+  },
   editView: {
     width: wp(7),
     height: wp(7),
@@ -612,6 +630,19 @@ const styles = StyleSheet.create({
     zIndex: 1,
     right: -wp(3),
     top: -hp(2),
+    backgroundColor: COLORS.white,
+  },
+  editView1: {
+    width: wp(5),
+    height: wp(5),
+    borderRadius: wp(5),
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 0.5,
+    position: 'absolute',
+    zIndex: 1,
+    right: -wp(2),
+    top: -hp(1),
     backgroundColor: COLORS.white,
   },
   editImage1: {

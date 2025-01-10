@@ -105,12 +105,12 @@ export const LiveConsultationScreen = ({navigation}) => {
 
   const onGetConsultationData = async () => {
     try {
-      let urlData = `ipd-patient-department-get?search=${searchConsultation}&page=${pageCount}&is_discharge=${statusId}`;
+      let urlData = `live-consultation?search=${searchConsultation}&page=${pageCount}&is_discharge=${statusId}`;
       const response = await onGetCommonApi(urlData);
       console.log('get Response:', response.data.data);
       if (response.data.flag === 1) {
-        setConsultationData(response.data.data.items);
-        setTotalPage(response.data.data.pagination.last_page);
+        setConsultationData(response.data.data);
+        setTotalPage(response.data.recordsTotal);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -124,12 +124,12 @@ export const LiveConsultationScreen = ({navigation}) => {
 
   const onGetLiveMeetingData = async () => {
     try {
-      let urlData = `opd-patient-department-get?search=${searchLiveMeeting}&page=${pageCount}`;
+      let urlData = `live-meeting?search=${searchLiveMeeting}&page=${pageCount}`;
       const response = await onGetCommonApi(urlData);
       console.log('get Response:', response.data.data);
-      if (response.data.flag === 1) {
-        setLiveMeetingData(response.data.data.items);
-        setMeetingPage(response.data.data.pagination.last_page);
+      if (response.data.success === 1) {
+        setLiveMeetingData(response.data.data);
+        setMeetingPage(response.data.recordsTotal);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -152,7 +152,7 @@ export const LiveConsultationScreen = ({navigation}) => {
           <ConsultationList
             searchBreak={searchConsultation}
             setSearchBreak={setSearchConsultation}
-            allData={[]}
+            allData={consultationData}
             onGetData={onGetConsultationData}
             totalPage={totalPage}
             pageCount={pageCount}
@@ -165,7 +165,7 @@ export const LiveConsultationScreen = ({navigation}) => {
             <LiveMeetingList
               searchBreak={searchLiveMeeting}
               setSearchBreak={setSearchLiveMeeting}
-              allData={[]}
+              allData={liveMeetingData}
               onGetData={onGetLiveMeetingData}
               totalPage={meetingPage}
               pageCount={pageCount}

@@ -24,6 +24,7 @@ import {onLoginApi} from '../../services/Api';
 import {ErrorComponent} from '../../components/ErrorComponent';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import useOrientation from '../../components/OrientationComponent';
+import RNRestart from 'react-native-restart';
 
 export const LoginScreen = ({navigation}) => {
   const orientation = useOrientation(); // Get current orientation
@@ -56,7 +57,8 @@ export const LoginScreen = ({navigation}) => {
           setIsLoading(false);
           console.log('get Repsonse>>', response.data.data.token);
           AsyncStorage.setItem('accessToken', response.data.data.token);
-          navigation.replace('TabStack');
+          // navigation.replace('TabStack');
+          RNRestart.restart();
         }
         setIsLoading(false);
       }

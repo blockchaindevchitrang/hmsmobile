@@ -40,6 +40,13 @@ import {
   onGetSpecificCommonApi,
 } from '../../services/Api';
 import {useSelector} from 'react-redux';
+import {
+  Menu,
+  MenuOptions,
+  MenuOption,
+  MenuTrigger,
+} from 'react-native-popup-menu';
+import close from '../../images/close.png';
 
 let filterArray = [
   {id: 3, name: 'All'},
@@ -65,6 +72,7 @@ const ConsultationList = ({
   statusId,
   setStatusId,
 }) => {
+  const menuRef = useRef(null);
   const user_data = useSelector(state => state.user_data);
   const doctorData = useSelector(state => state.doctorData);
   const bedTypeData = useSelector(state => state.bedTypeData);
@@ -87,6 +95,7 @@ const ConsultationList = ({
   const [hostVideo, setHostVideo] = useState('disabled');
   const [clientVideo, setClientVideo] = useState('disabled');
   const [description, setDescription] = useState('');
+  const [newCredentialModal, setNewCredentialModal] = useState(false);
   const [errorVisible, setErrorVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [userId, setUserId] = useState('');
@@ -95,6 +104,115 @@ const ConsultationList = ({
   const [allCaseData, setAllCaseData] = useState([]);
   const [refresh, setRefresh] = useState(false);
   const [filterVisible, setFilterVisible] = useState(false);
+  const [apiKey, setApiKey] = useState('');
+  const [apiSecret, setApiSecret] = useState('');
+  const [errorVisible1, setErrorVisible1] = useState(false);
+  const [errorMessage1, setErrorMessage1] = useState('');
+
+  const onAddPayRollData = async () => {
+    try {
+      setLoading(true);
+      setErrorVisible(false);
+      let urlData = `live-consultations-create?consultation_title=${consultationTitle}&consultation_date=${consultationDate}&platform_type=${platformType}&consultation_duration_minutes=${duration}&patient_id=${patientId}&doctor_id=${doctorId}&type=${typeId}&type_number=${numberId}&host_video=${
+        hostVideo == 'disabled' ? 1 : 0
+      }&participant_video=${
+        clientVideo == 'disabled' ? 1 : 0
+      }&description=${description}`;
+      // const response = await onAddCommonJsonApi(urlData, raw);
+      const response = await onAddAccountListApi(urlData);
+      if (response.data.flag == 1) {
+        onGetData();
+        setLoading(false);
+        setNewBloodIssueVisible(false);
+        showMessage({
+          message: 'Record Added Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      } else {
+        setLoading(false);
+        showMessage({
+          message: response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
+    } catch (err) {
+      if (err.response.data.message) {
+        showMessage({
+          message: err.response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      } else {
+        showMessage({
+          message: 'Something want wrong.',
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
+      setLoading(false);
+      console.log('Error:', err);
+    }
+  };
+
+  const onAddConsultationData = async () => {
+    try {
+      if (apiKey == '') {
+        setErrorVisible1(false);
+        setErrorMessage1('Please enter zoom api key.');
+      } else if (apiSecret == '') {
+        setErrorVisible1(false);
+        setErrorMessage1('Please enter zoom api secret key.');
+      } else {
+        setLoading(true);
+        setErrorVisible1(false);
+        setErrorMessage1('');
+        let urlData = `zoom-credential-create?zoom-credential-create=${apiKey}&zoom_api_secret=${apiSecret}`;
+        // const response = await onAddCommonJsonApi(urlData, raw);
+        const response = await onAddAccountListApi(urlData);
+        if (response.data.flag == 1) {
+          // onGetData();
+          setLoading(false);
+          setNewCredentialModal(false);
+          showMessage({
+            message: 'Record Added Successfully',
+            type: 'success',
+            duration: 3000,
+          });
+        } else {
+          setLoading(false);
+          showMessage({
+            message: response.data.message,
+            type: 'danger',
+            duration: 6000,
+            icon: 'danger',
+          });
+        }
+      }
+    } catch (err) {
+      if (err.response.data.message) {
+        showMessage({
+          message: err.response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      } else {
+        showMessage({
+          message: 'Something want wrong.',
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
+      setLoading(false);
+      console.log('Error:', err);
+    }
+  };
 
   const renderItem = ({item, index}) => {
     return (
@@ -179,33 +297,37 @@ const ConsultationList = ({
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => {
-                  setUserId('');
-                  setErrorMessage('');
-                  setErrorVisible(false);
-                  setNewBloodIssueVisible(true);
+                  menuRef.current.open();
                 }}
                 style={styles.actionView}>
                 <Text style={styles.actionText}>Actions</Text>
               </TouchableOpacity>
-              {/* <Menu
-                              ref={menuRef}
-                              onSelect={value => {
-                                if (value == 'add') {
-                                  setNewUserVisible(true);
-                                } else {
-                                  alert(`Selected number: ${value}`);
-                                }
-                              }}>
-                              <MenuTrigger text={''} />
-                              <MenuOptions style={{marginVertical: hp(0.5)}}>
-                                <MenuOption value={'add'}>
-                                  <Text style={styles.dataHistoryText3}>New Bed</Text>
-                                </MenuOption>
-                                <MenuOption value={'excel'}>
-                                  <Text style={styles.dataHistoryText3}>Export to Excel</Text>
-                                </MenuOption>
-                              </MenuOptions>
-                            </Menu> */}
+              <Menu
+                ref={menuRef}
+                onSelect={value => {
+                  if (value == 'add') {
+                    setUserId('');
+                    setErrorMessage('');
+                    setErrorVisible(false);
+                    setNewBloodIssueVisible(true);
+                  } else {
+                    setErrorMessage1('');
+                    setErrorVisible1(false);
+                    setNewCredentialModal(true);
+                  }
+                }}>
+                <MenuTrigger text={''} />
+                <MenuOptions style={{marginVertical: hp(0.5)}}>
+                  <MenuOption value={'add'}>
+                    <Text style={styles.dataHistoryText3}>
+                      New Live Consultation
+                    </Text>
+                  </MenuOption>
+                  <MenuOption value={'excel'}>
+                    <Text style={styles.dataHistoryText3}>Add Credential</Text>
+                  </MenuOption>
+                </MenuOptions>
+              </Menu>
               <Modal
                 animationType="none"
                 transparent={true}
@@ -756,7 +878,9 @@ const ConsultationList = ({
           </View>
 
           <View style={styles.buttonView}>
-            <TouchableOpacity onPress={() => {}} style={styles.nextView}>
+            <TouchableOpacity
+              onPress={() => onAddPayRollData()}
+              style={styles.nextView}>
               {loading ? (
                 <ActivityIndicator size={'small'} color={COLORS.white} />
               ) : (
@@ -771,6 +895,56 @@ const ConsultationList = ({
           </View>
         </ScrollView>
       )}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={newCredentialModal}
+        onRequestClose={() => setNewCredentialModal(false)}>
+        <View style={styles.maneModalView}>
+          <TouchableWithoutFeedback
+            onPress={() => {
+              setNewCredentialModal(false);
+            }}>
+            <View style={styles.modalOverlay} />
+          </TouchableWithoutFeedback>
+          <View style={styles.container}>
+            <View style={styles.headerView}>
+              <Text style={styles.headerText}>Add Credential</Text>
+              <TouchableOpacity onPress={() => setNewCredentialModal(false)}>
+                <Image style={styles.closeImage} source={close} />
+              </TouchableOpacity>
+            </View>
+            <TextInput
+              value={apiKey}
+              placeholder={'Zoom Api Key'}
+              onChangeText={text => setApiKey(text)}
+              style={[styles.eventTextInput]}
+            />
+            <TextInput
+              value={apiSecret}
+              placeholder={'Zoom API Secret'}
+              onChangeText={text => setApiSecret(text)}
+              style={[styles.eventTextInput]}
+            />
+            {errorVisible1 ? (
+              <Text style={styles.dataHistoryText4}>{errorMessage1}</Text>
+            ) : null}
+            <View style={styles.buttonView}>
+              <TouchableOpacity
+                onPress={() => {
+                  onAddConsultationData();
+                }}
+                style={styles.nextView}>
+                {loading ? (
+                  <ActivityIndicator size={'small'} color={COLORS.white} />
+                ) : (
+                  <Text style={styles.nextText}>Save</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
       <DeletePopup
         modelVisible={deleteUser}
         setModelVisible={setDeleteUser}

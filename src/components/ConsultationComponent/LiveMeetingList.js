@@ -115,6 +115,55 @@ const LiveMeetingList = ({
     );
   };
 
+  const onAddPayRollData = async () => {
+    try {
+      setLoading(true);
+      setErrorVisible(false);
+
+      let urlData = `live-meeting-create?consultation_title=${consultationTitle}&consultation_date=${consultationDate}&consultation_duration_minutes=${duration}&host_video=${
+        hostVideo == 'disabled' ? 1 : 0
+      }&participant_video=${
+        clientVideo == 'disabled' ? 1 : 0
+      }&description=${description}`;
+      // const response = await onAddCommonJsonApi(urlData, raw);
+      const response = await onAddAccountListApi(urlData);
+      if (response.data.flag == 1) {
+        setLoading(false);
+        showMessage({
+          message: 'Record Added Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      } else {
+        setLoading(false);
+        showMessage({
+          message: response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
+    } catch (err) {
+      if (err.response.data.message) {
+        showMessage({
+          message: err.response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      } else {
+        showMessage({
+          message: 'Something want wrong.',
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
+      setLoading(false);
+      console.log('Error:', err);
+    }
+  };
+
   return (
     <View style={styles.safeAreaStyle}>
       {!newBloodIssueVisible ? (
@@ -215,16 +264,16 @@ const LiveMeetingList = ({
               </Text>
             </View>
             <Text
-              style={
-                styles.totalCountText
-              }>{`Page ${pageCount} to ${totalPage}`}</Text>
+              style={styles.totalCountText}>{`Page ${pageCount} to ${Math.ceil(
+              totalPage / 10,
+            )}`}</Text>
             <View style={styles.prevViewData}>
               <Text
                 style={[
                   styles.prevButtonView,
-                  {opacity: pageCount >= totalPage ? 0.7 : 1},
+                  {opacity: pageCount >= Math.ceil(totalPage / 10) ? 0.7 : 1},
                 ]}
-                disabled={pageCount >= totalPage}
+                disabled={pageCount >= Math.ceil(totalPage / 10)}
                 onPress={() => setPageCount(parseFloat(pageCount) + 1)}>
                 {'>'}
               </Text>
@@ -233,11 +282,11 @@ const LiveMeetingList = ({
                   styles.prevButtonView,
                   {
                     marginLeft: wp(3),
-                    opacity: pageCount >= totalPage ? 0.7 : 1,
+                    opacity: pageCount >= Math.ceil(totalPage / 10) ? 0.7 : 1,
                   },
                 ]}
-                disabled={pageCount >= totalPage}
-                onPress={() => setPageCount(totalPage)}>
+                disabled={pageCount >= Math.ceil(totalPage / 10)}
+                onPress={() => setPageCount(Math.ceil(totalPage / 10))}>
                 {'>>'}
               </Text>
             </View>
@@ -412,7 +461,9 @@ const LiveMeetingList = ({
           </View>
 
           <View style={styles.buttonView}>
-            <TouchableOpacity onPress={() => {}} style={styles.nextView}>
+            <TouchableOpacity
+              onPress={() => onAddPayRollData()}
+              style={styles.nextView}>
               {loading ? (
                 <ActivityIndicator size={'small'} color={COLORS.white} />
               ) : (

@@ -12,7 +12,7 @@ import {
   Modal,
   TouchableWithoutFeedback,
 } from 'react-native';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -22,7 +22,7 @@ import {useTheme} from '../../utils/ThemeProvider';
 import deleteIcon from '../../images/delete.png';
 import SelectDropdown from 'react-native-select-dropdown';
 import {useSelector} from 'react-redux';
-import {onAddAccountListApi, onDeleteCommonApi} from '../../services/Api';
+import {onAddAccountListApi, onDeleteCommonApi, onGetCommonApi} from '../../services/Api';
 import {DeletePopup} from '../DeletePopup';
 import {showMessage} from 'react-native-flash-message';
 import close from '../../images/close.png';
@@ -37,6 +37,9 @@ const SMSList = ({
   smsPage,
 }) => {
   const roleData = useSelector(state => state.roleData);
+  const allUserData = useSelector(state => state.allUserData);
+  const user_data = useSelector(state => state.user_data);
+  const doctorData = useSelector(state => state.doctorData);
   const {theme} = useTheme();
   const [newUserVisible, setNewUserVisible] = useState(false);
   const [roleId, setRoleId] = useState('');
@@ -49,10 +52,40 @@ const SMSList = ({
   const [userId, setUserId] = useState('');
   const [deleteUser, setDeleteUser] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [sendToId, setSendToId] = useState('');
+  const [roleList, setSetRoleList] = useState([]);
+  const [refresh, setRefresh] = useState(false);
+  const [prefix, setPrefix] = useState('');
+
+  const filteredRoles = roleData.filter(
+    role => role.name !== 'Admin' && role.name !== 'Super Admin',
+  );
+
+  useEffect(() => {
+    if (roleName != '') {
+      onGetLabTechniciansData();
+    }
+  }, [roleName]);
+
+  const onGetLabTechniciansData = async () => {
+    try {
+      let urlData = `get-users?department_name=${roleName}`;
+      // const response = await onGetAllUsersDataApi();
+      const response = await onGetCommonApi(urlData);
+      console.log('Response User Data', response.data);
+      if (response.status === 200) {
+        // Set data to respective states
+        setSetRoleList(response.data.data);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Get User Error:', err);
+    }
+  };
 
   const onAddPayRollData = async () => {
     try {
-      if (roleId == '' && !numberStatus) {
+      if (sendToId == '' && !numberStatus) {
         setErrorVisible(true);
         setErrorMessage('Please select user role.');
       } else if (phoneNumber == '' && numberStatus) {
@@ -64,10 +97,12 @@ const SMSList = ({
       } else {
         setLoading(true);
         setErrorVisible(false);
-
-        const urlData = `sms-store?message=${message}${
-          numberStatus ? `&phone_numer=${phoneNumber}` : `&send_to=${roleId}`
-        }`;
+        let urlData = '';
+        if (numberStatus) {
+          urlData = `sms-store?message=${message}&number=${phoneNumber}`;
+        } else {
+          urlData = `sms-store?message=${message}&phone_number=${phoneNumber}&send_to=${sendToId}&prefix_code=${prefix}`;
+        }
         // const response = await onAddCommonJsonApi(urlData, raw);
         const response = await onAddAccountListApi(urlData);
         if (response.data.flag == 1) {
@@ -348,9 +383,9 @@ const SMSList = ({
                 <View style={{width: '35%'}}>
                   <Text style={[styles.titleText1]}>{'Role:'}</Text>
                   <SelectDropdown
-                    data={roleData}
+                    data={filteredRoles}
                     onSelect={(selectedItem, index) => {
-                      // setSelectedColor(selectedItem);
+                      setRoleName(selectedItem.name);
                       setRoleId(selectedItem.id);
                       console.log('gert Value:::', selectedItem);
                     }}
@@ -412,6 +447,57 @@ const SMSList = ({
                 />
               </View>
             </View>
+            {!numberStatus && (
+              <View style={styles.nameView}>
+                <View style={{width: '94%'}}>
+                  <Text style={[styles.titleText1, {marginTop: hp(2)}]}>
+                    {
+                      'Send To: (Only Users with a registered phone will display.)'
+                    }
+                  </Text>
+                  <SelectDropdown
+                    data={roleList}
+                    disabled={roleList.length > 0 ? false : true}
+                    onSelect={(selectedItem, index) => {
+                      // setSelectedColor(selectedItem);
+                      setSendToId(selectedItem.id);
+                      setPhoneNumber(selectedItem.phone);
+                      setPrefix(selectedItem.region_code);
+                      console.log('gert Value:::', selectedItem);
+                    }}
+                    renderButton={(selectedItem, isOpen) => {
+                      console.log('Get Response>>>', selectedItem);
+                      return (
+                        <View
+                          style={[
+                            styles.dropdown2BtnStyle2,
+                            {
+                              backgroundColor:
+                              roleList.length > 0 ? '#fff' : '#c2c2c2',
+                            },
+                          ]}>
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {selectedItem?.name.replace(/,/g, ' ') || 'Send to'}
+                          </Text>
+                        </View>
+                      );
+                    }}
+                    showsVerticalScrollIndicator={false}
+                    renderItem={(item, index, isSelected) => {
+                      return (
+                        <TouchableOpacity style={styles.dropdownView}>
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {item.name.replace(/,/g, ' ')}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    }}
+                    dropdownIconPosition={'left'}
+                    dropdownStyle={styles.dropdown2DropdownStyle}
+                  />
+                </View>
+              </View>
+            )}
             <Text style={[styles.titleText1, {marginTop: hp(2)}]}>
               {'Message'}
             </Text>
