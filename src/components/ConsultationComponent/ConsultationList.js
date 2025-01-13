@@ -80,7 +80,7 @@ const ConsultationList = ({
   const {theme} = useTheme();
   const [newBloodIssueVisible, setNewBloodIssueVisible] = useState(false);
   const [consultationTitle, setConsultationTitle] = useState('');
-  const [consultationDate, setConsultationDate] = useState(new Date());
+  const [consultationDate, setConsultationDate] = useState(null);
   const [dateModalVisible, setDateModalVisible] = useState(false);
   const [platformType, setPlatformType] = useState('');
   const [duration, setDuration] = useState('');
@@ -108,6 +108,24 @@ const ConsultationList = ({
   const [apiSecret, setApiSecret] = useState('');
   const [errorVisible1, setErrorVisible1] = useState(false);
   const [errorMessage1, setErrorMessage1] = useState('');
+
+  useEffect(() => {
+    onGetCredentialData();
+  }, []);
+
+  const onGetCredentialData = async () => {
+    try {
+      const response = await onGetCommonApi('get-zoom-credential');
+      console.log('get Response:', response.data.data);
+      if (response.data.success === 1) {
+        setApiKey(response.data.data.zoom_api_key);
+        setApiSecret(response.data.data.zoom_api_secret);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Error:', err);
+    }
+  };
 
   const onAddPayRollData = async () => {
     try {
@@ -171,7 +189,7 @@ const ConsultationList = ({
         setLoading(true);
         setErrorVisible1(false);
         setErrorMessage1('');
-        let urlData = `zoom-credential-create?zoom-credential-create=${apiKey}&zoom_api_secret=${apiSecret}`;
+        let urlData = `zoom-credential-create?zoom_api_key=${apiKey}&zoom_api_secret=${apiSecret}`;
         // const response = await onAddCommonJsonApi(urlData, raw);
         const response = await onAddAccountListApi(urlData);
         if (response.data.flag == 1) {
@@ -306,11 +324,27 @@ const ConsultationList = ({
                 ref={menuRef}
                 onSelect={value => {
                   if (value == 'add') {
+                    setConsultationTitle('');
+                    setConsultationDate(null);
+                    setClientVideo('disabled');
+                    setHostVideo('disabled');
+                    setDescription('');
+                    setDoctorId('');
+                    setDoctorName('');
+                    setPatientId('');
+                    setPatientName('');
+                    setDuration('');
+                    setNumberId('');
+                    setNumberName('');
+                    setTypeId('');
+                    setTypeName('');
                     setUserId('');
                     setErrorMessage('');
                     setErrorVisible(false);
                     setNewBloodIssueVisible(true);
                   } else {
+                    setApiKey('');
+                    setApiSecret('');
                     setErrorMessage1('');
                     setErrorVisible1(false);
                     setNewCredentialModal(true);
@@ -535,12 +569,15 @@ const ConsultationList = ({
                     {width: '100%', paddingVertical: hp(1)},
                   ]}
                   onPress={() => setDateModalVisible(!dateModalVisible)}>
-                  {moment(consultationDate).format('YYYY-MM-DD hh:mm')}
+                  {consultationDate == null
+                    ? 'Consultation Date'
+                    : moment(consultationDate).format('YYYY-MM-DD hh:mm')}
                 </Text>
                 <DatePicker
                   open={dateModalVisible}
                   modal={true}
-                  date={consultationDate}
+                  date={consultationDate || null}
+                  minimumDate={new Date()}
                   mode={'date'}
                   onConfirm={date => {
                     console.log('Console Log>>', date);

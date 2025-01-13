@@ -65,7 +65,9 @@ const GeneratePatient = ({
       } else {
         setLoading(true);
         setErrorVisible(false);
-        const urlData = `patient-smart-card-store?template_id=${templateId}&patient=${genderType}${genderType == 'one' ? `&patient_id=${patientId}` : ''}`;
+        const urlData = `patient-smart-card-store?template_id=${templateId}&patient=${genderType}${
+          genderType == 'one' ? `&patient_id=${patientId}` : ''
+        }`;
         const response = await onAddAccountListApi(urlData);
         console.log('Get Value:::', response.data);
         if (response.status == 200) {
@@ -142,7 +144,7 @@ const GeneratePatient = ({
           </View>
         </View>
         <View style={[styles.switchView, {width: wp(30)}]}>
-          <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
+          <View style={[styles.dateBox1, {backgroundColor: theme.lightGreen}]}>
             <Text style={[styles.dataHistoryText1]}>{item.template_name}</Text>
           </View>
         </View>
@@ -587,7 +589,7 @@ const styles = StyleSheet.create({
   },
   dataHistoryText1: {
     fontSize: hp(1.7),
-    fontFamily: Fonts.FONTS.PoppinsBold,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
     marginHorizontal: wp(2),
   },

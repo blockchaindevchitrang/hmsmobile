@@ -8,107 +8,91 @@ import {
   ScrollView,
   TextInput,
   FlatList,
+  Platform,
   ActivityIndicator,
-  Modal,
-  TouchableWithoutFeedback,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, {useRef, useState} from 'react';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
 } from './../Pixel/index';
 import {COLORS, Fonts} from '../../utils';
 import {useTheme} from '../../utils/ThemeProvider';
+import ProfilePhoto from './../ProfilePhoto';
+import moment from 'moment';
 import deleteIcon from '../../images/delete.png';
+import editing from '../../images/editing.png';
+import DatePicker from 'react-native-date-picker';
 import SelectDropdown from 'react-native-select-dropdown';
 import {useSelector} from 'react-redux';
 import {
   onAddAccountListApi,
+  onAddCommonJsonApi,
   onDeleteCommonApi,
-  onGetCommonApi,
+  onGetEditAccountDataApi,
+  onGetEditCommonJsonApi,
+  onGetSpecificCommonApi,
 } from '../../services/Api';
 import {DeletePopup} from '../DeletePopup';
-import {showMessage} from 'react-native-flash-message';
-import close from '../../images/close.png';
+import FlashMessage, {
+  showMessage,
+  hideMessage,
+} from 'react-native-flash-message';
 
-const SMSList = ({
+const AmbulanceCall = ({
   searchBreak,
   setSearchBreak,
   allData,
   onGetData,
+  ambulance,
+  totalPage,
   pageCount,
   setPageCount,
-  smsPage,
 }) => {
-  const roleData = useSelector(state => state.roleData);
-  const allUserData = useSelector(state => state.allUserData);
   const user_data = useSelector(state => state.user_data);
-  const doctorData = useSelector(state => state.doctorData);
   const {theme} = useTheme();
   const [newUserVisible, setNewUserVisible] = useState(false);
-  const [roleId, setRoleId] = useState('');
-  const [roleName, setRoleName] = useState('');
-  const [message, setMessage] = useState('');
-  const [numberStatus, setNumberStatus] = useState(false);
-  const [phoneNumber, setPhoneNumber] = useState('');
+  const [patientId, setPatientId] = useState('');
+  const [patientName, setPatientName] = useState('');
+  const [vehicleId, setVehicleId] = useState('');
+  const [vehicleName, setVehicleName] = useState('');
+  const [date, setDate] = useState(null);
+  const [dateModalVisible, setDateModalVisible] = useState(false);
+  const [driverName, setDriverName] = useState('');
+  const [amount, setAmount] = useState('');
+  const [refresh, setRefresh] = useState(false);
   const [errorVisible, setErrorVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [userId, setUserId] = useState('');
   const [deleteUser, setDeleteUser] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [sendToId, setSendToId] = useState('');
-  const [roleList, setSetRoleList] = useState([]);
-  const [refresh, setRefresh] = useState(false);
-  const [prefix, setPrefix] = useState('');
-
-  const filteredRoles = roleData.filter(
-    role => role.name !== 'Admin' && role.name !== 'Super Admin',
-  );
-
-  useEffect(() => {
-    if (roleName != '') {
-      onGetLabTechniciansData();
-    }
-  }, [roleName]);
-
-  const onGetLabTechniciansData = async () => {
-    try {
-      let urlData = `get-users?department_name=${roleName}`;
-      // const response = await onGetAllUsersDataApi();
-      const response = await onGetCommonApi(urlData);
-      console.log('Response User Data', response.data);
-      if (response.status === 200) {
-        // Set data to respective states
-        setSetRoleList(response.data.data);
-        setRefresh(!refresh);
-      }
-    } catch (err) {
-      console.log('Get User Error:', err);
-    }
-  };
 
   const onAddPayRollData = async () => {
     try {
-      if (sendToId == '' && !numberStatus) {
+      if (patientId == '') {
         setErrorVisible(true);
-        setErrorMessage('Please select user role.');
-      } else if (phoneNumber == '' && numberStatus) {
+        setErrorMessage('Please select patient.');
+      } else if (vehicleId == '') {
         setErrorVisible(true);
-        setErrorMessage('Please enter phone number.');
-      } else if (message == '') {
+        setErrorMessage('Please select vehicle.');
+      } else if (date == null) {
         setErrorVisible(true);
-        setErrorMessage('Please enter SMS message.');
+        setErrorMessage('Please select date.');
+      } else if (driverName == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter driver name.');
+      } else if (amount == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter amount.');
       } else {
         setLoading(true);
         setErrorVisible(false);
-        let urlData = '';
-        if (numberStatus) {
-          urlData = `sms-store?message=${message}&number=${phoneNumber}`;
-        } else {
-          urlData = `sms-store?message=${message}&phone_number=${phoneNumber}&send_to=${sendToId}&prefix_code=${prefix}`;
-        }
-        // const response = await onAddCommonJsonApi(urlData, raw);
+
+        const urlData = `ambulance-call-store?patient_id=${patientId}&ambulance_id=${vehicleId}&amount=${amount}&date=${moment(
+          date,
+        ).format('YYYY-MM-DD')}&driver_name=${driverName}`;
         const response = await onAddAccountListApi(urlData);
+        // const response = await onAddAccountListApi(urlData);
         if (response.data.flag == 1) {
           onGetData();
           setLoading(false);
@@ -149,10 +133,75 @@ const SMSList = ({
     }
   };
 
+  const onEditPayRollData = async () => {
+    try {
+      if (patientId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select patient.');
+      } else if (vehicleId == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select vehicle.');
+      } else if (date == null) {
+        setErrorVisible(true);
+        setErrorMessage('Please select date.');
+      } else if (driverName == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter driver name.');
+      } else if (amount == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter amount.');
+      } else {
+        setLoading(true);
+        setErrorVisible(false);
+        const urlData = `ambulance-call-update/${userId}?patient_id=${patientId}&ambulance_id=${vehicleId}&amount=${amount}&date=${moment(
+          date,
+        ).format('YYYY-MM-DD')}&driver_name=${driverName}`;
+        const response = await onGetEditAccountDataApi(urlData);
+        console.log('Get Error::', response.data);
+        if (response.data.flag == 1) {
+          onGetData();
+          setLoading(false);
+          setNewUserVisible(false);
+          showMessage({
+            message: 'Record Edit Successfully',
+            type: 'success',
+            duration: 3000,
+          });
+        } else {
+          setLoading(false);
+          showMessage({
+            message: response.data.message,
+            type: 'danger',
+            duration: 6000,
+            icon: 'danger',
+          });
+        }
+      }
+    } catch (err) {
+      setLoading(false);
+      if (err.response.data.message) {
+        showMessage({
+          message: err.response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      } else {
+        showMessage({
+          message: 'Something want wrong.',
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
+      console.log('Error:', err);
+    }
+  };
+
   const onDeletePayrollData = async id => {
     try {
       setLoading(true);
-      const response = await onDeleteCommonApi(`sms-delete/${id}`);
+      const response = await onDeleteCommonApi(`ambulance-call-delete/${id}`);
       if (response.data.flag == 1) {
         onGetData();
         setLoading(false);
@@ -194,6 +243,22 @@ const SMSList = ({
     }
   };
 
+  const onGetSpecificDoctor = async id => {
+    try {
+      const response = await onGetSpecificCommonApi(
+        `ambulance-call-edit/${id}`,
+      );
+      if (response.status == 200) {
+        console.log('get ValueLL:::', response.data.data);
+        return response.data.data;
+      } else {
+        return 0;
+      }
+    } catch (err) {
+      console.log('Get Error', err);
+    }
+  };
+
   const renderItem = ({item, index}) => {
     return (
       <View
@@ -201,16 +266,44 @@ const SMSList = ({
           styles.dataHistoryView,
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
-        <Text style={[styles.dataHistoryText1, {width: wp(35)}]}>
-          {item.send_to}
+        <View style={styles.nameDataView}>
+          <ProfilePhoto username={item.patient_name} />
+          <View>
+            <Text style={[styles.dataHistoryText2]}>{item.patient_name}</Text>
+            <Text style={[styles.dataHistoryText5]}>{item.patient_email}</Text>
+          </View>
+        </View>
+        <Text style={[styles.dataHistoryText1, {width: wp(30)}]}>
+          {item.vehicle_model}
         </Text>
-        <Text style={[styles.dataHistoryText1, {width: wp(32)}]}>
-          {item.phone}
+        <Text style={[styles.dataHistoryText1, {width: wp(30)}]}>
+          {item.driver_name}
         </Text>
         <Text style={[styles.dataHistoryText1, {width: wp(35)}]}>
-          {item.send_by}
+          {item.date}
+        </Text>
+        <Text style={[styles.dataHistoryText1, {width: wp(30)}]}>
+          {item.amount}
         </Text>
         <View style={styles.actionDataView}>
+          <TouchableOpacity
+            onPress={async () => {
+              let allDatas = await onGetSpecificDoctor(item.id);
+              setUserId(item.id);
+              setPatientId(allDatas.ambulanceCall.patient_id);
+              setPatientName(item.patient_name);
+              setDate(new Date(allDatas.ambulanceCall.date));
+              setDriverName(item.driver_name);
+              setVehicleId(allDatas.ambulanceCall.ambulance_id);
+              setVehicleName(item.vehicle_model);
+              setAmount(JSON.stringify(item.amount));
+              setNewUserVisible(true);
+            }}>
+            <Image
+              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+              source={editing}
+            />
+          </TouchableOpacity>
           <TouchableOpacity
             onPress={() => {
               setUserId(item.id);
@@ -228,8 +321,8 @@ const SMSList = ({
   };
 
   return (
-    <>
-      <View style={styles.safeAreaStyle}>
+    <View style={styles.safeAreaStyle}>
+      {!newUserVisible ? (
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{paddingBottom: hp(12)}}>
@@ -241,22 +334,25 @@ const SMSList = ({
               onChangeText={text => setSearchBreak(text)}
               style={[styles.searchView, {color: theme.text}]}
             />
-            <View style={styles.filterView}>
-              <TouchableOpacity
-                onPress={() => {
-                  setRoleId('');
-                  setRoleName('');
-                  setMessage('');
-                  setPhoneNumber('');
-                  setNumberStatus(false);
-                  setErrorMessage('');
-                  setErrorVisible(false);
-                  setNewUserVisible(true);
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>New SMS</Text>
-              </TouchableOpacity>
-            </View>
+          </View>
+          <View style={styles.filterView}>
+            <TouchableOpacity
+              onPress={() => {
+                setUserId('');
+                setPatientId('');
+                setPatientName('');
+                setVehicleId('');
+                setVehicleName('');
+                setDate(null);
+                setDriverName('');
+                setAmount('');
+                setErrorMessage('');
+                setErrorVisible(false);
+                setNewUserVisible(true);
+              }}
+              style={styles.actionView}>
+              <Text style={styles.actionText}>New Ambulance Call</Text>
+            </TouchableOpacity>
           </View>
           <View
             style={[styles.activeView, {backgroundColor: theme.headerColor}]}>
@@ -267,14 +363,20 @@ const SMSList = ({
                     styles.titleActiveView,
                     {backgroundColor: theme.headerColor},
                   ]}>
-                  <Text style={[styles.titleText, {width: wp(35)}]}>
-                    {'SEND TO'}
+                  <Text style={[styles.titleText, {width: wp(55)}]}>
+                    {'PATIENT'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(32)}]}>
-                    {'PHONE'}
+                  <Text style={[styles.titleText, {width: wp(30)}]}>
+                    {'VEHICLE MODEL'}
+                  </Text>
+                  <Text style={[styles.titleText, {width: wp(30)}]}>
+                    {'DRIVER NAME'}
                   </Text>
                   <Text style={[styles.titleText, {width: wp(35)}]}>
-                    {'SEND BY'}
+                    {'DATE'}
+                  </Text>
+                  <Text style={[styles.titleText, {width: wp(30)}]}>
+                    {'AMOUNT'}
                   </Text>
                   <Text style={[styles.titleText, {width: wp(16)}]}>
                     {'ACTION'}
@@ -301,7 +403,7 @@ const SMSList = ({
               </View>
             </ScrollView>
           </View>
-          <View style={styles.nextView2}>
+          <View style={styles.nextView1}>
             <View style={styles.prevViewData}>
               <Text
                 style={[
@@ -325,14 +427,14 @@ const SMSList = ({
             <Text
               style={
                 styles.totalCountText
-              }>{`Page ${pageCount} to ${smsPage}`}</Text>
+              }>{`Page ${pageCount} to ${totalPage}`}</Text>
             <View style={styles.prevViewData}>
               <Text
                 style={[
                   styles.prevButtonView,
-                  {opacity: pageCount >= smsPage ? 0.7 : 1},
+                  {opacity: pageCount >= totalPage ? 0.7 : 1},
                 ]}
-                disabled={pageCount >= smsPage}
+                disabled={pageCount >= totalPage}
                 onPress={() => setPageCount(parseFloat(pageCount) + 1)}>
                 {'>'}
               </Text>
@@ -341,200 +443,203 @@ const SMSList = ({
                   styles.prevButtonView,
                   {
                     marginLeft: wp(3),
-                    opacity: pageCount >= smsPage ? 0.7 : 1,
+                    opacity: pageCount >= totalPage ? 0.7 : 1,
                   },
                 ]}
-                disabled={pageCount >= smsPage}
-                onPress={() => setPageCount(smsPage)}>
+                disabled={pageCount >= totalPage}
+                onPress={() => setPageCount(totalPage)}>
                 {'>>'}
               </Text>
             </View>
           </View>
         </ScrollView>
-      </View>
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={newUserVisible}
-        onRequestClose={() => setNewUserVisible(false)}>
-        <View style={styles.maneModalView}>
-          <TouchableWithoutFeedback
-            onPress={() => {
-              setNewUserVisible(false);
-            }}>
-            <View style={styles.modalOverlay} />
-          </TouchableWithoutFeedback>
-          <View style={styles.container}>
-            <View style={styles.headerView}>
-              <Text style={styles.headerText}>New SMS</Text>
-              <TouchableOpacity onPress={() => setNewUserVisible(false)}>
-                <Image style={styles.closeImage} source={close} />
-              </TouchableOpacity>
-            </View>
-            <View style={styles.nameView}>
-              {numberStatus ? (
-                <View style={{width: '35%'}}>
-                  <Text style={[styles.titleText1]}>{'Phone Number:'}</Text>
-                  <TextInput
-                    value={phoneNumber}
-                    placeholder={'Phone Number'}
-                    onChangeText={text => setPhoneNumber(text)}
-                    style={[styles.nameTextView, {width: '100%'}]}
-                    keyboardType={'number-pad'}
-                  />
-                </View>
-              ) : (
-                <View style={{width: '35%'}}>
-                  <Text style={[styles.titleText1]}>{'Role:'}</Text>
-                  <SelectDropdown
-                    data={filteredRoles}
-                    onSelect={(selectedItem, index) => {
-                      setRoleName(selectedItem.name);
-                      setRoleId(selectedItem.id);
-                      console.log('gert Value:::', selectedItem);
-                    }}
-                    renderButton={(selectedItem, isOpen) => {
-                      console.log('Get Response>>>', selectedItem);
-                      return (
-                        <View style={styles.dropdown2BtnStyle2}>
-                          {roleId != '' ? (
-                            <Text style={styles.dropdownItemTxtStyle}>
-                              {roleId == selectedItem?.id
-                                ? selectedItem?.name
-                                : roleName}
-                            </Text>
-                          ) : (
-                            <Text style={styles.dropdownItemTxtStyle}>
-                              {selectedItem?.name || 'Select Role'}
-                            </Text>
-                          )}
-                        </View>
-                      );
-                    }}
-                    showsVerticalScrollIndicator={false}
-                    renderItem={(item, index, isSelected) => {
-                      return (
-                        <TouchableOpacity style={styles.dropdownView}>
-                          <Text style={styles.dropdownItemTxtStyle}>
-                            {item.name}
-                          </Text>
-                        </TouchableOpacity>
-                      );
-                    }}
-                    dropdownIconPosition={'left'}
-                    dropdownStyle={styles.dropdown2DropdownStyle}
-                  />
-                </View>
-              )}
-              <View
-                style={{
-                  width: '57%',
-                  alignItems: 'flex-start',
-                  marginLeft: wp(8),
-                }}>
-                <Text
-                  style={[
-                    styles.dataHistoryText1,
-                    {marginHorizontal: wp(0), textAlign: 'left'},
-                  ]}>
-                  Send SMS by number directly
-                </Text>
-                <Switch
-                  trackColor={{
-                    false: numberStatus ? COLORS.greenColor : COLORS.errorColor,
-                    true: numberStatus ? COLORS.greenColor : COLORS.errorColor,
-                  }}
-                  thumbColor={numberStatus ? '#f4f3f4' : '#f4f3f4'}
-                  ios_backgroundColor={COLORS.errorColor}
-                  onValueChange={() => setNumberStatus(!numberStatus)}
-                  value={numberStatus}
-                />
-              </View>
-            </View>
-            {!numberStatus && (
-              <View style={styles.nameView}>
-                <View style={{width: '94%'}}>
-                  <Text style={[styles.titleText1, {marginTop: hp(2)}]}>
-                    {
-                      'Send To: (Only Users with a registered phone will display.)'
-                    }
-                  </Text>
-                  <SelectDropdown
-                    data={roleList}
-                    disabled={roleList.length > 0 ? false : true}
-                    onSelect={(selectedItem, index) => {
-                      // setSelectedColor(selectedItem);
-                      setSendToId(selectedItem.id);
-                      setPhoneNumber(selectedItem.phone);
-                      setPrefix(selectedItem.region_code);
-                      console.log('gert Value:::', selectedItem);
-                    }}
-                    renderButton={(selectedItem, isOpen) => {
-                      console.log('Get Response>>>', selectedItem);
-                      return (
-                        <View
-                          style={[
-                            styles.dropdown2BtnStyle2,
-                            {
-                              backgroundColor:
-                              roleList.length > 0 ? '#fff' : '#c2c2c2',
-                            },
-                          ]}>
-                          <Text style={styles.dropdownItemTxtStyle}>
-                            {selectedItem?.name.replace(/,/g, ' ') || 'Send to'}
-                          </Text>
-                        </View>
-                      );
-                    }}
-                    showsVerticalScrollIndicator={false}
-                    renderItem={(item, index, isSelected) => {
-                      return (
-                        <TouchableOpacity style={styles.dropdownView}>
-                          <Text style={styles.dropdownItemTxtStyle}>
-                            {item.name.replace(/,/g, ' ')}
-                          </Text>
-                        </TouchableOpacity>
-                      );
-                    }}
-                    dropdownIconPosition={'left'}
-                    dropdownStyle={styles.dropdown2DropdownStyle}
-                  />
-                </View>
-              </View>
-            )}
-            <Text style={[styles.titleText1, {marginTop: hp(2)}]}>
-              {'Message'}
+      ) : (
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{paddingBottom: hp(12)}}>
+          <View style={styles.subView}>
+            <Text style={[styles.doctorText, {color: theme.text}]}>
+              New Ambulance Call
             </Text>
-            <TextInput
-              value={message}
-              placeholder={'Message'}
-              onChangeText={text => setMessage(text)}
-              style={[styles.commentTextInput]}
-              multiline
-              textAlignVertical="top"
-            />
-            {errorVisible ? (
-              <Text style={styles.dataHistoryText4}>{errorMessage}</Text>
-            ) : null}
-            <View style={styles.buttonView}>
+            <View style={styles.filterView}>
               <TouchableOpacity
-                onPress={() => onAddPayRollData()}
-                style={styles.nextView}>
-                {loading ? (
-                  <ActivityIndicator size={'small'} color={COLORS.white} />
-                ) : (
-                  <Text style={styles.nextText}>Save</Text>
-                )}
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => setNewUserVisible(false)}
-                style={styles.prevView}>
-                <Text style={styles.prevText}>Cancel</Text>
+                onPress={() => {
+                  setNewUserVisible(false);
+                }}
+                style={styles.backButtonView}>
+                <Text style={styles.backText}>BACK</Text>
               </TouchableOpacity>
             </View>
           </View>
-        </View>
-      </Modal>
+
+          <View style={styles.profileView}>
+            <View style={styles.nameView}>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Patient:</Text>
+                <SelectDropdown
+                  data={user_data}
+                  onSelect={(selectedItem, index) => {
+                    // setSelectedColor(selectedItem);
+                    setPatientId(selectedItem.id);
+                    console.log('gert Value:::', selectedItem);
+                  }}
+                  defaultValue={patientName}
+                  renderButton={(selectedItem, isOpen) => {
+                    console.log('Get Response>>>', selectedItem);
+                    return (
+                      <View style={styles.dropdown2BtnStyle2}>
+                        {patientId != '' ? (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {patientId == selectedItem?.id
+                              ? `${selectedItem?.patient_user?.first_name} ${selectedItem?.patient_user?.last_name}`
+                              : patientName}
+                          </Text>
+                        ) : (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {selectedItem?.patient_user?.first_name ||
+                              'Select Patient'}
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(item, index, isSelected) => {
+                    return (
+                      <TouchableOpacity style={styles.dropdownView}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {`${item?.patient_user?.first_name} ${item?.patient_user?.last_name}`}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                  dropdownIconPosition={'left'}
+                  dropdownStyle={styles.dropdown2DropdownStyle}
+                />
+              </View>
+
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Vehicle Model:</Text>
+                <SelectDropdown
+                  data={ambulance}
+                  onSelect={(selectedItem, index) => {
+                    // setSelectedColor(selectedItem);
+                    setVehicleId(selectedItem.id);
+                    setVehicleName(selectedItem.vehicle_model);
+                    setDriverName(selectedItem.driver_name);
+                    console.log('gert Value:::', selectedItem);
+                  }}
+                  renderButton={(selectedItem, isOpen) => {
+                    console.log('Get Response>>>', selectedItem);
+                    return (
+                      <View style={styles.dropdown2BtnStyle2}>
+                        {vehicleId != '' ? (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {vehicleId == selectedItem?.id
+                              ? selectedItem?.vehicle_model
+                              : vehicleName}
+                          </Text>
+                        ) : (
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {selectedItem?.vehicle_model || 'Select Vehicle'}
+                          </Text>
+                        )}
+                      </View>
+                    );
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(item, index, isSelected) => {
+                    return (
+                      <TouchableOpacity style={styles.dropdownView}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {item?.vehicle_model}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                  dropdownIconPosition={'left'}
+                  dropdownStyle={styles.dropdown2DropdownStyle}
+                />
+              </View>
+            </View>
+
+            <View style={styles.nameView}>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Date:</Text>
+                <Text
+                  style={[
+                    styles.nameTextView,
+                    {width: '100%', paddingVertical: hp(1)},
+                  ]}
+                  onPress={() => setDateModalVisible(!dateModalVisible)}>
+                  {date != null ? moment(date).format('YYYY-MM-DD') : 'Date'}
+                </Text>
+                <DatePicker
+                  open={dateModalVisible}
+                  modal={true}
+                  date={date || new Date()}
+                  mode={'date'}
+                  onConfirm={date => {
+                    console.log('Console Log>>', date);
+                    setDateModalVisible(false);
+                    setDate(date);
+                  }}
+                  onCancel={() => {
+                    setDateModalVisible(false);
+                  }}
+                />
+              </View>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Driver Name:</Text>
+                <TextInput
+                  value={driverName}
+                  placeholder={'Driver Name'}
+                  onChangeText={text => setDriverName(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                />
+              </View>
+            </View>
+
+            <View style={styles.nameView}>
+              <View style={{width: '48%'}}>
+                <Text style={styles.dataHistoryText1}>Amount:</Text>
+                <TextInput
+                  value={amount}
+                  placeholder={'Amount'}
+                  onChangeText={text => setAmount(text)}
+                  style={[styles.nameTextView, {width: '100%'}]}
+                  keyboardType={'number-pad'}
+                />
+              </View>
+            </View>
+
+            {errorVisible ? (
+              <Text style={styles.dataHistoryText4}>{errorMessage}</Text>
+            ) : null}
+          </View>
+
+          <View style={styles.buttonView}>
+            <TouchableOpacity
+              onPress={() => {
+                userId != '' ? onEditPayRollData() : onAddPayRollData();
+              }}
+              style={styles.nextView}>
+              {loading ? (
+                <ActivityIndicator size={'small'} color={COLORS.white} />
+              ) : (
+                <Text style={styles.nextText}>Save</Text>
+              )}
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                setNewUserVisible(false);
+              }}
+              style={styles.prevView}>
+              <Text style={styles.prevText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      )}
       <DeletePopup
         modelVisible={deleteUser}
         setModelVisible={setDeleteUser}
@@ -542,11 +647,11 @@ const SMSList = ({
         setUserId={setUserId}
         isLoading={loading}
       />
-    </>
+    </View>
   );
 };
 
-export default SMSList;
+export default AmbulanceCall;
 
 const styles = StyleSheet.create({
   safeAreaStyle: {
@@ -563,7 +668,7 @@ const styles = StyleSheet.create({
     marginVertical: hp(2),
   },
   searchView: {
-    width: '60%',
+    width: '100%',
     paddingHorizontal: wp(2),
     paddingVertical: hp(0.5),
     borderWidth: 1,
@@ -578,14 +683,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-end',
     paddingHorizontal: wp(3),
-    // marginBottom: hp(1),
-  },
-  titleText1: {
-    fontSize: hp(1.8),
-    fontFamily: Fonts.FONTS.PoppinsSemiBold,
-    color: COLORS.black,
-    marginHorizontal: wp(3),
-    textAlign: 'left',
+    marginBottom: hp(1),
   },
   filterView1: {
     height: hp(5),
@@ -647,11 +745,11 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.FONTS.PoppinsSemiBold,
     color: COLORS.white,
     marginHorizontal: wp(2),
-    textAlign: 'center',
+    textAlign: 'left',
   },
   dataHistoryView: {
     width: '100%',
-    height: hp(8),
+    paddingVertical: hp(1),
     alignItems: 'center',
     flexDirection: 'row',
     alignSelf: 'flex-start',
@@ -668,17 +766,11 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.FONTS.PoppinsBold,
     color: COLORS.black,
     marginHorizontal: wp(2),
-    textAlign: 'center',
   },
   dataHistoryText2: {
     fontSize: hp(1.8),
     fontFamily: Fonts.FONTS.PoppinsBold,
     color: COLORS.blueColor,
-  },
-  dataHistoryText6: {
-    fontSize: hp(1.7),
-    fontFamily: Fonts.FONTS.PoppinsBold,
-    color: COLORS.black,
   },
   dataHistoryText3: {
     fontSize: hp(1.8),
@@ -713,10 +805,10 @@ const styles = StyleSheet.create({
     marginHorizontal: wp(2),
   },
   switchView: {
-    width: wp(22),
+    width: wp(24),
     justifyContent: 'center',
-    alignItems: 'center',
     marginHorizontal: wp(2),
+    alignItems: 'flex-start',
   },
   actionDataView: {
     width: wp(16),
@@ -767,7 +859,6 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginTop: hp(1),
     backgroundColor: COLORS.white,
-    marginHorizontal: wp(3),
   },
   nameTextVie1: {
     width: '50%',
@@ -803,7 +894,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     alignItems: 'center',
-    marginTop: hp(3),
   },
   nextView: {
     height: hp(4.5),
@@ -813,14 +903,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: COLORS.blueColor,
     marginLeft: wp(2),
-  },
-  nextView1: {
-    height: hp(4.5),
-    borderRadius: 5,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: COLORS.blueColor,
-    paddingHorizontal: wp(3),
   },
   nextText: {
     fontFamily: Fonts.FONTS.PoppinsBold,
@@ -992,89 +1074,18 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.greyColor,
     marginTop: hp(1),
-    marginHorizontal: wp(3),
   },
   parameterView: {
     width: '100%',
+    fontSize: hp(2.2),
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    color: COLORS.black,
     backgroundColor: COLORS.lightGreyColor,
     paddingVertical: hp(1),
     marginTop: hp(3),
-    paddingHorizontal: wp(3),
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    paddingLeft: wp(3),
   },
-  parameterText: {
-    fontSize: hp(2.2),
-    fontFamily: Fonts.FONTS.PoppinsBold,
-    color: COLORS.black,
-  },
-  commentTextInput: {
-    width: '94%',
-    paddingHorizontal: wp(3),
-    paddingVertical: hp(1),
-    borderWidth: 1,
-    borderColor: COLORS.greyColor,
-    fontFamily: Fonts.FONTS.PoppinsMedium,
-    fontSize: hp(2),
-    color: COLORS.black,
-    borderRadius: 5,
-    alignSelf: 'center',
-    height: hp(14),
-    marginTop: hp(1),
-  },
-  container: {
-    width: '94%',
-    // height: hp(22),
-    paddingVertical: hp(2),
-    backgroundColor: COLORS.white,
-    borderRadius: 10,
-    // marginLeft: -wp(2.5),
-    // paddingTop: hp(3),
-  },
-  modalOverlay: {
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-  },
-  maneModalView: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '100%',
-    height: '100%',
-  },
-  headerView: {
-    width: '96%',
-    alignSelf: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginVertical: hp(1),
-    paddingHorizontal: wp(2),
-  },
-  headerText: {
-    fontFamily: Fonts.FONTS.PoppinsBold,
-    fontSize: hp(2.2),
-    color: COLORS.black,
-  },
-  eventTextInput: {
-    width: '92%',
-    paddingHorizontal: wp(3),
-    paddingVertical: hp(1),
-    borderWidth: 1,
-    borderColor: COLORS.greyColor,
-    fontFamily: Fonts.FONTS.PoppinsMedium,
-    fontSize: hp(2),
-    color: COLORS.black,
-    borderRadius: 5,
-    alignSelf: 'center',
-    marginBottom: hp(3),
-    marginTop: hp(1),
-  },
-  nextView2: {
+  nextView1: {
     width: '92%',
     flexDirection: 'row',
     justifyContent: 'space-between',

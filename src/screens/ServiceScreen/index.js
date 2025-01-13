@@ -28,6 +28,7 @@ import Services from '../../components/ServiceComponent/Services';
 import Packages from '../../components/ServiceComponent/Packages';
 import Ambulances from '../../components/ServiceComponent/Ambulances';
 import useOrientation from '../../components/OrientationComponent';
+import AmbulanceCall from '../../components/ServiceComponent/AmbulanceCall';
 
 const allData = [
   {
@@ -149,6 +150,7 @@ export const ServiceScreen = ({navigation}) => {
   const [insuranceList, setInsuranceList] = useState([]);
   const [parameter, setParameter] = useState([]);
   const [ambulances, setAmbulances] = useState([]);
+  const [ambulancesCall, setAmbulancesCall] = useState([]);
   const [unit, setUnit] = useState([]);
   const [test, setTest] = useState([]);
   const [refresh, setRefresh] = useState(false);
@@ -157,6 +159,7 @@ export const ServiceScreen = ({navigation}) => {
   const [packagePage, setPackagePage] = useState('1');
   const [servicePage, setServicePage] = useState('1');
   const [ambulancesPage, setAmbulancesPage] = useState('1');
+  const [ambulancesCallPage, setAmbulancesCallPage] = useState('1');
   const [statusId, setStatusId] = useState(3);
   const [serviceStatusId, setServiceStatusId] = useState(3);
   const [ambulancesStatusId, setAmbulancesStatusId] = useState(3);
@@ -298,6 +301,26 @@ export const ServiceScreen = ({navigation}) => {
     }
   };
 
+  useEffect(() => {
+    onGetAmbulanceCallData();
+  }, [searchAmbulanceCall, pageCount]);
+
+  const onGetAmbulanceCallData = async () => {
+    try {
+      const response = await onGetCommonApi(
+        `ambulance-call-get?search=${searchAmbulanceCall}&page=${pageCount}`,
+      );
+      console.log('get Response:', response.data.data);
+      if (response.data.flag === 1) {
+        setAmbulancesCall(response.data.data.items);
+        setAmbulancesCallPage(response.data.data.pagination.last_page);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Error>>', err);
+    }
+  };
+
   return (
     <View style={[styles.container, {backgroundColor: theme.lightColor}]}>
       <View style={styles.headerView}>
@@ -358,12 +381,15 @@ export const ServiceScreen = ({navigation}) => {
           />
         ) : (
           selectedView == 'Ambulance Calls' && (
-            <PathologyTest
+            <AmbulanceCall
               searchBreak={searchAmbulanceCall}
               setSearchBreak={setSearchAmbulanceCall}
-              allData={test}
-              onGetData={onGetTestData}
-              parameter={parameter}
+              allData={ambulancesCall}
+              onGetData={onGetAmbulanceCallData}
+              ambulance={ambulances}
+              totalPage={ambulancesCallPage}
+              pageCount={pageCount}
+              setPageCount={setPageCount}
             />
           )
         )}

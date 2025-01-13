@@ -58,6 +58,7 @@ const LiveMeetingList = ({
   setPageCount,
 }) => {
   const {theme} = useTheme();
+  const allUserData = useSelector(state => state.allUserData);
   const [newBloodIssueVisible, setNewBloodIssueVisible] = useState(false);
   const [consultationTitle, setConsultationTitle] = useState('');
   const [consultationDate, setConsultationDate] = useState(new Date());
@@ -68,6 +69,7 @@ const LiveMeetingList = ({
   const [description, setDescription] = useState('');
   const [errorVisible, setErrorVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [staffId, setStaffId] = useState('');
   const [userId, setUserId] = useState('');
   const [deleteUser, setDeleteUser] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -312,7 +314,7 @@ const LiveMeetingList = ({
           <View style={styles.profileView}>
             <View style={styles.nameView}>
               <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>Consultation Title:</Text>
+                <Text style={styles.dataHistoryText7}>Consultation Title:</Text>
                 <TextInput
                   value={consultationTitle}
                   placeholder={'Consultation Title'}
@@ -321,7 +323,7 @@ const LiveMeetingList = ({
                 />
               </View>
               <View style={{width: '48%'}}>
-                <Text style={[styles.dataHistoryText1]}>
+                <Text style={[styles.dataHistoryText7]}>
                   Consultation Date:
                 </Text>
                 <Text
@@ -350,7 +352,9 @@ const LiveMeetingList = ({
             </View>
             <View style={styles.nameView}>
               <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>Duration Minutes:</Text>
+                <Text style={styles.dataHistoryText7}>
+                  Consultation Duration Minutes:
+                </Text>
                 <TextInput
                   value={duration}
                   placeholder={'Duration Minutes'}
@@ -360,9 +364,44 @@ const LiveMeetingList = ({
                 />
               </View>
             </View>
+            {/* <View style={styles.nameView}>
+              <View style={{width: '100%'}}>
+                <Text style={styles.dataHistoryText7}>Staff List:</Text>
+                <SelectDropdown
+                  data={allUserData}
+                  onSelect={(selectedItem, index) => {
+                    // setSelectedColor(selectedItem);
+                    setStaffId(selectedItem.id);
+                    console.log('gert Value:::', selectedItem);
+                  }}
+                  renderButton={(selectedItem, isOpen) => {
+                    console.log('Get Response>>>', selectedItem);
+                    return (
+                      <View style={[styles.dropdown2BtnStyle2]}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {selectedItem?.name.replace(/,/g, ' ') || 'Send to'}
+                        </Text>
+                      </View>
+                    );
+                  }}
+                  showsVerticalScrollIndicator={false}
+                  renderItem={(item, index, isSelected) => {
+                    return (
+                      <TouchableOpacity style={styles.dropdownView}>
+                        <Text style={styles.dropdownItemTxtStyle}>
+                          {item.name.replace(/,/g, ' ')}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                  dropdownIconPosition={'left'}
+                  dropdownStyle={styles.dropdown2DropdownStyle}
+                />
+              </View>
+            </View> */}
             <View style={styles.nameView}>
               <View style={{width: '48%'}}>
-                <Text style={[styles.dataHistoryText1]}>{'Host Video:'}</Text>
+                <Text style={[styles.dataHistoryText7]}>{'Host Video:'}</Text>
                 <View style={[styles.statusView, {paddingVertical: hp(1)}]}>
                   <View style={[styles.optionView, {marginLeft: wp(1)}]}>
                     <TouchableOpacity
@@ -401,7 +440,7 @@ const LiveMeetingList = ({
                 </View>
               </View>
               <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>Client Video:</Text>
+                <Text style={styles.dataHistoryText7}>Client Video:</Text>
                 <View style={[styles.statusView, {paddingVertical: hp(1)}]}>
                   <View style={[styles.optionView, {marginLeft: wp(1)}]}>
                     <TouchableOpacity
@@ -442,7 +481,7 @@ const LiveMeetingList = ({
             </View>
             <View style={[styles.nameView]}>
               <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>Description:</Text>
+                <Text style={styles.dataHistoryText7}>Description:</Text>
                 <TextInput
                   value={description}
                   placeholder={'Description'}
@@ -605,6 +644,11 @@ const styles = StyleSheet.create({
     color: COLORS.black,
     marginHorizontal: wp(2),
   },
+  dataHistoryText7: {
+    fontSize: hp(1.8),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+  },
   dataHistoryText6: {
     fontSize: hp(1.7),
     fontFamily: Fonts.FONTS.PoppinsBold,
@@ -707,7 +751,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    width: '94%',
+    width: '98%',
     marginVertical: hp(2),
     alignSelf: 'center',
   },

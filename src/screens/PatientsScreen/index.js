@@ -40,6 +40,8 @@ import {
   onGetCommonApi,
   onGetPatientApi,
   onGetPatientCasesApi,
+  onGetSpecificCommonApi,
+  onGetSpecificUsersDataApi,
 } from '../../services/Api';
 import useOrientation from '../../components/OrientationComponent';
 
@@ -583,6 +585,22 @@ export const PatientsScreen = ({navigation}) => {
     }
   };
 
+  const onGetSpecificDoctor = async id => {
+    try {
+      const response = await onGetSpecificCommonApi(
+        `patient-smart-card-edit/${id}`,
+      );
+      if (response.data.flag == 1) {
+        console.log('get ValueLL:::', response.data.data);
+        return response.data.data;
+      } else {
+        return 0;
+      }
+    } catch (err) {
+      console.log('Get Error', err);
+    }
+  };
+
   useEffect(() => {
     onGetSmartCardTempData();
   }, [searchTemplate, pageCount]);
@@ -592,9 +610,14 @@ export const PatientsScreen = ({navigation}) => {
       const response = await onGetCommonApi(
         `patient-smart-card-get?search=${searchTemplate}&page=${pageCount}`,
       );
+      let arrayData = [];
       console.log('get Response:', response.data.data);
       if (response.data.flag === 1) {
-        setSmartCardTempList(response.data.data);
+        response.data.data.map(async item => {
+          const res = await onGetSpecificDoctor(item.id);
+          arrayData.push(res);
+        });
+        setSmartCardTempList(arrayData);
         setTemplatePage(response.data.recordsTotal);
         setRefresh(!refresh);
       }

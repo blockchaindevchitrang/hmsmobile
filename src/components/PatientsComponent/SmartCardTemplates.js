@@ -10,7 +10,7 @@ import {
   FlatList,
   Platform,
 } from 'react-native';
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -26,59 +26,232 @@ import man from '../../images/man.png';
 import draw from '../../images/draw.png';
 import DatePicker from 'react-native-date-picker';
 import ImagePicker from 'react-native-image-crop-picker';
+import {
+  onAddAccountListApi,
+  onDeleteCommonApi,
+  onGetEditAccountDataApi,
+} from '../../services/Api';
+import {showMessage} from 'react-native-flash-message';
+import {DeletePopup} from '../DeletePopup';
+import Penal from '../Penal';
 
 const SmartCardTemplates = ({
   searchBreak,
   setSearchBreak,
   allData,
+  onGetData,
   totalPage,
   pageCount,
   setPageCount,
 }) => {
   const {theme} = useTheme();
   const [newUserVisible, setNewUserVisible] = useState(false);
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [email, setEmail] = useState('');
-  const [role, setRole] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [address, setAddress] = useState('');
-  const [city, setCity] = useState('');
-  const [country, setCountry] = useState('');
-  const [postalCode, setPostalCode] = useState('');
-  const [genderType, setGenderType] = useState('female');
-  const [dateOfBirth, setDateOfBirth] = useState(new Date());
-  const [dateModalVisible, setDateModalVisible] = useState(false);
-  const [avatar, setAvatar] = useState(null);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState(false);
+  const [headerColor, setHeaderColor] = useState('');
+  const [phone, setPhone] = useState(false);
+  const [dob, setDob] = useState(false);
+  const [bloodGroup, setBloodGroup] = useState(false);
+  const [address, setAddress] = useState(false);
+  const [uniqueId, setUniqueId] = useState(false);
+  const [userId, setUserId] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [refresh, setRefresh] = useState(false);
+  const [errorVisible, setErrorVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [allDataArray, setAllDataArray] = useState([]);
+  const [deleteUser, setDeleteUser] = useState(false);
+  const [colorData, setColorData] = useState('red');
+  const [showModal, setShowModal] = useState(false);
 
-  const openProfileImagePicker = async () => {
+  useEffect(() => {
+    setAllDataArray(allData);
+  }, []);
+
+  const onChangeStatus = async (from, item, value, index) => {
     try {
-      const image = await ImagePicker.openPicker({
-        width: 300,
-        height: 400,
-        cropping: false,
-        multiple: false, // Allow selecting only one image
-        compressImageQuality: 0.5,
-      });
-
-      if (image && image.path) {
-        if (image && image.path) {
-          var filename = image.path.substring(image.path.lastIndexOf('/') + 1);
-          let imageData = {
-            uri: Platform.OS === 'ios' ? image.sourceURL : image.path,
-            type: image.mime,
-            name: Platform.OS === 'ios' ? image.filename : filename,
-          };
-          setAvatar(imageData);
-
-          console.log('Selected image:', avatar);
-        }
-      } else {
-        console.log('No image selected');
+      // console.log('Value :::', value);
+      let array = allDataArray;
+      if (from == 'email') {
+        array[index].show_email = value;
+      } else if (from == 'phone') {
+        array[index].show_phone = value;
+      } else if (from == 'deb') {
+        array[index].show_dob = value;
+      } else if (from == 'blood') {
+        array[index].show_blood_group = value;
+      } else if (from == 'address') {
+        array[index].show_address = value;
+      } else if (from == 'unique') {
+        array[index].show_patient_unique_id = value;
       }
-    } catch (error) {
-      console.log('Error selecting image:', error);
+      setAllDataArray(array);
+      setRefresh(!refresh);
+      const urlData = `patient-smart-card-update/${item.id}?template_name=${
+        item.template_name
+      }&header_color=${item.header_color}&show_email=${
+        from == 'email' ? (value ? 1 : 0) : item.show_email ? 1 : 0
+      }&show_phone=${
+        from == 'phone' ? (value ? 1 : 0) : item.show_phone ? 1 : 0
+      }&show_dob=${
+        from == 'deb' ? (value ? 1 : 0) : item.show_dob ? 1 : 0
+      }&show_blood_group=${
+        from == 'blood' ? (value ? 1 : 0) : item.show_blood_group ? 1 : 0
+      }&show_address=${
+        from == 'address' ? (value ? 1 : 0) : item.show_address ? 1 : 0
+      }&show_patient_unique_id=${
+        from == 'unique' ? (value ? 1 : 0) : item.show_patient_unique_id ? 1 : 0
+      }`;
+      const response = await onGetEditAccountDataApi(urlData);
+      console.log('Get Response Edit DataLL', response.data);
+      if (response.data.flag == 1) {
+      } else {
+        showMessage({
+          message: response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
+    } catch (err) {
+      console.log('Error:', err);
+    }
+  };
+
+  const onAddUsers = async () => {
+    try {
+      setLoading(true);
+      const urlData = `patient-smart-card-create?template_name=${name}&header_color=${headerColor}&show_email=${
+        email ? 1 : 0
+      }&show_phone=${phone ? 1 : 0}&show_dob=${dob ? 1 : 0}&show_blood_group=${
+        bloodGroup ? 1 : 0
+      }&show_address=${address ? 1 : 0}&show_patient_unique_id=${
+        uniqueId ? 1 : 0
+      }`;
+      const response = await onAddAccountListApi(urlData);
+      if (response.data.flag == 1) {
+        onGetData();
+        setNewUserVisible(false);
+        setLoading(false);
+        showMessage({
+          message: 'Record Added Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      } else {
+        setLoading(false);
+        showMessage({
+          message: response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
+    } catch (err) {
+      setLoading(false);
+      if (err.response.data.message) {
+        showMessage({
+          message: err.response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      } else {
+        showMessage({
+          message: 'Something want wrong.',
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
+      console.log('Error:', err.response.data);
+    }
+  };
+
+  const onEditData = async () => {
+    try {
+      setLoading(true);
+      const urlData = `patient-smart-card-update/${userId}?template_name=${name}&header_color=${headerColor}&show_email=${
+        email ? 1 : 0
+      }&show_phone=${phone ? 1 : 0}&show_dob=${dob ? 1 : 0}&show_blood_group=${
+        bloodGroup ? 1 : 0
+      }&show_address=${address ? 1 : 0}&show_patient_unique_id=${
+        uniqueId ? 1 : 0
+      }`;
+      const response = await onGetEditAccountDataApi(urlData);
+      if (response.data.flag == 1) {
+        onGetData();
+        setNewUserVisible(false);
+        setLoading(false);
+        showMessage({
+          message: 'Record Edit Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      } else {
+        setLoading(false);
+        showMessage({
+          message: response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
+    } catch (err) {
+      setLoading(false);
+      if (err.response.data.message) {
+        showMessage({
+          message: err.response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      } else {
+        showMessage({
+          message: 'Something want wrong.',
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
+      console.log('Error:', err);
+    }
+  };
+
+  const onDeleteRecord = async () => {
+    try {
+      setLoading(true);
+      const response = await onDeleteCommonApi(userId);
+      if (response.data.flag == 1) {
+        onGetData();
+        setUserId('');
+        setLoading(false);
+        setDeleteUser(false);
+        showMessage({
+          message: 'Record Delete Successfully',
+          type: 'success',
+          duration: 3000,
+        });
+      } else {
+        setLoading(false);
+        setDeleteUser(false);
+        showMessage({
+          message: response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
+    } catch (err) {
+      setLoading(false);
+      setDeleteUser(false);
+      showMessage({
+        message: 'Something want wrong.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
+      console.log('Error Delete', err);
     }
   };
 
@@ -92,9 +265,16 @@ const SmartCardTemplates = ({
         <Text style={[styles.dataHistoryText1, {width: wp(32)}]}>
           {item.template_name}
         </Text>
-        <Text style={[styles.dataHistoryText1, {width: wp(32)}]}>
+        <View style={styles.colorMainView}>
+          <View style={styles.colorView}>
+            <View
+              style={[styles.colorBox, {backgroundColor: item.header_color}]}
+            />
+          </View>
+        </View>
+        {/* <Text style={[styles.dataHistoryText1, {width: wp(32)}]}>
           {item.header_color}
-        </Text>
+        </Text> */}
         <View style={[styles.switchView, {width: wp(30)}]}>
           <Switch
             trackColor={{
@@ -103,7 +283,7 @@ const SmartCardTemplates = ({
             }}
             thumbColor={item.show_email ? '#f4f3f4' : '#f4f3f4'}
             ios_backgroundColor={COLORS.errorColor}
-            onValueChange={() => {}}
+            onValueChange={value => onChangeStatus('email', item, value, index)}
             value={item.show_email}
           />
         </View>
@@ -115,32 +295,36 @@ const SmartCardTemplates = ({
             }}
             thumbColor={item.show_phone ? '#f4f3f4' : '#f4f3f4'}
             ios_backgroundColor={COLORS.errorColor}
-            onValueChange={() => {}}
+            onValueChange={value => onChangeStatus('phone', item, value, index)}
             value={item.show_phone}
           />
         </View>
         <View style={[styles.switchView, {width: wp(30)}]}>
           <Switch
             trackColor={{
-              false: item.show_DOB ? COLORS.greenColor : COLORS.errorColor,
-              true: item.show_DOB ? COLORS.greenColor : COLORS.errorColor,
+              false: item.show_dob ? COLORS.greenColor : COLORS.errorColor,
+              true: item.show_dob ? COLORS.greenColor : COLORS.errorColor,
             }}
-            thumbColor={item.show_DOB ? '#f4f3f4' : '#f4f3f4'}
+            thumbColor={item.show_dob ? '#f4f3f4' : '#f4f3f4'}
             ios_backgroundColor={COLORS.errorColor}
-            onValueChange={() => {}}
-            value={item.show_DOB}
+            onValueChange={value => onChangeStatus('dob', item, value, index)}
+            value={item.show_dob}
           />
         </View>
         <View style={[styles.switchView, {width: wp(40)}]}>
           <Switch
             trackColor={{
-              false: item.showGB ? COLORS.greenColor : COLORS.errorColor,
-              true: item.showGB ? COLORS.greenColor : COLORS.errorColor,
+              false: item.show_blood_group
+                ? COLORS.greenColor
+                : COLORS.errorColor,
+              true: item.show_blood_group
+                ? COLORS.greenColor
+                : COLORS.errorColor,
             }}
-            thumbColor={item.showGB ? '#f4f3f4' : '#f4f3f4'}
+            thumbColor={item.show_blood_group ? '#f4f3f4' : '#f4f3f4'}
             ios_backgroundColor={COLORS.errorColor}
-            onValueChange={() => {}}
-            value={item.showGB}
+            onValueChange={value => onChangeStatus('blood', item, value, index)}
+            value={item.show_blood_group}
           />
         </View>
         <View style={[styles.switchView, {width: wp(30)}]}>
@@ -151,30 +335,54 @@ const SmartCardTemplates = ({
             }}
             thumbColor={item.show_address ? '#f4f3f4' : '#f4f3f4'}
             ios_backgroundColor={COLORS.errorColor}
-            onValueChange={() => {}}
+            onValueChange={value =>
+              onChangeStatus('address', item, value, index)
+            }
             value={item.show_address}
           />
         </View>
         <View style={[styles.switchView, {width: wp(48)}]}>
           <Switch
             trackColor={{
-              false: item.show_Patient ? COLORS.greenColor : COLORS.errorColor,
-              true: item.show_Patient ? COLORS.greenColor : COLORS.errorColor,
+              false: item.show_patient_unique_id
+                ? COLORS.greenColor
+                : COLORS.errorColor,
+              true: item.show_patient_unique_id
+                ? COLORS.greenColor
+                : COLORS.errorColor,
             }}
-            thumbColor={item.show_Patient ? '#f4f3f4' : '#f4f3f4'}
+            thumbColor={item.show_patient_unique_id ? '#f4f3f4' : '#f4f3f4'}
             ios_backgroundColor={COLORS.errorColor}
-            onValueChange={() => {}}
-            value={item.show_Patient}
+            onValueChange={value =>
+              onChangeStatus('unique', item, value, index)
+            }
+            value={item.show_patient_unique_id}
           />
         </View>
         <View style={styles.actionDataView}>
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              setUserId(item.id);
+              setName(item.template_name);
+              setHeaderColor(item.header_color);
+              setEmail(item.show_email);
+              setPhone(item.show_phone);
+              setDob(item.show_dob);
+              setBloodGroup(item.show_blood_group);
+              setAddress(item.show_address);
+              setUniqueId(item.show_patient_unique_id);
+            }}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.blueColor}]}
               source={editing}
             />
           </TouchableOpacity>
-          <TouchableOpacity style={{marginLeft: wp(2)}}>
+          <TouchableOpacity
+            style={{marginLeft: wp(2)}}
+            onPress={() => {
+              setUserId(item.id);
+              setDeleteUser(true);
+            }}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.errorColor}]}
               source={deleteIcon}
@@ -248,11 +456,11 @@ const SmartCardTemplates = ({
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList
-                    data={allData}
+                    data={allDataArray}
                     renderItem={renderItem}
                     bounces={false}
                     showsHorizontalScrollIndicator={false}
-                    initialNumToRender={allData.length}
+                    initialNumToRender={allDataArray.length}
                     nestedScrollEnabled
                     virtualized
                     ListEmptyComponent={() => (
@@ -325,7 +533,7 @@ const SmartCardTemplates = ({
           contentContainerStyle={{paddingBottom: hp(12)}}>
           <View style={styles.subView}>
             <Text style={[styles.doctorText, {color: theme.text}]}>
-              Add New Patient Cases
+              New Patient Smart Card Template
             </Text>
             <View style={styles.filterView}>
               <TouchableOpacity
@@ -338,223 +546,58 @@ const SmartCardTemplates = ({
 
           <View style={styles.profileView}>
             <View style={styles.nameView}>
-              <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>FIRST NAME</Text>
+              <View style={{width: '100%'}}>
+                <Text style={styles.dataHistoryText1}>Template Name:</Text>
                 <TextInput
-                  value={firstName}
-                  placeholder={'Enter first name'}
-                  onChangeText={text => setFirstName(text)}
+                  value={name}
+                  placeholder={'Template Name'}
+                  onChangeText={text => setName(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
                 />
               </View>
+            </View>
 
-              <View style={{width: '48%'}}>
+            <View style={styles.nameView}>
+              <View style={{width: '100%'}}>
                 <Text style={styles.dataHistoryText1}>LAST NAME</Text>
-                <TextInput
-                  value={lastName}
-                  placeholder={'Enter last name'}
-                  onChangeText={text => setLastName(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>EMAIL ADDRESS</Text>
-                <TextInput
-                  value={email}
-                  placeholder={'Enter email'}
-                  onChangeText={text => setEmail(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>ROLE</Text>
-                <TextInput
-                  value={role}
-                  placeholder={'Select'}
-                  onChangeText={text => setRole(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>PASSWORD</Text>
-                <TextInput
-                  value={password}
-                  placeholder={'******'}
-                  onChangeText={text => setPassword(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                  secureTextEntry={true}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>CONFIRM PASSWORD</Text>
-                <TextInput
-                  value={confirmPassword}
-                  placeholder={'******'}
-                  onChangeText={text => setConfirmPassword(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                  secureTextEntry={true}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>DATE OF BIRTH</Text>
-                {/* <TextInput
-                      value={firstName}
-                      placeholder={'Enter first name'}
-                      onChangeText={text => setFirstName(text)}
-                      style={[styles.nameTextView, {width: '100%'}]}
-                    /> */}
-                <Text
-                  style={[
-                    styles.nameTextView,
-                    {width: '100%', paddingVertical: hp(1)},
-                  ]}
-                  onPress={() => setDateModalVisible(!dateModalVisible)}>
-                  {moment(dateOfBirth).format('DD/MM/YYYY')}
-                </Text>
-                <DatePicker
-                  open={dateModalVisible}
-                  modal={true}
-                  date={dateOfBirth}
-                  mode={'date'}
-                  onConfirm={date => {
-                    console.log('Console Log>>', date);
-                    setDateModalVisible(false);
-                    setDateOfBirth(date);
-                  }}
-                  onCancel={() => {
-                    setDateModalVisible(false);
-                  }}
-                />
-              </View>
-
-              <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>GENDER</Text>
-                <View style={[styles.statusView, {paddingVertical: hp(1)}]}>
-                  <View style={[styles.optionView]}>
-                    <TouchableOpacity
-                      onPress={() => setGenderType('female')}
-                      style={[
-                        styles.roundBorder,
-                        {
-                          backgroundColor:
-                            genderType == 'female'
-                              ? COLORS.blueColor
-                              : COLORS.white,
-                          borderWidth: genderType == 'female' ? 0 : 0.5,
-                        },
-                      ]}>
-                      <View style={styles.round} />
-                    </TouchableOpacity>
-                    <Text style={styles.statusText}>Female</Text>
-                  </View>
-                  <View style={[styles.optionView]}>
-                    <TouchableOpacity
-                      onPress={() => setGenderType('male')}
-                      style={[
-                        styles.roundBorder,
-                        {
-                          backgroundColor:
-                            genderType == 'male'
-                              ? COLORS.blueColor
-                              : COLORS.white,
-                          borderWidth: genderType == 'male' ? 0 : 0.5,
-                        },
-                      ]}>
-                      <View style={styles.round} />
-                    </TouchableOpacity>
-                    <Text style={styles.statusText}>Male</Text>
-                  </View>
-                </View>
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>ADDRESS</Text>
-                <TextInput
-                  value={address}
-                  placeholder={'******'}
-                  onChangeText={text => setAddress(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                  secureTextEntry={true}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>CITY</Text>
-                <TextInput
-                  value={city}
-                  placeholder={'Enter city'}
-                  onChangeText={text => setCity(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-
-              <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>COUNTRY</Text>
-                <TextInput
-                  value={country}
-                  placeholder={'Enter country'}
-                  onChangeText={text => setCountry(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>POSTAL CODE</Text>
-                <TextInput
-                  value={postalCode}
-                  placeholder={'Postal Code'}
-                  onChangeText={text => setPostalCode(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View>
-                <Text style={styles.dataHistoryText1}>PROFILE</Text>
-                <View style={styles.profilePhotoView}>
-                  <TouchableOpacity
-                    style={styles.editView}
-                    onPress={() => openProfileImagePicker()}>
-                    <Image style={styles.editImage1} source={draw} />
-                  </TouchableOpacity>
-                  <Image style={styles.profileImage} source={man} />
-                </View>
+                <TouchableOpacity onPress={() => setShowModal(true)}>
+                  <View
+                    style={[styles.colorBox, {backgroundColor: colorData}]}
+                  />
+                </TouchableOpacity>
               </View>
             </View>
           </View>
 
           <View style={styles.buttonView}>
-            <TouchableOpacity onPress={() => {}} style={styles.nextView}>
+            <TouchableOpacity
+              onPress={() => {
+                userId ? onEditData() : onAddUsers();
+              }}
+              style={styles.nextView}>
               <Text style={styles.nextText}>Save</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => {}} style={styles.prevView}>
+            <TouchableOpacity
+              onPress={() => setNewUserVisible(false)}
+              style={styles.prevView}>
               <Text style={styles.prevText}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
       )}
+      <DeletePopup
+        modelVisible={deleteUser}
+        setModelVisible={setDeleteUser}
+        onPress={() => onDeleteRecord()}
+        setUserId={setUserId}
+        isLoading={loading}
+      />
+      <Penal
+        showModal={showModal}
+        setShowModal={setShowModal}
+        setColorData={setColorData}
+        colorData={colorData}
+      />
     </View>
   );
 };
@@ -949,5 +992,22 @@ const styles = StyleSheet.create({
     fontSize: hp(2),
     color: COLORS.black,
     fontFamily: Fonts.FONTS.PoppinsMedium,
+  },
+  colorMainView: {
+    width: wp(32),
+    marginHorizontal: wp(2),
+    justifyContent: 'center',
+  },
+  colorView: {
+    width: wp(9),
+    borderWidth: 0.5,
+    borderColor: COLORS.black,
+    padding: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  colorBox: {
+    width: wp(8),
+    height: hp(3),
   },
 });
