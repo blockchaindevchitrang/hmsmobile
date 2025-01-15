@@ -129,6 +129,7 @@ export const LoginScreen = ({navigation}) => {
               flexDirection: 'row',
               alignItems: 'center',
               borderColor: theme.text,
+              justifyContent: 'flex-start',
             },
           ]}>
           <TextInput
@@ -140,12 +141,15 @@ export const LoginScreen = ({navigation}) => {
             }}
             placeholder="******"
             placeholderTextColor={COLORS.greyColor}
-            style={[styles.textInput, {width: '83%', color: theme.text}]}
+            style={[
+              styles.textInput,
+              {width: isPortrait ? '83%' : '87%', color: theme.text},
+            ]}
             secureTextEntry={passwordVisible}
             textContentType={'none'}
           />
           <TouchableOpacity
-            style={{width: '9%'}}
+            style={{width: isPortrait ? '9%' : '5%'}}
             onPress={() => {
               setPasswordVisible(!passwordVisible);
             }}>

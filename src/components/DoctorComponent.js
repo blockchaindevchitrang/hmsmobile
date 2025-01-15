@@ -44,6 +44,7 @@ import FlashMessage, {
   showMessage,
   hideMessage,
 } from 'react-native-flash-message';
+import useOrientation from './OrientationComponent';
 
 const filterArray = [
   {id: 1, name: 'All'},
@@ -119,6 +120,9 @@ const DoctorComponent = ({
 }) => {
   const departmentData = useSelector(state => state.departmentData);
   const bloodData = useSelector(state => state.bloodData);
+  const orientation = useOrientation(); // Get current orientation
+  const isPortrait = orientation === 'portrait';
+  const styles = isPortrait ? portraitStyles : landscapeStyles;
   const {theme} = useTheme();
   const menuRef = useRef(null);
   const [editId, setEditId] = useState('');
@@ -479,14 +483,14 @@ const DoctorComponent = ({
           </View>
           <View
             style={[styles.activeView, {backgroundColor: theme.headerColor}]}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <ScrollView horizontal bounces={false} showsHorizontalScrollIndicator={false}>
               <View>
                 <View
                   style={[
                     styles.titleActiveView,
                     {backgroundColor: theme.headerColor},
                   ]}>
-                  <Text style={[styles.titleText, {width: wp(55)}]}>
+                  <Text style={[styles.titleText, {width: isPortrait ? wp(55) : wp(37)}]}>
                     {'DOCTORS'}
                   </Text>
                   <Text style={[styles.titleText, {width: wp(24)}]}>
@@ -1077,7 +1081,7 @@ const DoctorComponent = ({
 
 export default DoctorComponent;
 
-const styles = StyleSheet.create({
+const portraitStyles = StyleSheet.create({
   safeAreaStyle: {
     flex: 1,
     justifyContent: 'center',
@@ -1506,6 +1510,444 @@ const styles = StyleSheet.create({
     paddingVertical: hp(0.5),
     borderRadius: 5,
     fontSize: hp(3),
+    color: COLORS.white,
+  },
+  totalCountText: {
+    fontSize: hp(2),
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+  },
+});
+
+const landscapeStyles = StyleSheet.create({
+  safeAreaStyle: {
+    flex: 1,
+    justifyContent: 'center',
+    width: '100%',
+  },
+  subView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    paddingHorizontal: wp(3),
+    marginVertical: hp(2),
+  },
+  searchView: {
+    width: '50%',
+    paddingHorizontal: wp(2),
+    paddingVertical: hp(0.5),
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(2),
+    color: COLORS.black,
+    borderRadius: 5,
+  },
+  filterView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  filterView1: {
+    height: hp(4),
+    width: hp(4),
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.blueColor,
+  },
+  filterImage: {
+    width: wp(5),
+    height: hp(2.5),
+    resizeMode: 'contain',
+    tintColor: COLORS.white,
+  },
+  actionView: {
+    height: hp(4),
+    paddingHorizontal: wp(1.5),
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.blueColor,
+    marginLeft: wp(2),
+  },
+  actionText: {
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    fontSize: hp(2.2),
+    color: COLORS.white,
+  },
+  activeView: {
+    width: '96%',
+    minHeight: hp(35),
+    maxHeight: hp(80),
+    alignSelf: 'center',
+    backgroundColor: COLORS.white,
+    marginTop: hp(0.5),
+    borderRadius: wp(1.5),
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.22,
+    shadowRadius: 2.22,
+
+    elevation: 3,
+  },
+  titleActiveView: {
+    width: '100%',
+    height: hp(5),
+    alignSelf: 'center',
+    backgroundColor: COLORS.primary,
+    alignItems: 'center',
+    flexDirection: 'row',
+    marginTop: hp(1),
+    paddingBottom: hp(0.5),
+  },
+  titleText: {
+    fontSize: hp(1.7),
+    fontFamily: Fonts.FONTS.PoppinsSemiBold,
+    color: COLORS.white,
+    marginHorizontal: wp(2),
+    textAlign: 'center',
+  },
+  dataHistoryView: {
+    width: '100%',
+    paddingVertical: hp(1),
+    alignItems: 'center',
+    flexDirection: 'row',
+    alignSelf: 'flex-start',
+  },
+  dataHistoryText: {
+    fontSize: hp(1.7),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+    marginHorizontal: wp(2),
+    textAlign: 'center',
+  },
+  dataHistoryText1: {
+    fontSize: hp(1.7),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+    width: wp(33),
+  },
+  dataHistoryText2: {
+    fontSize: hp(1.7),
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    color: COLORS.blueColor,
+  },
+  dataHistoryText3: {
+    fontSize: hp(1.7),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+    paddingVertical: hp(0.5),
+  },
+  dataHistoryText4: {
+    fontSize: hp(1.7),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.errorColor,
+  },
+  mainDataView: {
+    minHeight: hp(29),
+    maxHeight: hp(74),
+    width: '100%',
+    backgroundColor: COLORS.white,
+    paddingBottom: hp(1),
+    borderBottomLeftRadius: wp(1.5),
+    borderBottomRightRadius: wp(1.5),
+  },
+  nameDataView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: wp(37),
+    marginHorizontal: wp(2),
+  },
+  switchView: {
+    width: wp(16),
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: wp(2),
+  },
+  actionDataView: {
+    width: wp(20),
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: wp(2),
+    flexDirection: 'row',
+  },
+  editImage: {
+    width: wp(4),
+    height: hp(2.5),
+    resizeMode: 'contain',
+  },
+  backButtonView: {
+    height: hp(4),
+    paddingHorizontal: wp(3),
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.orange,
+  },
+  backText: {
+    fontFamily: Fonts.FONTS.PoppinsSemiBold,
+    fontSize: hp(1.7),
+    color: COLORS.white,
+  },
+  doctorText: {
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    fontSize: hp(2),
+    color: COLORS.black,
+  },
+  profileView: {
+    width: '94%',
+    backgroundColor: '#eeeeee',
+    paddingVertical: hp(1),
+    paddingHorizontal: wp(1.5),
+    alignSelf: 'center',
+    borderRadius: wp(2),
+  },
+  nameTextView: {
+    width: '50%',
+    paddingHorizontal: wp(2),
+    paddingVertical: hp(0.5),
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    color: COLORS.black,
+    borderRadius: 5,
+    marginTop: hp(1),
+    backgroundColor: COLORS.white,
+  },
+  commentTextInput: {
+    width: '100%',
+    paddingHorizontal: wp(3),
+    paddingVertical: hp(1),
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(2),
+    color: COLORS.black,
+    borderRadius: 5,
+    alignSelf: 'center',
+    height: hp(14),
+    marginTop: hp(1),
+    backgroundColor: COLORS.white,
+    marginBottom: hp(2),
+  },
+  nameView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginVertical: hp(2),
+  },
+  contactView: {
+    width: '94%',
+    paddingVertical: hp(2),
+    paddingHorizontal: wp(3),
+    alignSelf: 'center',
+    borderRadius: wp(2),
+  },
+  buttonView: {
+    width: '94%',
+    paddingHorizontal: wp(3),
+    alignSelf: 'center',
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  nextView: {
+    height: hp(4.5),
+    paddingHorizontal: wp(4),
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.blueColor,
+    marginLeft: wp(2),
+  },
+  nextText: {
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    fontSize: hp(2.2),
+    color: COLORS.white,
+  },
+  prevView: {
+    height: hp(4.5),
+    paddingHorizontal: wp(4),
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.lightGreyColor,
+    marginLeft: wp(2),
+  },
+  prevText: {
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    fontSize: hp(2.2),
+    color: COLORS.white,
+  },
+  ListEmptyView: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: hp(15),
+  },
+  emptyText: {
+    fontSize: hp(2.5),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+  },
+  statusView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+  },
+  optionView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: wp(3),
+  },
+  roundBorder: {
+    height: wp(4),
+    width: wp(4),
+    borderRadius: wp(4),
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 0.5,
+    marginRight: wp(1.5),
+  },
+  round: {
+    height: wp(1.5),
+    width: wp(1.5),
+    borderRadius: wp(1.5),
+    backgroundColor: COLORS.white,
+  },
+  dataHistoryText5: {
+    fontSize: hp(1.6),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+  },
+  profilePhotoView: {
+    borderWidth: 0.5,
+    marginTop: hp(1),
+  },
+  profileImage: {
+    width: wp(28),
+    height: hp(13.5),
+    resizeMode: 'contain',
+  },
+  editView: {
+    width: wp(7),
+    height: wp(7),
+    borderRadius: wp(7),
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 0.5,
+    position: 'absolute',
+    zIndex: 1,
+    right: -wp(3),
+    top: -hp(2),
+    backgroundColor: COLORS.white,
+  },
+  editImage1: {
+    width: wp(3),
+    height: hp(2.5),
+    resizeMode: 'contain',
+  },
+  dropdown2DropdownStyle: {
+    backgroundColor: COLORS.white,
+    borderRadius: 4,
+    height: hp(25),
+    // borderRadius: 12,
+  },
+  dropdownItemTxtStyle: {
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    marginLeft: wp(2),
+  },
+  dropdownView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: hp(4),
+    borderBottomWidth: 0,
+  },
+  dropdown2BtnStyle2: {
+    width: '100%',
+    height: hp(4.2),
+    backgroundColor: COLORS.white,
+    borderRadius: 5,
+    alignItems: 'center',
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    marginTop: hp(1),
+  },
+  modalOverlay: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+  },
+  filterModal: {
+    flex: 1,
+    alignItems: 'flex-end',
+  },
+  filterFirstView: {
+    width: '60%',
+    backgroundColor: 'white',
+    borderRadius: 5,
+    marginTop: hp(17),
+    marginRight: wp(2),
+  },
+  filterTitle: {
+    fontSize: hp(2.2),
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    color: COLORS.black,
+    padding: hp(2),
+    borderBottomWidth: 0.5,
+  },
+  secondFilterView: {
+    padding: hp(2),
+  },
+  secondTitleFilter: {
+    fontSize: hp(2),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+  },
+  resetButton: {
+    width: wp(22),
+    height: hp(4.5),
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'flex-end',
+    backgroundColor: COLORS.greyColor,
+    marginTop: hp(2),
+    borderRadius: 5,
+  },
+  resetText: {
+    fontSize: hp(2),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+  },
+  nextView1: {
+    width: '96%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    alignSelf: 'center',
+    marginTop: hp(3),
+  },
+  prevViewData: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  prevButtonView: {
+    paddingHorizontal: wp(1.5),
+    backgroundColor: COLORS.headerGreenColor,
+    paddingVertical: hp(0.5),
+    borderRadius: 5,
+    fontSize: hp(2.5),
     color: COLORS.white,
   },
   totalCountText: {

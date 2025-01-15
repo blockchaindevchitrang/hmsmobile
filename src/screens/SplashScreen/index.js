@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
   },
   headerLogoImage: {
     width: wp(50),
-    height: hp(12),
+    height: hp(15),
     resizeMode: 'contain',
   },
 });

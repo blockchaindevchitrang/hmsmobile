@@ -9,13 +9,13 @@ const getRandomColor = () => {
   return colors[randomIndex];
 };
 
-const ProfilePhoto = ({username}) => {
+const ProfilePhoto = ({username, style}) => {
   // Extract the first two characters of the username and convert them to uppercase
   const initials = username ? username.substring(0, 2).toUpperCase() : '';
   const backgroundColor = getRandomColor();
   return (
     <View style={styles.container}>
-      <View style={[styles.circle, {backgroundColor}]}>
+      <View style={[styles.circle, style, {backgroundColor}]}>
         <Text style={styles.text}>{initials}</Text>
       </View>
     </View>
@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
   },
   text: {
     color: COLORS.white, // Text color
-    fontSize: hp(2), // Adjust font size for two characters
+    fontSize: hp(1.8), // Adjust font size for two characters
     fontWeight: Fonts.FONTS.PoppinsBold, // Make text bold
   },
 });

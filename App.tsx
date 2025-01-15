@@ -22,6 +22,8 @@ import bot from './src/images/health.png';
 import robot1 from './src/images/appointment.png';
 import setting from './src/images/more.png';
 import people from './src/images/people.png';
+import duplicate from './src/images/duplicate.png';
+import patient from './src/images/patient.png';
 import AppointmentScreen from './src/screens/AppointmentScreen';
 import DoctorScreen from './src/screens/DoctorScreen';
 import {useTheme} from './src/utils/ThemeProvider';
@@ -162,6 +164,44 @@ const TabStack = () => {
           ),
         }}
       />
+      {!isPortrait && (
+        <Tab.Screen
+          name="IPDScreen"
+          component={IPDScreen}
+          options={{
+            headerShown: false,
+            tabBarIcon: ({focused}) => (
+              <View
+                style={[
+                  isPortrait ? styles.bottomView : styles.bottomView1,
+                  {
+                    backgroundColor: focused ? COLORS.white : theme.headerColor,
+                  },
+                ]}>
+                <Image style={styles.imageView1} source={duplicate} />
+              </View>
+            ),
+          }}
+        />
+      )}
+      {!isPortrait && (
+        <Tab.Screen
+          name="PatientsScreen"
+          component={PatientsScreen}
+          options={{
+            headerShown: false,
+            tabBarIcon: ({focused}) => (
+              <View
+                style={[
+                  isPortrait ? styles.bottomView : styles.bottomView1,
+                  {backgroundColor: focused ? COLORS.white : theme.headerColor},
+                ]}>
+                <Image style={styles.imageView1} source={patient} />
+              </View>
+            ),
+          }}
+        />
+      )}
       <Tab.Screen
         name="SettingStack"
         component={SettingStack}

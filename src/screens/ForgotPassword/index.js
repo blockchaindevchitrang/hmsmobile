@@ -8,14 +8,18 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import React, {useState} from 'react';
-import styles from './styles';
+import {portraitStyles, landscapeStyles} from './styles';
 import headerLogo from '../../images/headerLogo.png';
 import {onForgotPasswordApi} from '../../services/Api';
 import {COLORS} from '../../utils';
 import {useTranslation} from 'react-i18next';
 import {useTheme} from '../../utils/ThemeProvider';
+import useOrientation from '../../components/OrientationComponent';
 
 const ForgotPassword = ({navigation}) => {
+  const orientation = useOrientation(); // Get current orientation
+  const isPortrait = orientation === 'portrait';
+  const styles = isPortrait ? portraitStyles : landscapeStyles;
   const {t} = useTranslation();
   const {theme, colorTheme} = useTheme();
   const [email, setEmail] = useState('');

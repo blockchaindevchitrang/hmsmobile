@@ -144,10 +144,10 @@ export const landscapeStyles = StyleSheet.create({
     fontFamily: Fonts.FONTS.PoppinsBold,
   },
   mainView: {
-    width: '90%',
+    width: '50%',
   },
   emailPlaceHolder: {
-    fontSize: hp(2.1),
+    fontSize: hp(1.8),
     color: COLORS.textColor,
     fontFamily: Fonts.FONTS.PoppinsSemiBold,
   },
@@ -160,12 +160,12 @@ export const landscapeStyles = StyleSheet.create({
     borderWidth: 0.4,
     borderColor: COLORS.textColor,
     borderRadius: 5,
-    height: hp(6),
+    height: hp(5),
     justifyContent: 'center',
     marginTop: hp(1),
   },
   textInput: {
-    marginHorizontal: wp(3),
+    marginHorizontal: wp(1.5),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
     fontSize: hp(2),
@@ -180,7 +180,7 @@ export const landscapeStyles = StyleSheet.create({
   buttonView: {
     width: '100%',
     borderRadius: 5,
-    height: hp(6),
+    height: hp(5),
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: hp(4),
@@ -205,8 +205,8 @@ export const landscapeStyles = StyleSheet.create({
     textAlign: 'center',
   },
   eyeIcon: {
-    width: wp(5),
-    height: hp(4),
+    width: wp(4),
+    height: hp(2.5),
     resizeMode: 'contain',
   },
   logoImage: {

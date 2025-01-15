@@ -627,11 +627,11 @@ export const DoctorScreen = ({navigation}) => {
 
   const onGetDoctorScheduleData = async () => {
     try {
-      let urlData = `get-schedules?search=${searchBreak}&page=${pageCount}`;
+      let urlData = `get-schedules?search=${searchSchedule}&page=${pageCount}`;
       const response = await onGetCommonApi(urlData);
       if (response.data.flag == 1) {
         setScheduleList(response.data.data.items);
-        setSchedulePage(response.data.pagination.last_page);
+        setSchedulePage(response.data.data.pagination.last_page);
         setRefresh(!refresh);
       }
     } catch (err) {
