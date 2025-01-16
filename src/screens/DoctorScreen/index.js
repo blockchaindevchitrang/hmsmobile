@@ -340,11 +340,22 @@ export const DoctorScreen = ({navigation}) => {
       if (response.status == 200) {
         onGetDoctorData();
         setAddDoctorVisible(false);
+        showMessage({
+          message: 'Record Added Successfully',
+          type: 'success',
+          duration: 3000,
+        });
         setIsLoading(false);
         setRefresh(!refresh);
       }
     } catch (err) {
       setIsLoading(false);
+      showMessage({
+        message: 'Please enter properly details.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
       console.log('Get Error:', err.response.data);
     }
   };
@@ -377,11 +388,22 @@ export const DoctorScreen = ({navigation}) => {
       if (response.status == 200) {
         onGetDoctorData();
         setAddDoctorVisible(false);
+        showMessage({
+          message: 'Record Edit Successfully',
+          type: 'success',
+          duration: 3000,
+        });
         setIsLoading(false);
         setRefresh(!refresh);
       }
     } catch (err) {
       setIsLoading(false);
+      showMessage({
+        message: 'Please enter properly details.',
+        type: 'danger',
+        duration: 6000,
+        icon: 'danger',
+      });
       console.log('Get Error:', err.response.data);
     }
   };
@@ -489,37 +511,6 @@ export const DoctorScreen = ({navigation}) => {
         icon: 'danger',
       });
       console.log('Get Error:', err.response.data);
-    }
-  };
-
-  const onEditDoctorHolidayData = async id => {
-    try {
-      setIsLoading(true);
-      const response = await onUpdateDoctorHolidayApi(
-        id,
-        holidayDoctor,
-        moment(holidayDate).format('YYYY-MM-DD'),
-        holidayReason,
-      );
-      if (response.status == 200) {
-        onGetDoctorHolidayData();
-        setIsLoading(false);
-        showMessage({
-          message: 'Record Edit Successfully',
-          type: 'success',
-          duration: 3000,
-        });
-        setRefresh(!refresh);
-      }
-    } catch (err) {
-      setIsLoading(false);
-      showMessage({
-        message: 'Please enter properly details.',
-        type: 'danger',
-        duration: 6000,
-        icon: 'danger',
-      });
-      console.log('Get Error:', err);
     }
   };
 
@@ -782,7 +773,6 @@ export const DoctorScreen = ({navigation}) => {
             holidayDateModalVisible={holidayDateModalVisible}
             setHolidayDateModalVisible={setHolidayDateModalVisible}
             onAddDoctorDepartmentData={() => onAddDoctorHolidayData()}
-            onEditDoctorDepartmentData={id => onEditDoctorHolidayData(id)}
             onDeleteDepartmentData={id => onDeleteHolidayData(id)}
             setDeleteUser={setDeleteUser}
             deleteUser={deleteUser}
@@ -814,71 +804,78 @@ export const DoctorScreen = ({navigation}) => {
         transparent={true}
         animationType="fade"
         onRequestClose={() => toggleMenu(false)}>
-        <BlurView
-          style={styles.absolute}
-          blurType="light" // You can use 'light', 'dark', or 'extraDark' for the blur effect.
-          blurAmount={10}
-          reducedTransparencyFallbackColor="white"
-        />
+        <TouchableWithoutFeedback onPress={() => toggleMenu(false)}>
+          <View style={{flex: 1}}>
+            <BlurView
+              style={styles.absolute}
+              blurType="light" // You can use 'light', 'dark', or 'extraDark' for the blur effect.
+              blurAmount={10}
+              reducedTransparencyFallbackColor="white"
+            />
 
-        <View style={styles.mainModalView}>
-          <View style={styles.menuContainer}>
-            {[
-              'Logo',
-              'Doctor',
-              'Doctor Departments',
-              'Schedules',
-              'Doctor Holidays',
-              'Breaks',
-            ].map((option, index) => (
-              <>
-                {option == 'Logo' ? (
-                  <Animated.View
-                    key={index}
-                    style={[
-                      styles.logoMenu,
-                      {
-                        transform: [{translateY: animations[index]}],
-                        opacity: opacities[index],
-                        marginBottom: hp(1),
-                      },
-                    ]}>
-                    <Image source={headerLogo} style={styles.headerLogoImage} />
-                  </Animated.View>
-                ) : (
-                  <Animated.View
-                    key={index}
-                    style={[
-                      styles.menuOption,
-                      {
-                        transform: [{translateY: animations[index]}],
-                        opacity: opacities[index],
-                        backgroundColor: theme.headerColor,
-                      },
-                    ]}>
-                    <TouchableOpacity
-                      style={styles.optionButton}
-                      onPress={() => {
-                        setSelectedView(option);
-                        setPageCount('1');
-                        toggleMenu(false);
-                      }}>
-                      <Text style={styles.menuItem}>{option}</Text>
-                    </TouchableOpacity>
-                  </Animated.View>
-                )}
-              </>
-            ))}
+            <View style={styles.mainModalView}>
+              <View style={styles.menuContainer}>
+                {[
+                  'Logo',
+                  'Doctor',
+                  'Doctor Departments',
+                  'Schedules',
+                  'Doctor Holidays',
+                  'Breaks',
+                ].map((option, index) => (
+                  <>
+                    {option == 'Logo' ? (
+                      <Animated.View
+                        key={index}
+                        style={[
+                          styles.logoMenu,
+                          {
+                            transform: [{translateY: animations[index]}],
+                            opacity: opacities[index],
+                            marginBottom: hp(1),
+                          },
+                        ]}>
+                        <Image
+                          source={headerLogo}
+                          style={styles.headerLogoImage}
+                        />
+                      </Animated.View>
+                    ) : (
+                      <Animated.View
+                        key={index}
+                        style={[
+                          styles.menuOption,
+                          {
+                            transform: [{translateY: animations[index]}],
+                            opacity: opacities[index],
+                            backgroundColor: theme.headerColor,
+                          },
+                        ]}>
+                        <TouchableOpacity
+                          style={styles.optionButton}
+                          onPress={() => {
+                            setSelectedView(option);
+                            setPageCount('1');
+                            toggleMenu(false);
+                          }}>
+                          <Text style={styles.menuItem}>{option}</Text>
+                        </TouchableOpacity>
+                      </Animated.View>
+                    )}
+                  </>
+                ))}
 
-            <View style={styles.logoMenu}>
-              <TouchableOpacity
-                style={styles.closeButton}
-                onPress={() => toggleMenu(false)}>
-                <Text style={styles.closeButtonText}>Close</Text>
-              </TouchableOpacity>
+                <View style={styles.logoMenu}>
+                  <TouchableOpacity
+                    style={styles.closeButton}
+                    onPress={() => toggleMenu(false)}>
+                    <Text style={styles.closeButtonText}>Close</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
             </View>
           </View>
-        </View>
+        </TouchableWithoutFeedback>
       </Modal>
     </View>
   );

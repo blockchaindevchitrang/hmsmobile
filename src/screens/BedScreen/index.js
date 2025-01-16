@@ -6,6 +6,7 @@ import {
   Modal,
   Animated,
   Image,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import {useTheme} from '../../utils/ThemeProvider';
 import {landscapeStyles, portraitStyles} from './styles';
@@ -395,70 +396,73 @@ export const BedScreen = ({navigation}) => {
         transparent={true}
         animationType="fade"
         onRequestClose={() => toggleMenu(false)}>
-        {/* Background blur */}
-        <BlurView
-          style={styles.absolute}
-          blurType="light" // You can use 'light', 'dark', or 'extraDark' for the blur effect.
-          blurAmount={10}
-          reducedTransparencyFallbackColor="white"
-        />
+        <TouchableWithoutFeedback onPress={() => toggleMenu(false)}>
+          <View style={{flex: 1}}>
+            <BlurView
+              style={styles.absolute}
+              blurType="light" // You can use 'light', 'dark', or 'extraDark' for the blur effect.
+              blurAmount={10}
+              reducedTransparencyFallbackColor="white"
+            />
 
-        <View style={styles.mainModalView}>
-          <View style={styles.menuContainer}>
-            {['Logo', 'Bed Types', 'Beds', 'Bed Assigns', 'Bed Status'].map(
-              (option, index) => (
-                <>
-                  {option == 'Logo' ? (
-                    <Animated.View
-                      key={index}
-                      style={[
-                        styles.logoMenu,
-                        {
-                          transform: [{translateY: animations[index]}],
-                          opacity: opacities[index],
-                          marginBottom: hp(1),
-                        },
-                      ]}>
-                      <Image
-                        source={headerLogo}
-                        style={styles.headerLogoImage}
-                      />
-                    </Animated.View>
-                  ) : (
-                    <Animated.View
-                      key={index}
-                      style={[
-                        styles.menuOption,
-                        {
-                          transform: [{translateY: animations[index]}],
-                          opacity: opacities[index],
-                          backgroundColor: theme.headerColor,
-                        },
-                      ]}>
-                      <TouchableOpacity
-                        style={styles.optionButton}
-                        onPress={() => {
-                          setSelectedView(option);
-                          setPageCount('1');
-                          toggleMenu(false);
-                        }}>
-                        <Text style={styles.menuItem}>{option}</Text>
-                      </TouchableOpacity>
-                    </Animated.View>
-                  )}
-                </>
-              ),
-            )}
+            <View style={styles.mainModalView}>
+              <View style={styles.menuContainer}>
+                {['Logo', 'Bed Types', 'Beds', 'Bed Assigns', 'Bed Status'].map(
+                  (option, index) => (
+                    <>
+                      {option == 'Logo' ? (
+                        <Animated.View
+                          key={index}
+                          style={[
+                            styles.logoMenu,
+                            {
+                              transform: [{translateY: animations[index]}],
+                              opacity: opacities[index],
+                              marginBottom: hp(1),
+                            },
+                          ]}>
+                          <Image
+                            source={headerLogo}
+                            style={styles.headerLogoImage}
+                          />
+                        </Animated.View>
+                      ) : (
+                        <Animated.View
+                          key={index}
+                          style={[
+                            styles.menuOption,
+                            {
+                              transform: [{translateY: animations[index]}],
+                              opacity: opacities[index],
+                              backgroundColor: theme.headerColor,
+                            },
+                          ]}>
+                          <TouchableOpacity
+                            style={styles.optionButton}
+                            onPress={() => {
+                              setSelectedView(option);
+                              setPageCount('1');
+                              toggleMenu(false);
+                            }}>
+                            <Text style={styles.menuItem}>{option}</Text>
+                          </TouchableOpacity>
+                        </Animated.View>
+                      )}
+                    </>
+                  ),
+                )}
 
-            <View style={styles.logoMenu}>
-              <TouchableOpacity
-                style={styles.closeButton}
-                onPress={() => toggleMenu(false)}>
-                <Text style={styles.closeButtonText}>Close</Text>
-              </TouchableOpacity>
+                <View style={styles.logoMenu}>
+                  <TouchableOpacity
+                    style={styles.closeButton}
+                    onPress={() => toggleMenu(false)}>
+                    <Text style={styles.closeButtonText}>Close</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
             </View>
           </View>
-        </View>
+        </TouchableWithoutFeedback>
       </Modal>
     </View>
   );
