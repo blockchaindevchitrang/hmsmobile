@@ -544,14 +544,20 @@ const AppointmentComponent = ({
             <View style={styles.filterView}>
               <TouchableOpacity
                 onPress={() => setAddHolidayVisible(true)}
-                style={[styles.actionView, {height: isPortrait ? hp(4.7) : hp(4)}]}>
+                style={[
+                  styles.actionView,
+                  {height: isPortrait ? hp(4.7) : hp(4)},
+                ]}>
                 <Text style={styles.actionText}>New Appointment</Text>
               </TouchableOpacity>
             </View>
           </View>
           <View
             style={[styles.activeView, {backgroundColor: theme.headerColor}]}>
-            <ScrollView horizontal bounces={false} showsHorizontalScrollIndicator={false}>
+            <ScrollView
+              horizontal
+              bounces={false}
+              showsHorizontalScrollIndicator={false}>
               <View>
                 <View
                   style={[

@@ -202,7 +202,9 @@ const UserList = ({
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
         <View style={[styles.nameDataView]}>
-          <ProfilePhoto username={item.name} />
+          {item.name && (
+            <ProfilePhoto style={styles.photoStyle} username={item.name} />
+          )}
           <View>
             <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
             <Text numberOfLines={2} style={[styles.dataHistoryText1]}>
@@ -211,7 +213,10 @@ const UserList = ({
           </View>
         </View>
         <Text
-          style={[styles.dataHistoryText, {width: wp(26), textAlign: 'left'}]}>
+          style={[
+            styles.dataHistoryText,
+            {width: isPortrait ? wp(26) : wp(24), textAlign: 'left'},
+          ]}>
           {item.department}
         </Text>
         <View style={[styles.switchView]}>
@@ -226,7 +231,8 @@ const UserList = ({
             value={item.verify}
           />
         </View>
-        <View style={[styles.switchView]}>
+        <View
+          style={[styles.switchView, {width: isPortrait ? wp(24) : wp(20)}]}>
           <Switch
             trackColor={{
               false: item.status ? COLORS.greenColor : COLORS.errorColor,
@@ -645,26 +651,49 @@ const UserList = ({
           </View>
           <View
             style={[styles.activeView, {backgroundColor: theme.headerColor}]}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <ScrollView
+              horizontal
+              bounces={false}
+              showsHorizontalScrollIndicator={false}>
               <View>
                 <View
                   style={[
                     styles.titleActiveView,
                     {backgroundColor: theme.headerColor},
                   ]}>
-                  <Text style={[styles.titleText, {width: wp(60)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {width: isPortrait ? wp(60) : wp(40)},
+                    ]}>
                     {'USERS'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(26)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {width: isPortrait ? wp(26) : wp(24)},
+                    ]}>
                     {'ROLE'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(24)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {width: isPortrait ? wp(24) : wp(22)},
+                    ]}>
                     {'EMAIL VERIFIED'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(24)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {width: isPortrait ? wp(24) : wp(20)},
+                    ]}>
                     {'STATUS'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(16)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {width: isPortrait ? wp(16) : wp(12)},
+                    ]}>
                     {'ACTION'}
                   </Text>
                 </View>
@@ -673,7 +702,7 @@ const UserList = ({
                     data={allData}
                     renderItem={renderItem}
                     bounces={false}
-                    showsHorizontalScrollIndicator={false}
+                    showsVerticalScrollIndicator={false}
                     initialNumToRender={allData.length}
                     nestedScrollEnabled
                     virtualized
@@ -755,262 +784,557 @@ const UserList = ({
               </TouchableOpacity>
             </View>
           </View>
+          {isPortrait ? (
+            <View style={styles.profileView}>
+              <View style={styles.nameView}>
+                <View style={{width: '48%'}}>
+                  <Text style={styles.dataHistoryText1}>FIRST NAME</Text>
+                  <TextInput
+                    value={firstName}
+                    placeholder={'Enter first name'}
+                    onChangeText={text => setFirstName(text)}
+                    style={[styles.nameTextView, {width: '100%'}]}
+                  />
+                </View>
 
-          <View style={styles.profileView}>
-            <View style={styles.nameView}>
-              <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>FIRST NAME</Text>
-                <TextInput
-                  value={firstName}
-                  placeholder={'Enter first name'}
-                  onChangeText={text => setFirstName(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
+                <View style={{width: '48%'}}>
+                  <Text style={styles.dataHistoryText1}>LAST NAME</Text>
+                  <TextInput
+                    value={lastName}
+                    placeholder={'Enter last name'}
+                    onChangeText={text => setLastName(text)}
+                    style={[styles.nameTextView, {width: '100%'}]}
+                  />
+                </View>
               </View>
 
-              <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>LAST NAME</Text>
-                <TextInput
-                  value={lastName}
-                  placeholder={'Enter last name'}
-                  onChangeText={text => setLastName(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
+              <View style={styles.nameView}>
+                <View style={{width: '100%'}}>
+                  <Text style={styles.dataHistoryText1}>EMAIL ADDRESS</Text>
+                  <TextInput
+                    value={email}
+                    placeholder={'Enter email'}
+                    onChangeText={text => setEmail(text)}
+                    style={[styles.nameTextView, {width: '100%'}]}
+                  />
+                </View>
               </View>
-            </View>
 
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>EMAIL ADDRESS</Text>
-                <TextInput
-                  value={email}
-                  placeholder={'Enter email'}
-                  onChangeText={text => setEmail(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>ROLE</Text>
-                {/* <TextInput
+              <View style={styles.nameView}>
+                <View style={{width: '100%'}}>
+                  <Text style={styles.dataHistoryText1}>ROLE</Text>
+                  {/* <TextInput
                   value={role}
                   placeholder={'Select'}
                   onChangeText={text => setRole(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
                 /> */}
-                <SelectDropdown
-                  data={roleData}
-                  onSelect={(selectedItem, index) => {
-                    // setSelectedColor(selectedItem);
-                    setRole(selectedItem.id);
-                    console.log('gert Value:::', selectedItem);
-                  }}
-                  defaultValue={doctorSelectedName}
-                  renderButton={(selectedItem, isOpen) => {
-                    console.log('Get Response>>>', selectedItem);
-                    return (
-                      <View style={styles.dropdown2BtnStyle2}>
-                        {role != '' ? (
+                  <SelectDropdown
+                    data={roleData}
+                    onSelect={(selectedItem, index) => {
+                      // setSelectedColor(selectedItem);
+                      setRole(selectedItem.id);
+                      console.log('gert Value:::', selectedItem);
+                    }}
+                    defaultValue={doctorSelectedName}
+                    renderButton={(selectedItem, isOpen) => {
+                      console.log('Get Response>>>', selectedItem);
+                      return (
+                        <View style={styles.dropdown2BtnStyle2}>
+                          {role != '' ? (
+                            <Text style={styles.dropdownItemTxtStyle}>
+                              {role == selectedItem?.id
+                                ? selectedItem?.name
+                                : doctorSelectedName}
+                            </Text>
+                          ) : (
+                            <Text style={styles.dropdownItemTxtStyle}>
+                              {selectedItem?.name || 'Select'}
+                            </Text>
+                          )}
+                        </View>
+                      );
+                    }}
+                    showsVerticalScrollIndicator={false}
+                    renderItem={(item, index, isSelected) => {
+                      return (
+                        <TouchableOpacity style={styles.dropdownView}>
                           <Text style={styles.dropdownItemTxtStyle}>
-                            {role == selectedItem?.id
-                              ? selectedItem?.name
-                              : doctorSelectedName}
+                            {item.name}
                           </Text>
-                        ) : (
-                          <Text style={styles.dropdownItemTxtStyle}>
-                            {selectedItem?.name || 'Select'}
-                          </Text>
-                        )}
-                      </View>
-                    );
-                  }}
-                  showsVerticalScrollIndicator={false}
-                  renderItem={(item, index, isSelected) => {
-                    return (
-                      <TouchableOpacity style={styles.dropdownView}>
-                        <Text style={styles.dropdownItemTxtStyle}>
-                          {item.name}
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  }}
-                  dropdownIconPosition={'left'}
-                  dropdownStyle={styles.dropdown2DropdownStyle}
-                />
-              </View>
-            </View>
-            {userId == '' && (
-              <View style={styles.nameView}>
-                <View style={{width: '100%'}}>
-                  <Text style={styles.dataHistoryText1}>PASSWORD</Text>
-                  <TextInput
-                    value={password}
-                    placeholder={'******'}
-                    onChangeText={text => setPassword(text)}
-                    style={[styles.nameTextView, {width: '100%'}]}
-                    secureTextEntry={true}
+                        </TouchableOpacity>
+                      );
+                    }}
+                    dropdownIconPosition={'left'}
+                    dropdownStyle={styles.dropdown2DropdownStyle}
                   />
                 </View>
               </View>
-            )}
-            {userId == '' && (
-              <View style={styles.nameView}>
-                <View style={{width: '100%'}}>
-                  <Text style={styles.dataHistoryText1}>CONFIRM PASSWORD</Text>
-                  <TextInput
-                    value={confirmPassword}
-                    placeholder={'******'}
-                    onChangeText={text => setConfirmPassword(text)}
-                    style={[styles.nameTextView, {width: '100%'}]}
-                    secureTextEntry={true}
-                  />
+              {userId == '' && (
+                <View style={styles.nameView}>
+                  <View style={{width: '100%'}}>
+                    <Text style={styles.dataHistoryText1}>PASSWORD</Text>
+                    <TextInput
+                      value={password}
+                      placeholder={'******'}
+                      onChangeText={text => setPassword(text)}
+                      style={[styles.nameTextView, {width: '100%'}]}
+                      secureTextEntry={true}
+                    />
+                  </View>
                 </View>
-              </View>
-            )}
-            <View style={styles.nameView}>
-              <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>DATE OF BIRTH</Text>
-                {/* <TextInput
+              )}
+              {userId == '' && (
+                <View style={styles.nameView}>
+                  <View style={{width: '100%'}}>
+                    <Text style={styles.dataHistoryText1}>
+                      CONFIRM PASSWORD
+                    </Text>
+                    <TextInput
+                      value={confirmPassword}
+                      placeholder={'******'}
+                      onChangeText={text => setConfirmPassword(text)}
+                      style={[styles.nameTextView, {width: '100%'}]}
+                      secureTextEntry={true}
+                    />
+                  </View>
+                </View>
+              )}
+              <View style={styles.nameView}>
+                <View style={{width: '48%'}}>
+                  <Text style={styles.dataHistoryText1}>DATE OF BIRTH</Text>
+                  {/* <TextInput
                   value={firstName}
                   placeholder={'Enter first name'}
                   onChangeText={text => setFirstName(text)}
                   style={[styles.nameTextView, {width: '100%'}]}
                 /> */}
-                <Text
-                  style={[
-                    styles.nameTextView,
-                    {width: '100%', paddingVertical: hp(1)},
-                  ]}
-                  onPress={() => setDateModalVisible(!dateModalVisible)}>
-                  {moment(dateOfBirth).format('DD/MM/YYYY')}
-                </Text>
-                <DatePicker
-                  open={dateModalVisible}
-                  modal={true}
-                  date={dateOfBirth}
-                  mode={'date'}
-                  onConfirm={date => {
-                    console.log('Console Log>>', date);
-                    setDateModalVisible(false);
-                    setDateOfBirth(date);
-                  }}
-                  onCancel={() => {
-                    setDateModalVisible(false);
-                  }}
-                />
-              </View>
+                  <Text
+                    style={[
+                      styles.nameTextView,
+                      {width: '100%', paddingVertical: hp(1)},
+                    ]}
+                    onPress={() => setDateModalVisible(!dateModalVisible)}>
+                    {moment(dateOfBirth).format('DD/MM/YYYY')}
+                  </Text>
+                  <DatePicker
+                    open={dateModalVisible}
+                    modal={true}
+                    date={dateOfBirth}
+                    mode={'date'}
+                    onConfirm={date => {
+                      console.log('Console Log>>', date);
+                      setDateModalVisible(false);
+                      setDateOfBirth(date);
+                    }}
+                    onCancel={() => {
+                      setDateModalVisible(false);
+                    }}
+                  />
+                </View>
 
-              <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>GENDER</Text>
-                <View style={[styles.statusView, {paddingVertical: hp(1)}]}>
-                  <View style={[styles.optionView]}>
-                    <TouchableOpacity
-                      onPress={() => setGenderType('female')}
-                      style={[
-                        styles.roundBorder,
-                        {
-                          backgroundColor:
-                            genderType == 'female'
-                              ? COLORS.blueColor
-                              : COLORS.white,
-                          borderWidth: genderType == 'female' ? 0 : 0.5,
-                        },
-                      ]}>
-                      <View style={styles.round} />
-                    </TouchableOpacity>
-                    <Text style={styles.statusText}>Female</Text>
-                  </View>
-                  <View style={[styles.optionView]}>
-                    <TouchableOpacity
-                      onPress={() => setGenderType('male')}
-                      style={[
-                        styles.roundBorder,
-                        {
-                          backgroundColor:
-                            genderType == 'male'
-                              ? COLORS.blueColor
-                              : COLORS.white,
-                          borderWidth: genderType == 'male' ? 0 : 0.5,
-                        },
-                      ]}>
-                      <View style={styles.round} />
-                    </TouchableOpacity>
-                    <Text style={styles.statusText}>Male</Text>
+                <View style={{width: '48%'}}>
+                  <Text style={styles.dataHistoryText1}>GENDER</Text>
+                  <View style={[styles.statusView, {paddingVertical: hp(1)}]}>
+                    <View style={[styles.optionView]}>
+                      <TouchableOpacity
+                        onPress={() => setGenderType('female')}
+                        style={[
+                          styles.roundBorder,
+                          {
+                            backgroundColor:
+                              genderType == 'female'
+                                ? COLORS.blueColor
+                                : COLORS.white,
+                            borderWidth: genderType == 'female' ? 0 : 0.5,
+                          },
+                        ]}>
+                        <View style={styles.round} />
+                      </TouchableOpacity>
+                      <Text style={styles.statusText}>Female</Text>
+                    </View>
+                    <View style={[styles.optionView]}>
+                      <TouchableOpacity
+                        onPress={() => setGenderType('male')}
+                        style={[
+                          styles.roundBorder,
+                          {
+                            backgroundColor:
+                              genderType == 'male'
+                                ? COLORS.blueColor
+                                : COLORS.white,
+                            borderWidth: genderType == 'male' ? 0 : 0.5,
+                          },
+                        ]}>
+                        <View style={styles.round} />
+                      </TouchableOpacity>
+                      <Text style={styles.statusText}>Male</Text>
+                    </View>
                   </View>
                 </View>
               </View>
-            </View>
 
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>ADDRESS</Text>
-                <TextInput
-                  value={address}
-                  placeholder={'address'}
-                  onChangeText={text => setAddress(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>CITY</Text>
-                <TextInput
-                  value={city}
-                  placeholder={'Enter city'}
-                  onChangeText={text => setCity(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-
-              <View style={{width: '48%'}}>
-                <Text style={styles.dataHistoryText1}>COUNTRY</Text>
-                <TextInput
-                  value={country}
-                  placeholder={'Enter country'}
-                  onChangeText={text => setCountry(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>POSTAL CODE</Text>
-                <TextInput
-                  value={postalCode}
-                  placeholder={'Postal Code'}
-                  onChangeText={text => setPostalCode(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                  keyboardType={'number-pad'}
-                />
-              </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View>
-                <Text style={styles.dataHistoryText5}>PROFILE</Text>
-                <View style={styles.profilePhotoView}>
-                  <TouchableOpacity
-                    style={styles.editView}
-                    onPress={() => openProfileImagePicker()}>
-                    <Image style={styles.editImage1} source={draw} />
-                  </TouchableOpacity>
-                  <Image
-                    style={styles.profileImage}
-                    source={avatar != null ? {uri: avatar?.uri} : man}
+              <View style={styles.nameView}>
+                <View style={{width: '100%'}}>
+                  <Text style={styles.dataHistoryText1}>ADDRESS</Text>
+                  <TextInput
+                    value={address}
+                    placeholder={'address'}
+                    onChangeText={text => setAddress(text)}
+                    style={[styles.nameTextView, {width: '100%'}]}
                   />
                 </View>
               </View>
-            </View>
-            {errorVisible ? (
-              <Text style={styles.dataHistoryText4}>{errorMessage}</Text>
-            ) : null}
-          </View>
 
+              <View style={styles.nameView}>
+                <View style={{width: '48%'}}>
+                  <Text style={styles.dataHistoryText1}>CITY</Text>
+                  <TextInput
+                    value={city}
+                    placeholder={'Enter city'}
+                    onChangeText={text => setCity(text)}
+                    style={[styles.nameTextView, {width: '100%'}]}
+                  />
+                </View>
+
+                <View style={{width: '48%'}}>
+                  <Text style={styles.dataHistoryText1}>COUNTRY</Text>
+                  <TextInput
+                    value={country}
+                    placeholder={'Enter country'}
+                    onChangeText={text => setCountry(text)}
+                    style={[styles.nameTextView, {width: '100%'}]}
+                  />
+                </View>
+              </View>
+
+              <View style={styles.nameView}>
+                <View style={{width: '100%'}}>
+                  <Text style={styles.dataHistoryText1}>POSTAL CODE</Text>
+                  <TextInput
+                    value={postalCode}
+                    placeholder={'Postal Code'}
+                    onChangeText={text => setPostalCode(text)}
+                    style={[styles.nameTextView, {width: '100%'}]}
+                    keyboardType={'number-pad'}
+                  />
+                </View>
+              </View>
+
+              <View style={styles.nameView}>
+                <View>
+                  <Text style={styles.dataHistoryText5}>PROFILE</Text>
+                  <View style={styles.profilePhotoView}>
+                    <TouchableOpacity
+                      style={styles.editView}
+                      onPress={() => openProfileImagePicker()}>
+                      <Image style={styles.editImage1} source={draw} />
+                    </TouchableOpacity>
+                    <Image
+                      style={styles.profileImage}
+                      source={avatar != null ? {uri: avatar?.uri} : man}
+                    />
+                  </View>
+                </View>
+              </View>
+              {errorVisible ? (
+                <Text style={styles.dataHistoryText4}>{errorMessage}</Text>
+              ) : null}
+            </View>
+          ) : (
+            <View style={styles.profileView}>
+              <View style={styles.nameView}>
+                <View style={{width: '48%'}}>
+                  <Text style={styles.dataHistoryText1}>FIRST NAME</Text>
+                  <TextInput
+                    value={firstName}
+                    placeholder={'Enter first name'}
+                    onChangeText={text => setFirstName(text)}
+                    style={[styles.nameTextView, {width: '100%'}]}
+                  />
+                </View>
+
+                <View style={{width: '48%'}}>
+                  <Text style={styles.dataHistoryText1}>LAST NAME</Text>
+                  <TextInput
+                    value={lastName}
+                    placeholder={'Enter last name'}
+                    onChangeText={text => setLastName(text)}
+                    style={[styles.nameTextView, {width: '100%'}]}
+                  />
+                </View>
+              </View>
+
+              <View style={styles.nameView}>
+                <View style={{width: '49%'}}>
+                  <Text style={styles.dataHistoryText1}>EMAIL ADDRESS</Text>
+                  <TextInput
+                    value={email}
+                    placeholder={'Enter email'}
+                    onChangeText={text => setEmail(text)}
+                    style={[styles.nameTextView, {width: '100%'}]}
+                  />
+                </View>
+                <View style={{width: '49%'}}>
+                  <Text style={styles.dataHistoryText1}>ROLE</Text>
+                  <SelectDropdown
+                    data={roleData}
+                    onSelect={(selectedItem, index) => {
+                      // setSelectedColor(selectedItem);
+                      setRole(selectedItem.id);
+                      console.log('gert Value:::', selectedItem);
+                    }}
+                    defaultValue={doctorSelectedName}
+                    renderButton={(selectedItem, isOpen) => {
+                      console.log('Get Response>>>', selectedItem);
+                      return (
+                        <View style={styles.dropdown2BtnStyle2}>
+                          {role != '' ? (
+                            <Text style={styles.dropdownItemTxtStyle}>
+                              {role == selectedItem?.id
+                                ? selectedItem?.name
+                                : doctorSelectedName}
+                            </Text>
+                          ) : (
+                            <Text style={styles.dropdownItemTxtStyle}>
+                              {selectedItem?.name || 'Select'}
+                            </Text>
+                          )}
+                        </View>
+                      );
+                    }}
+                    showsVerticalScrollIndicator={false}
+                    renderItem={(item, index, isSelected) => {
+                      return (
+                        <TouchableOpacity style={styles.dropdownView}>
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {item.name}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    }}
+                    dropdownIconPosition={'left'}
+                    dropdownStyle={styles.dropdown2DropdownStyle}
+                  />
+                </View>
+              </View>
+
+              {/* <View style={styles.nameView}>
+                <View style={{width: '100%'}}>
+                  <Text style={styles.dataHistoryText1}>ROLE</Text>
+                  <SelectDropdown
+                    data={roleData}
+                    onSelect={(selectedItem, index) => {
+                      // setSelectedColor(selectedItem);
+                      setRole(selectedItem.id);
+                      console.log('gert Value:::', selectedItem);
+                    }}
+                    defaultValue={doctorSelectedName}
+                    renderButton={(selectedItem, isOpen) => {
+                      console.log('Get Response>>>', selectedItem);
+                      return (
+                        <View style={styles.dropdown2BtnStyle2}>
+                          {role != '' ? (
+                            <Text style={styles.dropdownItemTxtStyle}>
+                              {role == selectedItem?.id
+                                ? selectedItem?.name
+                                : doctorSelectedName}
+                            </Text>
+                          ) : (
+                            <Text style={styles.dropdownItemTxtStyle}>
+                              {selectedItem?.name || 'Select'}
+                            </Text>
+                          )}
+                        </View>
+                      );
+                    }}
+                    showsVerticalScrollIndicator={false}
+                    renderItem={(item, index, isSelected) => {
+                      return (
+                        <TouchableOpacity style={styles.dropdownView}>
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {item.name}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    }}
+                    dropdownIconPosition={'left'}
+                    dropdownStyle={styles.dropdown2DropdownStyle}
+                  />
+                </View>
+              </View> */}
+              {userId == '' && (
+                <View style={styles.nameView}>
+                  <View style={{width: '49%'}}>
+                    <Text style={styles.dataHistoryText1}>PASSWORD</Text>
+                    <TextInput
+                      value={password}
+                      placeholder={'******'}
+                      onChangeText={text => setPassword(text)}
+                      style={[styles.nameTextView, {width: '100%'}]}
+                      secureTextEntry={true}
+                    />
+                  </View>
+                  <View style={{width: '49%'}}>
+                    <Text style={styles.dataHistoryText1}>
+                      CONFIRM PASSWORD
+                    </Text>
+                    <TextInput
+                      value={confirmPassword}
+                      placeholder={'******'}
+                      onChangeText={text => setConfirmPassword(text)}
+                      style={[styles.nameTextView, {width: '100%'}]}
+                      secureTextEntry={true}
+                    />
+                  </View>
+                </View>
+              )}
+              <View style={styles.nameView}>
+                <View style={{width: '48%'}}>
+                  <Text style={styles.dataHistoryText1}>DATE OF BIRTH</Text>
+                  <Text
+                    style={[
+                      styles.nameTextView,
+                      {width: '100%', paddingVertical: hp(1)},
+                    ]}
+                    onPress={() => setDateModalVisible(!dateModalVisible)}>
+                    {moment(dateOfBirth).format('DD/MM/YYYY')}
+                  </Text>
+                  <DatePicker
+                    open={dateModalVisible}
+                    modal={true}
+                    date={dateOfBirth}
+                    mode={'date'}
+                    onConfirm={date => {
+                      console.log('Console Log>>', date);
+                      setDateModalVisible(false);
+                      setDateOfBirth(date);
+                    }}
+                    onCancel={() => {
+                      setDateModalVisible(false);
+                    }}
+                  />
+                </View>
+
+                <View style={{width: '48%'}}>
+                  <Text style={styles.dataHistoryText1}>GENDER</Text>
+                  <View style={[styles.statusView, {paddingVertical: hp(1)}]}>
+                    <View style={[styles.optionView]}>
+                      <TouchableOpacity
+                        onPress={() => setGenderType('female')}
+                        style={[
+                          styles.roundBorder,
+                          {
+                            backgroundColor:
+                              genderType == 'female'
+                                ? COLORS.blueColor
+                                : COLORS.white,
+                            borderWidth: genderType == 'female' ? 0 : 0.5,
+                          },
+                        ]}>
+                        <View style={styles.round} />
+                      </TouchableOpacity>
+                      <Text style={styles.statusText}>Female</Text>
+                    </View>
+                    <View style={[styles.optionView]}>
+                      <TouchableOpacity
+                        onPress={() => setGenderType('male')}
+                        style={[
+                          styles.roundBorder,
+                          {
+                            backgroundColor:
+                              genderType == 'male'
+                                ? COLORS.blueColor
+                                : COLORS.white,
+                            borderWidth: genderType == 'male' ? 0 : 0.5,
+                          },
+                        ]}>
+                        <View style={styles.round} />
+                      </TouchableOpacity>
+                      <Text style={styles.statusText}>Male</Text>
+                    </View>
+                  </View>
+                </View>
+              </View>
+
+              <View style={styles.nameView}>
+                <View style={{width: '100%'}}>
+                  <Text style={styles.dataHistoryText1}>ADDRESS</Text>
+                  <TextInput
+                    value={address}
+                    placeholder={'address'}
+                    onChangeText={text => setAddress(text)}
+                    style={[styles.nameTextView, {width: '100%'}]}
+                  />
+                </View>
+              </View>
+
+              <View style={styles.nameView}>
+                <View style={{width: '31%'}}>
+                  <Text style={styles.dataHistoryText1}>CITY</Text>
+                  <TextInput
+                    value={city}
+                    placeholder={'Enter city'}
+                    onChangeText={text => setCity(text)}
+                    style={[styles.nameTextView, {width: '100%'}]}
+                  />
+                </View>
+
+                <View style={{width: '31%'}}>
+                  <Text style={styles.dataHistoryText1}>COUNTRY</Text>
+                  <TextInput
+                    value={country}
+                    placeholder={'Enter country'}
+                    onChangeText={text => setCountry(text)}
+                    style={[styles.nameTextView, {width: '100%'}]}
+                  />
+                </View>
+                <View style={{width: '31%'}}>
+                  <Text style={styles.dataHistoryText1}>POSTAL CODE</Text>
+                  <TextInput
+                    value={postalCode}
+                    placeholder={'Postal Code'}
+                    onChangeText={text => setPostalCode(text)}
+                    style={[styles.nameTextView, {width: '100%'}]}
+                    keyboardType={'number-pad'}
+                  />
+                </View>
+              </View>
+
+              {/* <View style={styles.nameView}>
+                <View style={{width: '100%'}}>
+                  <Text style={styles.dataHistoryText1}>POSTAL CODE</Text>
+                  <TextInput
+                    value={postalCode}
+                    placeholder={'Postal Code'}
+                    onChangeText={text => setPostalCode(text)}
+                    style={[styles.nameTextView, {width: '100%'}]}
+                    keyboardType={'number-pad'}
+                  />
+                </View>
+              </View> */}
+
+              <View style={styles.nameView}>
+                <View>
+                  <Text style={styles.dataHistoryText5}>PROFILE</Text>
+                  <View style={styles.profilePhotoView}>
+                    <TouchableOpacity
+                      style={styles.editView}
+                      onPress={() => openProfileImagePicker()}>
+                      <Image style={styles.editImage1} source={draw} />
+                    </TouchableOpacity>
+                    <Image
+                      style={styles.profileImage}
+                      source={avatar != null ? {uri: avatar?.uri} : man}
+                    />
+                  </View>
+                </View>
+              </View>
+              {errorVisible ? (
+                <Text style={styles.dataHistoryText4}>{errorMessage}</Text>
+              ) : null}
+            </View>
+          )}
           <View style={styles.buttonView}>
             <TouchableOpacity
               onPress={() => {
@@ -1057,6 +1381,13 @@ const portraitStyles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: wp(3),
     marginVertical: hp(2),
+  },
+  photoStyle: {
+    width: wp(8),
+    height: wp(8),
+    borderRadius: wp(8),
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   searchView: {
     width: '50%',
@@ -1540,6 +1871,13 @@ const landscapeStyles = StyleSheet.create({
     paddingHorizontal: wp(3),
     marginVertical: hp(2),
   },
+  photoStyle: {
+    width: wp(5),
+    height: wp(5),
+    borderRadius: wp(5),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   searchView: {
     width: '50%',
     paddingHorizontal: wp(2),
@@ -1635,7 +1973,7 @@ const landscapeStyles = StyleSheet.create({
     fontSize: hp(1.7),
     fontFamily: Fonts.FONTS.PoppinsBold,
     color: COLORS.black,
-    width: wp(45),
+    width: wp(35),
   },
   dataHistoryText2: {
     fontSize: hp(1.8),
@@ -1670,19 +2008,19 @@ const landscapeStyles = StyleSheet.create({
   nameDataView: {
     flexDirection: 'row',
     alignItems: 'center',
-    width: wp(60),
+    width: wp(40),
     marginHorizontal: wp(2),
   },
   switchView: {
-    width: wp(24),
+    width: wp(22),
     justifyContent: 'center',
     marginHorizontal: wp(2),
     alignItems: 'flex-start',
   },
   actionDataView: {
-    width: wp(16),
+    width: wp(12),
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     marginHorizontal: wp(2),
     flexDirection: 'row',
   },
@@ -1869,26 +2207,26 @@ const landscapeStyles = StyleSheet.create({
     marginTop: hp(1),
   },
   profileImage: {
-    width: wp(28),
+    width: wp(20),
     height: hp(13.5),
     resizeMode: 'contain',
   },
   editView: {
-    width: wp(7),
-    height: wp(7),
-    borderRadius: wp(7),
+    width: wp(5),
+    height: wp(5),
+    borderRadius: wp(5),
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 0.5,
     position: 'absolute',
     zIndex: 1,
-    right: -wp(3),
-    top: -hp(2),
+    right: -wp(2),
+    top: -hp(1.5),
     backgroundColor: COLORS.white,
   },
   editImage1: {
-    width: wp(3),
-    height: hp(2.5),
+    width: wp(2.5),
+    height: hp(2),
     resizeMode: 'contain',
   },
   ListEmptyView: {

@@ -213,6 +213,7 @@ export const SettingScreen = ({navigation}) => {
           title={t('setting')}
           navigation={navigation}
           onPress={() => navigation.openDrawer()}
+          moreIcon={true}
         />
       </View>
       <View
@@ -225,11 +226,6 @@ export const SettingScreen = ({navigation}) => {
         <ScrollView
           contentContainerStyle={{paddingBottom: hp(12)}}
           showsVerticalScrollIndicator={false}>
-          {/* <TouchableOpacity
-            style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
-            <Text style={[styles.text, {color: theme.text}]}>{'Profile'}</Text>
-          </TouchableOpacity> */}
-
           <View
             style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
             <Text style={[styles.text, {color: theme.text}]}>

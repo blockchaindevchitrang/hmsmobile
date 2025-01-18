@@ -278,7 +278,10 @@ const AdvanceList = ({
           </View>
           <View
             style={[styles.activeView, {backgroundColor: theme.headerColor}]}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <ScrollView
+                horizontal
+                bounces={false}
+                showsHorizontalScrollIndicator={false}>
               <View>
                 <View
                   style={[

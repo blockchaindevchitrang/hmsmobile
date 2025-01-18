@@ -47,6 +47,7 @@ import FlashMessage, {
 import {DeletePopup} from '../DeletePopup';
 import SelectDropdown from 'react-native-select-dropdown';
 import {useSelector} from 'react-redux';
+import useOrientation from '../OrientationComponent';
 
 const filterArray = [
   {id: 1, name: 'All'},
@@ -65,6 +66,9 @@ const PatientsList = ({
   statusId,
   setStatusId,
 }) => {
+  const orientation = useOrientation(); // Get current orientation
+  const isPortrait = orientation === 'portrait';
+  const styles = isPortrait ? portraitStyles : landscapeStyles;
   const bloodData = useSelector(state => state.bloodData);
   const {theme} = useTheme();
   const menuRef = useRef(null);
@@ -229,7 +233,12 @@ const PatientsList = ({
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
         <View style={[styles.nameDataView]}>
-          <ProfilePhoto username={item?.patient_user?.first_name} />
+          {item?.patient_user?.first_name && (
+            <ProfilePhoto
+              style={styles.photoStyle}
+              username={item?.patient_user?.first_name}
+            />
+          )}
           <View>
             <Text style={[styles.dataHistoryText2]}>
               {item?.patient_user?.first_name} {item?.patient_user?.last_name}
@@ -240,12 +249,19 @@ const PatientsList = ({
           </View>
         </View>
         <Text
-          style={[styles.dataHistoryText, {width: wp(30), textAlign: 'left'}]}>
+          style={[
+            styles.dataHistoryText,
+            {width: isPortrait ? wp(30) : wp(22), textAlign: 'left'},
+          ]}>
           {item?.patient_user?.phone != null
             ? item?.patient_user?.phone
             : 'N/A'}
         </Text>
-        <Text style={[styles.dataHistoryText, {width: wp(30)}]}>
+        <Text
+          style={[
+            styles.dataHistoryText,
+            {width: isPortrait ? wp(30) : wp(22)},
+          ]}>
           {item?.patient_user?.blood_group != null
             ? item?.patient_user?.blood_group
             : 'N/A'}
@@ -473,26 +489,49 @@ const PatientsList = ({
 
           <View
             style={[styles.activeView, {backgroundColor: theme.headerColor}]}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <ScrollView
+              horizontal
+              bounces={false}
+              showsHorizontalScrollIndicator={false}>
               <View>
                 <View
                   style={[
                     styles.titleActiveView,
                     {backgroundColor: theme.headerColor},
                   ]}>
-                  <Text style={[styles.titleText, {width: wp(55)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {width: isPortrait ? wp(55) : wp(45)},
+                    ]}>
                     {'PATIENTS'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(30)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {width: isPortrait ? wp(30) : wp(22)},
+                    ]}>
                     {'PHONE'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(30)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {width: isPortrait ? wp(30) : wp(22)},
+                    ]}>
                     {'BLOOD GROUP'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(20)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {width: isPortrait ? wp(20) : wp(15)},
+                    ]}>
                     {'STATUS'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(16)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {width: isPortrait ? wp(16) : wp(14)},
+                    ]}>
                     {'ACTION'}
                   </Text>
                 </View>
@@ -501,7 +540,7 @@ const PatientsList = ({
                     data={allData}
                     renderItem={renderItem}
                     bounces={false}
-                    showsHorizontalScrollIndicator={false}
+                    showsVerticalScrollIndicator={false}
                     initialNumToRender={allData.length}
                     nestedScrollEnabled
                     virtualized
@@ -752,31 +791,60 @@ const PatientsList = ({
               </View>
             </View> */}
 
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>PASSWORD</Text>
-                <TextInput
-                  value={password}
-                  placeholder={'******'}
-                  onChangeText={text => setPassword(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                  secureTextEntry={true}
-                />
+            {isPortrait ? (
+              userId == '' && (
+                <View style={styles.nameView}>
+                  <View style={{width: '100%'}}>
+                    <Text style={styles.dataHistoryText1}>PASSWORD</Text>
+                    <TextInput
+                      value={password}
+                      placeholder={'******'}
+                      onChangeText={text => setPassword(text)}
+                      style={[styles.nameTextView, {width: '100%'}]}
+                      secureTextEntry={true}
+                    />
+                  </View>
+                </View>
+              )
+            ) : (
+              <View style={styles.nameView}>
+                <View style={{width: '48%'}}>
+                  <Text style={styles.dataHistoryText1}>PASSWORD</Text>
+                  <TextInput
+                    value={password}
+                    placeholder={'******'}
+                    onChangeText={text => setPassword(text)}
+                    style={[styles.nameTextView, {width: '100%'}]}
+                    secureTextEntry={true}
+                  />
+                </View>
+                <View style={{width: '48%'}}>
+                  <Text style={styles.dataHistoryText1}>CONFIRM PASSWORD</Text>
+                  <TextInput
+                    value={confirmPassword}
+                    placeholder={'******'}
+                    onChangeText={text => setConfirmPassword(text)}
+                    style={[styles.nameTextView, {width: '100%'}]}
+                    secureTextEntry={true}
+                  />
+                </View>
               </View>
-            </View>
+            )}
 
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>CONFIRM PASSWORD</Text>
-                <TextInput
-                  value={confirmPassword}
-                  placeholder={'******'}
-                  onChangeText={text => setConfirmPassword(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                  secureTextEntry={true}
-                />
+            {userId == '' && isPortrait && (
+              <View style={styles.nameView}>
+                <View style={{width: '100%'}}>
+                  <Text style={styles.dataHistoryText1}>CONFIRM PASSWORD</Text>
+                  <TextInput
+                    value={confirmPassword}
+                    placeholder={'******'}
+                    onChangeText={text => setConfirmPassword(text)}
+                    style={[styles.nameTextView, {width: '100%'}]}
+                    secureTextEntry={true}
+                  />
+                </View>
               </View>
-            </View>
+            )}
 
             <View style={styles.nameView}>
               <View>
@@ -792,29 +860,53 @@ const PatientsList = ({
               </View>
             </View>
 
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>ADDRESS 1</Text>
-                <TextInput
-                  value={address}
-                  placeholder={'address 1'}
-                  onChangeText={text => setAddress(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
+            {isPortrait ? (
+              <View style={styles.nameView}>
+                <View style={{width: '100%'}}>
+                  <Text style={styles.dataHistoryText1}>ADDRESS 1</Text>
+                  <TextInput
+                    value={address}
+                    placeholder={'address 1'}
+                    onChangeText={text => setAddress(text)}
+                    style={[styles.nameTextView, {width: '100%'}]}
+                  />
+                </View>
               </View>
-            </View>
-
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>ADDRESS 2</Text>
-                <TextInput
-                  value={address1}
-                  placeholder={'address 2'}
-                  onChangeText={text => setAddress1(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
+            ) : (
+              <View style={styles.nameView}>
+                <View style={{width: '48%'}}>
+                  <Text style={styles.dataHistoryText1}>ADDRESS 1</Text>
+                  <TextInput
+                    value={address}
+                    placeholder={'address 1'}
+                    onChangeText={text => setAddress(text)}
+                    style={[styles.nameTextView, {width: '100%'}]}
+                  />
+                </View>
+                <View style={{width: '48%'}}>
+                  <Text style={styles.dataHistoryText1}>ADDRESS 2</Text>
+                  <TextInput
+                    value={address1}
+                    placeholder={'address 2'}
+                    onChangeText={text => setAddress1(text)}
+                    style={[styles.nameTextView, {width: '100%'}]}
+                  />
+                </View>
               </View>
-            </View>
+            )}
+            {isPortrait && (
+              <View style={styles.nameView}>
+                <View style={{width: '100%'}}>
+                  <Text style={styles.dataHistoryText1}>ADDRESS 2</Text>
+                  <TextInput
+                    value={address1}
+                    placeholder={'address 2'}
+                    onChangeText={text => setAddress1(text)}
+                    style={[styles.nameTextView, {width: '100%'}]}
+                  />
+                </View>
+              </View>
+            )}
 
             <View style={styles.nameView}>
               <View style={{width: '48%'}}>
@@ -930,7 +1022,7 @@ const PatientsList = ({
 
 export default PatientsList;
 
-const styles = StyleSheet.create({
+const portraitStyles = StyleSheet.create({
   safeAreaStyle: {
     flex: 1,
     justifyContent: 'center',
@@ -943,6 +1035,13 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: wp(3),
     marginVertical: hp(2),
+  },
+  photoStyle: {
+    width: wp(8),
+    height: wp(8),
+    borderRadius: wp(8),
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   searchView: {
     width: '50%',
@@ -1410,5 +1509,501 @@ const styles = StyleSheet.create({
     fontSize: hp(2),
     color: COLORS.black,
     fontFamily: Fonts.FONTS.PoppinsMedium,
+  },
+});
+
+const landscapeStyles = StyleSheet.create({
+  safeAreaStyle: {
+    flex: 1,
+    justifyContent: 'center',
+    width: '100%',
+  },
+  subView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    paddingHorizontal: wp(3),
+    marginVertical: hp(2),
+  },
+  photoStyle: {
+    width: wp(5),
+    height: wp(5),
+    borderRadius: wp(5),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  searchView: {
+    width: '50%',
+    paddingHorizontal: wp(2),
+    paddingVertical: hp(0.5),
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(2),
+    color: COLORS.black,
+    borderRadius: 5,
+  },
+  filterView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  filterView1: {
+    height: hp(4),
+    width: hp(4),
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.blueColor,
+  },
+  filterImage: {
+    width: wp(5),
+    height: hp(2.5),
+    resizeMode: 'contain',
+    tintColor: COLORS.white,
+  },
+  actionView: {
+    height: hp(4),
+    paddingHorizontal: wp(3),
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.blueColor,
+    marginLeft: wp(2),
+  },
+  actionText: {
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    fontSize: hp(2.2),
+    color: COLORS.white,
+  },
+  activeView: {
+    width: '96%',
+    minHeight: hp(35),
+    maxHeight: hp(80),
+    alignSelf: 'center',
+    backgroundColor: COLORS.white,
+    marginTop: hp(0.5),
+    borderRadius: wp(1.5),
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.22,
+    shadowRadius: 2.22,
+
+    elevation: 3,
+  },
+  titleActiveView: {
+    width: '100%',
+    height: hp(5),
+    alignSelf: 'center',
+    backgroundColor: COLORS.primary,
+    alignItems: 'center',
+    flexDirection: 'row',
+    marginTop: hp(1),
+    paddingBottom: hp(0.5),
+  },
+  titleText: {
+    fontSize: hp(1.8),
+    fontFamily: Fonts.FONTS.PoppinsSemiBold,
+    color: COLORS.white,
+    marginHorizontal: wp(2),
+    textAlign: 'left',
+  },
+  titleText1: {
+    fontSize: hp(1.8),
+    fontFamily: Fonts.FONTS.PoppinsSemiBold,
+    color: COLORS.white,
+    marginHorizontal: wp(2),
+    textAlign: 'center',
+  },
+  dataHistoryView: {
+    width: '100%',
+    paddingVertical: hp(1),
+    alignItems: 'center',
+    flexDirection: 'row',
+    alignSelf: 'flex-start',
+  },
+  dataHistoryText: {
+    fontSize: hp(1.8),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+    marginHorizontal: wp(2),
+    textAlign: 'center',
+  },
+  dataHistoryText1: {
+    fontSize: hp(1.7),
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    color: COLORS.black,
+    width: wp(40),
+  },
+  dataHistoryText2: {
+    fontSize: hp(1.8),
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    color: COLORS.blueColor,
+  },
+  dataHistoryText3: {
+    fontSize: hp(1.8),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+    paddingVertical: hp(0.5),
+  },
+  dataHistoryText4: {
+    fontSize: hp(1.8),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.errorColor,
+  },
+  dataHistoryText5: {
+    fontSize: hp(1.7),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+  },
+  mainDataView: {
+    minHeight: hp(29),
+    maxHeight: hp(74),
+    width: '100%',
+    backgroundColor: COLORS.white,
+    paddingBottom: hp(1),
+    borderBottomLeftRadius: wp(1.5),
+    borderBottomRightRadius: wp(1.5),
+  },
+  nameDataView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: wp(45),
+    marginHorizontal: wp(2),
+  },
+  switchView: {
+    width: wp(15),
+    justifyContent: 'center',
+    marginHorizontal: wp(2),
+    alignItems: 'flex-start',
+  },
+  actionDataView: {
+    width: wp(14),
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    marginHorizontal: wp(2),
+    flexDirection: 'row',
+  },
+  editImage: {
+    width: wp(4),
+    height: hp(2.5),
+    resizeMode: 'contain',
+  },
+  backButtonView: {
+    height: hp(4),
+    paddingHorizontal: wp(3),
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.orange,
+  },
+  backText: {
+    fontFamily: Fonts.FONTS.PoppinsSemiBold,
+    fontSize: hp(1.8),
+    color: COLORS.white,
+  },
+  doctorText: {
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    fontSize: hp(2.3),
+    color: COLORS.black,
+  },
+  profileView: {
+    width: '100%',
+    paddingVertical: hp(1),
+    paddingHorizontal: wp(3),
+    alignSelf: 'center',
+    borderRadius: wp(2),
+  },
+  nameTextView: {
+    width: '50%',
+    paddingHorizontal: wp(2),
+    paddingVertical: hp(0.5),
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    color: COLORS.black,
+    borderRadius: 5,
+    marginTop: hp(1),
+    backgroundColor: COLORS.white,
+  },
+  nameView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginVertical: hp(1),
+    alignSelf: 'center',
+  },
+  contactView: {
+    width: '94%',
+    paddingVertical: hp(2),
+    paddingHorizontal: wp(3),
+    alignSelf: 'center',
+    borderRadius: wp(2),
+  },
+  buttonView: {
+    width: '94%',
+    alignSelf: 'center',
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  nextView: {
+    height: hp(4.5),
+    paddingHorizontal: wp(4),
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.blueColor,
+    marginLeft: wp(2),
+  },
+  nextText: {
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    fontSize: hp(2.2),
+    color: COLORS.white,
+  },
+  prevView: {
+    height: hp(4.5),
+    paddingHorizontal: wp(4),
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.lightGreyColor,
+    marginLeft: wp(2),
+  },
+  prevText: {
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    fontSize: hp(2.2),
+    color: COLORS.white,
+  },
+  dataListText1: {
+    fontSize: hp(1.7),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+    textAlign: 'left',
+  },
+  dateBox1: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 5,
+    padding: 5,
+  },
+  startDateText: {
+    fontSize: hp(2),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.greyColor,
+  },
+  fullDateView: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  dateView: {
+    width: '80%',
+    borderRadius: 5,
+    borderWidth: 0.5,
+    borderColor: COLORS.greyColor,
+    paddingVertical: hp(0.7),
+    backgroundColor: COLORS.white,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: wp(3),
+  },
+  closeImage: {
+    width: wp(5),
+    height: hp(2),
+    resizeMode: 'contain',
+    tintColor: COLORS.greyColor,
+    marginLeft: wp(2),
+  },
+  calenderImage: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  calenderView: {
+    backgroundColor: COLORS.white,
+    width: '100%',
+    position: 'absolute',
+    padding: 5,
+    zIndex: 1,
+    borderRadius: 5,
+    top: hp(4),
+    left: wp(2),
+  },
+  statusText: {
+    fontSize: hp(2),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+  },
+  optionView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: wp(3),
+  },
+  roundBorder: {
+    height: wp(4),
+    width: wp(4),
+    borderRadius: wp(4),
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 0.5,
+    marginRight: wp(1.5),
+  },
+  round: {
+    height: wp(1.5),
+    width: wp(1.5),
+    borderRadius: wp(1.5),
+    backgroundColor: COLORS.white,
+  },
+  statusView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+  },
+  profilePhotoView: {
+    borderWidth: 0.5,
+    marginTop: hp(1),
+  },
+  profileImage: {
+    width: wp(20),
+    height: hp(13.5),
+    resizeMode: 'contain',
+  },
+  editView: {
+    width: wp(5),
+    height: wp(5),
+    borderRadius: wp(5),
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 0.5,
+    position: 'absolute',
+    zIndex: 1,
+    right: -wp(2),
+    top: -hp(1.5),
+    backgroundColor: COLORS.white,
+  },
+  editImage1: {
+    width: wp(2.5),
+    height: hp(2),
+    resizeMode: 'contain',
+  },
+  ListEmptyView: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: hp(15),
+  },
+  emptyText: {
+    fontSize: hp(2.5),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+  },
+  dropdown2DropdownStyle: {
+    backgroundColor: COLORS.white,
+    borderRadius: 4,
+    height: hp(25),
+    // borderRadius: 12,
+  },
+  dropdownItemTxtStyle: {
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    marginLeft: wp(2),
+  },
+  dropdownView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: hp(4),
+    borderBottomWidth: 0,
+  },
+  dropdown2BtnStyle2: {
+    width: '100%',
+    height: hp(4.2),
+    backgroundColor: COLORS.white,
+    borderRadius: 5,
+    alignItems: 'center',
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    marginTop: hp(1),
+  },
+  nextView1: {
+    width: '96%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    alignSelf: 'center',
+    marginTop: hp(3),
+  },
+  prevViewData: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  prevButtonView: {
+    paddingHorizontal: wp(1.5),
+    backgroundColor: COLORS.headerGreenColor,
+    paddingVertical: hp(0.5),
+    borderRadius: 5,
+    fontSize: hp(2.5),
+    color: COLORS.white,
+  },
+  totalCountText: {
+    fontSize: hp(2),
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+  },
+  modalOverlay1: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+  },
+  filterModal: {
+    flex: 1,
+    alignItems: 'flex-end',
+  },
+  filterFirstView: {
+    width: '40%',
+    backgroundColor: 'white',
+    borderRadius: 5,
+    marginTop: hp(13),
+    marginRight: wp(2),
+  },
+  filterTitle: {
+    fontSize: hp(2.2),
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    color: COLORS.black,
+    padding: hp(2),
+    borderBottomWidth: 0.5,
+  },
+  secondFilterView: {
+    padding: hp(2),
+  },
+  secondTitleFilter: {
+    fontSize: hp(2),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+    // marginTop: hp(1),
+  },
+  resetButton: {
+    width: wp(20),
+    height: hp(4),
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'flex-end',
+    backgroundColor: COLORS.greyColor,
+    marginTop: hp(4),
+    borderRadius: 5,
+  },
+  resetText: {
+    fontSize: hp(2),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
   },
 });

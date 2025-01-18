@@ -203,7 +203,7 @@ export const AppointmentScreen = ({navigation}) => {
   //   props: SceneRendererProps & {navigationState: State},
   // ) => (
   //   <View style={[styles.tabbar, {backgroundColor: theme.lightColor}]}>
-  //     <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+  //     <ScrollView horizontal bounces={false} showsHorizontalScrollIndicator={false}>
   //       {props.navigationState.routes.map((route: Route, index: number) => {
   //         return (
   //           <TouchableWithoutFeedback
