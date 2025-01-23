@@ -15,7 +15,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import {useTheme} from '../../utils/ThemeProvider';
-import styles from './styles';
+import {landscapeStyles, portraitStyles} from './styles';
 import Header from '../../components/Header';
 import {COLORS, Fonts} from '../../utils';
 import {useTranslation} from 'react-i18next';
@@ -48,6 +48,7 @@ import printing from '../../images/printing.png';
 import ProfilePhoto from '../../components/ProfilePhoto';
 import moment from 'moment';
 import {useSelector} from 'react-redux';
+import useOrientation from '../../components/OrientationComponent';
 
 const durationArray = [
   {id: 1, name: 'One day only'},
@@ -76,6 +77,9 @@ const daysArray = [
 ];
 
 export const PrescriptionScreen = ({navigation}) => {
+  const orientation = useOrientation(); // Get current orientation
+  const isPortrait = orientation === 'portrait';
+  const styles = isPortrait ? portraitStyles : landscapeStyles;
   const user_data = useSelector(state => state.user_data);
   const doctorData = useSelector(state => state.doctorData);
   const {t} = useTranslation();
@@ -454,27 +458,37 @@ export const PrescriptionScreen = ({navigation}) => {
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
         <View style={styles.nameDataView}>
-          <ProfilePhoto username={item.patient_name} />
+          {item.patient_name && (
+            <ProfilePhoto
+              style={styles.photoStyle}
+              username={item.patient_name}
+            />
+          )}
           <View>
             <Text style={[styles.dataHistoryText2]}>{item.patient_name}</Text>
             <Text style={[styles.dataHistoryText5]}>{item.patient_email}</Text>
           </View>
         </View>
         <View style={styles.nameDataView}>
-          <ProfilePhoto username={item.doctor_name} />
+          {item.doctor_name && (
+            <ProfilePhoto
+              style={styles.photoStyle}
+              username={item.doctor_name}
+            />
+          )}
           <View>
             <Text style={[styles.dataHistoryText2]}>{item.doctor_name}</Text>
             <Text style={[styles.dataHistoryText5]}>{item.doctor_email}</Text>
           </View>
         </View>
-        <View style={[styles.switchView, {width: wp(35)}]}>
+        <View style={[styles.switchView, {width: isPortrait ? wp(35) : wp(24)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
             <Text style={[styles.dataHistoryText1]}>
               {moment(item.added_at).format('DD MMM, YYYY')}
             </Text>
           </View>
         </View>
-        <View style={[styles.switchView, {width: wp(16)}]}>
+        <View style={[styles.switchView, {width: isPortrait ? wp(16) : wp(12)}]}>
           <Switch
             trackColor={{
               false: item.status ? COLORS.greenColor : COLORS.errorColor,
@@ -526,13 +540,13 @@ export const PrescriptionScreen = ({navigation}) => {
               setNextVisitName(allDatas.next_visit_time);
               setNewBloodIssueVisible(true);
             }}
-            style={{marginLeft: wp(2)}}>
+            style={{marginLeft: isPortrait ? wp(2) : wp(1)}}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.blueColor}]}
               source={editing}
             />
           </TouchableOpacity>
-          <TouchableOpacity style={{marginLeft: wp(2)}}>
+          <TouchableOpacity style={{marginLeft: isPortrait ? wp(2) : wp(1)}}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.goldenColor}]}
               source={printing}
@@ -543,7 +557,7 @@ export const PrescriptionScreen = ({navigation}) => {
               setUserId(item.id);
               setDeleteUser(true);
             }}
-            style={{marginLeft: wp(2)}}>
+            style={{marginLeft: isPortrait ? wp(2) : wp(1)}}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.errorColor}]}
               source={deleteIcon}
@@ -581,18 +595,20 @@ export const PrescriptionScreen = ({navigation}) => {
                 <TouchableOpacity
                   onPress={() => {
                     setUserId('');
-                    setParameterArray({
-                      medicineId: '',
-                      medicineName: '',
-                      dosage: '',
-                      durationId: '',
-                      duration: '',
-                      timeId: '',
-                      time: '',
-                      doseId: '',
-                      doseInterval: '',
-                      comment: '',
-                    });
+                    setParameterArray([
+                      {
+                        medicineId: '',
+                        medicineName: '',
+                        dosage: '',
+                        durationId: '',
+                        duration: '',
+                        timeId: '',
+                        time: '',
+                        doseId: '',
+                        doseInterval: '',
+                        comment: '',
+                      },
+                    ]);
                     setPatientId('');
                     setPatientName('');
                     setDoctorId('');
@@ -644,24 +660,42 @@ export const PrescriptionScreen = ({navigation}) => {
                     <Text
                       style={[
                         styles.titleText,
-                        {width: wp(55), textAlign: 'left'},
+                        {
+                          width: isPortrait ? wp(55) : wp(37),
+                          textAlign: 'left',
+                        },
                       ]}>
                       {'PATIENT'}
                     </Text>
                     <Text
                       style={[
                         styles.titleText,
-                        {width: wp(55), textAlign: 'left'},
+                        {
+                          width: isPortrait ? wp(55) : wp(37),
+                          textAlign: 'left',
+                        },
                       ]}>
                       {'DOCTORS'}
                     </Text>
-                    <Text style={[styles.titleText, {width: wp(35)}]}>
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: isPortrait ? wp(35) : wp(24)},
+                      ]}>
                       {'ADDED AT'}
                     </Text>
-                    <Text style={[styles.titleText, {width: wp(16)}]}>
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: isPortrait ? wp(16) : wp(12)},
+                      ]}>
                       {'STATUS'}
                     </Text>
-                    <Text style={[styles.titleText, {width: wp(24)}]}>
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: isPortrait ? wp(24) : wp(20)},
+                      ]}>
                       {'ACTION'}
                     </Text>
                   </View>
@@ -703,693 +737,1386 @@ export const PrescriptionScreen = ({navigation}) => {
                 </TouchableOpacity>
               </View>
             </View>
-
-            <View style={styles.profileView}>
-              <View style={styles.nameView}>
-                <View style={{width: '48%'}}>
-                  <Text style={styles.dataHistoryText1}>Patient:</Text>
-                  <SelectDropdown
-                    data={user_data}
-                    onSelect={(selectedItem, index) => {
-                      // setSelectedColor(selectedItem);
-                      setPatientId(selectedItem.id);
-                      console.log('gert Value:::', selectedItem);
-                    }}
-                    defaultValue={patientName}
-                    renderButton={(selectedItem, isOpen) => {
-                      console.log('Get Response>>>', selectedItem);
-                      return (
-                        <View style={styles.dropdown2BtnStyle2}>
-                          {patientId != '' ? (
-                            <Text style={styles.dropdownItemTxtStyle}>
-                              {patientId == selectedItem?.id
-                                ? `${selectedItem?.patient_user?.first_name} ${selectedItem?.patient_user?.last_name}`
-                                : patientName}
-                            </Text>
-                          ) : (
-                            <Text style={styles.dropdownItemTxtStyle}>
-                              {selectedItem?.patient_user?.first_name ||
-                                'Select Patient'}
-                            </Text>
-                          )}
-                        </View>
-                      );
-                    }}
-                    showsVerticalScrollIndicator={false}
-                    renderItem={(item, index, isSelected) => {
-                      return (
-                        <TouchableOpacity style={styles.dropdownView}>
-                          <Text style={styles.dropdownItemTxtStyle}>
-                            {`${item?.patient_user?.first_name} ${item?.patient_user?.last_name}`}
-                          </Text>
-                        </TouchableOpacity>
-                      );
-                    }}
-                    dropdownIconPosition={'left'}
-                    dropdownStyle={styles.dropdown2DropdownStyle}
-                  />
-                </View>
-
-                <View style={{width: '48%'}}>
-                  <Text style={styles.dataHistoryText1}>Doctor:</Text>
-                  <SelectDropdown
-                    data={doctorData}
-                    onSelect={(selectedItem, index) => {
-                      // setSelectedColor(selectedItem);
-                      setDoctorId(selectedItem.id);
-                      console.log('gert Value:::', selectedItem);
-                    }}
-                    defaultValue={doctorName}
-                    renderButton={(selectedItem, isOpen) => {
-                      console.log('Get Response>>>', selectedItem);
-                      return (
-                        <View style={styles.dropdown2BtnStyle2}>
-                          {doctorId != '' ? (
-                            <Text style={styles.dropdownItemTxtStyle}>
-                              {doctorId == selectedItem?.id
-                                ? selectedItem?.name
-                                : doctorName}
-                            </Text>
-                          ) : (
-                            <Text style={styles.dropdownItemTxtStyle}>
-                              {selectedItem?.name || 'Select Doctor'}
-                            </Text>
-                          )}
-                        </View>
-                      );
-                    }}
-                    showsVerticalScrollIndicator={false}
-                    renderItem={(item, index, isSelected) => {
-                      return (
-                        <TouchableOpacity style={styles.dropdownView}>
-                          <Text style={styles.dropdownItemTxtStyle}>
-                            {item.name}
-                          </Text>
-                        </TouchableOpacity>
-                      );
-                    }}
-                    dropdownIconPosition={'left'}
-                    dropdownStyle={styles.dropdown2DropdownStyle}
-                  />
-                </View>
-              </View>
-
-              <View style={styles.nameView}>
-                <View style={{width: '48%'}}>
-                  <Text style={styles.dataHistoryText1}>Health Insurance:</Text>
-                  <TextInput
-                    value={insurance}
-                    placeholder={'Health Insurance'}
-                    onChangeText={text => setInsurance(text)}
-                    style={[styles.nameTextView, {width: '100%'}]}
-                  />
-                </View>
-                <View style={{width: '48%'}}>
-                  <Text style={styles.dataHistoryText1}>Low Income:</Text>
-                  <TextInput
-                    value={lowIncome}
-                    placeholder={'Low Income'}
-                    onChangeText={text => setLowIncome(text)}
-                    style={[styles.nameTextView, {width: '100%'}]}
-                  />
-                </View>
-              </View>
-
-              <View style={styles.nameView}>
-                <View style={{width: '48%'}}>
-                  <Text style={styles.dataHistoryText1}>Reference:</Text>
-                  <TextInput
-                    value={reference}
-                    placeholder={'Reference'}
-                    onChangeText={text => setReference(text)}
-                    style={[styles.nameTextView, {width: '100%'}]}
-                  />
-                </View>
-                <View style={{width: '48%'}}>
-                  <Text style={styles.dataHistoryText1}>Status:</Text>
-                  <View style={styles.statusView}>
-                    <Switch
-                      trackColor={{
-                        false: status ? COLORS.greenColor : COLORS.errorColor,
-                        true: status ? COLORS.greenColor : COLORS.errorColor,
+            {isPortrait ? (
+              <View style={styles.profileView}>
+                <View style={styles.nameView}>
+                  <View style={{width: '48%'}}>
+                    <Text style={styles.dataHistoryText1}>Patient:</Text>
+                    <SelectDropdown
+                      data={user_data}
+                      onSelect={(selectedItem, index) => {
+                        // setSelectedColor(selectedItem);
+                        setPatientId(selectedItem.id);
+                        console.log('gert Value:::', selectedItem);
                       }}
-                      thumbColor={status ? '#f4f3f4' : '#f4f3f4'}
-                      ios_backgroundColor={COLORS.errorColor}
-                      onValueChange={() => setStatus(!status)}
-                      value={status}
+                      defaultValue={patientName}
+                      renderButton={(selectedItem, isOpen) => {
+                        console.log('Get Response>>>', selectedItem);
+                        return (
+                          <View style={styles.dropdown2BtnStyle2}>
+                            {patientId != '' ? (
+                              <Text style={styles.dropdownItemTxtStyle}>
+                                {patientId == selectedItem?.id
+                                  ? `${selectedItem?.patient_user?.first_name} ${selectedItem?.patient_user?.last_name}`
+                                  : patientName}
+                              </Text>
+                            ) : (
+                              <Text style={styles.dropdownItemTxtStyle}>
+                                {selectedItem?.patient_user?.first_name ||
+                                  'Select Patient'}
+                              </Text>
+                            )}
+                          </View>
+                        );
+                      }}
+                      showsVerticalScrollIndicator={false}
+                      renderItem={(item, index, isSelected) => {
+                        return (
+                          <TouchableOpacity style={styles.dropdownView}>
+                            <Text style={styles.dropdownItemTxtStyle}>
+                              {`${item?.patient_user?.first_name} ${item?.patient_user?.last_name}`}
+                            </Text>
+                          </TouchableOpacity>
+                        );
+                      }}
+                      dropdownIconPosition={'left'}
+                      dropdownStyle={styles.dropdown2DropdownStyle}
+                    />
+                  </View>
+
+                  <View style={{width: '48%'}}>
+                    <Text style={styles.dataHistoryText1}>Doctor:</Text>
+                    <SelectDropdown
+                      data={doctorData}
+                      onSelect={(selectedItem, index) => {
+                        // setSelectedColor(selectedItem);
+                        setDoctorId(selectedItem.id);
+                        console.log('gert Value:::', selectedItem);
+                      }}
+                      defaultValue={doctorName}
+                      renderButton={(selectedItem, isOpen) => {
+                        console.log('Get Response>>>', selectedItem);
+                        return (
+                          <View style={styles.dropdown2BtnStyle2}>
+                            {doctorId != '' ? (
+                              <Text style={styles.dropdownItemTxtStyle}>
+                                {doctorId == selectedItem?.id
+                                  ? selectedItem?.name
+                                  : doctorName}
+                              </Text>
+                            ) : (
+                              <Text style={styles.dropdownItemTxtStyle}>
+                                {selectedItem?.name || 'Select Doctor'}
+                              </Text>
+                            )}
+                          </View>
+                        );
+                      }}
+                      showsVerticalScrollIndicator={false}
+                      renderItem={(item, index, isSelected) => {
+                        return (
+                          <TouchableOpacity style={styles.dropdownView}>
+                            <Text style={styles.dropdownItemTxtStyle}>
+                              {item.name}
+                            </Text>
+                          </TouchableOpacity>
+                        );
+                      }}
+                      dropdownIconPosition={'left'}
+                      dropdownStyle={styles.dropdown2DropdownStyle}
+                    />
+                  </View>
+                </View>
+
+                <View style={styles.nameView}>
+                  <View style={{width: '48%'}}>
+                    <Text style={styles.dataHistoryText1}>
+                      Health Insurance:
+                    </Text>
+                    <TextInput
+                      value={insurance}
+                      placeholder={'Health Insurance'}
+                      onChangeText={text => setInsurance(text)}
+                      style={[styles.nameTextView, {width: '100%'}]}
+                    />
+                  </View>
+                  <View style={{width: '48%'}}>
+                    <Text style={styles.dataHistoryText1}>Low Income:</Text>
+                    <TextInput
+                      value={lowIncome}
+                      placeholder={'Low Income'}
+                      onChangeText={text => setLowIncome(text)}
+                      style={[styles.nameTextView, {width: '100%'}]}
+                    />
+                  </View>
+                </View>
+
+                <View style={styles.nameView}>
+                  <View style={{width: '48%'}}>
+                    <Text style={styles.dataHistoryText1}>Reference:</Text>
+                    <TextInput
+                      value={reference}
+                      placeholder={'Reference'}
+                      onChangeText={text => setReference(text)}
+                      style={[styles.nameTextView, {width: '100%'}]}
+                    />
+                  </View>
+                  <View style={{width: '48%'}}>
+                    <Text style={styles.dataHistoryText1}>Status:</Text>
+                    <View style={styles.statusView}>
+                      <Switch
+                        trackColor={{
+                          false: status ? COLORS.greenColor : COLORS.errorColor,
+                          true: status ? COLORS.greenColor : COLORS.errorColor,
+                        }}
+                        thumbColor={status ? '#f4f3f4' : '#f4f3f4'}
+                        ios_backgroundColor={COLORS.errorColor}
+                        onValueChange={() => setStatus(!status)}
+                        value={status}
+                      />
+                    </View>
+                  </View>
+                </View>
+
+                <View style={styles.parameterView}>
+                  <Text style={styles.parameterText}>Medicines</Text>
+                  <TouchableOpacity
+                    onPress={() => {
+                      let NewItemAdd = {
+                        medicineId: '',
+                        medicineName: '',
+                        dosage: '',
+                        durationId: '',
+                        duration: '',
+                        timeId: '',
+                        time: '',
+                        doseId: '',
+                        doseInterval: '',
+                        comment: '',
+                      };
+                      setParameterArray(modifierAdd => [
+                        ...modifierAdd,
+                        NewItemAdd,
+                      ]);
+                    }}
+                    style={styles.nextView2}>
+                    <Text style={styles.nextText}>Add</Text>
+                  </TouchableOpacity>
+                </View>
+                <FlatList
+                  data={parameterArray}
+                  renderItem={({item, index}) => {
+                    return (
+                      <View
+                        style={{
+                          backgroundColor: '#eeeeee',
+                          paddingBottom: hp(1),
+                          marginVertical: hp(1),
+                        }}>
+                        <View
+                          style={[styles.nameView, {paddingHorizontal: wp(2)}]}>
+                          <View style={{width: '48%'}}>
+                            <Text style={styles.dataHistoryText1}>
+                              MEDICINES
+                            </Text>
+                            <SelectDropdown
+                              data={medicineArray}
+                              onSelect={(selectedItem, index1) => {
+                                // setSelectedColor(selectedItem);
+                                console.log('gert Value:::', parameterArray);
+                                parameterArray[index].medicineId =
+                                  selectedItem.id;
+                                setRefresh(!refresh);
+                              }}
+                              renderButton={(selectedItem, isOpen) => {
+                                console.log('Get Response>>>', selectedItem);
+                                return (
+                                  <View style={styles.dropdown2BtnStyle2}>
+                                    {item.medicineId != '' ? (
+                                      <Text style={styles.dropdownItemTxtStyle}>
+                                        {item.medicineId == selectedItem?.id
+                                          ? `${selectedItem?.name}`
+                                          : item.medicineName}
+                                      </Text>
+                                    ) : (
+                                      <Text style={styles.dropdownItemTxtStyle}>
+                                        {selectedItem?.name ||
+                                          'Select Medicine'}
+                                      </Text>
+                                    )}
+                                  </View>
+                                );
+                              }}
+                              showsVerticalScrollIndicator={false}
+                              renderItem={(item1, index, isSelected) => {
+                                return (
+                                  <TouchableOpacity style={styles.dropdownView}>
+                                    <Text style={styles.dropdownItemTxtStyle}>
+                                      {item1?.name}
+                                    </Text>
+                                  </TouchableOpacity>
+                                );
+                              }}
+                              dropdownIconPosition={'left'}
+                              dropdownStyle={styles.dropdown2DropdownStyle}
+                            />
+                          </View>
+
+                          <View style={{width: '48%'}}>
+                            <Text style={styles.dataHistoryText1}>DOSAGE</Text>
+                            <TextInput
+                              value={item.dosage}
+                              placeholder={'Dosage'}
+                              onChangeText={text => {
+                                setRefresh(!refresh);
+                                parameterArray[index].dosage = text;
+                              }}
+                              style={[styles.nameTextView, {width: '100%'}]}
+                            />
+                          </View>
+                        </View>
+
+                        <View
+                          style={[styles.nameView, {paddingHorizontal: wp(2)}]}>
+                          <View style={{width: '48%'}}>
+                            <Text style={styles.dataHistoryText1}>
+                              DURATION
+                            </Text>
+                            <SelectDropdown
+                              data={durationArray}
+                              onSelect={(selectedItem, index1) => {
+                                // setSelectedColor(selectedItem);
+                                console.log('gert Value:::', parameterArray);
+                                parameterArray[index].durationId =
+                                  selectedItem.id;
+                                parameterArray[index].duration =
+                                  selectedItem.name;
+                                setRefresh(!refresh);
+                              }}
+                              defaultValueByIndex={0}
+                              renderButton={(selectedItem, isOpen) => {
+                                console.log('Get Response>>>', selectedItem);
+                                return (
+                                  <View style={styles.dropdown2BtnStyle2}>
+                                    {item.durationId != '' ? (
+                                      <Text style={styles.dropdownItemTxtStyle}>
+                                        {item.durationId == selectedItem?.id
+                                          ? `${selectedItem?.name}`
+                                          : item.duration}
+                                      </Text>
+                                    ) : (
+                                      <Text style={styles.dropdownItemTxtStyle}>
+                                        {selectedItem?.name ||
+                                          'Select Medicine'}
+                                      </Text>
+                                    )}
+                                  </View>
+                                );
+                              }}
+                              showsVerticalScrollIndicator={false}
+                              renderItem={(item1, index, isSelected) => {
+                                return (
+                                  <TouchableOpacity style={styles.dropdownView}>
+                                    <Text style={styles.dropdownItemTxtStyle}>
+                                      {item1?.name}
+                                    </Text>
+                                  </TouchableOpacity>
+                                );
+                              }}
+                              dropdownIconPosition={'left'}
+                              dropdownStyle={styles.dropdown2DropdownStyle}
+                            />
+                          </View>
+                          <View style={{width: '48%'}}>
+                            <Text style={styles.dataHistoryText1}>TIME</Text>
+                            <SelectDropdown
+                              data={timeArray}
+                              onSelect={(selectedItem, index1) => {
+                                // setSelectedColor(selectedItem);
+                                console.log('gert Value:::', parameterArray);
+                                parameterArray[index].timeId = selectedItem.id;
+                                parameterArray[index].time = selectedItem.name;
+                                setRefresh(!refresh);
+                              }}
+                              defaultValueByIndex={0}
+                              renderButton={(selectedItem, isOpen) => {
+                                console.log('Get Response>>>', selectedItem);
+                                return (
+                                  <View style={styles.dropdown2BtnStyle2}>
+                                    {item.timeId != '' ? (
+                                      <Text style={styles.dropdownItemTxtStyle}>
+                                        {item.timeId == selectedItem?.id
+                                          ? `${selectedItem?.name}`
+                                          : item.time}
+                                      </Text>
+                                    ) : (
+                                      <Text style={styles.dropdownItemTxtStyle}>
+                                        {selectedItem?.name || 'Select Time'}
+                                      </Text>
+                                    )}
+                                  </View>
+                                );
+                              }}
+                              showsVerticalScrollIndicator={false}
+                              renderItem={(item1, index, isSelected) => {
+                                return (
+                                  <TouchableOpacity style={styles.dropdownView}>
+                                    <Text style={styles.dropdownItemTxtStyle}>
+                                      {item1?.name}
+                                    </Text>
+                                  </TouchableOpacity>
+                                );
+                              }}
+                              dropdownIconPosition={'left'}
+                              dropdownStyle={styles.dropdown2DropdownStyle}
+                            />
+                          </View>
+                        </View>
+                        <View
+                          style={[styles.nameView, {paddingHorizontal: wp(2)}]}>
+                          <View style={{width: '40%'}}>
+                            <Text style={styles.dataHistoryText1}>
+                              DOSEINTERVAL
+                            </Text>
+                            <SelectDropdown
+                              data={doseArray}
+                              onSelect={(selectedItem, index1) => {
+                                // setSelectedColor(selectedItem);
+                                console.log('gert Value:::', parameterArray);
+                                parameterArray[index].doseId = selectedItem.id;
+                                parameterArray[index].doseInterval =
+                                  selectedItem.name;
+                                setRefresh(!refresh);
+                              }}
+                              defaultValueByIndex={0}
+                              renderButton={(selectedItem, isOpen) => {
+                                console.log('Get Response>>>', selectedItem);
+                                return (
+                                  <View style={styles.dropdown2BtnStyle2}>
+                                    {item.doseId != '' ? (
+                                      <Text style={styles.dropdownItemTxtStyle}>
+                                        {item.doseId == selectedItem?.id
+                                          ? `${selectedItem?.name}`
+                                          : item.doseInterval}
+                                      </Text>
+                                    ) : (
+                                      <Text style={styles.dropdownItemTxtStyle}>
+                                        {selectedItem?.name || 'Select Time'}
+                                      </Text>
+                                    )}
+                                  </View>
+                                );
+                              }}
+                              showsVerticalScrollIndicator={false}
+                              renderItem={(item1, index, isSelected) => {
+                                return (
+                                  <TouchableOpacity style={styles.dropdownView}>
+                                    <Text style={styles.dropdownItemTxtStyle}>
+                                      {item1?.name}
+                                    </Text>
+                                  </TouchableOpacity>
+                                );
+                              }}
+                              dropdownIconPosition={'left'}
+                              dropdownStyle={styles.dropdown2DropdownStyle}
+                            />
+                          </View>
+                          <View style={{width: '35%'}}>
+                            <Text style={styles.dataHistoryText1}>COMMENT</Text>
+                            <TextInput
+                              value={item.quantity}
+                              placeholder={''}
+                              onChangeText={text => {
+                                setRefresh(!refresh);
+                                parameterArray[index].comment = text;
+                              }}
+                              style={[styles.nameTextView, {width: '100%'}]}
+                              keyboardType={'number-pad'}
+                            />
+                          </View>
+                          <View style={[styles.buttonView, {width: '15%'}]}>
+                            <TouchableOpacity
+                              onPress={() => {
+                                const existDataValue = parameterArray;
+                                const filterData = existDataValue.filter(
+                                  (dataValue, index1) => index1 !== index,
+                                );
+                                console.log(' =====>', filterData);
+                                setParameterArray(filterData);
+                              }}
+                              style={{marginLeft: wp(2)}}>
+                              <Image
+                                style={[
+                                  styles.editImage,
+                                  {tintColor: COLORS.errorColor},
+                                ]}
+                                source={deleteIcon}
+                              />
+                            </TouchableOpacity>
+                          </View>
+                        </View>
+                      </View>
+                    );
+                  }}
+                  keyExtractor={(item, index) => index.toString()}
+                  contentContainerStyle={{paddingBottom: hp(1)}}
+                />
+                <View style={styles.parameterView}>
+                  <Text style={styles.parameterText}>Physical Information</Text>
+                </View>
+
+                <View style={styles.nameView}>
+                  <View style={{width: '48%'}}>
+                    <Text style={styles.dataHistoryText1}>
+                      High Blood Pressure:
+                    </Text>
+                    <TextInput
+                      value={bloodPressure}
+                      placeholder={'High Blood Pressure'}
+                      onChangeText={text => setBloodPressure(text)}
+                      style={[styles.nameTextView, {width: '100%'}]}
+                    />
+                  </View>
+                  <View style={{width: '48%'}}>
+                    <Text style={styles.dataHistoryText1}>Food Allergies:</Text>
+                    <TextInput
+                      value={allergies}
+                      placeholder={'Food Allergies'}
+                      onChangeText={text => setAllergies(text)}
+                      style={[styles.nameTextView, {width: '100%'}]}
+                    />
+                  </View>
+                </View>
+
+                <View style={styles.nameView}>
+                  <View style={{width: '48%'}}>
+                    <Text style={styles.dataHistoryText1}>Tendency Bleed:</Text>
+                    <TextInput
+                      value={tendencyBleed}
+                      placeholder={'Tendency Bleed'}
+                      onChangeText={text => setTendencyBleed(text)}
+                      style={[styles.nameTextView, {width: '100%'}]}
+                    />
+                  </View>
+                  <View style={{width: '48%'}}>
+                    <Text style={styles.dataHistoryText1}>Heart Disease:</Text>
+                    <TextInput
+                      value={heartDisease}
+                      placeholder={'Heart Disease'}
+                      onChangeText={text => setHeartDisease(text)}
+                      style={[styles.nameTextView, {width: '100%'}]}
+                    />
+                  </View>
+                </View>
+
+                <View style={styles.nameView}>
+                  <View style={{width: '48%'}}>
+                    <Text style={styles.dataHistoryText1}>Diabetic:</Text>
+                    <TextInput
+                      value={diabetic}
+                      placeholder={'Diabetic'}
+                      onChangeText={text => setDiabetic(text)}
+                      style={[styles.nameTextView, {width: '100%'}]}
+                    />
+                  </View>
+                  <View style={{width: '48%'}}>
+                    <Text style={styles.dataHistoryText1}>Added At:</Text>
+                    <Text
+                      style={[
+                        styles.nameTextView,
+                        {width: '100%', paddingVertical: hp(1)},
+                      ]}
+                      onPress={() => setAddDateModal(!addDateModal)}>
+                      {addedAt != null
+                        ? moment(addedAt).format('DD-MM-YYYY')
+                        : 'Added At'}
+                    </Text>
+                    <DatePicker
+                      open={addDateModal}
+                      modal={true}
+                      date={addedAt || new Date()}
+                      mode={'date'}
+                      onConfirm={date => {
+                        console.log('Console Log>>', date);
+                        setAddDateModal(false);
+                        setAddedAt(date);
+                      }}
+                      onCancel={() => {
+                        setAddDateModal(false);
+                      }}
+                    />
+                  </View>
+                </View>
+
+                <View style={styles.nameView}>
+                  <View style={{width: '48%'}}>
+                    <Text style={styles.dataHistoryText1}>
+                      Female Pregnancy:
+                    </Text>
+                    <TextInput
+                      value={pregnancy}
+                      placeholder={'Female Pregnancy'}
+                      onChangeText={text => setPregnancy(text)}
+                      style={[styles.nameTextView, {width: '100%'}]}
+                    />
+                  </View>
+                  <View style={{width: '48%'}}>
+                    <Text style={styles.dataHistoryText1}>Breast Feeding:</Text>
+                    <TextInput
+                      value={breastFeeding}
+                      placeholder={'Breast Feeding'}
+                      onChangeText={text => setBreastFeeding(text)}
+                      style={[styles.nameTextView, {width: '100%'}]}
+                    />
+                  </View>
+                </View>
+
+                <View style={styles.nameView}>
+                  <View style={{width: '48%'}}>
+                    <Text style={styles.dataHistoryText1}>
+                      Current Medication:
+                    </Text>
+                    <TextInput
+                      value={medication}
+                      placeholder={'Current Medication'}
+                      onChangeText={text => setMedication(text)}
+                      style={[styles.nameTextView, {width: '100%'}]}
+                    />
+                  </View>
+                  <View style={{width: '48%'}}>
+                    <Text style={styles.dataHistoryText1}>Surgery:</Text>
+                    <TextInput
+                      value={surgery}
+                      placeholder={'Surgery'}
+                      onChangeText={text => setSurgery(text)}
+                      style={[styles.nameTextView, {width: '100%'}]}
+                    />
+                  </View>
+                </View>
+
+                <View style={styles.nameView}>
+                  <View style={{width: '48%'}}>
+                    <Text style={styles.dataHistoryText1}>Accident:</Text>
+                    <TextInput
+                      value={accident}
+                      placeholder={'Accident'}
+                      onChangeText={text => setAccident(text)}
+                      style={[styles.nameTextView, {width: '100%'}]}
+                    />
+                  </View>
+                  <View style={{width: '48%'}}>
+                    <Text style={styles.dataHistoryText1}>Others:</Text>
+                    <TextInput
+                      value={others}
+                      placeholder={'Others'}
+                      onChangeText={text => setOthers(text)}
+                      style={[styles.nameTextView, {width: '100%'}]}
+                    />
+                  </View>
+                </View>
+
+                <View style={styles.nameView}>
+                  <View style={{width: '48%'}}>
+                    <Text style={styles.dataHistoryText1}>Pulse Rate:</Text>
+                    <TextInput
+                      value={pulseRate}
+                      placeholder={'Pulse Rate'}
+                      onChangeText={text => setPulseRate(text)}
+                      style={[styles.nameTextView, {width: '100%'}]}
+                    />
+                  </View>
+                  <View style={{width: '48%'}}>
+                    <Text style={styles.dataHistoryText1}>Temperature:</Text>
+                    <TextInput
+                      value={temperature}
+                      placeholder={'Temperature'}
+                      onChangeText={text => setTemperature(text)}
+                      style={[styles.nameTextView, {width: '100%'}]}
+                    />
+                  </View>
+                </View>
+
+                <View style={styles.nameView}>
+                  <View style={{width: '100%'}}>
+                    <Text style={styles.dataHistoryText1}>
+                      Problem Description:
+                    </Text>
+                    <TextInput
+                      value={description}
+                      placeholder={'Problem Description'}
+                      onChangeText={text => setDescription(text)}
+                      style={[styles.commentTextInput]}
+                      multiline
+                      textAlignVertical="top"
+                    />
+                  </View>
+                </View>
+
+                <View style={styles.nameView}>
+                  <View style={{width: '100%'}}>
+                    <Text style={styles.dataHistoryText1}>Test:</Text>
+                    <TextInput
+                      value={test}
+                      placeholder={'Test'}
+                      onChangeText={text => setTest(text)}
+                      style={[styles.commentTextInput]}
+                      multiline
+                      textAlignVertical="top"
+                    />
+                  </View>
+                </View>
+
+                <View style={styles.nameView}>
+                  <View style={{width: '100%'}}>
+                    <Text style={styles.dataHistoryText1}>Advice:</Text>
+                    <TextInput
+                      value={advice}
+                      placeholder={'Advice'}
+                      onChangeText={text => setAdvice(text)}
+                      style={[styles.commentTextInput]}
+                      multiline
+                      textAlignVertical="top"
+                    />
+                  </View>
+                </View>
+
+                <View style={styles.nameView1}>
+                  <Text style={styles.dataHistoryText1}>Next Visit:</Text>
+                  <View style={styles.nameView2}>
+                    <TextInput
+                      value={nextVisit}
+                      placeholder={'1'}
+                      onChangeText={text => setNextVisit(text)}
+                      style={[styles.nameTextView, {width: '30%'}]}
+                    />
+                    <SelectDropdown
+                      data={daysArray}
+                      onSelect={(selectedItem, index1) => {
+                        // setSelectedColor(selectedItem);
+                        console.log('gert Value:::', parameterArray);
+                        setNextVisitId(selectedItem.id);
+                        setNextVisitName(selectedItem.name);
+                        setRefresh(!refresh);
+                      }}
+                      defaultValueByIndex={0}
+                      renderButton={(selectedItem, isOpen) => {
+                        console.log('Get Response>>>', selectedItem);
+                        return (
+                          <View
+                            style={[styles.dropdown2BtnStyle2, {width: '65%'}]}>
+                            {nextVisitName != '' ? (
+                              <Text style={styles.dropdownItemTxtStyle}>
+                                {nextVisitName == selectedItem?.name
+                                  ? `${selectedItem?.name}`
+                                  : nextVisitName}
+                              </Text>
+                            ) : (
+                              <Text style={styles.dropdownItemTxtStyle}>
+                                {selectedItem?.name || 'Select'}
+                              </Text>
+                            )}
+                          </View>
+                        );
+                      }}
+                      showsVerticalScrollIndicator={false}
+                      renderItem={(item1, index, isSelected) => {
+                        return (
+                          <TouchableOpacity style={styles.dropdownView}>
+                            <Text style={styles.dropdownItemTxtStyle}>
+                              {item1?.name}
+                            </Text>
+                          </TouchableOpacity>
+                        );
+                      }}
+                      dropdownIconPosition={'left'}
+                      dropdownStyle={styles.dropdown2DropdownStyle}
                     />
                   </View>
                 </View>
               </View>
-
-              <View style={styles.parameterView}>
-                <Text style={styles.parameterText}>Medicines</Text>
-                <TouchableOpacity
-                  onPress={() => {
-                    let NewItemAdd = {
-                      medicineId: '',
-                      medicineName: '',
-                      dosage: '',
-                      durationId: '',
-                      duration: '',
-                      timeId: '',
-                      time: '',
-                      doseId: '',
-                      doseInterval: '',
-                      comment: '',
-                    };
-                    setParameterArray(modifierAdd => [
-                      ...modifierAdd,
-                      NewItemAdd,
-                    ]);
-                  }}
-                  style={styles.nextView2}>
-                  <Text style={styles.nextText}>Add</Text>
-                </TouchableOpacity>
-              </View>
-              <FlatList
-                data={parameterArray}
-                renderItem={({item, index}) => {
-                  return (
-                    <View
-                      style={{
-                        backgroundColor: '#eeeeee',
-                        paddingBottom: hp(1),
-                        marginVertical: hp(1),
-                      }}>
-                      <View
-                        style={[styles.nameView, {paddingHorizontal: wp(2)}]}>
-                        <View style={{width: '48%'}}>
-                          <Text style={styles.dataHistoryText1}>MEDICINES</Text>
-                          <SelectDropdown
-                            data={medicineArray}
-                            onSelect={(selectedItem, index1) => {
-                              // setSelectedColor(selectedItem);
-                              console.log('gert Value:::', parameterArray);
-                              parameterArray[index].medicineId =
-                                selectedItem.id;
-                              setRefresh(!refresh);
-                            }}
-                            renderButton={(selectedItem, isOpen) => {
-                              console.log('Get Response>>>', selectedItem);
-                              return (
-                                <View style={styles.dropdown2BtnStyle2}>
-                                  {item.medicineId != '' ? (
-                                    <Text style={styles.dropdownItemTxtStyle}>
-                                      {item.medicineId == selectedItem?.id
-                                        ? `${selectedItem?.name}`
-                                        : item.medicineName}
-                                    </Text>
-                                  ) : (
-                                    <Text style={styles.dropdownItemTxtStyle}>
-                                      {selectedItem?.name || 'Select Medicine'}
-                                    </Text>
-                                  )}
-                                </View>
-                              );
-                            }}
-                            showsVerticalScrollIndicator={false}
-                            renderItem={(item1, index, isSelected) => {
-                              return (
-                                <TouchableOpacity style={styles.dropdownView}>
-                                  <Text style={styles.dropdownItemTxtStyle}>
-                                    {item1?.name}
-                                  </Text>
-                                </TouchableOpacity>
-                              );
-                            }}
-                            dropdownIconPosition={'left'}
-                            dropdownStyle={styles.dropdown2DropdownStyle}
-                          />
-                        </View>
-
-                        <View style={{width: '48%'}}>
-                          <Text style={styles.dataHistoryText1}>DOSAGE</Text>
-                          <TextInput
-                            value={item.dosage}
-                            placeholder={'Dosage'}
-                            onChangeText={text => {
-                              setRefresh(!refresh);
-                              parameterArray[index].dosage = text;
-                            }}
-                            style={[styles.nameTextView, {width: '100%'}]}
-                          />
-                        </View>
-                      </View>
-
-                      <View
-                        style={[styles.nameView, {paddingHorizontal: wp(2)}]}>
-                        <View style={{width: '48%'}}>
-                          <Text style={styles.dataHistoryText1}>DURATION</Text>
-                          <SelectDropdown
-                            data={durationArray}
-                            onSelect={(selectedItem, index1) => {
-                              // setSelectedColor(selectedItem);
-                              console.log('gert Value:::', parameterArray);
-                              parameterArray[index].durationId =
-                                selectedItem.id;
-                              parameterArray[index].duration =
-                                selectedItem.name;
-                              setRefresh(!refresh);
-                            }}
-                            defaultValueByIndex={0}
-                            renderButton={(selectedItem, isOpen) => {
-                              console.log('Get Response>>>', selectedItem);
-                              return (
-                                <View style={styles.dropdown2BtnStyle2}>
-                                  {item.durationId != '' ? (
-                                    <Text style={styles.dropdownItemTxtStyle}>
-                                      {item.durationId == selectedItem?.id
-                                        ? `${selectedItem?.name}`
-                                        : item.duration}
-                                    </Text>
-                                  ) : (
-                                    <Text style={styles.dropdownItemTxtStyle}>
-                                      {selectedItem?.name || 'Select Medicine'}
-                                    </Text>
-                                  )}
-                                </View>
-                              );
-                            }}
-                            showsVerticalScrollIndicator={false}
-                            renderItem={(item1, index, isSelected) => {
-                              return (
-                                <TouchableOpacity style={styles.dropdownView}>
-                                  <Text style={styles.dropdownItemTxtStyle}>
-                                    {item1?.name}
-                                  </Text>
-                                </TouchableOpacity>
-                              );
-                            }}
-                            dropdownIconPosition={'left'}
-                            dropdownStyle={styles.dropdown2DropdownStyle}
-                          />
-                        </View>
-                        <View style={{width: '48%'}}>
-                          <Text style={styles.dataHistoryText1}>TIME</Text>
-                          <SelectDropdown
-                            data={timeArray}
-                            onSelect={(selectedItem, index1) => {
-                              // setSelectedColor(selectedItem);
-                              console.log('gert Value:::', parameterArray);
-                              parameterArray[index].timeId = selectedItem.id;
-                              parameterArray[index].time = selectedItem.name;
-                              setRefresh(!refresh);
-                            }}
-                            defaultValueByIndex={0}
-                            renderButton={(selectedItem, isOpen) => {
-                              console.log('Get Response>>>', selectedItem);
-                              return (
-                                <View style={styles.dropdown2BtnStyle2}>
-                                  {item.timeId != '' ? (
-                                    <Text style={styles.dropdownItemTxtStyle}>
-                                      {item.timeId == selectedItem?.id
-                                        ? `${selectedItem?.name}`
-                                        : item.time}
-                                    </Text>
-                                  ) : (
-                                    <Text style={styles.dropdownItemTxtStyle}>
-                                      {selectedItem?.name || 'Select Time'}
-                                    </Text>
-                                  )}
-                                </View>
-                              );
-                            }}
-                            showsVerticalScrollIndicator={false}
-                            renderItem={(item1, index, isSelected) => {
-                              return (
-                                <TouchableOpacity style={styles.dropdownView}>
-                                  <Text style={styles.dropdownItemTxtStyle}>
-                                    {item1?.name}
-                                  </Text>
-                                </TouchableOpacity>
-                              );
-                            }}
-                            dropdownIconPosition={'left'}
-                            dropdownStyle={styles.dropdown2DropdownStyle}
-                          />
-                        </View>
-                      </View>
-                      <View
-                        style={[styles.nameView, {paddingHorizontal: wp(2)}]}>
-                        <View style={{width: '40%'}}>
-                          <Text style={styles.dataHistoryText1}>
-                            DOSEINTERVAL
-                          </Text>
-                          <SelectDropdown
-                            data={doseArray}
-                            onSelect={(selectedItem, index1) => {
-                              // setSelectedColor(selectedItem);
-                              console.log('gert Value:::', parameterArray);
-                              parameterArray[index].doseId = selectedItem.id;
-                              parameterArray[index].doseInterval =
-                                selectedItem.name;
-                              setRefresh(!refresh);
-                            }}
-                            defaultValueByIndex={0}
-                            renderButton={(selectedItem, isOpen) => {
-                              console.log('Get Response>>>', selectedItem);
-                              return (
-                                <View style={styles.dropdown2BtnStyle2}>
-                                  {item.doseId != '' ? (
-                                    <Text style={styles.dropdownItemTxtStyle}>
-                                      {item.doseId == selectedItem?.id
-                                        ? `${selectedItem?.name}`
-                                        : item.doseInterval}
-                                    </Text>
-                                  ) : (
-                                    <Text style={styles.dropdownItemTxtStyle}>
-                                      {selectedItem?.name || 'Select Time'}
-                                    </Text>
-                                  )}
-                                </View>
-                              );
-                            }}
-                            showsVerticalScrollIndicator={false}
-                            renderItem={(item1, index, isSelected) => {
-                              return (
-                                <TouchableOpacity style={styles.dropdownView}>
-                                  <Text style={styles.dropdownItemTxtStyle}>
-                                    {item1?.name}
-                                  </Text>
-                                </TouchableOpacity>
-                              );
-                            }}
-                            dropdownIconPosition={'left'}
-                            dropdownStyle={styles.dropdown2DropdownStyle}
-                          />
-                        </View>
-                        <View style={{width: '35%'}}>
-                          <Text style={styles.dataHistoryText1}>COMMENT</Text>
-                          <TextInput
-                            value={item.quantity}
-                            placeholder={''}
-                            onChangeText={text => {
-                              setRefresh(!refresh);
-                              parameterArray[index].comment = text;
-                            }}
-                            style={[styles.nameTextView, {width: '100%'}]}
-                            keyboardType={'number-pad'}
-                          />
-                        </View>
-                        <View style={[styles.buttonView, {width: '15%'}]}>
-                          <TouchableOpacity
-                            onPress={() => {
-                              const existDataValue = parameterArray;
-                              const filterData = existDataValue.filter(
-                                (dataValue, index1) => index1 !== index,
-                              );
-                              console.log(' =====>', filterData);
-                              setParameterArray(filterData);
-                            }}
-                            style={{marginLeft: wp(2)}}>
-                            <Image
-                              style={[
-                                styles.editImage,
-                                {tintColor: COLORS.errorColor},
-                              ]}
-                              source={deleteIcon}
-                            />
+            ) : (
+              <View style={styles.profileView}>
+                <View style={styles.nameView}>
+                  <View style={{width: '32%'}}>
+                    <Text style={styles.dataHistoryText1}>Patient:</Text>
+                    <SelectDropdown
+                      data={user_data}
+                      onSelect={(selectedItem, index) => {
+                        // setSelectedColor(selectedItem);
+                        setPatientId(selectedItem.id);
+                        console.log('gert Value:::', selectedItem);
+                      }}
+                      defaultValue={patientName}
+                      renderButton={(selectedItem, isOpen) => {
+                        console.log('Get Response>>>', selectedItem);
+                        return (
+                          <View style={styles.dropdown2BtnStyle2}>
+                            {patientId != '' ? (
+                              <Text style={styles.dropdownItemTxtStyle}>
+                                {patientId == selectedItem?.id
+                                  ? `${selectedItem?.patient_user?.first_name} ${selectedItem?.patient_user?.last_name}`
+                                  : patientName}
+                              </Text>
+                            ) : (
+                              <Text style={styles.dropdownItemTxtStyle}>
+                                {selectedItem?.patient_user?.first_name ||
+                                  'Select Patient'}
+                              </Text>
+                            )}
+                          </View>
+                        );
+                      }}
+                      showsVerticalScrollIndicator={false}
+                      renderItem={(item, index, isSelected) => {
+                        return (
+                          <TouchableOpacity style={styles.dropdownView}>
+                            <Text style={styles.dropdownItemTxtStyle}>
+                              {`${item?.patient_user?.first_name} ${item?.patient_user?.last_name}`}
+                            </Text>
                           </TouchableOpacity>
+                        );
+                      }}
+                      dropdownIconPosition={'left'}
+                      dropdownStyle={styles.dropdown2DropdownStyle}
+                    />
+                  </View>
+                  <View style={{width: '32%'}}>
+                    <Text style={styles.dataHistoryText1}>Doctor:</Text>
+                    <SelectDropdown
+                      data={doctorData}
+                      onSelect={(selectedItem, index) => {
+                        // setSelectedColor(selectedItem);
+                        setDoctorId(selectedItem.id);
+                        console.log('gert Value:::', selectedItem);
+                      }}
+                      defaultValue={doctorName}
+                      renderButton={(selectedItem, isOpen) => {
+                        console.log('Get Response>>>', selectedItem);
+                        return (
+                          <View style={styles.dropdown2BtnStyle2}>
+                            {doctorId != '' ? (
+                              <Text style={styles.dropdownItemTxtStyle}>
+                                {doctorId == selectedItem?.id
+                                  ? selectedItem?.name
+                                  : doctorName}
+                              </Text>
+                            ) : (
+                              <Text style={styles.dropdownItemTxtStyle}>
+                                {selectedItem?.name || 'Select Doctor'}
+                              </Text>
+                            )}
+                          </View>
+                        );
+                      }}
+                      showsVerticalScrollIndicator={false}
+                      renderItem={(item, index, isSelected) => {
+                        return (
+                          <TouchableOpacity style={styles.dropdownView}>
+                            <Text style={styles.dropdownItemTxtStyle}>
+                              {item.name}
+                            </Text>
+                          </TouchableOpacity>
+                        );
+                      }}
+                      dropdownIconPosition={'left'}
+                      dropdownStyle={styles.dropdown2DropdownStyle}
+                    />
+                  </View>
+                  <View style={{width: '32%'}}>
+                    <Text style={styles.dataHistoryText1}>
+                      Health Insurance:
+                    </Text>
+                    <TextInput
+                      value={insurance}
+                      placeholder={'Health Insurance'}
+                      onChangeText={text => setInsurance(text)}
+                      style={[styles.nameTextView, {width: '100%'}]}
+                    />
+                  </View>
+                </View>
+
+                <View style={styles.nameView}>
+                  <View style={{width: '32%'}}>
+                    <Text style={styles.dataHistoryText1}>Low Income:</Text>
+                    <TextInput
+                      value={lowIncome}
+                      placeholder={'Low Income'}
+                      onChangeText={text => setLowIncome(text)}
+                      style={[styles.nameTextView, {width: '100%'}]}
+                    />
+                  </View>
+                  <View style={{width: '32%'}}>
+                    <Text style={styles.dataHistoryText1}>Reference:</Text>
+                    <TextInput
+                      value={reference}
+                      placeholder={'Reference'}
+                      onChangeText={text => setReference(text)}
+                      style={[styles.nameTextView, {width: '100%'}]}
+                    />
+                  </View>
+                  <View style={{width: '32%'}}>
+                    <Text style={styles.dataHistoryText1}>Status:</Text>
+                    <View style={styles.statusView}>
+                      <Switch
+                        trackColor={{
+                          false: status ? COLORS.greenColor : COLORS.errorColor,
+                          true: status ? COLORS.greenColor : COLORS.errorColor,
+                        }}
+                        thumbColor={status ? '#f4f3f4' : '#f4f3f4'}
+                        ios_backgroundColor={COLORS.errorColor}
+                        onValueChange={() => setStatus(!status)}
+                        value={status}
+                      />
+                    </View>
+                  </View>
+                </View>
+
+                <View style={styles.parameterView}>
+                  <Text style={styles.parameterText}>Medicines</Text>
+                  <TouchableOpacity
+                    onPress={() => {
+                      let NewItemAdd = {
+                        medicineId: '',
+                        medicineName: '',
+                        dosage: '',
+                        durationId: '',
+                        duration: '',
+                        timeId: '',
+                        time: '',
+                        doseId: '',
+                        doseInterval: '',
+                        comment: '',
+                      };
+                      setParameterArray(modifierAdd => [
+                        ...modifierAdd,
+                        NewItemAdd,
+                      ]);
+                    }}
+                    style={styles.nextView2}>
+                    <Text style={styles.nextText}>Add</Text>
+                  </TouchableOpacity>
+                </View>
+                <FlatList
+                  data={parameterArray}
+                  renderItem={({item, index}) => {
+                    return (
+                      <View
+                        style={{
+                          backgroundColor: '#eeeeee',
+                          paddingBottom: hp(1),
+                          marginVertical: hp(1),
+                        }}>
+                        <View style={[styles.nameView]}>
+                          <View style={{width: '32%'}}>
+                            <Text style={styles.dataHistoryText1}>
+                              MEDICINES
+                            </Text>
+                            <SelectDropdown
+                              data={medicineArray}
+                              onSelect={(selectedItem, index1) => {
+                                // setSelectedColor(selectedItem);
+                                console.log('gert Value:::', parameterArray);
+                                parameterArray[index].medicineId =
+                                  selectedItem.id;
+                                setRefresh(!refresh);
+                              }}
+                              renderButton={(selectedItem, isOpen) => {
+                                console.log('Get Response>>>', selectedItem);
+                                return (
+                                  <View style={styles.dropdown2BtnStyle2}>
+                                    {item.medicineId != '' ? (
+                                      <Text style={styles.dropdownItemTxtStyle}>
+                                        {item.medicineId == selectedItem?.id
+                                          ? `${selectedItem?.name}`
+                                          : item.medicineName}
+                                      </Text>
+                                    ) : (
+                                      <Text style={styles.dropdownItemTxtStyle}>
+                                        {selectedItem?.name ||
+                                          'Select Medicine'}
+                                      </Text>
+                                    )}
+                                  </View>
+                                );
+                              }}
+                              showsVerticalScrollIndicator={false}
+                              renderItem={(item1, index, isSelected) => {
+                                return (
+                                  <TouchableOpacity style={styles.dropdownView}>
+                                    <Text style={styles.dropdownItemTxtStyle}>
+                                      {item1?.name}
+                                    </Text>
+                                  </TouchableOpacity>
+                                );
+                              }}
+                              dropdownIconPosition={'left'}
+                              dropdownStyle={styles.dropdown2DropdownStyle}
+                            />
+                          </View>
+                          <View style={{width: '32%'}}>
+                            <Text style={styles.dataHistoryText1}>DOSAGE</Text>
+                            <TextInput
+                              value={item.dosage}
+                              placeholder={'Dosage'}
+                              onChangeText={text => {
+                                setRefresh(!refresh);
+                                parameterArray[index].dosage = text;
+                              }}
+                              style={[styles.nameTextView, {width: '100%'}]}
+                            />
+                          </View>
+                          <View style={{width: '32%'}}>
+                            <Text style={styles.dataHistoryText1}>
+                              DURATION
+                            </Text>
+                            <SelectDropdown
+                              data={durationArray}
+                              onSelect={(selectedItem, index1) => {
+                                // setSelectedColor(selectedItem);
+                                console.log('gert Value:::', parameterArray);
+                                parameterArray[index].durationId =
+                                  selectedItem.id;
+                                parameterArray[index].duration =
+                                  selectedItem.name;
+                                setRefresh(!refresh);
+                              }}
+                              defaultValueByIndex={0}
+                              renderButton={(selectedItem, isOpen) => {
+                                console.log('Get Response>>>', selectedItem);
+                                return (
+                                  <View style={styles.dropdown2BtnStyle2}>
+                                    {item.durationId != '' ? (
+                                      <Text style={styles.dropdownItemTxtStyle}>
+                                        {item.durationId == selectedItem?.id
+                                          ? `${selectedItem?.name}`
+                                          : item.duration}
+                                      </Text>
+                                    ) : (
+                                      <Text style={styles.dropdownItemTxtStyle}>
+                                        {selectedItem?.name ||
+                                          'Select Medicine'}
+                                      </Text>
+                                    )}
+                                  </View>
+                                );
+                              }}
+                              showsVerticalScrollIndicator={false}
+                              renderItem={(item1, index, isSelected) => {
+                                return (
+                                  <TouchableOpacity style={styles.dropdownView}>
+                                    <Text style={styles.dropdownItemTxtStyle}>
+                                      {item1?.name}
+                                    </Text>
+                                  </TouchableOpacity>
+                                );
+                              }}
+                              dropdownIconPosition={'left'}
+                              dropdownStyle={styles.dropdown2DropdownStyle}
+                            />
+                          </View>
+                        </View>
+
+                        <View
+                          style={[styles.nameView]}>
+                          <View style={{width: '25%'}}>
+                            <Text style={styles.dataHistoryText1}>TIME</Text>
+                            <SelectDropdown
+                              data={timeArray}
+                              onSelect={(selectedItem, index1) => {
+                                // setSelectedColor(selectedItem);
+                                console.log('gert Value:::', parameterArray);
+                                parameterArray[index].timeId = selectedItem.id;
+                                parameterArray[index].time = selectedItem.name;
+                                setRefresh(!refresh);
+                              }}
+                              defaultValueByIndex={0}
+                              renderButton={(selectedItem, isOpen) => {
+                                console.log('Get Response>>>', selectedItem);
+                                return (
+                                  <View style={styles.dropdown2BtnStyle2}>
+                                    {item.timeId != '' ? (
+                                      <Text style={styles.dropdownItemTxtStyle}>
+                                        {item.timeId == selectedItem?.id
+                                          ? `${selectedItem?.name}`
+                                          : item.time}
+                                      </Text>
+                                    ) : (
+                                      <Text style={styles.dropdownItemTxtStyle}>
+                                        {selectedItem?.name || 'Select Time'}
+                                      </Text>
+                                    )}
+                                  </View>
+                                );
+                              }}
+                              showsVerticalScrollIndicator={false}
+                              renderItem={(item1, index, isSelected) => {
+                                return (
+                                  <TouchableOpacity style={styles.dropdownView}>
+                                    <Text style={styles.dropdownItemTxtStyle}>
+                                      {item1?.name}
+                                    </Text>
+                                  </TouchableOpacity>
+                                );
+                              }}
+                              dropdownIconPosition={'left'}
+                              dropdownStyle={styles.dropdown2DropdownStyle}
+                            />
+                          </View>
+                          <View style={{width: '25%'}}>
+                            <Text style={styles.dataHistoryText1}>
+                              DOSEINTERVAL
+                            </Text>
+                            <SelectDropdown
+                              data={doseArray}
+                              onSelect={(selectedItem, index1) => {
+                                // setSelectedColor(selectedItem);
+                                console.log('gert Value:::', parameterArray);
+                                parameterArray[index].doseId = selectedItem.id;
+                                parameterArray[index].doseInterval =
+                                  selectedItem.name;
+                                setRefresh(!refresh);
+                              }}
+                              defaultValueByIndex={0}
+                              renderButton={(selectedItem, isOpen) => {
+                                console.log('Get Response>>>', selectedItem);
+                                return (
+                                  <View style={styles.dropdown2BtnStyle2}>
+                                    {item.doseId != '' ? (
+                                      <Text style={styles.dropdownItemTxtStyle}>
+                                        {item.doseId == selectedItem?.id
+                                          ? `${selectedItem?.name}`
+                                          : item.doseInterval}
+                                      </Text>
+                                    ) : (
+                                      <Text style={styles.dropdownItemTxtStyle}>
+                                        {selectedItem?.name || 'Select Time'}
+                                      </Text>
+                                    )}
+                                  </View>
+                                );
+                              }}
+                              showsVerticalScrollIndicator={false}
+                              renderItem={(item1, index, isSelected) => {
+                                return (
+                                  <TouchableOpacity style={styles.dropdownView}>
+                                    <Text style={styles.dropdownItemTxtStyle}>
+                                      {item1?.name}
+                                    </Text>
+                                  </TouchableOpacity>
+                                );
+                              }}
+                              dropdownIconPosition={'left'}
+                              dropdownStyle={styles.dropdown2DropdownStyle}
+                            />
+                          </View>
+                          <View style={{width: '25%'}}>
+                            <Text style={styles.dataHistoryText1}>COMMENT</Text>
+                            <TextInput
+                              value={item.quantity}
+                              placeholder={''}
+                              onChangeText={text => {
+                                setRefresh(!refresh);
+                                parameterArray[index].comment = text;
+                              }}
+                              style={[styles.nameTextView, {width: '100%'}]}
+                              keyboardType={'number-pad'}
+                            />
+                          </View>
+                          <View style={[styles.buttonView, {width: '15%'}]}>
+                            <TouchableOpacity
+                              onPress={() => {
+                                const existDataValue = parameterArray;
+                                const filterData = existDataValue.filter(
+                                  (dataValue, index1) => index1 !== index,
+                                );
+                                console.log(' =====>', filterData);
+                                setParameterArray(filterData);
+                              }}
+                              style={{marginLeft: wp(2)}}>
+                              <Image
+                                style={[
+                                  styles.editImage,
+                                  {tintColor: COLORS.errorColor},
+                                ]}
+                                source={deleteIcon}
+                              />
+                            </TouchableOpacity>
+                          </View>
                         </View>
                       </View>
-                    </View>
-                  );
-                }}
-                keyExtractor={(item, index) => index.toString()}
-                contentContainerStyle={{paddingBottom: hp(1)}}
-              />
-              <View style={styles.parameterView}>
-                <Text style={styles.parameterText}>Physical Information</Text>
-              </View>
+                    );
+                  }}
+                  keyExtractor={(item, index) => index.toString()}
+                  // contentContainerStyle={{paddingBottom: hp(1)}}
+                />
+                <View style={styles.parameterView}>
+                  <Text style={styles.parameterText}>Physical Information</Text>
+                </View>
 
-              <View style={styles.nameView}>
-                <View style={{width: '48%'}}>
-                  <Text style={styles.dataHistoryText1}>
-                    High Blood Pressure:
-                  </Text>
-                  <TextInput
-                    value={bloodPressure}
-                    placeholder={'High Blood Pressure'}
-                    onChangeText={text => setBloodPressure(text)}
-                    style={[styles.nameTextView, {width: '100%'}]}
-                  />
+                <View style={styles.nameView}>
+                  <View style={{width: '32%'}}>
+                    <Text style={styles.dataHistoryText1}>
+                      High Blood Pressure:
+                    </Text>
+                    <TextInput
+                      value={bloodPressure}
+                      placeholder={'High Blood Pressure'}
+                      onChangeText={text => setBloodPressure(text)}
+                      style={[styles.nameTextView, {width: '100%'}]}
+                    />
+                  </View>
+                  <View style={{width: '32%'}}>
+                    <Text style={styles.dataHistoryText1}>Food Allergies:</Text>
+                    <TextInput
+                      value={allergies}
+                      placeholder={'Food Allergies'}
+                      onChangeText={text => setAllergies(text)}
+                      style={[styles.nameTextView, {width: '100%'}]}
+                    />
+                  </View>
+                  <View style={{width: '32%'}}>
+                    <Text style={styles.dataHistoryText1}>Tendency Bleed:</Text>
+                    <TextInput
+                      value={tendencyBleed}
+                      placeholder={'Tendency Bleed'}
+                      onChangeText={text => setTendencyBleed(text)}
+                      style={[styles.nameTextView, {width: '100%'}]}
+                    />
+                  </View>
                 </View>
-                <View style={{width: '48%'}}>
-                  <Text style={styles.dataHistoryText1}>Food Allergies:</Text>
-                  <TextInput
-                    value={allergies}
-                    placeholder={'Food Allergies'}
-                    onChangeText={text => setAllergies(text)}
-                    style={[styles.nameTextView, {width: '100%'}]}
-                  />
-                </View>
-              </View>
 
-              <View style={styles.nameView}>
-                <View style={{width: '48%'}}>
-                  <Text style={styles.dataHistoryText1}>Tendency Bleed:</Text>
-                  <TextInput
-                    value={tendencyBleed}
-                    placeholder={'Tendency Bleed'}
-                    onChangeText={text => setTendencyBleed(text)}
-                    style={[styles.nameTextView, {width: '100%'}]}
-                  />
+                <View style={styles.nameView}>
+                  <View style={{width: '32%'}}>
+                    <Text style={styles.dataHistoryText1}>Heart Disease:</Text>
+                    <TextInput
+                      value={heartDisease}
+                      placeholder={'Heart Disease'}
+                      onChangeText={text => setHeartDisease(text)}
+                      style={[styles.nameTextView, {width: '100%'}]}
+                    />
+                  </View>
+                  <View style={{width: '32%'}}>
+                    <Text style={styles.dataHistoryText1}>Diabetic:</Text>
+                    <TextInput
+                      value={diabetic}
+                      placeholder={'Diabetic'}
+                      onChangeText={text => setDiabetic(text)}
+                      style={[styles.nameTextView, {width: '100%'}]}
+                    />
+                  </View>
+                  <View style={{width: '32%'}}>
+                    <Text style={styles.dataHistoryText1}>Added At:</Text>
+                    <Text
+                      style={[
+                        styles.nameTextView,
+                        {width: '100%', paddingVertical: hp(1)},
+                      ]}
+                      onPress={() => setAddDateModal(!addDateModal)}>
+                      {addedAt != null
+                        ? moment(addedAt).format('DD-MM-YYYY')
+                        : 'Added At'}
+                    </Text>
+                    <DatePicker
+                      open={addDateModal}
+                      modal={true}
+                      date={addedAt || new Date()}
+                      mode={'date'}
+                      onConfirm={date => {
+                        console.log('Console Log>>', date);
+                        setAddDateModal(false);
+                        setAddedAt(date);
+                      }}
+                      onCancel={() => {
+                        setAddDateModal(false);
+                      }}
+                    />
+                  </View>
                 </View>
-                <View style={{width: '48%'}}>
-                  <Text style={styles.dataHistoryText1}>Heart Disease:</Text>
-                  <TextInput
-                    value={heartDisease}
-                    placeholder={'Heart Disease'}
-                    onChangeText={text => setHeartDisease(text)}
-                    style={[styles.nameTextView, {width: '100%'}]}
-                  />
-                </View>
-              </View>
 
-              <View style={styles.nameView}>
-                <View style={{width: '48%'}}>
-                  <Text style={styles.dataHistoryText1}>Diabetic:</Text>
-                  <TextInput
-                    value={diabetic}
-                    placeholder={'Diabetic'}
-                    onChangeText={text => setDiabetic(text)}
-                    style={[styles.nameTextView, {width: '100%'}]}
-                  />
+                <View style={styles.nameView}>
+                  <View style={{width: '32%'}}>
+                    <Text style={styles.dataHistoryText1}>
+                      Female Pregnancy:
+                    </Text>
+                    <TextInput
+                      value={pregnancy}
+                      placeholder={'Female Pregnancy'}
+                      onChangeText={text => setPregnancy(text)}
+                      style={[styles.nameTextView, {width: '100%'}]}
+                    />
+                  </View>
+                  <View style={{width: '32%'}}>
+                    <Text style={styles.dataHistoryText1}>Breast Feeding:</Text>
+                    <TextInput
+                      value={breastFeeding}
+                      placeholder={'Breast Feeding'}
+                      onChangeText={text => setBreastFeeding(text)}
+                      style={[styles.nameTextView, {width: '100%'}]}
+                    />
+                  </View>
+                  <View style={{width: '32%'}}>
+                    <Text style={styles.dataHistoryText1}>
+                      Current Medication:
+                    </Text>
+                    <TextInput
+                      value={medication}
+                      placeholder={'Current Medication'}
+                      onChangeText={text => setMedication(text)}
+                      style={[styles.nameTextView, {width: '100%'}]}
+                    />
+                  </View>
                 </View>
-                <View style={{width: '48%'}}>
-                  <Text style={styles.dataHistoryText1}>Added At:</Text>
-                  <Text
-                    style={[
-                      styles.nameTextView,
-                      {width: '100%', paddingVertical: hp(1)},
-                    ]}
-                    onPress={() => setAddDateModal(!addDateModal)}>
-                    {addedAt != null
-                      ? moment(addedAt).format('DD-MM-YYYY')
-                      : 'Added At'}
-                  </Text>
-                  <DatePicker
-                    open={addDateModal}
-                    modal={true}
-                    date={addedAt || new Date()}
-                    mode={'date'}
-                    onConfirm={date => {
-                      console.log('Console Log>>', date);
-                      setAddDateModal(false);
-                      setAddedAt(date);
-                    }}
-                    onCancel={() => {
-                      setAddDateModal(false);
-                    }}
-                  />
-                </View>
-              </View>
 
-              <View style={styles.nameView}>
-                <View style={{width: '48%'}}>
-                  <Text style={styles.dataHistoryText1}>Female Pregnancy:</Text>
-                  <TextInput
-                    value={pregnancy}
-                    placeholder={'Female Pregnancy'}
-                    onChangeText={text => setPregnancy(text)}
-                    style={[styles.nameTextView, {width: '100%'}]}
-                  />
+                <View style={styles.nameView}>
+                  <View style={{width: '32%'}}>
+                    <Text style={styles.dataHistoryText1}>Surgery:</Text>
+                    <TextInput
+                      value={surgery}
+                      placeholder={'Surgery'}
+                      onChangeText={text => setSurgery(text)}
+                      style={[styles.nameTextView, {width: '100%'}]}
+                    />
+                  </View>
+                  <View style={{width: '32%'}}>
+                    <Text style={styles.dataHistoryText1}>Accident:</Text>
+                    <TextInput
+                      value={accident}
+                      placeholder={'Accident'}
+                      onChangeText={text => setAccident(text)}
+                      style={[styles.nameTextView, {width: '100%'}]}
+                    />
+                  </View>
+                  <View style={{width: '32%'}}>
+                    <Text style={styles.dataHistoryText1}>Others:</Text>
+                    <TextInput
+                      value={others}
+                      placeholder={'Others'}
+                      onChangeText={text => setOthers(text)}
+                      style={[styles.nameTextView, {width: '100%'}]}
+                    />
+                  </View>
                 </View>
-                <View style={{width: '48%'}}>
-                  <Text style={styles.dataHistoryText1}>Breast Feeding:</Text>
-                  <TextInput
-                    value={breastFeeding}
-                    placeholder={'Breast Feeding'}
-                    onChangeText={text => setBreastFeeding(text)}
-                    style={[styles.nameTextView, {width: '100%'}]}
-                  />
-                </View>
-              </View>
 
-              <View style={styles.nameView}>
-                <View style={{width: '48%'}}>
-                  <Text style={styles.dataHistoryText1}>
-                    Current Medication:
-                  </Text>
-                  <TextInput
-                    value={medication}
-                    placeholder={'Current Medication'}
-                    onChangeText={text => setMedication(text)}
-                    style={[styles.nameTextView, {width: '100%'}]}
-                  />
+                <View style={styles.nameView}>
+                  <View style={{width: '48%'}}>
+                    <Text style={styles.dataHistoryText1}>Pulse Rate:</Text>
+                    <TextInput
+                      value={pulseRate}
+                      placeholder={'Pulse Rate'}
+                      onChangeText={text => setPulseRate(text)}
+                      style={[styles.nameTextView, {width: '100%'}]}
+                    />
+                  </View>
+                  <View style={{width: '48%'}}>
+                    <Text style={styles.dataHistoryText1}>Temperature:</Text>
+                    <TextInput
+                      value={temperature}
+                      placeholder={'Temperature'}
+                      onChangeText={text => setTemperature(text)}
+                      style={[styles.nameTextView, {width: '100%'}]}
+                    />
+                  </View>
                 </View>
-                <View style={{width: '48%'}}>
-                  <Text style={styles.dataHistoryText1}>Surgery:</Text>
-                  <TextInput
-                    value={surgery}
-                    placeholder={'Surgery'}
-                    onChangeText={text => setSurgery(text)}
-                    style={[styles.nameTextView, {width: '100%'}]}
-                  />
-                </View>
-              </View>
 
-              <View style={styles.nameView}>
-                <View style={{width: '48%'}}>
-                  <Text style={styles.dataHistoryText1}>Accident:</Text>
-                  <TextInput
-                    value={accident}
-                    placeholder={'Accident'}
-                    onChangeText={text => setAccident(text)}
-                    style={[styles.nameTextView, {width: '100%'}]}
-                  />
+                <View style={styles.nameView}>
+                  <View style={{width: '100%'}}>
+                    <Text style={styles.dataHistoryText1}>
+                      Problem Description:
+                    </Text>
+                    <TextInput
+                      value={description}
+                      placeholder={'Problem Description'}
+                      onChangeText={text => setDescription(text)}
+                      style={[styles.commentTextInput]}
+                      multiline
+                      textAlignVertical="top"
+                    />
+                  </View>
                 </View>
-                <View style={{width: '48%'}}>
-                  <Text style={styles.dataHistoryText1}>Others:</Text>
-                  <TextInput
-                    value={others}
-                    placeholder={'Others'}
-                    onChangeText={text => setOthers(text)}
-                    style={[styles.nameTextView, {width: '100%'}]}
-                  />
-                </View>
-              </View>
 
-              <View style={styles.nameView}>
-                <View style={{width: '48%'}}>
-                  <Text style={styles.dataHistoryText1}>Pulse Rate:</Text>
-                  <TextInput
-                    value={pulseRate}
-                    placeholder={'Pulse Rate'}
-                    onChangeText={text => setPulseRate(text)}
-                    style={[styles.nameTextView, {width: '100%'}]}
-                  />
+                <View style={styles.nameView}>
+                  <View style={{width: '100%'}}>
+                    <Text style={styles.dataHistoryText1}>Test:</Text>
+                    <TextInput
+                      value={test}
+                      placeholder={'Test'}
+                      onChangeText={text => setTest(text)}
+                      style={[styles.commentTextInput]}
+                      multiline
+                      textAlignVertical="top"
+                    />
+                  </View>
                 </View>
-                <View style={{width: '48%'}}>
-                  <Text style={styles.dataHistoryText1}>Temperature:</Text>
-                  <TextInput
-                    value={temperature}
-                    placeholder={'Temperature'}
-                    onChangeText={text => setTemperature(text)}
-                    style={[styles.nameTextView, {width: '100%'}]}
-                  />
-                </View>
-              </View>
 
-              <View style={styles.nameView}>
-                <View style={{width: '100%'}}>
-                  <Text style={styles.dataHistoryText1}>
-                    Problem Description:
-                  </Text>
-                  <TextInput
-                    value={description}
-                    placeholder={'Problem Description'}
-                    onChangeText={text => setDescription(text)}
-                    style={[styles.commentTextInput]}
-                    multiline
-                    textAlignVertical="top"
-                  />
+                <View style={styles.nameView}>
+                  <View style={{width: '100%'}}>
+                    <Text style={styles.dataHistoryText1}>Advice:</Text>
+                    <TextInput
+                      value={advice}
+                      placeholder={'Advice'}
+                      onChangeText={text => setAdvice(text)}
+                      style={[styles.commentTextInput]}
+                      multiline
+                      textAlignVertical="top"
+                    />
+                  </View>
                 </View>
-              </View>
 
-              <View style={styles.nameView}>
-                <View style={{width: '100%'}}>
-                  <Text style={styles.dataHistoryText1}>Test:</Text>
-                  <TextInput
-                    value={test}
-                    placeholder={'Test'}
-                    onChangeText={text => setTest(text)}
-                    style={[styles.commentTextInput]}
-                    multiline
-                    textAlignVertical="top"
-                  />
-                </View>
-              </View>
-
-              <View style={styles.nameView}>
-                <View style={{width: '100%'}}>
-                  <Text style={styles.dataHistoryText1}>Advice:</Text>
-                  <TextInput
-                    value={advice}
-                    placeholder={'Advice'}
-                    onChangeText={text => setAdvice(text)}
-                    style={[styles.commentTextInput]}
-                    multiline
-                    textAlignVertical="top"
-                  />
-                </View>
-              </View>
-
-              <View style={styles.nameView1}>
-                <Text style={styles.dataHistoryText1}>Next Visit:</Text>
-                <View style={styles.nameView2}>
-                  <TextInput
-                    value={nextVisit}
-                    placeholder={'1'}
-                    onChangeText={text => setNextVisit(text)}
-                    style={[styles.nameTextView, {width: '30%'}]}
-                  />
-                  <SelectDropdown
-                    data={daysArray}
-                    onSelect={(selectedItem, index1) => {
-                      // setSelectedColor(selectedItem);
-                      console.log('gert Value:::', parameterArray);
-                      setNextVisitId(selectedItem.id);
-                      setNextVisitName(selectedItem.name);
-                      setRefresh(!refresh);
-                    }}
-                    defaultValueByIndex={0}
-                    renderButton={(selectedItem, isOpen) => {
-                      console.log('Get Response>>>', selectedItem);
-                      return (
-                        <View
-                          style={[styles.dropdown2BtnStyle2, {width: '65%'}]}>
-                          {nextVisitName != '' ? (
+                <View style={styles.nameView1}>
+                  <Text style={styles.dataHistoryText1}>Next Visit:</Text>
+                  <View style={styles.nameView2}>
+                    <TextInput
+                      value={nextVisit}
+                      placeholder={'1'}
+                      onChangeText={text => setNextVisit(text)}
+                      style={[styles.nameTextView, {width: '30%'}]}
+                    />
+                    <SelectDropdown
+                      data={daysArray}
+                      onSelect={(selectedItem, index1) => {
+                        // setSelectedColor(selectedItem);
+                        console.log('gert Value:::', parameterArray);
+                        setNextVisitId(selectedItem.id);
+                        setNextVisitName(selectedItem.name);
+                        setRefresh(!refresh);
+                      }}
+                      defaultValueByIndex={0}
+                      renderButton={(selectedItem, isOpen) => {
+                        console.log('Get Response>>>', selectedItem);
+                        return (
+                          <View
+                            style={[styles.dropdown2BtnStyle2, {width: '65%'}]}>
+                            {nextVisitName != '' ? (
+                              <Text style={styles.dropdownItemTxtStyle}>
+                                {nextVisitName == selectedItem?.name
+                                  ? `${selectedItem?.name}`
+                                  : nextVisitName}
+                              </Text>
+                            ) : (
+                              <Text style={styles.dropdownItemTxtStyle}>
+                                {selectedItem?.name || 'Select'}
+                              </Text>
+                            )}
+                          </View>
+                        );
+                      }}
+                      showsVerticalScrollIndicator={false}
+                      renderItem={(item1, index, isSelected) => {
+                        return (
+                          <TouchableOpacity style={styles.dropdownView}>
                             <Text style={styles.dropdownItemTxtStyle}>
-                              {nextVisitName == selectedItem?.name
-                                ? `${selectedItem?.name}`
-                                : nextVisitName}
+                              {item1?.name}
                             </Text>
-                          ) : (
-                            <Text style={styles.dropdownItemTxtStyle}>
-                              {selectedItem?.name || 'Select'}
-                            </Text>
-                          )}
-                        </View>
-                      );
-                    }}
-                    showsVerticalScrollIndicator={false}
-                    renderItem={(item1, index, isSelected) => {
-                      return (
-                        <TouchableOpacity style={styles.dropdownView}>
-                          <Text style={styles.dropdownItemTxtStyle}>
-                            {item1?.name}
-                          </Text>
-                        </TouchableOpacity>
-                      );
-                    }}
-                    dropdownIconPosition={'left'}
-                    dropdownStyle={styles.dropdown2DropdownStyle}
-                  />
+                          </TouchableOpacity>
+                        );
+                      }}
+                      dropdownIconPosition={'left'}
+                      dropdownStyle={styles.dropdown2DropdownStyle}
+                    />
+                  </View>
                 </View>
               </View>
-            </View>
+            )}
             <View style={styles.buttonView}>
               <TouchableOpacity
                 onPress={() => {

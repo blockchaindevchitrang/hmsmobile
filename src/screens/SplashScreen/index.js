@@ -62,7 +62,7 @@ export const SplashScreen = ({navigation}) => {
     const token = await AsyncStorage.getItem('accessToken');
     if (token !== null) {
       const DashboardData = await onDashboardGetApi();
-      console.log('Get Doctor Response::', DashboardData.data.data);
+      console.log('Get DashboardData Response::', DashboardData.data.data);
       if (DashboardData.data.data) {
         dispatch(fetchDashboardData(DashboardData.data.data));
       }
@@ -79,49 +79,49 @@ export const SplashScreen = ({navigation}) => {
       }
 
       const bloodData = await onGetBloodBankApi('');
-      console.log('Get Department Response::', bloodData.data.data);
+      console.log('Get bloodData Response::', bloodData.data.data);
       if (bloodData.data.data) {
         dispatch(fetchBloodData(bloodData.data.data));
       }
       navigation.replace('TabStack');
 
       const userData = await onGetPatientApi();
-      console.log('Get Department Response::', userData.data.data);
+      console.log('Get userData Response::', userData.data.data);
       if (userData.data.data) {
         const usersData = userData.data.data;
         dispatch(fetchUserData(usersData));
       }
 
       const bedData = await onGetBedApi();
-      console.log('Get Department Response::', bedData.data.data);
+      console.log('Get bedData Response::', bedData.data.data);
       if (bedData.data.data) {
         const usersData = bedData.data.data;
         dispatch(fetchBedData(usersData));
       }
 
       const bloodDonorData = await onGetBloodDonorApi();
-      console.log('Get Department Response::', bloodDonorData.data.data);
+      console.log('Get bloodDonorData Response::', bloodDonorData.data.data);
       if (bloodDonorData.data.data) {
         const usersData = bloodDonorData.data.data;
         dispatch(fetchBloodDonorData(usersData));
       }
 
       const bedTypeData = await onGetBedTypeApi('created_at', 'ASC');
-      console.log('Get Department Response::', bedTypeData.data.data);
+      console.log('Get bedTypeData Response::', bedTypeData.data.data);
       if (bedTypeData.data.data) {
         const usersData = bedTypeData.data.data;
         dispatch(fetchBedTypeData(usersData));
       }
 
       const roleData = await onGetRoleDataApi();
-      console.log('Get Department Response::', roleData.data.data);
+      console.log('Get roleData Response::', roleData.data.data);
       if (roleData.data.data) {
         dispatch(fetchRoleData(roleData.data.data));
       }
 
       const allUserData = await onGetAllUsersDataApi();
-      console.log('Get Department Response::', allUserData.data.data);
-      if (allUserData.data.data) {
+      console.log('Get allUserData Response::', allUserData.data.data);
+      if (allUserData.data.data.flag == 1) {
         dispatch(fetchAllUserData(allUserData.data.data));
       }
 

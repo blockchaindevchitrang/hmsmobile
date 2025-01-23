@@ -801,137 +801,277 @@ const InvoicesList = ({
                 <Text style={styles.nextText}>Add</Text>
               </TouchableOpacity>
             </View>
-            <FlatList
-              data={parameterArray}
-              renderItem={({item, index}) => {
-                return (
-                  <View
-                    style={{
-                      backgroundColor:
-                        index % 2 == 0 ? '#eeeeee' : COLORS.white,
-                      paddingBottom: hp(1),
-                      marginVertical: hp(1),
-                    }}>
-                    <View style={[styles.nameView, {paddingHorizontal: wp(2)}]}>
-                      <View style={{width: '48%'}}>
-                        <Text style={styles.dataHistoryText1}>ACCOUNT</Text>
-                        <SelectDropdown
-                          data={account}
-                          onSelect={(selectedItem, index1) => {
-                            // setSelectedColor(selectedItem);
-                            console.log('gert Value:::', parameterArray);
-                            parameterArray[index].accountId = selectedItem.id;
-                            parameterArray[index].accountName =
-                              selectedItem.name;
-                            setRefresh(!refresh);
-                          }}
-                          renderButton={(selectedItem, isOpen) => {
-                            console.log('Get Response>>>', selectedItem);
-                            return (
-                              <View style={styles.dropdown2BtnStyle2}>
-                                {item.accountId != '' ? (
+            {isPortrait ? (
+              <FlatList
+                data={parameterArray}
+                renderItem={({item, index}) => {
+                  return (
+                    <View
+                      style={{
+                        backgroundColor:
+                          index % 2 == 0 ? '#eeeeee' : COLORS.white,
+                        paddingBottom: hp(1),
+                        marginVertical: hp(1),
+                      }}>
+                      <View
+                        style={[styles.nameView, {paddingHorizontal: wp(2)}]}>
+                        <View style={{width: '48%'}}>
+                          <Text style={styles.dataHistoryText1}>ACCOUNT</Text>
+                          <SelectDropdown
+                            data={account}
+                            onSelect={(selectedItem, index1) => {
+                              // setSelectedColor(selectedItem);
+                              console.log('gert Value:::', parameterArray);
+                              parameterArray[index].accountId = selectedItem.id;
+                              parameterArray[index].accountName =
+                                selectedItem.name;
+                              setRefresh(!refresh);
+                            }}
+                            renderButton={(selectedItem, isOpen) => {
+                              console.log('Get Response>>>', selectedItem);
+                              return (
+                                <View style={styles.dropdown2BtnStyle2}>
+                                  {item.accountId != '' ? (
+                                    <Text style={styles.dropdownItemTxtStyle}>
+                                      {item.accountId == selectedItem?.id
+                                        ? `${selectedItem?.name}`
+                                        : item.accountName}
+                                    </Text>
+                                  ) : (
+                                    <Text style={styles.dropdownItemTxtStyle}>
+                                      {selectedItem?.name || 'Select Amount'}
+                                    </Text>
+                                  )}
+                                </View>
+                              );
+                            }}
+                            showsVerticalScrollIndicator={false}
+                            renderItem={(item1, index, isSelected) => {
+                              return (
+                                <TouchableOpacity style={styles.dropdownView}>
                                   <Text style={styles.dropdownItemTxtStyle}>
-                                    {item.accountId == selectedItem?.id
-                                      ? `${selectedItem?.name}`
-                                      : item.accountName}
+                                    {item1?.name}
                                   </Text>
-                                ) : (
-                                  <Text style={styles.dropdownItemTxtStyle}>
-                                    {selectedItem?.name || 'Select Amount'}
-                                  </Text>
-                                )}
-                              </View>
-                            );
-                          }}
-                          showsVerticalScrollIndicator={false}
-                          renderItem={(item1, index, isSelected) => {
-                            return (
-                              <TouchableOpacity style={styles.dropdownView}>
-                                <Text style={styles.dropdownItemTxtStyle}>
-                                  {item1?.name}
-                                </Text>
-                              </TouchableOpacity>
-                            );
-                          }}
-                          dropdownIconPosition={'left'}
-                          dropdownStyle={styles.dropdown2DropdownStyle}
-                        />
-                      </View>
-
-                      <View style={{width: '48%'}}>
-                        <Text style={styles.dataHistoryText1}>DESCRIPTION</Text>
-                        <TextInput
-                          value={item.description}
-                          placeholder={'Description'}
-                          onChangeText={text => {
-                            setRefresh(!refresh);
-                            parameterArray[index].description = text;
-                          }}
-                          style={[styles.nameTextView, {width: '100%'}]}
-                        />
-                      </View>
-                    </View>
-
-                    <View style={[styles.nameView, {paddingHorizontal: wp(2)}]}>
-                      <View style={{width: '48%'}}>
-                        <Text style={styles.dataHistoryText1}>QTY</Text>
-                        <TextInput
-                          value={item.qty}
-                          placeholder={'Qty'}
-                          onChangeText={text =>
-                            updateAmount(index, text, item.price)
-                          }
-                          style={[styles.nameTextView, {width: '100%'}]}
-                          keyboardType={'number-pad'}
-                        />
-                      </View>
-                      <View style={{width: '48%'}}>
-                        <Text style={styles.dataHistoryText1}>PRICE</Text>
-                        <TextInput
-                          value={item.price}
-                          placeholder={'Price'}
-                          onChangeText={text =>
-                            updateAmount(index, item.qty, text)
-                          }
-                          style={[styles.nameTextView, {width: '100%'}]}
-                          keyboardType={'number-pad'}
-                        />
-                      </View>
-                    </View>
-                    <View style={[styles.nameView, {paddingHorizontal: wp(2)}]}>
-                      <View style={{width: '55%'}}>
-                        <Text style={styles.dataHistoryText1}>Amount</Text>
-                        <Text style={[styles.nameTextView1, {height: hp(4)}]}>
-                          {item.amount != '' ? item.amount : '0'}
-                        </Text>
-                      </View>
-                      <View style={[styles.buttonView, {width: '15%'}]}>
-                        <TouchableOpacity
-                          onPress={() => {
-                            const existDataValue = parameterArray;
-                            const filterData = existDataValue.filter(
-                              (dataValue, index1) => index1 !== index,
-                            );
-                            console.log(' =====>', filterData);
-                            setParameterArray(filterData);
-                          }}
-                          style={{marginLeft: wp(2)}}>
-                          <Image
-                            style={[
-                              styles.editImage,
-                              {tintColor: COLORS.errorColor},
-                            ]}
-                            source={deleteIcon}
+                                </TouchableOpacity>
+                              );
+                            }}
+                            dropdownIconPosition={'left'}
+                            dropdownStyle={styles.dropdown2DropdownStyle}
                           />
-                        </TouchableOpacity>
+                        </View>
+
+                        <View style={{width: '48%'}}>
+                          <Text style={styles.dataHistoryText1}>
+                            DESCRIPTION
+                          </Text>
+                          <TextInput
+                            value={item.description}
+                            placeholder={'Description'}
+                            onChangeText={text => {
+                              setRefresh(!refresh);
+                              parameterArray[index].description = text;
+                            }}
+                            style={[styles.nameTextView, {width: '100%'}]}
+                          />
+                        </View>
+                      </View>
+
+                      <View
+                        style={[styles.nameView, {paddingHorizontal: wp(2)}]}>
+                        <View style={{width: '48%'}}>
+                          <Text style={styles.dataHistoryText1}>QTY</Text>
+                          <TextInput
+                            value={item.qty}
+                            placeholder={'Qty'}
+                            onChangeText={text =>
+                              updateAmount(index, text, item.price)
+                            }
+                            style={[styles.nameTextView, {width: '100%'}]}
+                            keyboardType={'number-pad'}
+                          />
+                        </View>
+                        <View style={{width: '48%'}}>
+                          <Text style={styles.dataHistoryText1}>PRICE</Text>
+                          <TextInput
+                            value={item.price}
+                            placeholder={'Price'}
+                            onChangeText={text =>
+                              updateAmount(index, item.qty, text)
+                            }
+                            style={[styles.nameTextView, {width: '100%'}]}
+                            keyboardType={'number-pad'}
+                          />
+                        </View>
+                      </View>
+                      <View
+                        style={[styles.nameView, {paddingHorizontal: wp(2)}]}>
+                        <View style={{width: '55%'}}>
+                          <Text style={styles.dataHistoryText1}>Amount</Text>
+                          <Text style={[styles.nameTextView1, {height: hp(4)}]}>
+                            {item.amount != '' ? item.amount : '0'}
+                          </Text>
+                        </View>
+                        <View style={[styles.buttonView, {width: '15%'}]}>
+                          <TouchableOpacity
+                            onPress={() => {
+                              const existDataValue = parameterArray;
+                              const filterData = existDataValue.filter(
+                                (dataValue, index1) => index1 !== index,
+                              );
+                              console.log(' =====>', filterData);
+                              setParameterArray(filterData);
+                            }}
+                            style={{marginLeft: wp(2)}}>
+                            <Image
+                              style={[
+                                styles.editImage,
+                                {tintColor: COLORS.errorColor},
+                              ]}
+                              source={deleteIcon}
+                            />
+                          </TouchableOpacity>
+                        </View>
                       </View>
                     </View>
-                  </View>
-                );
-              }}
-              keyExtractor={(item, index) => index.toString()}
-              contentContainerStyle={{paddingBottom: hp(3)}}
-            />
+                  );
+                }}
+                keyExtractor={(item, index) => index.toString()}
+                contentContainerStyle={{paddingBottom: hp(3)}}
+              />
+            ) : (
+              <FlatList
+                data={parameterArray}
+                renderItem={({item, index}) => {
+                  return (
+                    <View
+                      style={{
+                        backgroundColor:
+                          index % 2 == 0 ? '#eeeeee' : COLORS.white,
+                        paddingBottom: hp(1),
+                        marginVertical: hp(1),
+                      }}>
+                      <View
+                        style={[styles.nameView, {paddingHorizontal: wp(2)}]}>
+                        <View style={{width: '32%'}}>
+                          <Text style={styles.dataHistoryText1}>ACCOUNT</Text>
+                          <SelectDropdown
+                            data={account}
+                            onSelect={(selectedItem, index1) => {
+                              // setSelectedColor(selectedItem);
+                              console.log('gert Value:::', parameterArray);
+                              parameterArray[index].accountId = selectedItem.id;
+                              parameterArray[index].accountName =
+                                selectedItem.name;
+                              setRefresh(!refresh);
+                            }}
+                            renderButton={(selectedItem, isOpen) => {
+                              console.log('Get Response>>>', selectedItem);
+                              return (
+                                <View style={styles.dropdown2BtnStyle2}>
+                                  {item.accountId != '' ? (
+                                    <Text style={styles.dropdownItemTxtStyle}>
+                                      {item.accountId == selectedItem?.id
+                                        ? `${selectedItem?.name}`
+                                        : item.accountName}
+                                    </Text>
+                                  ) : (
+                                    <Text style={styles.dropdownItemTxtStyle}>
+                                      {selectedItem?.name || 'Select Amount'}
+                                    </Text>
+                                  )}
+                                </View>
+                              );
+                            }}
+                            showsVerticalScrollIndicator={false}
+                            renderItem={(item1, index, isSelected) => {
+                              return (
+                                <TouchableOpacity style={styles.dropdownView}>
+                                  <Text style={styles.dropdownItemTxtStyle}>
+                                    {item1?.name}
+                                  </Text>
+                                </TouchableOpacity>
+                              );
+                            }}
+                            dropdownIconPosition={'left'}
+                            dropdownStyle={styles.dropdown2DropdownStyle}
+                          />
+                        </View>
+
+                        <View style={{width: '32%'}}>
+                          <Text style={styles.dataHistoryText1}>
+                            DESCRIPTION
+                          </Text>
+                          <TextInput
+                            value={item.description}
+                            placeholder={'Description'}
+                            onChangeText={text => {
+                              setRefresh(!refresh);
+                              parameterArray[index].description = text;
+                            }}
+                            style={[styles.nameTextView, {width: '100%'}]}
+                          />
+                        </View>
+                        <View style={{width: '32%'}}>
+                          <Text style={styles.dataHistoryText1}>QTY</Text>
+                          <TextInput
+                            value={item.qty}
+                            placeholder={'Qty'}
+                            onChangeText={text =>
+                              updateAmount(index, text, item.price)
+                            }
+                            style={[styles.nameTextView, {width: '100%'}]}
+                            keyboardType={'number-pad'}
+                          />
+                        </View>
+                      </View>
+                      <View
+                        style={[styles.nameView, {paddingHorizontal: wp(2)}]}>
+                        <View style={{width: '32%'}}>
+                          <Text style={styles.dataHistoryText1}>PRICE</Text>
+                          <TextInput
+                            value={item.price}
+                            placeholder={'Price'}
+                            onChangeText={text =>
+                              updateAmount(index, item.qty, text)
+                            }
+                            style={[styles.nameTextView, {width: '100%'}]}
+                            keyboardType={'number-pad'}
+                          />
+                        </View>
+                        <View style={{width: '47%'}}>
+                          <Text style={styles.dataHistoryText1}>Amount</Text>
+                          <Text style={[styles.nameTextView1, {height: hp(4)}]}>
+                            {item.amount != '' ? item.amount : '0'}
+                          </Text>
+                        </View>
+                        <View style={[styles.buttonView, {width: '15%'}]}>
+                          <TouchableOpacity
+                            onPress={() => {
+                              const existDataValue = parameterArray;
+                              const filterData = existDataValue.filter(
+                                (dataValue, index1) => index1 !== index,
+                              );
+                              console.log(' =====>', filterData);
+                              setParameterArray(filterData);
+                            }}
+                            style={{marginLeft: wp(2)}}>
+                            <Image
+                              style={[
+                                styles.editImage,
+                                {tintColor: COLORS.errorColor},
+                              ]}
+                              source={deleteIcon}
+                            />
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    </View>
+                  );
+                }}
+                keyExtractor={(item, index) => index.toString()}
+                contentContainerStyle={{paddingBottom: hp(3)}}
+              />
+            )}
             <View style={{alignSelf: 'flex-end'}}>
               <Text
                 style={
@@ -1662,7 +1802,7 @@ const landscapeStyles = StyleSheet.create({
     fontFamily: Fonts.FONTS.PoppinsBold,
     color: COLORS.black,
     textAlign: 'right',
-    paddingVertical: hp(1),
+    paddingVertical: hp(0.5),
     borderBottomWidth: 0.5,
     paddingHorizontal: wp(3),
   },
@@ -1778,7 +1918,7 @@ const landscapeStyles = StyleSheet.create({
     marginTop: hp(3),
   },
   nextView: {
-    height: hp(4.5),
+    height: hp(4),
     paddingHorizontal: wp(4),
     borderRadius: 5,
     alignItems: 'center',
@@ -1788,11 +1928,11 @@ const landscapeStyles = StyleSheet.create({
   },
   nextText: {
     fontFamily: Fonts.FONTS.PoppinsBold,
-    fontSize: hp(2.2),
+    fontSize: hp(2),
     color: COLORS.white,
   },
   prevView: {
-    height: hp(4.5),
+    height: hp(4),
     paddingHorizontal: wp(4),
     borderRadius: 5,
     alignItems: 'center',
@@ -2052,7 +2192,7 @@ const landscapeStyles = StyleSheet.create({
     color: COLORS.black,
   },
   nextView2: {
-    height: hp(4),
+    height: hp(3),
     borderRadius: 5,
     alignItems: 'center',
     justifyContent: 'center',

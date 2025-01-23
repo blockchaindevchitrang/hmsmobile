@@ -14,7 +14,7 @@ import {
   FlatList,
 } from 'react-native';
 import {useTheme} from '../../utils/ThemeProvider';
-import styles from './styles';
+import {portraitStyles, landscapeStyles} from './styles';
 import Header from '../../components/Header';
 import {COLORS, Fonts} from '../../utils';
 import {useTranslation} from 'react-i18next';
@@ -25,6 +25,7 @@ import {
 import close from '../../images/close.png';
 import {onGetCommonApi} from '../../services/Api';
 import filter from '../../images/filter.png';
+import useOrientation from '../../components/OrientationComponent';
 
 const BloodIssueData = [
   {
@@ -75,6 +76,9 @@ const BloodIssueData = [
 ];
 
 export const TransactionsScreen = ({navigation}) => {
+  const orientation = useOrientation(); // Get current orientation
+  const isPortrait = orientation === 'portrait';
+  const styles = isPortrait ? portraitStyles : landscapeStyles;
   const {t} = useTranslation();
   const {theme} = useTheme();
   const menuRef = useRef(null);

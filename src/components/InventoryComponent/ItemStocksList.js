@@ -30,14 +30,10 @@ import draw from '../../images/draw.png';
 import SelectDropdown from 'react-native-select-dropdown';
 import {useSelector} from 'react-redux';
 import {
-  onAddAccountListApi,
   onAddCommonFormDataApi,
-  onAddInvestigationApi,
   onDeleteCommonApi,
-  onGetEditAccountDataApi,
   onGetSpecificCommonApi,
   onUpdateCommonFormDataApi,
-  onUpdateInvestigationApi,
 } from '../../services/Api';
 import {DeletePopup} from '../DeletePopup';
 import FlashMessage, {
@@ -45,6 +41,7 @@ import FlashMessage, {
   hideMessage,
 } from 'react-native-flash-message';
 import ImagePicker from 'react-native-image-crop-picker';
+import useOrientation from '../OrientationComponent';
 
 const ItemStocksList = ({
   searchBreak,
@@ -58,6 +55,9 @@ const ItemStocksList = ({
   setPageCount,
 }) => {
   const {theme} = useTheme();
+  const orientation = useOrientation();
+  const isPortrait = orientation === 'portrait';
+  const styles = isPortrait ? portraitStyles : landscapeStyles;
   const menuRef = useRef(null);
   const [newAccountVisible, setNewAccountVisible] = useState(false);
   const [categoryId, setCategoryId] = useState('');
@@ -367,15 +367,15 @@ const ItemStocksList = ({
         <View style={styles.nameDataView}>
           <Text style={[styles.dataHistoryText2]}>{item.item}</Text>
         </View>
-        <View style={[styles.switchView, {width: wp(35)}]}>
+        <View style={[styles.switchView, {width: isPortrait ? wp(35) : wp(26)}]}>
           <Text style={[styles.dataHistoryText1]}>{item.itemcategory}</Text>
         </View>
-        <View style={[styles.switchView, {width: wp(26)}]}>
+        <View style={[styles.switchView, {width: isPortrait ? wp(26) : wp(20)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
             <Text style={[styles.dataHistoryText1]}>{item.quantity}</Text>
           </View>
         </View>
-        <View style={[styles.nameDataView, {width: wp(30)}]}>
+        <View style={[styles.nameDataView, {width: isPortrait ? wp(35) : wp(26)}]}>
           <Text style={[styles.dataHistoryText1]}>{item.purchase_price}</Text>
         </View>
         <View style={styles.nameDataView}>
@@ -469,9 +469,9 @@ const ItemStocksList = ({
           <View
             style={[styles.activeView, {backgroundColor: theme.headerColor}]}>
             <ScrollView
-                horizontal
-                bounces={false}
-                showsHorizontalScrollIndicator={false}>
+              horizontal
+              bounces={false}
+              showsHorizontalScrollIndicator={false}>
               <View>
                 <View
                   style={[
@@ -481,23 +481,43 @@ const ItemStocksList = ({
                   <Text
                     style={[
                       styles.titleText,
-                      {width: wp(30), textAlign: 'left'},
+                      {width: isPortrait ? wp(30) : wp(22), textAlign: 'left'},
                     ]}>
                     {'ITEM NAME'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(35)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {width: isPortrait ? wp(35) : wp(26)},
+                    ]}>
                     {'ITEM CATEGORY'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(26)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {width: isPortrait ? wp(26) : wp(20)},
+                    ]}>
                     {'QUANTITY'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(35)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {width: isPortrait ? wp(35) : wp(26)},
+                    ]}>
                     {'PURCHASE PRICE'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(30)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {width: isPortrait ? wp(30) : wp(22)},
+                    ]}>
                     {'CREATED ON'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(16)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {width: wp(16), textAlign: 'center'},
+                    ]}>
                     {'ACTION'}
                   </Text>
                 </View>
@@ -588,195 +608,382 @@ const ItemStocksList = ({
               </TouchableOpacity>
             </View>
           </View>
-          <View style={styles.profileView}>
-            <View style={styles.nameView}>
-              <View style={{width: '48%'}}>
-                <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
-                  Item Category:<Text style={styles.dataHistoryText4}>*</Text>
-                </Text>
-                <SelectDropdown
-                  data={itemCategory}
-                  onSelect={(selectedItem, index) => {
-                    setCategoryName(selectedItem.name);
-                    setCategoryId(selectedItem.id);
-                    console.log('gert Value:::', selectedItem);
-                  }}
-                  defaultValue={categoryName}
-                  renderButton={(selectedItem, isOpen) => {
-                    console.log('Get Response>>>', selectedItem);
-                    return (
-                      <View style={styles.dropdown2BtnStyle2}>
-                        {categoryId != '' ? (
+          {isPortrait ? (
+            <View style={styles.profileView}>
+              <View style={styles.nameView}>
+                <View style={{width: '48%'}}>
+                  <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
+                    Item Category:<Text style={styles.dataHistoryText4}>*</Text>
+                  </Text>
+                  <SelectDropdown
+                    data={itemCategory}
+                    onSelect={(selectedItem, index) => {
+                      setCategoryName(selectedItem.name);
+                      setCategoryId(selectedItem.id);
+                      console.log('gert Value:::', selectedItem);
+                    }}
+                    defaultValue={categoryName}
+                    renderButton={(selectedItem, isOpen) => {
+                      console.log('Get Response>>>', selectedItem);
+                      return (
+                        <View style={styles.dropdown2BtnStyle2}>
+                          {categoryId != '' ? (
+                            <Text style={styles.dropdownItemTxtStyle}>
+                              {categoryId == selectedItem?.id
+                                ? selectedItem?.name
+                                : categoryName}
+                            </Text>
+                          ) : (
+                            <Text style={styles.dropdownItemTxtStyle}>
+                              {selectedItem?.name || 'Select Item Category'}
+                            </Text>
+                          )}
+                        </View>
+                      );
+                    }}
+                    showsVerticalScrollIndicator={false}
+                    renderItem={(item, index, isSelected) => {
+                      return (
+                        <TouchableOpacity style={styles.dropdownView}>
                           <Text style={styles.dropdownItemTxtStyle}>
-                            {categoryId == selectedItem?.id
-                              ? selectedItem?.name
-                              : categoryName}
+                            {item.name}
                           </Text>
-                        ) : (
-                          <Text style={styles.dropdownItemTxtStyle}>
-                            {selectedItem?.name || 'Select Item Category'}
-                          </Text>
-                        )}
-                      </View>
-                    );
-                  }}
-                  showsVerticalScrollIndicator={false}
-                  renderItem={(item, index, isSelected) => {
-                    return (
-                      <TouchableOpacity style={styles.dropdownView}>
-                        <Text style={styles.dropdownItemTxtStyle}>
-                          {item.name}
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  }}
-                  dropdownIconPosition={'left'}
-                  dropdownStyle={styles.dropdown2DropdownStyle}
-                />
-              </View>
+                        </TouchableOpacity>
+                      );
+                    }}
+                    dropdownIconPosition={'left'}
+                    dropdownStyle={styles.dropdown2DropdownStyle}
+                  />
+                </View>
 
-              <View style={{width: '48%'}}>
-                <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
-                  Item Name:<Text style={styles.dataHistoryText4}>*</Text>
-                </Text>
-                <SelectDropdown
-                  data={accountantData}
-                  disabled={accountantData.length > 0 ? false : true}
-                  onSelect={(selectedItem, index) => {
-                    // setSelectedColor(selectedItem);
-                    setItemId(selectedItem.id);
-                    console.log('gert Value:::', selectedItem);
-                  }}
-                  defaultValue={itemName}
-                  renderButton={(selectedItem, isOpen) => {
-                    console.log('Get Response>>>', selectedItem);
-                    return (
-                      <View
-                        style={[
-                          styles.dropdown2BtnStyle2,
-                          {
-                            backgroundColor:
-                              accountantData.length > 0 ? '#fff' : '#c2c2c2',
-                          },
-                        ]}>
-                        {itemId != '' ? (
+                <View style={{width: '48%'}}>
+                  <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
+                    Item Name:<Text style={styles.dataHistoryText4}>*</Text>
+                  </Text>
+                  <SelectDropdown
+                    data={accountantData}
+                    disabled={accountantData.length > 0 ? false : true}
+                    onSelect={(selectedItem, index) => {
+                      // setSelectedColor(selectedItem);
+                      setItemId(selectedItem.id);
+                      console.log('gert Value:::', selectedItem);
+                    }}
+                    defaultValue={itemName}
+                    renderButton={(selectedItem, isOpen) => {
+                      console.log('Get Response>>>', selectedItem);
+                      return (
+                        <View
+                          style={[
+                            styles.dropdown2BtnStyle2,
+                            {
+                              backgroundColor:
+                                accountantData.length > 0 ? '#fff' : '#c2c2c2',
+                            },
+                          ]}>
+                          {itemId != '' ? (
+                            <Text style={styles.dropdownItemTxtStyle}>
+                              {itemId == selectedItem?.id
+                                ? selectedItem?.name
+                                : itemName}
+                            </Text>
+                          ) : (
+                            <Text style={styles.dropdownItemTxtStyle}>
+                              {selectedItem?.name || 'Select Item'}
+                            </Text>
+                          )}
+                        </View>
+                      );
+                    }}
+                    showsVerticalScrollIndicator={false}
+                    renderItem={(item, index, isSelected) => {
+                      return (
+                        <TouchableOpacity style={styles.dropdownView}>
                           <Text style={styles.dropdownItemTxtStyle}>
-                            {itemId == selectedItem?.id
-                              ? selectedItem?.name
-                              : itemName}
+                            {item.name}
                           </Text>
-                        ) : (
-                          <Text style={styles.dropdownItemTxtStyle}>
-                            {selectedItem?.name || 'Select Item'}
-                          </Text>
-                        )}
-                      </View>
-                    );
-                  }}
-                  showsVerticalScrollIndicator={false}
-                  renderItem={(item, index, isSelected) => {
-                    return (
-                      <TouchableOpacity style={styles.dropdownView}>
-                        <Text style={styles.dropdownItemTxtStyle}>
-                          {item.name}
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  }}
-                  dropdownIconPosition={'left'}
-                  dropdownStyle={styles.dropdown2DropdownStyle}
-                />
-              </View>
-            </View>
-            <View style={styles.nameView}>
-              <View style={{width: '48%'}}>
-                <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
-                  Supplier Name:
-                </Text>
-                <TextInput
-                  value={supplier}
-                  placeholder={'Supplier Name'}
-                  onChangeText={text => setSupplier(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-
-              <View style={{width: '48%'}}>
-                <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
-                  Store Name:
-                </Text>
-                <TextInput
-                  value={storeName}
-                  placeholder={'Store Name'}
-                  onChangeText={text => setStoreName(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                />
-              </View>
-            </View>
-            <View style={styles.nameView}>
-              <View style={{width: '48%'}}>
-                <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
-                  Quantity:
-                </Text>
-                <TextInput
-                  value={quantity}
-                  placeholder={'Quantity'}
-                  onChangeText={text => setQuantity(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                  keyboardType={'number-pad'}
-                />
-              </View>
-
-              <View style={{width: '48%'}}>
-                <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
-                  Purchase Price:
-                </Text>
-                <TextInput
-                  value={price}
-                  placeholder={'Purchase Price'}
-                  onChangeText={text => setPrice(text)}
-                  style={[styles.nameTextView, {width: '100%'}]}
-                  keyboardType={'number-pad'}
-                />
-              </View>
-            </View>
-            <View style={styles.nameView}>
-              <View>
-                <Text style={styles.dataHistoryText5}>Attachment:</Text>
-                <View style={styles.profilePhotoView}>
-                  <TouchableOpacity
-                    style={styles.editView}
-                    onPress={() => openProfileImagePicker()}>
-                    <Image style={styles.editImage1} source={draw} />
-                  </TouchableOpacity>
-                  <Image
-                    style={
-                      avatar != null
-                        ? styles.profileImage1
-                        : styles.profileImage
-                    }
-                    source={avatar != null ? {uri: avatar?.uri} : photo}
+                        </TouchableOpacity>
+                      );
+                    }}
+                    dropdownIconPosition={'left'}
+                    dropdownStyle={styles.dropdown2DropdownStyle}
                   />
                 </View>
               </View>
-            </View>
-            <View style={styles.nameView}>
-              <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText6}>Description:</Text>
-                <TextInput
-                  value={description}
-                  placeholder={'Description'}
-                  onChangeText={text => setDescription(text)}
-                  style={[styles.commentTextInput]}
-                  multiline
-                  textAlignVertical="top"
-                />
+              <View style={styles.nameView}>
+                <View style={{width: '48%'}}>
+                  <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
+                    Supplier Name:
+                  </Text>
+                  <TextInput
+                    value={supplier}
+                    placeholder={'Supplier Name'}
+                    onChangeText={text => setSupplier(text)}
+                    style={[styles.nameTextView, {width: '100%'}]}
+                  />
+                </View>
+
+                <View style={{width: '48%'}}>
+                  <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
+                    Store Name:
+                  </Text>
+                  <TextInput
+                    value={storeName}
+                    placeholder={'Store Name'}
+                    onChangeText={text => setStoreName(text)}
+                    style={[styles.nameTextView, {width: '100%'}]}
+                  />
+                </View>
               </View>
+              <View style={styles.nameView}>
+                <View style={{width: '48%'}}>
+                  <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
+                    Quantity:
+                  </Text>
+                  <TextInput
+                    value={quantity}
+                    placeholder={'Quantity'}
+                    onChangeText={text => setQuantity(text)}
+                    style={[styles.nameTextView, {width: '100%'}]}
+                    keyboardType={'number-pad'}
+                  />
+                </View>
+
+                <View style={{width: '48%'}}>
+                  <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
+                    Purchase Price:
+                  </Text>
+                  <TextInput
+                    value={price}
+                    placeholder={'Purchase Price'}
+                    onChangeText={text => setPrice(text)}
+                    style={[styles.nameTextView, {width: '100%'}]}
+                    keyboardType={'number-pad'}
+                  />
+                </View>
+              </View>
+              <View style={styles.nameView}>
+                <View>
+                  <Text style={styles.dataHistoryText5}>Attachment:</Text>
+                  <View style={styles.profilePhotoView}>
+                    <TouchableOpacity
+                      style={styles.editView}
+                      onPress={() => openProfileImagePicker()}>
+                      <Image style={styles.editImage1} source={draw} />
+                    </TouchableOpacity>
+                    <Image
+                      style={
+                        avatar != null
+                          ? styles.profileImage1
+                          : styles.profileImage
+                      }
+                      source={avatar != null ? {uri: avatar?.uri} : photo}
+                    />
+                  </View>
+                </View>
+              </View>
+              <View style={styles.nameView}>
+                <View style={{width: '100%'}}>
+                  <Text style={styles.dataHistoryText6}>Description:</Text>
+                  <TextInput
+                    value={description}
+                    placeholder={'Description'}
+                    onChangeText={text => setDescription(text)}
+                    style={[styles.commentTextInput]}
+                    multiline
+                    textAlignVertical="top"
+                  />
+                </View>
+              </View>
+              {errorVisible ? (
+                <Text style={styles.dataHistoryText4}>{errorMessage}</Text>
+              ) : null}
             </View>
-            {errorVisible ? (
-              <Text style={styles.dataHistoryText4}>{errorMessage}</Text>
-            ) : null}
-          </View>
+          ) : (
+            <View style={styles.profileView}>
+              <View style={styles.nameView}>
+                <View style={{width: '32%'}}>
+                  <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
+                    Item Category:<Text style={styles.dataHistoryText4}>*</Text>
+                  </Text>
+                  <SelectDropdown
+                    data={itemCategory}
+                    onSelect={(selectedItem, index) => {
+                      setCategoryName(selectedItem.name);
+                      setCategoryId(selectedItem.id);
+                      console.log('gert Value:::', selectedItem);
+                    }}
+                    defaultValue={categoryName}
+                    renderButton={(selectedItem, isOpen) => {
+                      console.log('Get Response>>>', selectedItem);
+                      return (
+                        <View style={styles.dropdown2BtnStyle2}>
+                          {categoryId != '' ? (
+                            <Text style={styles.dropdownItemTxtStyle}>
+                              {categoryId == selectedItem?.id
+                                ? selectedItem?.name
+                                : categoryName}
+                            </Text>
+                          ) : (
+                            <Text style={styles.dropdownItemTxtStyle}>
+                              {selectedItem?.name || 'Select Item Category'}
+                            </Text>
+                          )}
+                        </View>
+                      );
+                    }}
+                    showsVerticalScrollIndicator={false}
+                    renderItem={(item, index, isSelected) => {
+                      return (
+                        <TouchableOpacity style={styles.dropdownView}>
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {item.name}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    }}
+                    dropdownIconPosition={'left'}
+                    dropdownStyle={styles.dropdown2DropdownStyle}
+                  />
+                </View>
+                <View style={{width: '32%'}}>
+                  <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
+                    Item Name:<Text style={styles.dataHistoryText4}>*</Text>
+                  </Text>
+                  <SelectDropdown
+                    data={accountantData}
+                    disabled={accountantData.length > 0 ? false : true}
+                    onSelect={(selectedItem, index) => {
+                      // setSelectedColor(selectedItem);
+                      setItemId(selectedItem.id);
+                      console.log('gert Value:::', selectedItem);
+                    }}
+                    defaultValue={itemName}
+                    renderButton={(selectedItem, isOpen) => {
+                      console.log('Get Response>>>', selectedItem);
+                      return (
+                        <View
+                          style={[
+                            styles.dropdown2BtnStyle2,
+                            {
+                              backgroundColor:
+                                accountantData.length > 0 ? '#fff' : '#c2c2c2',
+                            },
+                          ]}>
+                          {itemId != '' ? (
+                            <Text style={styles.dropdownItemTxtStyle}>
+                              {itemId == selectedItem?.id
+                                ? selectedItem?.name
+                                : itemName}
+                            </Text>
+                          ) : (
+                            <Text style={styles.dropdownItemTxtStyle}>
+                              {selectedItem?.name || 'Select Item'}
+                            </Text>
+                          )}
+                        </View>
+                      );
+                    }}
+                    showsVerticalScrollIndicator={false}
+                    renderItem={(item, index, isSelected) => {
+                      return (
+                        <TouchableOpacity style={styles.dropdownView}>
+                          <Text style={styles.dropdownItemTxtStyle}>
+                            {item.name}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    }}
+                    dropdownIconPosition={'left'}
+                    dropdownStyle={styles.dropdown2DropdownStyle}
+                  />
+                </View>
+                <View style={{width: '32%'}}>
+                  <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
+                    Supplier Name:
+                  </Text>
+                  <TextInput
+                    value={supplier}
+                    placeholder={'Supplier Name'}
+                    onChangeText={text => setSupplier(text)}
+                    style={[styles.nameTextView, {width: '100%'}]}
+                  />
+                </View>
+              </View>
+              <View style={styles.nameView}>
+                <View style={{width: '32%'}}>
+                  <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
+                    Store Name:
+                  </Text>
+                  <TextInput
+                    value={storeName}
+                    placeholder={'Store Name'}
+                    onChangeText={text => setStoreName(text)}
+                    style={[styles.nameTextView, {width: '100%'}]}
+                  />
+                </View>
+                <View style={{width: '32%'}}>
+                  <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
+                    Quantity:
+                  </Text>
+                  <TextInput
+                    value={quantity}
+                    placeholder={'Quantity'}
+                    onChangeText={text => setQuantity(text)}
+                    style={[styles.nameTextView, {width: '100%'}]}
+                    keyboardType={'number-pad'}
+                  />
+                </View>
+                <View style={{width: '32%'}}>
+                  <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
+                    Purchase Price:
+                  </Text>
+                  <TextInput
+                    value={price}
+                    placeholder={'Purchase Price'}
+                    onChangeText={text => setPrice(text)}
+                    style={[styles.nameTextView, {width: '100%'}]}
+                    keyboardType={'number-pad'}
+                  />
+                </View>
+              </View>
+              <View style={styles.nameView}>
+                <View>
+                  <Text style={styles.dataHistoryText5}>Attachment:</Text>
+                  <View style={styles.profilePhotoView}>
+                    <TouchableOpacity
+                      style={styles.editView}
+                      onPress={() => openProfileImagePicker()}>
+                      <Image style={styles.editImage1} source={draw} />
+                    </TouchableOpacity>
+                    <Image
+                      style={
+                        avatar != null
+                          ? styles.profileImage1
+                          : styles.profileImage
+                      }
+                      source={avatar != null ? {uri: avatar?.uri} : photo}
+                    />
+                  </View>
+                </View>
+              </View>
+              <View style={styles.nameView}>
+                <View style={{width: '100%'}}>
+                  <Text style={styles.dataHistoryText6}>Description:</Text>
+                  <TextInput
+                    value={description}
+                    placeholder={'Description'}
+                    onChangeText={text => setDescription(text)}
+                    style={[styles.commentTextInput]}
+                    multiline
+                    textAlignVertical="top"
+                  />
+                </View>
+              </View>
+              {errorVisible ? (
+                <Text style={styles.dataHistoryText4}>{errorMessage}</Text>
+              ) : null}
+            </View>
+          )}
           <View style={styles.buttonView}>
             <TouchableOpacity
               onPress={() => {
@@ -810,7 +1017,7 @@ const ItemStocksList = ({
 
 export default ItemStocksList;
 
-const styles = StyleSheet.create({
+const portraitStyles = StyleSheet.create({
   safeAreaStyle: {
     flex: 1,
     justifyContent: 'center',
@@ -1329,6 +1536,534 @@ const styles = StyleSheet.create({
     paddingVertical: hp(0.5),
     borderRadius: 5,
     fontSize: hp(3),
+    color: COLORS.white,
+  },
+  totalCountText: {
+    fontSize: hp(2),
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+  },
+});
+
+const landscapeStyles = StyleSheet.create({
+  safeAreaStyle: {
+    flex: 1,
+    justifyContent: 'center',
+    width: '100%',
+  },
+  subView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    paddingHorizontal: wp(3),
+    marginVertical: hp(2),
+  },
+  searchView: {
+    width: '50%',
+    paddingHorizontal: wp(2),
+    paddingVertical: hp(0.5),
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(2),
+    color: COLORS.black,
+    borderRadius: 5,
+  },
+  filterView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    // justifyContent: 'flex-end',
+    // paddingHorizontal: wp(3),
+    // paddingBottom: hp(1),
+  },
+  filterView1: {
+    height: hp(5),
+    width: hp(5),
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.blueColor,
+  },
+  filterImage: {
+    width: wp(6),
+    height: hp(3),
+    resizeMode: 'contain',
+    tintColor: COLORS.white,
+  },
+  actionView: {
+    height: hp(4),
+    paddingHorizontal: wp(3),
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.blueColor,
+    marginLeft: wp(2),
+  },
+  actionText: {
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    fontSize: hp(2.2),
+    color: COLORS.white,
+  },
+  activeView: {
+    width: '96%',
+    minHeight: hp(35),
+    maxHeight: hp(80),
+    alignSelf: 'center',
+    backgroundColor: COLORS.white,
+    marginTop: hp(0.5),
+    borderRadius: wp(1),
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.22,
+    shadowRadius: 2.22,
+
+    elevation: 3,
+  },
+  titleActiveView: {
+    width: '100%',
+    height: hp(5),
+    alignSelf: 'center',
+    backgroundColor: COLORS.primary,
+    alignItems: 'center',
+    flexDirection: 'row',
+    marginTop: hp(1),
+    paddingBottom: hp(0.5),
+    justifyContent: 'space-between',
+  },
+  titleText: {
+    fontSize: hp(1.8),
+    fontFamily: Fonts.FONTS.PoppinsSemiBold,
+    color: COLORS.white,
+    marginHorizontal: wp(2),
+    textAlign: 'left',
+  },
+  titleText1: {
+    fontSize: hp(1.8),
+    fontFamily: Fonts.FONTS.PoppinsSemiBold,
+    color: COLORS.black,
+    marginHorizontal: wp(3),
+    textAlign: 'left',
+  },
+  dataHistoryView: {
+    width: '100%',
+    height: hp(6),
+    alignItems: 'center',
+    flexDirection: 'row',
+    alignSelf: 'flex-start',
+    justifyContent: 'space-between',
+  },
+  dataHistoryText: {
+    fontSize: hp(1.8),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+    marginHorizontal: wp(2),
+    textAlign: 'center',
+  },
+  dataHistoryText1: {
+    fontSize: hp(1.7),
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    color: COLORS.black,
+  },
+  dataHistoryText2: {
+    fontSize: hp(1.8),
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    color: COLORS.blueColor,
+    textAlign: 'center',
+  },
+  dataHistoryText3: {
+    fontSize: hp(1.8),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+    paddingVertical: hp(0.5),
+  },
+  dataHistoryText4: {
+    fontSize: hp(1.8),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.errorColor,
+  },
+  dataHistoryText5: {
+    fontSize: hp(1.7),
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    color: COLORS.black,
+  },
+  dataHistoryText6: {
+    fontSize: hp(1.8),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+  },
+  mainDataView: {
+    minHeight: hp(29),
+    maxHeight: hp(74),
+    width: '100%',
+    backgroundColor: COLORS.white,
+    paddingBottom: hp(1),
+    borderBottomLeftRadius: wp(1),
+    borderBottomRightRadius: wp(1),
+  },
+  nameDataView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: wp(22),
+    marginHorizontal: wp(2),
+    // justifyContent: 'center',
+  },
+  switchView: {
+    width: wp(20),
+    justifyContent: 'center',
+    marginHorizontal: wp(2),
+    alignItems: 'flex-start',
+  },
+  actionDataView: {
+    width: wp(16),
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: wp(2),
+    flexDirection: 'row',
+  },
+  editImage: {
+    width: wp(4),
+    height: hp(2.5),
+    resizeMode: 'contain',
+  },
+  backButtonView: {
+    height: hp(4),
+    paddingHorizontal: wp(3),
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.orange,
+  },
+  backText: {
+    fontFamily: Fonts.FONTS.PoppinsSemiBold,
+    fontSize: hp(1.8),
+    color: COLORS.white,
+  },
+  doctorText: {
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    fontSize: hp(2.3),
+    color: COLORS.black,
+  },
+  profileView: {
+    width: '100%',
+    paddingVertical: hp(1),
+    paddingHorizontal: wp(3),
+    alignSelf: 'center',
+    borderRadius: wp(2),
+  },
+  nameTextView: {
+    width: '50%',
+    paddingHorizontal: wp(2),
+    paddingVertical: hp(0.5),
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    color: COLORS.black,
+    borderRadius: 5,
+    marginTop: hp(1),
+    backgroundColor: COLORS.white,
+  },
+  nameView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginVertical: hp(1),
+    alignSelf: 'center',
+  },
+  contactView: {
+    width: '94%',
+    paddingVertical: hp(2),
+    paddingHorizontal: wp(3),
+    alignSelf: 'center',
+    borderRadius: wp(2),
+  },
+  buttonView: {
+    width: '96%',
+    paddingHorizontal: wp(3),
+    alignSelf: 'center',
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    marginTop: hp(2),
+  },
+  nextView: {
+    height: hp(4),
+    paddingHorizontal: wp(4),
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.blueColor,
+    marginLeft: wp(2),
+  },
+  nextText: {
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    fontSize: hp(2),
+    color: COLORS.white,
+  },
+  prevView: {
+    height: hp(4),
+    paddingHorizontal: wp(4),
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.lightGreyColor,
+    marginLeft: wp(2),
+  },
+  prevText: {
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    fontSize: hp(2),
+    color: COLORS.white,
+  },
+  dataListText1: {
+    fontSize: hp(1.7),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+    textAlign: 'left',
+  },
+  dateBox1: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 5,
+    padding: 8,
+  },
+  startDateText: {
+    fontSize: hp(2),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.greyColor,
+  },
+  fullDateView: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  dateView: {
+    width: '80%',
+    borderRadius: 5,
+    borderWidth: 0.5,
+    borderColor: COLORS.greyColor,
+    paddingVertical: hp(0.7),
+    backgroundColor: COLORS.white,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: wp(3),
+  },
+  closeImage: {
+    width: wp(5),
+    height: hp(2),
+    resizeMode: 'contain',
+    tintColor: COLORS.greyColor,
+    marginLeft: wp(2),
+  },
+  calenderImage: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  calenderView: {
+    backgroundColor: COLORS.white,
+    width: '100%',
+    position: 'absolute',
+    padding: 5,
+    zIndex: 1,
+    borderRadius: 5,
+    top: hp(4),
+    left: wp(2),
+  },
+  statusText: {
+    fontSize: hp(2),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+  },
+  optionView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: wp(3),
+  },
+  roundBorder: {
+    height: wp(4),
+    width: wp(4),
+    borderRadius: wp(4),
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 0.5,
+    marginRight: wp(1.5),
+  },
+  round: {
+    height: wp(1.5),
+    width: wp(1.5),
+    borderRadius: wp(1.5),
+    backgroundColor: COLORS.white,
+  },
+  statusView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: hp(1.5),
+    width: '92%',
+    alignSelf: 'center',
+  },
+  profilePhotoView: {
+    borderWidth: 0.5,
+    width: wp(26),
+    height: hp(10),
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: hp(1),
+  },
+  profileImage: {
+    width: wp(10),
+    height: hp(5),
+    resizeMode: 'contain',
+  },
+  profileImage1: {
+    width: wp(26),
+    height: hp(10),
+  },
+  editView: {
+    width: wp(7),
+    height: wp(7),
+    borderRadius: wp(7),
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 0.5,
+    position: 'absolute',
+    zIndex: 1,
+    right: -wp(3),
+    top: -hp(2),
+    backgroundColor: COLORS.white,
+  },
+  editImage1: {
+    width: wp(3),
+    height: hp(2.5),
+    resizeMode: 'contain',
+  },
+  container: {
+    width: '94%',
+    // height: hp(22),
+    paddingVertical: hp(2),
+    backgroundColor: COLORS.white,
+    borderRadius: 10,
+    // marginLeft: -wp(2.5),
+    // paddingTop: hp(3),
+  },
+  modalOverlay: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+  },
+  maneModalView: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    height: '100%',
+  },
+  headerView: {
+    width: '96%',
+    alignSelf: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginVertical: hp(1),
+    paddingHorizontal: wp(2),
+  },
+  headerText: {
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    fontSize: hp(2.2),
+    color: COLORS.black,
+  },
+  eventTextInput: {
+    width: '92%',
+    paddingHorizontal: wp(3),
+    paddingVertical: hp(1),
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(2),
+    color: COLORS.black,
+    borderRadius: 5,
+    alignSelf: 'center',
+    marginBottom: hp(3),
+    marginTop: hp(1),
+  },
+  commentTextInput: {
+    width: '100%',
+    paddingHorizontal: wp(3),
+    paddingVertical: hp(1),
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(2),
+    color: COLORS.black,
+    borderRadius: 5,
+    alignSelf: 'center',
+    height: hp(10),
+    marginTop: hp(1),
+  },
+  ListEmptyView: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: hp(15),
+  },
+  emptyText: {
+    fontSize: hp(2.5),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+  },
+  dropdown2DropdownStyle: {
+    backgroundColor: COLORS.white,
+    borderRadius: 4,
+    height: hp(25),
+    // borderRadius: 12,
+  },
+  dropdownItemTxtStyle: {
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    marginLeft: wp(2),
+  },
+  dropdownView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: hp(5),
+    borderBottomWidth: 0,
+  },
+  dropdown2BtnStyle2: {
+    width: '100%',
+    height: hp(4),
+    backgroundColor: COLORS.white,
+    borderRadius: 5,
+    alignItems: 'center',
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    marginTop: hp(1),
+  },
+  nextView1: {
+    width: '96%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    alignSelf: 'center',
+    marginTop: hp(3),
+  },
+  prevViewData: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  prevButtonView: {
+    paddingHorizontal: wp(1.5),
+    backgroundColor: COLORS.headerGreenColor,
+    paddingVertical: hp(0.5),
+    borderRadius: 5,
+    fontSize: hp(2.5),
     color: COLORS.white,
   },
   totalCountText: {

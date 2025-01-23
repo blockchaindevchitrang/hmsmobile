@@ -14,7 +14,7 @@ import {
   FlatList,
 } from 'react-native';
 import {useTheme} from '../../utils/ThemeProvider';
-import styles from './styles';
+import {landscapeStyles, portraitStyles} from './styles';
 import Header from '../../components/Header';
 import {COLORS, Fonts} from '../../utils';
 import {useTranslation} from 'react-i18next';
@@ -39,6 +39,7 @@ import printing from '../../images/printing.png';
 import ProfilePhoto from '../../components/ProfilePhoto';
 import {onGetCommonApi, onGetSpecificCommonApi} from '../../services/Api';
 import SelectDropdown from 'react-native-select-dropdown';
+import useOrientation from '../../components/OrientationComponent';
 
 const filterArray = [
   {id: 1, name: 'All'},
@@ -49,6 +50,9 @@ const filterArray = [
 export const EnquiriesScreen = ({navigation}) => {
   const {t} = useTranslation();
   const {theme} = useTheme();
+  const orientation = useOrientation(); // Get current orientation
+  const isPortrait = orientation === 'portrait';
+  const styles = isPortrait ? portraitStyles : landscapeStyles;
   const menuRef = useRef(null);
   const [searchAccount, setSearchAccount] = useState('');
   const [newBloodIssueVisible, setNewBloodIssueVisible] = useState(false);
@@ -117,20 +121,20 @@ export const EnquiriesScreen = ({navigation}) => {
             <Text style={[styles.dataHistoryText1]}>{item.email}</Text>
           </View>
         </View>
-        <View style={[styles.switchView, {width: wp(45)}]}>
+        <View style={[styles.switchView, {width: isPortrait ? wp(45) : wp(32)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightBlue}]}>
             <Text style={[styles.dataHistoryText1]}>{item.type}</Text>
           </View>
         </View>
-        <View style={[styles.switchView, {width: wp(35)}]}>
+        <View style={[styles.switchView, {width: isPortrait ? wp(35) : wp(28)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
             <Text style={[styles.dataHistoryText1]}>{item.created_at}</Text>
           </View>
         </View>
-        <Text style={[styles.dataHistoryText, {width: wp(30)}]}>
+        <Text style={[styles.dataHistoryText, {width: isPortrait ? wp(30) : wp(24)}]}>
           {item.viewed_by}
         </Text>
-        <View style={[styles.switchView, {width: wp(16)}]}>
+        <View style={[styles.switchView, {width: isPortrait ? wp(16) : wp(12)}]}>
           <Switch
             trackColor={{
               false:
@@ -271,39 +275,39 @@ export const EnquiriesScreen = ({navigation}) => {
                     <Text
                       style={[
                         styles.titleText,
-                        {width: wp(55), textAlign: 'left'},
+                        {width: isPortrait ? wp(55) : wp(37), textAlign: 'left'},
                       ]}>
                       {'FULL NAME'}
                     </Text>
                     <Text
                       style={[
                         styles.titleText,
-                        {width: wp(45), textAlign: 'left'},
+                        {width: isPortrait ? wp(45) : wp(32), textAlign: 'center'},
                       ]}>
                       {'TYPE'}
                     </Text>
                     <Text
                       style={[
                         styles.titleText,
-                        {width: wp(35), textAlign: 'left'},
+                        {width: isPortrait ? wp(35) : wp(28), textAlign: 'center'},
                       ]}>
                       {'CREATED ON'}
                     </Text>
                     <Text
                       style={[
                         styles.titleText,
-                        {width: wp(30), textAlign: 'left'},
+                        {width: isPortrait ? wp(30) : wp(24), textAlign: 'left'},
                       ]}>
                       {'VIEWED BY'}
                     </Text>
                     <Text
                       style={[
                         styles.titleText,
-                        {width: wp(16), textAlign: 'left'},
+                        {width: isPortrait ? wp(16) : wp(12), textAlign: 'center'},
                       ]}>
                       {'STATUS'}
                     </Text>
-                    <Text style={[styles.titleText, {width: wp(16)}]}>
+                    <Text style={[styles.titleText, {width: isPortrait ? wp(16) : wp(12)}]}>
                       {'ACTION'}
                     </Text>
                   </View>

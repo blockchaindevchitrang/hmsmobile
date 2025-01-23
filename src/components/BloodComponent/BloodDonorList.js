@@ -48,6 +48,7 @@ import {
   onDeleteBloodDonorApi,
   onGetEditAccountDataApi,
 } from '../../services/Api';
+import useOrientation from '../OrientationComponent';
 
 const BloodDonorList = ({
   searchBreak,
@@ -58,6 +59,9 @@ const BloodDonorList = ({
   setPageCount,
   totalPage,
 }) => {
+  const orientation = useOrientation();
+  const isPortrait = orientation === 'portrait';
+  const styles = isPortrait ? portraitStyles : landscapeStyles;
   const bloodData = useSelector(state => state.bloodData);
   const {theme} = useTheme();
   const menuRef = useRef(null);
@@ -73,62 +77,124 @@ const BloodDonorList = ({
   const [loading, setLoading] = useState(false);
   const [deleteUser, setDeleteUser] = useState(false);
   const [userId, setUserId] = useState('');
+  const [errorVisible, setErrorVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const onAddBloodDonation = async () => {
     try {
-      setLoading(true);
-      let urlData = `blood-donor-create?name=${donorName}&age=${donorAge}&blood_group=${bloodGroup}&last_donate_date=${new Date(
-        dateOfBirth,
-      ).toISOString()}&gender=${departmentType == 'male' ? 'Male' : 'Female'}`;
-      const response = await onAddAccountListApi(urlData);
-      if (response.status == 200) {
-        onGetData();
-        setLoading(false);
-        setAddDonorVisible(false);
-        showMessage({
-          message: 'Record Added Successfully',
-          type: 'success',
-          duration: 3000,
-        });
+      if (donorName == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter donor name.');
+      } else if (donorAge == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter donor age.');
+      } else if (bloodGroup == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select donor blood group.');
+      } else {
+        setLoading(true);
+        let urlData = `blood-donor-create?name=${donorName}&age=${donorAge}&blood_group=${bloodGroup}&last_donate_date=${new Date(
+          dateOfBirth,
+        ).toISOString()}&gender=${
+          departmentType == 'male' ? 'Male' : 'Female'
+        }`;
+        const response = await onAddAccountListApi(urlData);
+        if (response.data.flag == 1) {
+          onGetData();
+          setLoading(false);
+          setAddDonorVisible(false);
+          showMessage({
+            message: 'Record Added Successfully',
+            type: 'success',
+            duration: 3000,
+          });
+        } else {
+          setLoading(false);
+          showMessage({
+            message: response.data.message,
+            type: 'danger',
+            duration: 6000,
+            icon: 'danger',
+          });
+        }
       }
     } catch (err) {
       setLoading(false);
       setAddDonorVisible(false);
-      showMessage({
-        message: 'Please enter properly details.',
-        type: 'danger',
-        duration: 6000,
-        icon: 'danger',
-      });
+      if (err.response.data.message) {
+        showMessage({
+          message: err.response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      } else {
+        showMessage({
+          message: 'Please enter properly details.',
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
       console.log('Error>>', err.response.data);
     }
   };
 
   const onEditBloodDonorData = async () => {
     try {
-      setLoading(true);
-      let urlData = `blood-donor-update/${userId}?name=${donorName}&age=${donorAge}&blood_group=${bloodGroup}&last_donate_date=${new Date(
-        dateOfBirth,
-      ).toISOString()}&gender=${departmentType == 'male' ? 'Male' : 'Female'}`;
-      const response = await onGetEditAccountDataApi(urlData);
-      if (response.status == 200) {
-        onGetData();
-        setLoading(false);
-        setAddDonorVisible(false);
-        showMessage({
-          message: 'Record Added Successfully',
-          type: 'success',
-          duration: 3000,
-        });
+      if (donorName == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter donor name.');
+      } else if (donorAge == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter donor age.');
+      } else if (bloodGroup == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select donor blood group.');
+      } else {
+        setLoading(true);
+        let urlData = `blood-donor-update/${userId}?name=${donorName}&age=${donorAge}&blood_group=${bloodGroup}&last_donate_date=${new Date(
+          dateOfBirth,
+        ).toISOString()}&gender=${
+          departmentType == 'male' ? 'Male' : 'Female'
+        }`;
+        const response = await onGetEditAccountDataApi(urlData);
+        if (response.data.flag == 1) {
+          onGetData();
+          setLoading(false);
+          setAddDonorVisible(false);
+          showMessage({
+            message: 'Record Edited Successfully',
+            type: 'success',
+            duration: 3000,
+          });
+        } else {
+          setLoading(false);
+          showMessage({
+            message: response.data.message,
+            type: 'danger',
+            duration: 6000,
+            icon: 'danger',
+          });
+        }
       }
     } catch (err) {
       setLoading(false);
-      showMessage({
-        message: 'Please enter properly details.',
-        type: 'danger',
-        duration: 6000,
-        icon: 'danger',
-      });
+      if (err.response.data.message) {
+        showMessage({
+          message: err.response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      } else {
+        showMessage({
+          message: 'Please enter properly details.',
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
       console.log('Get Error:', err);
     }
   };
@@ -137,7 +203,7 @@ const BloodDonorList = ({
     try {
       setLoading(true);
       const response = await onDeleteBloodDonorApi(id);
-      if (response.status == 200) {
+      if (response.data.flag == 1) {
         onGetData();
         setLoading(false);
         setDeleteUser(false);
@@ -146,16 +212,34 @@ const BloodDonorList = ({
           type: 'success',
           duration: 3000,
         });
+      } else {
+        setLoading(false);
+        setDeleteUser(false);
+        showMessage({
+          message: response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
       }
     } catch (err) {
       setLoading(false);
       setDeleteUser(false);
-      showMessage({
-        message: 'Something want wrong.',
-        type: 'danger',
-        duration: 6000,
-        icon: 'danger',
-      });
+      if (err.response.data.message) {
+        showMessage({
+          message: err.response.data.message,
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      } else {
+        showMessage({
+          message: 'Something want wrong.',
+          type: 'danger',
+          duration: 6000,
+          icon: 'danger',
+        });
+      }
       console.log('Get Error:', err);
     }
   };
@@ -169,26 +253,34 @@ const BloodDonorList = ({
           styles.dataHistoryView,
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
-        <Text style={[styles.dataHistoryText, {width: wp(24)}]}>
+        <Text
+          style={[
+            styles.dataHistoryText,
+            {width: isPortrait ? wp(24) : wp(20), textAlign: 'left'},
+          ]}>
           {item.name}
         </Text>
-        <View style={[styles.switchView, {width: wp(16)}]}>
+        <View
+          style={[styles.switchView, {width: isPortrait ? wp(16) : wp(14)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
             <Text style={[styles.dataHistoryText1]}>{item.age}</Text>
           </View>
         </View>
-        <View style={[styles.switchView, {width: wp(22)}]}>
+        <View
+          style={[styles.switchView, {width: isPortrait ? wp(22) : wp(14)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.purpleColor}]}>
             <Text style={[styles.dataHistoryText]}>{item.gender}</Text>
           </View>
         </View>
-        <View style={[styles.switchView, {width: wp(28)}]}>
+        <View
+          style={[styles.switchView, {width: isPortrait ? wp(28) : wp(22)}]}>
           <View
             style={[styles.dateBox1, {backgroundColor: theme.lightRedColor}]}>
             <Text style={[styles.dataHistoryText]}>{item.blood_group}</Text>
           </View>
         </View>
-        <View style={[styles.switchView, {width: wp(35)}]}>
+        <View
+          style={[styles.switchView, {width: isPortrait ? wp(35) : wp(30)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
             <Text style={[styles.dataHistoryText1]}>
               {time}
@@ -243,28 +335,47 @@ const BloodDonorList = ({
               onChangeText={text => setSearchBreak(text)}
               style={[styles.searchView, {color: theme.text}]}
             />
+            {!isPortrait && (
+              <View style={styles.filterView}>
+                <TouchableOpacity
+                  onPress={() => {
+                    setUserId('');
+                    setDonorName('');
+                    setDonorAge('');
+                    setDepartmentType('male');
+                    setBloodGroup('');
+                    setDateOfBirth(new Date());
+                    setAddDonorVisible(true);
+                  }}
+                  style={styles.actionView}>
+                  <Text style={styles.actionText}>New Blood Donor</Text>
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
-          <View style={styles.filterView}>
-            <TouchableOpacity
-              onPress={() => {
-                setUserId('');
-                setDonorName('');
-                setDonorAge('');
-                setDepartmentType('male');
-                setBloodGroup('');
-                setDateOfBirth(new Date());
-                setAddDonorVisible(true);
-              }}
-              style={styles.actionView}>
-              <Text style={styles.actionText}>New Blood Donor</Text>
-            </TouchableOpacity>
-          </View>
+          {isPortrait && (
+            <View style={styles.filterView}>
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId('');
+                  setDonorName('');
+                  setDonorAge('');
+                  setDepartmentType('male');
+                  setBloodGroup('');
+                  setDateOfBirth(new Date());
+                  setAddDonorVisible(true);
+                }}
+                style={styles.actionView}>
+                <Text style={styles.actionText}>New Blood Donor</Text>
+              </TouchableOpacity>
+            </View>
+          )}
           <View
             style={[styles.activeView, {backgroundColor: theme.headerColor}]}>
             <ScrollView
-                horizontal
-                bounces={false}
-                showsHorizontalScrollIndicator={false}>
+              horizontal
+              bounces={false}
+              showsHorizontalScrollIndicator={false}>
               <View>
                 <View
                   style={[
@@ -274,23 +385,43 @@ const BloodDonorList = ({
                   <Text
                     style={[
                       styles.titleText,
-                      {width: wp(24), textAlign: 'left'},
+                      {width: isPortrait ? wp(24) : wp(20), textAlign: 'left'},
                     ]}>
                     {'NAME'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(16)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {width: isPortrait ? wp(16) : wp(12)},
+                    ]}>
                     {'AGE'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(22)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {width: isPortrait ? wp(22) : wp(14)},
+                    ]}>
                     {'GENDER'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(28)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {width: isPortrait ? wp(28) : wp(22)},
+                    ]}>
                     {'BLOOD GROUPS'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(35)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {width: isPortrait ? wp(35) : wp(30)},
+                    ]}>
                     {'LAST DONATION DATE'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(16)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {width: isPortrait ? wp(16) : wp(14)},
+                    ]}>
                     {'ACTION'}
                   </Text>
                 </View>
@@ -451,12 +582,6 @@ const BloodDonorList = ({
               {'Blood Group:'}
               <Text style={styles.dataHistoryText4}>*</Text>
             </Text>
-            {/* <TextInput
-              value={eventTitle}
-              placeholder={'Select Blood Group'}
-              onChangeText={text => setEventTitle(text)}
-              style={[styles.eventTextInput]}
-            /> */}
             <SelectDropdown
               data={bloodData}
               onSelect={(selectedItem, index) => {
@@ -520,6 +645,9 @@ const BloodDonorList = ({
                 setDateModalVisible(false);
               }}
             />
+            {errorVisible ? (
+              <Text style={styles.dataHistoryText5}>{errorMessage}</Text>
+            ) : null}
             <View style={styles.buttonView}>
               <TouchableOpacity
                 onPress={() => {
@@ -554,7 +682,7 @@ const BloodDonorList = ({
 
 export default BloodDonorList;
 
-const styles = StyleSheet.create({
+const portraitStyles = StyleSheet.create({
   safeAreaStyle: {
     flex: 1,
     justifyContent: 'center',
@@ -683,6 +811,13 @@ const styles = StyleSheet.create({
     fontSize: hp(1.8),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.errorColor,
+  },
+  dataHistoryText5: {
+    fontSize: hp(1.8),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.errorColor,
+    width: '92%',
+    alignSelf: 'center',
   },
   mainDataView: {
     minHeight: hp(29),
@@ -1058,6 +1193,526 @@ const styles = StyleSheet.create({
     paddingVertical: hp(0.5),
     borderRadius: 5,
     fontSize: hp(3),
+    color: COLORS.white,
+  },
+  totalCountText: {
+    fontSize: hp(2),
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+  },
+});
+
+const landscapeStyles = StyleSheet.create({
+  safeAreaStyle: {
+    flex: 1,
+    justifyContent: 'center',
+    width: '100%',
+  },
+  subView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    paddingHorizontal: wp(3),
+    marginVertical: hp(2),
+  },
+  searchView: {
+    width: '50%',
+    paddingHorizontal: wp(3),
+    paddingVertical: hp(0.5),
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(2),
+    color: COLORS.black,
+    borderRadius: 5,
+  },
+  filterView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    // paddingHorizontal: wp(3),
+    // paddingBottom: hp(1),
+  },
+  filterView1: {
+    height: hp(4),
+    width: hp(4),
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.blueColor,
+  },
+  filterImage: {
+    width: wp(5),
+    height: hp(2.5),
+    resizeMode: 'contain',
+    tintColor: COLORS.white,
+  },
+  actionView: {
+    height: hp(4),
+    paddingHorizontal: wp(3),
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.blueColor,
+    marginLeft: wp(2),
+  },
+  actionText: {
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    fontSize: hp(2.2),
+    color: COLORS.white,
+  },
+  activeView: {
+    width: '96%',
+    minHeight: hp(35),
+    maxHeight: hp(80),
+    alignSelf: 'center',
+    backgroundColor: COLORS.white,
+    marginTop: hp(0.5),
+    borderRadius: wp(1),
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.22,
+    shadowRadius: 2.22,
+
+    elevation: 3,
+  },
+  titleActiveView: {
+    width: '100%',
+    height: hp(5),
+    alignSelf: 'center',
+    backgroundColor: COLORS.primary,
+    alignItems: 'center',
+    flexDirection: 'row',
+    marginTop: hp(1),
+    paddingBottom: hp(0.5),
+  },
+  titleText: {
+    fontSize: hp(1.8),
+    fontFamily: Fonts.FONTS.PoppinsSemiBold,
+    color: COLORS.white,
+    marginHorizontal: wp(2),
+    textAlign: 'center',
+  },
+  dataHistoryView: {
+    width: '100%',
+    height: hp(8),
+    alignItems: 'center',
+    flexDirection: 'row',
+    alignSelf: 'flex-start',
+  },
+  dataHistoryText: {
+    fontSize: hp(1.8),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+    marginHorizontal: wp(2),
+    textAlign: 'center',
+  },
+  dataHistoryText1: {
+    fontSize: hp(1.7),
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    color: COLORS.black,
+    textAlign: 'center',
+  },
+  dataHistoryText2: {
+    fontSize: hp(1.8),
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    color: COLORS.blueColor,
+  },
+  dataHistoryText3: {
+    fontSize: hp(1.8),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+    paddingVertical: hp(0.5),
+  },
+  dataHistoryText4: {
+    fontSize: hp(1.8),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.errorColor,
+  },
+  dataHistoryText5: {
+    fontSize: hp(1.8),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.errorColor,
+    width: '92%',
+    alignSelf: 'center',
+  },
+  mainDataView: {
+    minHeight: hp(29),
+    maxHeight: hp(74),
+    width: '100%',
+    backgroundColor: COLORS.white,
+    paddingBottom: hp(1),
+    borderBottomLeftRadius: wp(1),
+    borderBottomRightRadius: wp(1),
+  },
+  nameDataView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: wp(28),
+    marginHorizontal: wp(2),
+  },
+  switchView: {
+    width: wp(24),
+    justifyContent: 'center',
+    marginHorizontal: wp(2),
+    alignItems: 'center',
+  },
+  actionDataView: {
+    width: wp(14),
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: wp(2),
+    flexDirection: 'row',
+  },
+  editImage: {
+    width: wp(4),
+    height: hp(2.5),
+    resizeMode: 'contain',
+  },
+  backButtonView: {
+    height: hp(4),
+    paddingHorizontal: wp(3),
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.orange,
+  },
+  backText: {
+    fontFamily: Fonts.FONTS.PoppinsSemiBold,
+    fontSize: hp(1.8),
+    color: COLORS.white,
+  },
+  doctorText: {
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    fontSize: hp(2.3),
+    color: COLORS.black,
+  },
+  profileView: {
+    width: '100%',
+    paddingVertical: hp(1),
+    paddingHorizontal: wp(3),
+    alignSelf: 'center',
+    borderRadius: wp(2),
+  },
+  nameTextView: {
+    width: '50%',
+    paddingHorizontal: wp(2),
+    paddingVertical: hp(0.5),
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    color: COLORS.black,
+    borderRadius: 5,
+    marginTop: hp(1),
+    backgroundColor: COLORS.white,
+  },
+  nameView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginVertical: hp(1),
+    alignSelf: 'center',
+  },
+  contactView: {
+    width: '94%',
+    paddingVertical: hp(2),
+    paddingHorizontal: wp(3),
+    alignSelf: 'center',
+    borderRadius: wp(2),
+  },
+  buttonView: {
+    width: '96%',
+    paddingHorizontal: wp(3),
+    alignSelf: 'center',
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    marginTop: hp(2),
+  },
+  nextView: {
+    height: hp(4.5),
+    paddingHorizontal: wp(4),
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.blueColor,
+    marginLeft: wp(2),
+  },
+  nextText: {
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    fontSize: hp(2.2),
+    color: COLORS.white,
+  },
+  prevView: {
+    height: hp(4.5),
+    paddingHorizontal: wp(4),
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.lightGreyColor,
+    marginLeft: wp(2),
+  },
+  prevText: {
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    fontSize: hp(2.2),
+    color: COLORS.white,
+  },
+  dataListText1: {
+    fontSize: hp(1.7),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+    textAlign: 'left',
+  },
+  dateBox1: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 5,
+    padding: 5,
+  },
+  startDateText: {
+    fontSize: hp(2),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.greyColor,
+  },
+  fullDateView: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  dateView: {
+    width: '80%',
+    borderRadius: 5,
+    borderWidth: 0.5,
+    borderColor: COLORS.greyColor,
+    paddingVertical: hp(0.7),
+    backgroundColor: COLORS.white,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: wp(3),
+  },
+  closeImage: {
+    width: wp(5),
+    height: hp(2),
+    resizeMode: 'contain',
+    tintColor: COLORS.greyColor,
+    marginLeft: wp(2),
+  },
+  calenderImage: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  calenderView: {
+    backgroundColor: COLORS.white,
+    width: '100%',
+    position: 'absolute',
+    padding: 5,
+    zIndex: 1,
+    borderRadius: 5,
+    top: hp(4),
+    left: wp(2),
+  },
+  statusText: {
+    fontSize: hp(2),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+  },
+  optionView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: wp(3),
+  },
+  roundBorder: {
+    height: wp(4),
+    width: wp(4),
+    borderRadius: wp(4),
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 0.5,
+    marginRight: wp(1.5),
+  },
+  round: {
+    height: wp(1.5),
+    width: wp(1.5),
+    borderRadius: wp(1.5),
+    backgroundColor: COLORS.white,
+  },
+  statusView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+  },
+  profilePhotoView: {
+    borderWidth: 0.5,
+    marginTop: hp(1),
+  },
+  profileImage: {
+    width: wp(28),
+    height: hp(13.5),
+    resizeMode: 'contain',
+  },
+  editView: {
+    width: wp(7),
+    height: wp(7),
+    borderRadius: wp(7),
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 0.5,
+    position: 'absolute',
+    zIndex: 1,
+    right: -wp(3),
+    top: -hp(2),
+    backgroundColor: COLORS.white,
+  },
+  editImage1: {
+    width: wp(3),
+    height: hp(2.5),
+    resizeMode: 'contain',
+  },
+  container: {
+    width: '94%',
+    // height: hp(22),
+    paddingVertical: hp(2),
+    backgroundColor: COLORS.white,
+    borderRadius: 10,
+    // marginLeft: -wp(2.5),
+    // paddingTop: hp(3),
+  },
+  modalOverlay: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+  },
+  maneModalView: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    height: '100%',
+  },
+  headerView: {
+    width: '96%',
+    alignSelf: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginVertical: hp(1),
+    paddingHorizontal: wp(2),
+  },
+  headerText: {
+    fontFamily: Fonts.FONTS.PoppinsBold,
+    fontSize: hp(2.2),
+    color: COLORS.black,
+  },
+  eventTextInput: {
+    width: '92%',
+    paddingHorizontal: wp(3),
+    paddingVertical: hp(0.5),
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(2),
+    color: COLORS.black,
+    borderRadius: 5,
+    alignSelf: 'center',
+    marginBottom: hp(2),
+    marginTop: hp(1),
+  },
+  commentTextInput: {
+    width: '92%',
+    paddingHorizontal: wp(3),
+    paddingVertical: hp(1),
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(2),
+    color: COLORS.black,
+    borderRadius: 5,
+    alignSelf: 'center',
+    height: hp(14),
+  },
+  statusView1: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: hp(1.5),
+    width: '92%',
+    alignSelf: 'center',
+  },
+  titleText1: {
+    fontSize: hp(1.8),
+    fontFamily: Fonts.FONTS.PoppinsSemiBold,
+    color: COLORS.black,
+    marginHorizontal: wp(5),
+    textAlign: 'left',
+  },
+  ListEmptyView: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: hp(15),
+  },
+  emptyText: {
+    fontSize: hp(2.5),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+  },
+  dropdown2DropdownStyle: {
+    backgroundColor: COLORS.white,
+    borderRadius: 4,
+    height: hp(25),
+    // borderRadius: 12,
+  },
+  dropdownItemTxtStyle: {
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    fontSize: hp(1.8),
+    marginLeft: wp(2),
+  },
+  dropdownView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: hp(4),
+    borderBottomWidth: 0,
+  },
+  dropdown2BtnStyle2: {
+    width: '92%',
+    height: hp(4),
+    backgroundColor: COLORS.white,
+    borderRadius: 5,
+    alignItems: 'center',
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: COLORS.greyColor,
+    marginTop: hp(1),
+    alignSelf: 'center',
+    marginBottom: hp(2),
+  },
+  nextView1: {
+    width: '96%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    alignSelf: 'center',
+    marginTop: hp(3),
+  },
+  prevViewData: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  prevButtonView: {
+    paddingHorizontal: wp(1.5),
+    backgroundColor: COLORS.headerGreenColor,
+    paddingVertical: hp(0.5),
+    borderRadius: 5,
+    fontSize: hp(2.5),
     color: COLORS.white,
   },
   totalCountText: {

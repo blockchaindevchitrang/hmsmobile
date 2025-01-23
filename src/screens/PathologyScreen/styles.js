@@ -93,11 +93,11 @@ export const landscapeStyles = StyleSheet.create({
     width: '100%',
   },
   headerView: {
-    flex: 0.1,
+    flex: 0.12,
     width: '100%',
   },
   mainView: {
-    flex: 0.9,
+    flex: 0.88,
     alignItems: 'center',
     width: '100%',
     backgroundColor: COLORS.white,

@@ -706,7 +706,7 @@ const landscapeStyles = StyleSheet.create({
   },
   dataHistoryView: {
     width: '100%',
-    height: hp(8),
+    height: hp(6),
     alignItems: 'center',
     flexDirection: 'row',
     alignSelf: 'flex-start',
