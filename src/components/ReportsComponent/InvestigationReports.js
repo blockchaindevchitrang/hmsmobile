@@ -1,7 +1,6 @@
 import {
   Text,
   View,
-  Switch,
   TouchableOpacity,
   Image,
   StyleSheet,
@@ -21,9 +20,6 @@ import {useTheme} from '../../utils/ThemeProvider';
 import ProfilePhoto from '../ProfilePhoto';
 import deleteIcon from '../../images/delete.png';
 import editing from '../../images/editing.png';
-import close from '../../images/close.png';
-import calendar from '../../images/calendar.png';
-import CalendarPicker from 'react-native-calendar-picker';
 import moment from 'moment';
 import DatePicker from 'react-native-date-picker';
 import photo from '../../images/photo.png';
@@ -31,18 +27,13 @@ import draw from '../../images/draw.png';
 import SelectDropdown from 'react-native-select-dropdown';
 import {useSelector} from 'react-redux';
 import {
-  onAddAccountListApi,
   onAddInvestigationApi,
   onDeleteCommonApi,
-  onGetEditAccountDataApi,
   onGetSpecificCommonApi,
   onUpdateInvestigationApi,
 } from '../../services/Api';
 import {DeletePopup} from '../DeletePopup';
-import FlashMessage, {
-  showMessage,
-  hideMessage,
-} from 'react-native-flash-message';
+import {showMessage} from 'react-native-flash-message';
 import ImagePicker from 'react-native-image-crop-picker';
 import useOrientation from '../OrientationComponent';
 
@@ -66,7 +57,6 @@ const InvestigationReports = ({
   const user_data = useSelector(state => state.user_data);
   const doctorData = useSelector(state => state.doctorData);
   const {theme} = useTheme();
-  const menuRef = useRef(null);
   const [addDoctorVisible, setAddHolidayVisible] = useState(false);
   const [title, setTitle] = useState('');
   const [patientId, setPatientId] = useState('');

@@ -417,11 +417,11 @@ const AppointmentComponent = ({
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{paddingBottom: hp(12)}}>
           <View
-            style={[styles.subView, {marginVertical: hp(0), marginTop: hp(2)}]}>
+            style={[styles.subView, {marginVertical: hp(0), marginTop: hp(2), zIndex: 1}]}>
             <View style={[styles.fullDateView]}>
               <TouchableOpacity
                 style={styles.dateView}
-                onPress={() => setCalenderVisible(true)}>
+                onPress={() => setCalenderVisible(!calenderVisible)}>
                 <Text style={styles.startDateText}>
                   {holidayStartDate == null
                     ? 'Start date'

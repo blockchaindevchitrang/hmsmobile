@@ -237,7 +237,25 @@ export const onGetProfileDataApi = async () => {
 export const onAddRoleApi = async requestData => {
   const token = await AsyncStorage.getItem('accessToken');
   console.log('Get Login Url:::', Api.baseUrl1);
-  const url = Api.baseUrl1 + 'add-role';
+  const url = Api.baseUrl1 + 'role-permission-add';
+  return new Promise((resolve, reject) => {
+    axios
+      .post(url, requestData, {
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then(res => resolve(res))
+      .catch(err => reject(err));
+  });
+};
+
+export const onEditRoleApi = async (requestData, id) => {
+  const token = await AsyncStorage.getItem('accessToken');
+  console.log('Get Login Url:::', Api.baseUrl1);
+  const url = Api.baseUrl1 + `roles-permission/${id}`;
   return new Promise((resolve, reject) => {
     axios
       .post(url, requestData, {
@@ -1472,7 +1490,7 @@ export const onGetEditCommonJsonApi = async (dataUrl, requestData) => {
   console.log('Get Login Url:::', JSON.stringify(requestData));
   return new Promise((resolve, reject) => {
     axios
-      .patch(url, requestData, {
+      .post(url, requestData, {
         headers: {
           'Content-Type': 'application/json',
           Accept: 'application/json',

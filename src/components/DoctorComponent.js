@@ -13,7 +13,7 @@ import {
   Modal,
   TouchableWithoutFeedback,
 } from 'react-native';
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -36,7 +36,11 @@ import DatePicker from 'react-native-date-picker';
 import moment from 'moment';
 import {DeletePopup} from './DeletePopup';
 import ImagePicker from 'react-native-image-crop-picker';
-import {onGetCommonApi, onGetDoctorDetailApi} from '../services/Api';
+import {
+  onAddAccountListApi,
+  onGetCommonApi,
+  onGetDoctorDetailApi,
+} from '../services/Api';
 import SelectDropdown from 'react-native-select-dropdown';
 import {useSelector} from 'react-redux';
 import RNFS from 'react-native-fs';
@@ -133,6 +137,12 @@ const DoctorComponent = ({
   const [isCountryPickerVisible, setCountryPickerVisibility] = useState(false);
   const [countryCode, setCountryCode] = useState('91');
   const [country, setCountry] = useState(null);
+  const [allDataArray, setAllDataArray] = useState([]);
+  const [refresh, setRefresh] = useState(false);
+
+  useEffect(() => {
+    setAllDataArray(allData);
+  }, [allData]);
 
   const onSelect = country => {
     console.log('Get Selected Country', country);
@@ -220,6 +230,22 @@ const DoctorComponent = ({
     );
   };
 
+  const onStatusChange = async (item, index) => {
+    try {
+      let array = allDataArray;
+      array[index].status = item.status == 0 ? 1 : 0;
+      setAllDataArray(array);
+      setRefresh(!refresh);
+      let urlData = `doctor-status/${item.id}/status`;
+      const response = await onAddAccountListApi(urlData);
+      console.log('Get Response Edit DataLL', response.data);
+      if (response.data.flag == 1) {
+      }
+    } catch (err) {
+      console.log('Error>', err);
+    }
+  };
+
   const renderItem = ({item, index}) => {
     return (
       <View
@@ -261,7 +287,7 @@ const DoctorComponent = ({
             }}
             thumbColor={item.status == 1 ? '#f4f3f4' : '#f4f3f4'}
             ios_backgroundColor={COLORS.errorColor}
-            onValueChange={() => {}}
+            onValueChange={() => onStatusChange(item, index)}
             value={item.status == 1 ? true : false}
           />
         </View>
@@ -556,11 +582,11 @@ const DoctorComponent = ({
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList
-                    data={allData}
+                    data={allDataArray}
                     renderItem={renderItem}
                     bounces={false}
                     showsVerticalScrollIndicator={false}
-                    initialNumToRender={allData.length}
+                    initialNumToRender={allDataArray.length}
                     nestedScrollEnabled
                     virtualized
                     ListEmptyComponent={() => (

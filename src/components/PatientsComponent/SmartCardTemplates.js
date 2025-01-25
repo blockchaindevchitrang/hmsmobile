@@ -65,7 +65,7 @@ const SmartCardTemplates = ({
   const [errorMessage, setErrorMessage] = useState('');
   const [allDataArray, setAllDataArray] = useState([]);
   const [deleteUser, setDeleteUser] = useState(false);
-  const [colorData, setColorData] = useState('red');
+  const [colorData, setColorData] = useState('#FF0000');
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
@@ -124,32 +124,42 @@ const SmartCardTemplates = ({
 
   const onAddUsers = async () => {
     try {
-      setLoading(true);
-      const urlData = `patient-smart-card-create?template_name=${name}&header_color=${headerColor}&show_email=${
-        email ? 1 : 0
-      }&show_phone=${phone ? 1 : 0}&show_dob=${dob ? 1 : 0}&show_blood_group=${
-        bloodGroup ? 1 : 0
-      }&show_address=${address ? 1 : 0}&show_patient_unique_id=${
-        uniqueId ? 1 : 0
-      }`;
-      const response = await onAddAccountListApi(urlData);
-      if (response.data.flag == 1) {
-        onGetData();
-        setNewUserVisible(false);
-        setLoading(false);
-        showMessage({
-          message: 'Record Added Successfully',
-          type: 'success',
-          duration: 3000,
-        });
+      if (name == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter template name.');
+      } else if (colorData == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select header color.');
       } else {
-        setLoading(false);
-        showMessage({
-          message: response.data.message,
-          type: 'danger',
-          duration: 6000,
-          icon: 'danger',
-        });
+        setErrorVisible(false);
+        setErrorMessage('');
+        setLoading(true);
+        const urlData = `patient-smart-card-create?template_name=${name}&header_color=${colorData}&show_email=${
+          email ? 1 : 0
+        }&show_phone=${phone ? 1 : 0}&show_dob=${
+          dob ? 1 : 0
+        }&show_blood_group=${bloodGroup ? 1 : 0}&show_address=${
+          address ? 1 : 0
+        }&show_patient_unique_id=${uniqueId ? 1 : 0}`;
+        const response = await onAddAccountListApi(urlData);
+        if (response.data.flag == 1) {
+          onGetData();
+          setNewUserVisible(false);
+          setLoading(false);
+          showMessage({
+            message: 'Record Added Successfully',
+            type: 'success',
+            duration: 3000,
+          });
+        } else {
+          setLoading(false);
+          showMessage({
+            message: response.data.message,
+            type: 'danger',
+            duration: 6000,
+            icon: 'danger',
+          });
+        }
       }
     } catch (err) {
       setLoading(false);
@@ -174,32 +184,42 @@ const SmartCardTemplates = ({
 
   const onEditData = async () => {
     try {
-      setLoading(true);
-      const urlData = `patient-smart-card-update/${userId}?template_name=${name}&header_color=${headerColor}&show_email=${
-        email ? 1 : 0
-      }&show_phone=${phone ? 1 : 0}&show_dob=${dob ? 1 : 0}&show_blood_group=${
-        bloodGroup ? 1 : 0
-      }&show_address=${address ? 1 : 0}&show_patient_unique_id=${
-        uniqueId ? 1 : 0
-      }`;
-      const response = await onGetEditAccountDataApi(urlData);
-      if (response.data.flag == 1) {
-        onGetData();
-        setNewUserVisible(false);
-        setLoading(false);
-        showMessage({
-          message: 'Record Edit Successfully',
-          type: 'success',
-          duration: 3000,
-        });
+      if (name == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please enter template name.');
+      } else if (colorData == '') {
+        setErrorVisible(true);
+        setErrorMessage('Please select header color.');
       } else {
-        setLoading(false);
-        showMessage({
-          message: response.data.message,
-          type: 'danger',
-          duration: 6000,
-          icon: 'danger',
-        });
+        setErrorVisible(false);
+        setErrorMessage('');
+        setLoading(true);
+        const urlData = `patient-smart-card-update/${userId}?template_name=${name}&header_color=${colorData}&show_email=${
+          email ? 1 : 0
+        }&show_phone=${phone ? 1 : 0}&show_dob=${
+          dob ? 1 : 0
+        }&show_blood_group=${bloodGroup ? 1 : 0}&show_address=${
+          address ? 1 : 0
+        }&show_patient_unique_id=${uniqueId ? 1 : 0}`;
+        const response = await onGetEditAccountDataApi(urlData);
+        if (response.data.flag == 1) {
+          onGetData();
+          setNewUserVisible(false);
+          setLoading(false);
+          showMessage({
+            message: 'Record Edit Successfully',
+            type: 'success',
+            duration: 3000,
+          });
+        } else {
+          setLoading(false);
+          showMessage({
+            message: response.data.message,
+            type: 'danger',
+            duration: 6000,
+            icon: 'danger',
+          });
+        }
       }
     } catch (err) {
       setLoading(false);
@@ -280,9 +300,6 @@ const SmartCardTemplates = ({
             />
           </View>
         </View>
-        {/* <Text style={[styles.dataHistoryText1, {width: wp(32)}]}>
-          {item.header_color}
-        </Text> */}
         <View
           style={[styles.switchView, {width: isPortrait ? wp(30) : wp(20)}]}>
           <Switch
@@ -385,6 +402,7 @@ const SmartCardTemplates = ({
               setBloodGroup(item.show_blood_group);
               setAddress(item.show_address);
               setUniqueId(item.show_patient_unique_id);
+              setNewUserVisible(true);
             }}>
             <Image
               style={[styles.editImage, {tintColor: COLORS.blueColor}]}
@@ -424,7 +442,17 @@ const SmartCardTemplates = ({
             {!isPortrait && (
               <View style={styles.filterView}>
                 <TouchableOpacity
-                  onPress={() => setNewUserVisible(true)}
+                  onPress={() => {
+                    setName('');
+                    setUserId('');
+                    setEmail(false);
+                    setPhone(false);
+                    setAddress(false);
+                    setBloodGroup(false);
+                    setDob(false);
+                    setUniqueId(false);
+                    setNewUserVisible(true);
+                  }}
                   style={styles.actionView}>
                   <Text style={styles.actionText}>
                     New Patient Smart Card Template
@@ -613,7 +641,7 @@ const SmartCardTemplates = ({
           <View style={styles.profileView}>
             <View style={styles.nameView}>
               <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>Template Name:</Text>
+                <Text style={styles.dataHistoryText6}>Template Name:</Text>
                 <TextInput
                   value={name}
                   placeholder={'Template Name'}
@@ -625,7 +653,7 @@ const SmartCardTemplates = ({
 
             <View style={styles.nameView}>
               <View style={{width: '100%'}}>
-                <Text style={styles.dataHistoryText1}>LAST NAME</Text>
+                <Text style={styles.dataHistoryText6}>Header Color:</Text>
                 <TouchableOpacity onPress={() => setShowModal(true)}>
                   <View
                     style={[styles.colorBox, {backgroundColor: colorData}]}
@@ -633,8 +661,112 @@ const SmartCardTemplates = ({
                 </TouchableOpacity>
               </View>
             </View>
+            <View style={styles.nameView}>
+              <View style={{width: '100%'}}>
+                <Text style={styles.dataHistoryText6}>Show Email:</Text>
+                <View style={styles.statusView}>
+                  <Switch
+                    trackColor={{
+                      false: email ? COLORS.greenColor : COLORS.errorColor,
+                      true: email ? COLORS.greenColor : COLORS.errorColor,
+                    }}
+                    thumbColor={email ? '#f4f3f4' : '#f4f3f4'}
+                    ios_backgroundColor={COLORS.errorColor}
+                    onValueChange={value => setEmail(value)}
+                    value={email}
+                  />
+                </View>
+              </View>
+            </View>
+            <View style={styles.nameView}>
+              <View style={{width: '100%'}}>
+                <Text style={styles.dataHistoryText6}>Show Phone:</Text>
+                <View style={styles.statusView}>
+                  <Switch
+                    trackColor={{
+                      false: phone ? COLORS.greenColor : COLORS.errorColor,
+                      true: phone ? COLORS.greenColor : COLORS.errorColor,
+                    }}
+                    thumbColor={phone ? '#f4f3f4' : '#f4f3f4'}
+                    ios_backgroundColor={COLORS.errorColor}
+                    onValueChange={value => setPhone(value)}
+                    value={phone}
+                  />
+                </View>
+              </View>
+            </View>
+            <View style={styles.nameView}>
+              <View style={{width: '100%'}}>
+                <Text style={styles.dataHistoryText6}>Show DOB:</Text>
+                <View style={styles.statusView}>
+                  <Switch
+                    trackColor={{
+                      false: dob ? COLORS.greenColor : COLORS.errorColor,
+                      true: dob ? COLORS.greenColor : COLORS.errorColor,
+                    }}
+                    thumbColor={dob ? '#f4f3f4' : '#f4f3f4'}
+                    ios_backgroundColor={COLORS.errorColor}
+                    onValueChange={value => setDob(value)}
+                    value={dob}
+                  />
+                </View>
+              </View>
+            </View>
+            <View style={styles.nameView}>
+              <View style={{width: '100%'}}>
+                <Text style={styles.dataHistoryText6}>Show Blood Group:</Text>
+                <View style={styles.statusView}>
+                  <Switch
+                    trackColor={{
+                      false: bloodGroup ? COLORS.greenColor : COLORS.errorColor,
+                      true: bloodGroup ? COLORS.greenColor : COLORS.errorColor,
+                    }}
+                    thumbColor={bloodGroup ? '#f4f3f4' : '#f4f3f4'}
+                    ios_backgroundColor={COLORS.errorColor}
+                    onValueChange={value => setBloodGroup(value)}
+                    value={bloodGroup}
+                  />
+                </View>
+              </View>
+            </View>
+            <View style={styles.nameView}>
+              <View style={{width: '100%'}}>
+                <Text style={styles.dataHistoryText6}>Show Address:</Text>
+                <Switch
+                  trackColor={{
+                    false: address ? COLORS.greenColor : COLORS.errorColor,
+                    true: address ? COLORS.greenColor : COLORS.errorColor,
+                  }}
+                  thumbColor={address ? '#f4f3f4' : '#f4f3f4'}
+                  ios_backgroundColor={COLORS.errorColor}
+                  onValueChange={value => setAddress(value)}
+                  value={address}
+                />
+              </View>
+            </View>
+            <View style={styles.nameView}>
+              <View style={{width: '100%'}}>
+                <Text style={styles.dataHistoryText6}>
+                  Show Patient Unique ID:
+                </Text>
+                <View style={styles.statusView}>
+                  <Switch
+                    trackColor={{
+                      false: uniqueId ? COLORS.greenColor : COLORS.errorColor,
+                      true: uniqueId ? COLORS.greenColor : COLORS.errorColor,
+                    }}
+                    thumbColor={uniqueId ? '#f4f3f4' : '#f4f3f4'}
+                    ios_backgroundColor={COLORS.errorColor}
+                    onValueChange={value => setUniqueId(value)}
+                    value={uniqueId}
+                  />
+                </View>
+              </View>
+            </View>
           </View>
-
+          {errorVisible ? (
+            <Text style={styles.dataHistoryText4}>{errorMessage}</Text>
+          ) : null}
           <View style={styles.buttonView}>
             <TouchableOpacity
               onPress={() => {
@@ -778,6 +910,11 @@ const portraitStyles = StyleSheet.create({
     marginHorizontal: wp(2),
     textAlign: 'center',
   },
+  dataHistoryText6: {
+    fontSize: hp(1.8),
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+    color: COLORS.black,
+  },
   dataHistoryText1: {
     fontSize: hp(1.7),
     fontFamily: Fonts.FONTS.PoppinsBold,
@@ -799,6 +936,9 @@ const portraitStyles = StyleSheet.create({
     fontSize: hp(1.8),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.errorColor,
+    width: '92%',
+    alignSelf: 'center',
+    marginBottom: hp(3),
   },
   mainDataView: {
     minHeight: hp(29),
@@ -890,7 +1030,7 @@ const portraitStyles = StyleSheet.create({
     width: '94%',
     alignSelf: 'center',
     flexDirection: 'row',
-    justifyContent: 'flex-end',
+    // justifyContent: 'flex-end',
     alignItems: 'center',
   },
   nextView: {
@@ -1065,7 +1205,7 @@ const portraitStyles = StyleSheet.create({
     justifyContent: 'center',
   },
   colorView: {
-    width: wp(9),
+    width: wp(10),
     borderWidth: 0.5,
     borderColor: COLORS.black,
     padding: 5,
@@ -1219,6 +1359,9 @@ const landscapeStyles = StyleSheet.create({
     fontSize: hp(1.8),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.errorColor,
+    width: '96%',
+    alignSelf: 'center',
+    marginBottom: hp(3),
   },
   dataHistoryText5: {
     fontSize: hp(1.8),
@@ -1313,14 +1456,14 @@ const landscapeStyles = StyleSheet.create({
     borderRadius: wp(2),
   },
   buttonView: {
-    width: '94%',
+    width: '100%',
     alignSelf: 'center',
     flexDirection: 'row',
-    justifyContent: 'flex-end',
+    // justifyContent: 'flex-end',
     alignItems: 'center',
   },
   nextView: {
-    height: hp(4.5),
+    height: hp(4),
     paddingHorizontal: wp(4),
     borderRadius: 5,
     alignItems: 'center',
@@ -1330,11 +1473,11 @@ const landscapeStyles = StyleSheet.create({
   },
   nextText: {
     fontFamily: Fonts.FONTS.PoppinsBold,
-    fontSize: hp(2.2),
+    fontSize: hp(2),
     color: COLORS.white,
   },
   prevView: {
-    height: hp(4.5),
+    height: hp(4),
     paddingHorizontal: wp(4),
     borderRadius: 5,
     alignItems: 'center',
@@ -1344,7 +1487,7 @@ const landscapeStyles = StyleSheet.create({
   },
   prevText: {
     fontFamily: Fonts.FONTS.PoppinsBold,
-    fontSize: hp(2.2),
+    fontSize: hp(2),
     color: COLORS.white,
   },
   dataListText1: {

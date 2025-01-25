@@ -165,6 +165,8 @@ export const DoctorScreen = ({navigation}) => {
   const [doctorBreakList, setDoctorBreakList] = useState([]);
   const [holidayDoctor, setHolidayDoctor] = useState('');
   const [holidayDate, setHolidayDate] = useState(new Date());
+  const [holidayStartDate, setHolidayStartDate] = useState(null);
+  const [holidayEndDate, setHolidayEndDate] = useState(null);
   const [holidayReason, setHolidayReason] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [deleteUser, setDeleteUser] = useState(false);
@@ -214,6 +216,7 @@ export const DoctorScreen = ({navigation}) => {
         statusId == 2 ? '&active=1' : statusId == 3 ? '&deactive=0' : ''
       }`;
       const response = await onGetDoctorApi(urlData);
+      console.log('Get Response Data Array::', response.data);
       if (response.data.flag == 1) {
         setTotalPage(response.data.recordsTotal);
         setDoctorDataList(response.data.data);
@@ -774,6 +777,10 @@ export const DoctorScreen = ({navigation}) => {
             setHolidayDateModalVisible={setHolidayDateModalVisible}
             onAddDoctorDepartmentData={() => onAddDoctorHolidayData()}
             onDeleteDepartmentData={id => onDeleteHolidayData(id)}
+            holidayStartDate={holidayStartDate}
+            setHolidayStartDate={setHolidayStartDate}
+            holidayEndDate={holidayEndDate}
+            setHolidayEndDate={setHolidayEndDate}
             setDeleteUser={setDeleteUser}
             deleteUser={deleteUser}
             isLoading={isLoading}

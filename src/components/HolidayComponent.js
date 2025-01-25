@@ -19,6 +19,8 @@ import {COLORS, Fonts} from '../utils';
 import {useTheme} from '../utils/ThemeProvider';
 import ProfilePhoto from './ProfilePhoto';
 import deleteIcon from '../images/delete.png';
+import close from '../images/close.png';
+import calendar from '../images/calendar.png';
 import editing from '../images/editing.png';
 import moment from 'moment';
 import {useSelector} from 'react-redux';
@@ -26,6 +28,7 @@ import SelectDropdown from 'react-native-select-dropdown';
 import DatePicker from 'react-native-date-picker';
 import {DeletePopup} from './DeletePopup';
 import useOrientation from './OrientationComponent';
+import CalendarPicker from 'react-native-calendar-picker';
 
 const HolidayComponent = ({
   searchHoliday,
@@ -44,6 +47,10 @@ const HolidayComponent = ({
   onAddDoctorDepartmentData,
   onEditDoctorDepartmentData,
   onDeleteDepartmentData,
+  holidayStartDate,
+  setHolidayStartDate,
+  holidayEndDate,
+  setHolidayEndDate,
   setDeleteUser,
   deleteUser,
   isLoading,
@@ -56,8 +63,6 @@ const HolidayComponent = ({
   const orientation = useOrientation(); // Get current orientation
   const isPortrait = orientation === 'portrait';
   const styles = isPortrait ? portraitStyles : landscapeStyles;
-  const [holidayStartDate, setHolidayStartDate] = useState(null);
-  const [holidayEndDate, setHolidayEndDate] = useState(null);
   const [calenderVisible, setCalenderVisible] = useState(false);
   const [doctorSelectedName, setDoctorSelectedName] = useState('');
   const [editId, setEditId] = useState('');
@@ -121,12 +126,15 @@ const HolidayComponent = ({
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{paddingBottom: hp(12)}}>
-          {/* <View
-            style={[styles.subView, {marginVertical: hp(0), marginTop: hp(2)}]}>
+          <View
+            style={[
+              styles.subView,
+              {marginVertical: hp(0), marginTop: hp(2), zIndex: 1},
+            ]}>
             <View style={styles.fullDateView}>
               <TouchableOpacity
                 style={styles.dateView}
-                onPress={() => setCalenderVisible(true)}>
+                onPress={() => setCalenderVisible(!calenderVisible)}>
                 <Text style={styles.startDateText}>
                   {holidayStartDate == null
                     ? 'Start date'
@@ -150,7 +158,7 @@ const HolidayComponent = ({
               </TouchableOpacity>
             </View>
             {calenderVisible && (
-              <View style={styles.calenderView}>
+              <View style={[styles.calenderView]}>
                 <CalendarPicker
                   startFromMonday={true}
                   allowRangeSelection={true}
@@ -163,8 +171,8 @@ const HolidayComponent = ({
                 />
               </View>
             )}
-          </View> */}
-          <View style={styles.subView}>
+          </View>
+          <View style={[styles.subView]}>
             <TextInput
               value={searchHoliday}
               placeholder={'Search'}
@@ -816,6 +824,7 @@ const landscapeStyles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: wp(3),
     marginVertical: hp(2),
+    // zIndex: 1,
   },
   searchView: {
     width: '50%',
@@ -1119,7 +1128,7 @@ const landscapeStyles = StyleSheet.create({
     width: '100%',
     position: 'absolute',
     padding: 5,
-    zIndex: 1,
+    zIndex: 10,
     borderRadius: 5,
     top: hp(4),
     left: wp(2),

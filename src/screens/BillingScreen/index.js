@@ -316,6 +316,7 @@ export const BillingScreen = ({navigation}) => {
   const [advancePaymentList, setAdvancePaymentList] = useState([]);
   const [billList, setBillList] = useState([]);
   const [invoiceList, setInvoiceList] = useState([]);
+  const [manualListData, setManualListData] = useState([]);
   const [refresh, setRefresh] = useState(false);
   const [pageCount, setPageCount] = useState('1');
   const [totalPage, setTotalPage] = useState('1');
@@ -514,6 +515,26 @@ export const BillingScreen = ({navigation}) => {
     }
   };
 
+  useEffect(() => {
+    onGetManualBillData();
+  }, [searchManualBill, pageCount]);
+
+  const onGetManualBillData = async () => {
+    try {
+      const response = await onGetCommonApi(
+        `manual-bills-get?search=${searchManualBill}&page=${pageCount}`,
+      );
+      console.log('GetAccountData>>', response.data.data);
+      if (response.data.flag == 1) {
+        setManualListData(response.data.data.items);
+        setManualPage(response.data.data.pagination.last_page);
+        setRefresh(!refresh);
+      }
+    } catch (err) {
+      console.log('Get AccountError>', err.response.data);
+    }
+  };
+
   return (
     <View style={[styles.container, {backgroundColor: theme.lightColor}]}>
       <View style={styles.headerView}>
@@ -609,7 +630,10 @@ export const BillingScreen = ({navigation}) => {
             <ManualList
               searchBreak={searchManualBill}
               setSearchBreak={setSearchManualBill}
-              allData={ManualData}
+              allData={manualListData}
+              totalPage={manualPage}
+              pageCount={pageCount}
+              setPageCount={setPageCount}
             />
           )
         )}

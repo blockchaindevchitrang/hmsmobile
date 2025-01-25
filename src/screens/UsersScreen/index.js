@@ -206,10 +206,10 @@ export const UsersScreen = ({navigation}) => {
   }, []);
 
   const animations = useRef(
-    [0, 0, 0, 0, 0, 0, 0].map(() => new Animated.Value(300)),
+    [0, 0, 0, 0, 0, 0, 0, 0, 0].map(() => new Animated.Value(300)),
   ).current;
   const opacities = useRef(
-    [0, 0, 0, 0, 0, 0, 0].map(() => new Animated.Value(0)),
+    [0, 0, 0, 0, 0, 0, 0, 0, 0].map(() => new Animated.Value(0)),
   ).current;
 
   const toggleMenu = open => {
@@ -392,10 +392,10 @@ export const UsersScreen = ({navigation}) => {
 
   const onGetRolePermissionData = async () => {
     try {
-      const response = await onGetRolePermissionDataApi();
-      console.log('Response Role Data', response.data);
-      if (response.status === 200) {
-        setRolePermission(response.data.data);
+      const roleData = await onGetRoleDataApi();
+      console.log('Get roleData Response::', roleData.data.data);
+      if (roleData.data.data) {
+        setRolePermission(roleData.data.data);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -429,6 +429,13 @@ export const UsersScreen = ({navigation}) => {
             typeId={userType}
             setUserTypeName={setUserTypeName}
             userTypeName={userTypeName}
+          />
+        ) : selectedView == 'Role' ? (
+          <RoleList
+            searchBreak={searchAccountant}
+            setSearchBreak={setSearchAccountant}
+            allData={rolePermission}
+            onGetData={onGetRolePermissionData}
           />
         ) : selectedView == 'Accountant' ? (
           <AccountantList
@@ -513,6 +520,7 @@ export const UsersScreen = ({navigation}) => {
                 {[
                   'Logo',
                   'Users',
+                  'Role',
                   'Accountant',
                   'Nurses',
                   'Receptionists',

@@ -21,7 +21,14 @@ import deleteIcon from '../../images/delete.png';
 import moment from 'moment';
 import useOrientation from '../OrientationComponent';
 
-const ManualList = ({searchBreak, setSearchBreak, allData}) => {
+const ManualList = ({
+  searchBreak,
+  setSearchBreak,
+  allData,
+  totalPage,
+  pageCount,
+  setPageCount,
+}) => {
   const {theme} = useTheme();
   const orientation = useOrientation();
   const isPortrait = orientation === 'portrait';
@@ -40,23 +47,25 @@ const ManualList = ({searchBreak, setSearchBreak, allData}) => {
           )}
           <View>
             <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
-            <Text style={[styles.dataHistoryText1]}>{item.mail}</Text>
+            <Text style={[styles.dataHistoryText1]}>{item.email}</Text>
           </View>
         </View>
-        {item.approved == 'N/A' ? (
+        {item.payment_approved == 'N/A' ? (
           <Text
             style={[
               styles.dataHistoryText,
               {width: isPortrait ? wp(40) : wp(38)},
             ]}>
-            {item.approved}
+            {'N/A'}
           </Text>
         ) : (
           <View
             style={[styles.switchView, {width: isPortrait ? wp(40) : wp(38)}]}>
             <View
               style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
-              <Text style={[styles.dataListText1]}>{item.approved}</Text>
+              <Text style={[styles.dataListText1]}>
+                {item.payment_approved}
+              </Text>
             </View>
           </View>
         )}
@@ -143,6 +152,55 @@ const ManualList = ({searchBreak, setSearchBreak, allData}) => {
               </View>
             </View>
           </ScrollView>
+        </View>
+        <View style={styles.nextView1}>
+          <View style={styles.prevViewData}>
+            <Text
+              style={[
+                styles.prevButtonView,
+                {opacity: pageCount == '1' ? 0.7 : 1},
+              ]}
+              disabled={pageCount == '1'}
+              onPress={() => setPageCount('1')}>
+              {'<<'}
+            </Text>
+            <Text
+              style={[
+                styles.prevButtonView,
+                {marginLeft: wp(3), opacity: pageCount == '1' ? 0.7 : 1},
+              ]}
+              disabled={pageCount == '1'}
+              onPress={() => setPageCount(parseFloat(pageCount) - 1)}>
+              {'<'}
+            </Text>
+          </View>
+          <Text
+            style={
+              styles.totalCountText
+            }>{`Page ${pageCount} to ${totalPage}`}</Text>
+          <View style={styles.prevViewData}>
+            <Text
+              style={[
+                styles.prevButtonView,
+                {opacity: pageCount >= totalPage ? 0.7 : 1},
+              ]}
+              disabled={pageCount >= totalPage}
+              onPress={() => setPageCount(parseFloat(pageCount) + 1)}>
+              {'>'}
+            </Text>
+            <Text
+              style={[
+                styles.prevButtonView,
+                {
+                  marginLeft: wp(3),
+                  opacity: pageCount >= totalPage ? 0.7 : 1,
+                },
+              ]}
+              disabled={pageCount >= totalPage}
+              onPress={() => setPageCount(totalPage)}>
+              {'>>'}
+            </Text>
+          </View>
         </View>
       </ScrollView>
     </View>
@@ -498,6 +556,32 @@ const portraitStyles = StyleSheet.create({
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
   },
+  nextView1: {
+    width: '92%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    alignSelf: 'center',
+    marginTop: hp(3),
+  },
+  prevViewData: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  prevButtonView: {
+    paddingHorizontal: wp(3),
+    backgroundColor: COLORS.headerGreenColor,
+    paddingVertical: hp(0.5),
+    borderRadius: 5,
+    fontSize: hp(3),
+    color: COLORS.white,
+  },
+  totalCountText: {
+    fontSize: hp(2),
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
+  },
 });
 
 const landscapeStyles = StyleSheet.create({
@@ -846,5 +930,31 @@ const landscapeStyles = StyleSheet.create({
     fontSize: hp(2.5),
     fontFamily: Fonts.FONTS.PoppinsMedium,
     color: COLORS.black,
+  },
+  nextView1: {
+    width: '96%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    alignSelf: 'center',
+    marginTop: hp(3),
+  },
+  prevViewData: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  prevButtonView: {
+    paddingHorizontal: wp(1.5),
+    backgroundColor: COLORS.headerGreenColor,
+    paddingVertical: hp(0.5),
+    borderRadius: 5,
+    fontSize: hp(2.6),
+    color: COLORS.white,
+  },
+  totalCountText: {
+    fontSize: hp(2),
+    color: COLORS.black,
+    fontFamily: Fonts.FONTS.PoppinsMedium,
   },
 });

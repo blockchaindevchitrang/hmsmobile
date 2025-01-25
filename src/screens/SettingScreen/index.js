@@ -20,6 +20,7 @@ import SelectDropdown from 'react-native-select-dropdown';
 import styles from './styles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {LogoutPopup} from '../../components/LogoutPopup';
+import useOrientation from '../../components/OrientationComponent';
 
 const rangeArray = [
   '#5eead4',
@@ -37,6 +38,8 @@ const rangeArray = [
 ];
 
 export const SettingScreen = ({navigation}) => {
+  const orientation = useOrientation(); // Get current orientation
+  const isPortrait = orientation === 'portrait';
   const scrollY = useRef(new Animated.Value(0)).current;
   const {t, i18n} = useTranslation();
   // const {theme, toggleTheme, colorTheme} = useTheme();
@@ -379,13 +382,15 @@ export const SettingScreen = ({navigation}) => {
               {'Hospital Charges'}
             </Text>
           </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => navigation.navigate('IPDScreen')}
-            style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
-            <Text style={[styles.text, {color: theme.text}]}>{'IPD/OPD'}</Text>
-          </TouchableOpacity>
-
+          {isPortrait && (
+            <TouchableOpacity
+              onPress={() => navigation.navigate('IPDScreen')}
+              style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
+              <Text style={[styles.text, {color: theme.text}]}>
+                {'IPD/OPD'}
+              </Text>
+            </TouchableOpacity>
+          )}
           <TouchableOpacity
             onPress={() => navigation.navigate('LiveConsultationScreen')}
             style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
@@ -401,13 +406,15 @@ export const SettingScreen = ({navigation}) => {
               {'Medicines'}
             </Text>
           </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => navigation.navigate('PatientsScreen')}
-            style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
-            <Text style={[styles.text, {color: theme.text}]}>{'Patients'}</Text>
-          </TouchableOpacity>
-
+          {isPortrait && (
+            <TouchableOpacity
+              onPress={() => navigation.navigate('PatientsScreen')}
+              style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
+              <Text style={[styles.text, {color: theme.text}]}>
+                {'Patients'}
+              </Text>
+            </TouchableOpacity>
+          )}
           <TouchableOpacity
             onPress={() => navigation.navigate('VaccinationScreen')}
             style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>

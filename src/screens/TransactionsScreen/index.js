@@ -222,20 +222,13 @@ export const TransactionsScreen = ({navigation}) => {
               onChangeText={text => setSearchAccount(text)}
               style={[styles.searchView, {color: theme.text}]}
             />
-            {/* <View style={styles.filterView}>
-              <TouchableOpacity
-                style={styles.filterView1}
-                onPress={() => setFilterVisible(true)}>
-                <Image style={styles.filterImage} source={filter} />
-              </TouchableOpacity>
-            </View> */}
           </View>
           <View
             style={[styles.activeView, {backgroundColor: theme.headerColor}]}>
             <ScrollView
-                horizontal
-                bounces={false}
-                showsHorizontalScrollIndicator={false}>
+              horizontal
+              bounces={false}
+              showsHorizontalScrollIndicator={false}>
               <View>
                 <View
                   style={[
