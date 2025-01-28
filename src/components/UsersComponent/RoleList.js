@@ -304,23 +304,88 @@ const RoleList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
     }
   };
 
-  const processModules1 = modules =>
-    modules.map(module => ({
-      main_module: module.main_module,
-      privileges: module.privileges.map(privilege => ({
-        ...privilege,
-        title: privilege.privilege_title,
-        end_point: privilege.privilege_end_point,
-        actions: privilege.action_name
-          ? privilege.action_name.split(',').map(action => ({
-              name: action.trim(),
-              isChecked: false,
-            }))
-          : [],
-        isChecked: false,
-      })),
-      isChecked: false,
-    }));
+  // const processModules1 = modules =>
+  //   modules.map(module => ({
+  //     main_module: module.main_module,
+  //     privileges: module.privileges.map(privilege => ({
+  //       ...privilege,
+  //       title: privilege.privilege_title,
+  //       end_point: privilege.privilege_end_point,
+  //       actions: privilege.action_name
+  //         ? privilege.action_name.split(',').map(action => ({
+  //             name: action.trim(),
+  //             isChecked: false,
+  //           }))
+  //         : [],
+  //       isChecked: false,
+  //     })),
+  //     isChecked: false,
+  //   }));
+
+  const updatePrivilegesWithRole = (allPrivileges, rolePrivileges) => {
+    // Flatten the role's privileges into a map of end_points and actions
+    const rolePrivilegesMap = {};
+    rolePrivileges.forEach(module => {
+      module.privileges.forEach(priv => {
+        rolePrivilegesMap[priv.privilege_end_point] = priv.action_name
+          ? priv.action_name.split(',').map(action => action.trim())
+          : []; // Store actions or an empty array
+      });
+    });
+
+    // Update the allPrivileges array
+    return allPrivileges.map(module => {
+      module.privileges = module.privileges.map(priv => {
+        const roleActions = rolePrivilegesMap[priv.end_point]; // Get actions for the endpoint
+        console.log('Get Role Action:::', roleActions);
+        if (roleActions !== undefined) {
+          // If endpoint exists in rolePrivileges, mark it as checked
+          if (priv.action.trim() === '') {
+            // No actions available, mark the endpoint as checked
+            priv.actions = []; // No actions, no additional checkboxes
+            priv.isChecked = true; // Endpoint is checked
+          } else {
+            priv.actions = priv.action
+              .split(',')
+              .map(action => action.trim())
+              .map(action => ({
+                name: action,
+                isChecked:
+                  roleActions.length === 0 || roleActions.includes(action),
+              }));
+            priv.isChecked =
+              priv.actions.length === 0 ||
+              priv.actions.every(action => action.isChecked);
+          }
+        } else {
+          // If endpoint doesn't exist in rolePrivileges, mark everything as unchecked
+          if (priv.action.trim() === '') {
+            // No actions available, mark the endpoint as checked
+            priv.actions = []; // No actions, no additional checkboxes
+            priv.isChecked = true; // Endpoint is checked
+          } else {
+            priv.actions = priv.action
+              .split(',')
+              .map(action => action.trim())
+              .map(action => ({
+                name: action,
+                isChecked: false,
+              }));
+            priv.isChecked = false;
+          }
+        }
+
+        return priv;
+      });
+
+      // Mark the main module as checked if all privileges are checked
+      module.isChecked =
+        module.privileges.length > 0 &&
+        module.privileges.every(priv => priv.isChecked);
+
+      return module;
+    });
+  };
 
   const onGetSpecificModules = async id => {
     try {
@@ -328,7 +393,9 @@ const RoleList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
       const response = await onGetCommonApi(dataUrl);
       if (response.data.flag == 1) {
         // setModulesList(response.data.data);
-        setPermissions(processModules1(response.data.data.privileges));
+        setPermissions(
+          updatePrivilegesWithRole(permissions, response.data.data.privileges),
+        );
         setUserId(id);
         setFirstName(response.data.data.role_name);
         setNewUserVisible(true);
@@ -352,7 +419,7 @@ const RoleList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
         <Text
           style={[
             styles.dataHistoryText,
-            {width: isPortrait ? wp(40) : wp(60.1), textAlign: 'left'},
+            {width: isPortrait ? wp(40) : wp(75.1), textAlign: 'left'},
           ]}>
           {item?.permissions?.join(',  ')}
         </Text>
@@ -644,7 +711,14 @@ const RoleList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
             />
             <View style={styles.filterView}>
               <TouchableOpacity
-                onPress={() => setNewUserVisible(true)}
+                onPress={() => {
+                  setUserId('');
+                  setFirstName('');
+                  setErrorMessage('');
+                  setErrorVisible(false);
+                  onGetModules();
+                  setNewUserVisible(true);
+                }}
                 style={styles.actionView}>
                 <Text style={styles.actionText}>New Role</Text>
               </TouchableOpacity>
@@ -655,7 +729,7 @@ const RoleList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
             <ScrollView
               horizontal
               bounces={false}
-              showsVerticalScrollIndicator={false}>
+              showsHorizontalScrollIndicator={false}>
               <View>
                 <View
                   style={[
@@ -665,14 +739,14 @@ const RoleList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
                   <Text
                     style={[
                       styles.titleText,
-                      {width: isPortrait ? wp(30) : wp(50)},
+                      {width: isPortrait ? wp(30) : wp(35)},
                     ]}>
                     {'ROLE'}
                   </Text>
                   <Text
                     style={[
                       styles.titleText,
-                      {width: isPortrait ? wp(40) : wp(60.1)},
+                      {width: isPortrait ? wp(40) : wp(75.1)},
                     ]}>
                     {'PERMISSIONS'}
                   </Text>
@@ -689,7 +763,7 @@ const RoleList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
                     data={allData}
                     renderItem={renderItem}
                     bounces={false}
-                    showsHorizontalScrollIndicator={false}
+                    showsVerticalScrollIndicator={false}
                     initialNumToRender={allData.length}
                     nestedScrollEnabled
                     virtualized
@@ -1406,7 +1480,7 @@ const landscapeStyles = StyleSheet.create({
   nameDataView: {
     flexDirection: 'row',
     alignItems: 'center',
-    width: wp(50),
+    width: wp(35),
     marginHorizontal: wp(2),
   },
   actionDataView: {
@@ -1840,4 +1914,5 @@ onRequestClose={() => setNewUserVisible(false)}>
     </ScrollView>
   </View>
 </View>
-</Modal> */}
+</Modal> */
+}

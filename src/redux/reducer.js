@@ -13,6 +13,7 @@ export const FETCH_CASE_DATA = 'FETCH_CASE_DATA';
 export const FETCH_CHARGE_CATEGORY_DATA = 'FETCH_CHARGE_CATEGORY_DATA';
 export const FETCH_CHARGE_DATA = 'FETCH_CHARGE_DATA';
 export const FETCH_ADMISSION_DATA = 'FETCH_ADMISSION_DATA';
+export const FETCH_ROLE_PERMISSION = 'FETCH_ROLE_PERMISSION';
 
 export const fetchUserData = user_data => {
   return {
@@ -46,6 +47,13 @@ export const fetchRoleData = roleData => {
   return {
     type: FETCH_ROLE_DATA,
     payload: roleData,
+  };
+};
+
+export const fetchRolePermission = rolePermission => {
+  return {
+    type: FETCH_ROLE_PERMISSION,
+    payload: rolePermission,
   };
 };
 
@@ -136,6 +144,7 @@ const initialState = {
   chargeCategoryData: [],
   chargeData: [],
   admissionData: [],
+  rolePermission: [],
 };
 
 // Reducer
@@ -165,6 +174,11 @@ const rootReducer = (state = initialState, action) => {
       return {
         ...state,
         roleData: action.payload,
+      };
+    case FETCH_ROLE_PERMISSION:
+      return {
+        ...state,
+        rolePermission: action.payload,
       };
     case FETCH_DASHBOARD_DATA:
       return {

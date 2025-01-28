@@ -31,6 +31,7 @@ import {
   onGetFilterAppointmentApi,
 } from '../../services/Api';
 import useOrientation from '../../components/OrientationComponent';
+import {useSelector} from 'react-redux';
 
 const allData = [
   {
@@ -132,6 +133,7 @@ const appointmentData = [
 ];
 
 export const AppointmentScreen = ({navigation}) => {
+  const rolePermission = useSelector(state => state.rolePermission);
   const orientation = useOrientation(); // Get current orientation
   const isPortrait = orientation === 'portrait';
   const styles = isPortrait ? portraitStyles : landscapeStyles;
@@ -156,66 +158,33 @@ export const AppointmentScreen = ({navigation}) => {
   const [transactionPage, setTransactionPage] = useState('1');
   const [statusShow, setStatusShow] = useState('');
   const [statusId, setStatusId] = useState(1);
+  const [appointmentAction, setAppointmentAction] = useState('');
 
-  // const AppointmentRoute = () => (
-  //   <AppointmentComponent
-  //     searchBreak={searchBreak}
-  //     setSearchBreak={setSearchBreak}
-  //     allData={appointmentData}
-  //   />
-  // );
+  let arrayData = ['Logo', 'Appointments', 'Appointments Transaction'];
 
-  // const TransactionRoute = () => (
-  //   <TransactionComponent
-  //     searchBreak={searchBreak}
-  //     setSearchBreak={setSearchBreak}
-  //     allData={allData}
-  //   />
-  // );
-
-  // const renderScene = SceneMap({
-  //   appointments: AppointmentRoute,
-  //   transaction: TransactionRoute,
-  // });
-
-  // const renderItem =
-  //   ({navigationState, position}) =>
-  //   ({route, index}) => {
-  //     const isActive = navigationState.index === index;
-  //     return (
-  //       <View
-  //         style={[
-  //           styles.tab,
-  //           {
-  //             backgroundColor: isActive
-  //               ? COLORS.headerGreenColor
-  //               : COLORS.greyColor,
-  //           },
-  //         ]}>
-  //         <View style={[styles.item]}>
-  //           <Text style={[styles.label]}>{route.title}</Text>
-  //         </View>
-  //       </View>
-  //     );
-  //   };
-
-  // const renderTabBar = (
-  //   props: SceneRendererProps & {navigationState: State},
-  // ) => (
-  //   <View style={[styles.tabbar, {backgroundColor: theme.lightColor}]}>
-  //     <ScrollView horizontal bounces={false} showsHorizontalScrollIndicator={false}>
-  //       {props.navigationState.routes.map((route: Route, index: number) => {
-  //         return (
-  //           <TouchableWithoutFeedback
-  //             key={route.key}
-  //             onPress={() => props.jumpTo(route.key)}>
-  //             {renderItem(props)({route, index})}
-  //           </TouchableWithoutFeedback>
-  //         );
-  //       })}
-  //     </ScrollView>
-  //   </View>
-  // );
+  useEffect(() => {
+    let dataArray = [];
+    let appointmentVisible = false;
+    let transactionVisible = false;
+    rolePermission.map(item => {
+      if (item.main_module == 'Appointments') {
+        item.privileges.map(item1 => {
+          if (item1.end_point == 'appointments') {
+            dataArray = item1.action.split(',').map(action => action.trim());
+            appointmentVisible = true;
+          } else if (item1.end_point == 'appointment_transaction') {
+            transactionVisible = true;
+          }
+        });
+      }
+    });
+    if (!appointmentVisible) {
+      arrayData = ['Logo', 'Appointments Transaction'];
+    } else if (!transactionVisible) {
+      arrayData = ['Logo', 'Appointments'];
+    }
+    setAppointmentAction(dataArray);
+  }, [rolePermission]);
 
   const animations = useRef(
     [0, 0, 0].map(() => new Animated.Value(300)),
@@ -274,7 +243,13 @@ export const AppointmentScreen = ({navigation}) => {
 
   useEffect(() => {
     onAppointmentGet();
-  }, [searchAppointment, holidayStartDate, holidayEndDate, pageCount, statusId]);
+  }, [
+    searchAppointment,
+    holidayStartDate,
+    holidayEndDate,
+    pageCount,
+    statusId,
+  ]);
 
   useEffect(() => {
     onTransactionDataGet();
@@ -358,6 +333,7 @@ export const AppointmentScreen = ({navigation}) => {
             setStatusShow={setStatusShow}
             setStatusId={setStatusId}
             statusId={statusId}
+            appointmentAction={appointmentAction}
           />
         ) : (
           selectedView == 'Appointments Transaction' && (
@@ -388,50 +364,48 @@ export const AppointmentScreen = ({navigation}) => {
 
             <View style={styles.mainModalView}>
               <View style={styles.menuContainer}>
-                {['Logo', 'Appointments', 'Appointments Transaction'].map(
-                  (option, index) => (
-                    <>
-                      {option == 'Logo' ? (
-                        <Animated.View
-                          key={index}
-                          style={[
-                            styles.logoMenu,
-                            {
-                              transform: [{translateY: animations[index]}],
-                              opacity: opacities[index],
-                              marginBottom: hp(1),
-                            },
-                          ]}>
-                          <Image
-                            source={headerLogo}
-                            style={styles.headerLogoImage}
-                          />
-                        </Animated.View>
-                      ) : (
-                        <Animated.View
-                          key={index}
-                          style={[
-                            styles.menuOption,
-                            {
-                              transform: [{translateY: animations[index]}],
-                              opacity: opacities[index],
-                              backgroundColor: theme.headerColor,
-                            },
-                          ]}>
-                          <TouchableOpacity
-                            style={styles.optionButton}
-                            onPress={() => {
-                              setSelectedView(option);
-                              setPageCount('1');
-                              toggleMenu(false);
-                            }}>
-                            <Text style={styles.menuItem}>{option}</Text>
-                          </TouchableOpacity>
-                        </Animated.View>
-                      )}
-                    </>
-                  ),
-                )}
+                {arrayData.map((option, index) => (
+                  <>
+                    {option == 'Logo' ? (
+                      <Animated.View
+                        key={index}
+                        style={[
+                          styles.logoMenu,
+                          {
+                            transform: [{translateY: animations[index]}],
+                            opacity: opacities[index],
+                            marginBottom: hp(1),
+                          },
+                        ]}>
+                        <Image
+                          source={headerLogo}
+                          style={styles.headerLogoImage}
+                        />
+                      </Animated.View>
+                    ) : (
+                      <Animated.View
+                        key={index}
+                        style={[
+                          styles.menuOption,
+                          {
+                            transform: [{translateY: animations[index]}],
+                            opacity: opacities[index],
+                            backgroundColor: theme.headerColor,
+                          },
+                        ]}>
+                        <TouchableOpacity
+                          style={styles.optionButton}
+                          onPress={() => {
+                            setSelectedView(option);
+                            setPageCount('1');
+                            toggleMenu(false);
+                          }}>
+                          <Text style={styles.menuItem}>{option}</Text>
+                        </TouchableOpacity>
+                      </Animated.View>
+                    )}
+                  </>
+                ))}
 
                 <View style={styles.logoMenu}>
                   <TouchableOpacity

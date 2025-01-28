@@ -21,6 +21,7 @@ import styles from './styles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {LogoutPopup} from '../../components/LogoutPopup';
 import useOrientation from '../../components/OrientationComponent';
+import {useSelector} from 'react-redux';
 
 const rangeArray = [
   '#5eead4',
@@ -38,6 +39,7 @@ const rangeArray = [
 ];
 
 export const SettingScreen = ({navigation}) => {
+  const rolePermission = useSelector(state => state.rolePermission);
   const orientation = useOrientation(); // Get current orientation
   const isPortrait = orientation === 'portrait';
   const scrollY = useRef(new Animated.Value(0)).current;
@@ -314,172 +316,362 @@ export const SettingScreen = ({navigation}) => {
               {'Change Password'}
             </Text>
           </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => navigation.navigate('BillingScreen')}
-            style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
-            <Text style={[styles.text, {color: theme.text}]}>{'Billings'}</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => navigation.navigate('BedScreen')}
-            style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
-            <Text style={[styles.text, {color: theme.text}]}>
-              {'Bed Management'}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => navigation.navigate('BloodBankScreen')}
-            style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
-            <Text style={[styles.text, {color: theme.text}]}>
-              {'Blood Bank'}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => navigation.navigate('PrescriptionScreen')}
-            style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
-            <Text style={[styles.text, {color: theme.text}]}>
-              {'Prescriptions'}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => navigation.navigate('DiagnosisScreen')}
-            style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
-            <Text style={[styles.text, {color: theme.text}]}>
-              {'Diagnosis'}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => navigation.navigate('EnquiriesScreen')}
-            style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
-            <Text style={[styles.text, {color: theme.text}]}>
-              {'Enquiries'}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => navigation.navigate('FinanceScreen')}
-            style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
-            <Text style={[styles.text, {color: theme.text}]}>{'Finance'}</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => navigation.navigate('FrontOfficeScreen')}
-            style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
-            <Text style={[styles.text, {color: theme.text}]}>
-              {'Front Office'}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => navigation.navigate('HospitalChargesScreen')}
-            style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
-            <Text style={[styles.text, {color: theme.text}]}>
-              {'Hospital Charges'}
-            </Text>
-          </TouchableOpacity>
-          {isPortrait && (
-            <TouchableOpacity
-              onPress={() => navigation.navigate('IPDScreen')}
-              style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
-              <Text style={[styles.text, {color: theme.text}]}>
-                {'IPD/OPD'}
-              </Text>
-            </TouchableOpacity>
-          )}
-          <TouchableOpacity
-            onPress={() => navigation.navigate('LiveConsultationScreen')}
-            style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
-            <Text style={[styles.text, {color: theme.text}]}>
-              {'Live Consultations'}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => navigation.navigate('MedicineScreen')}
-            style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
-            <Text style={[styles.text, {color: theme.text}]}>
-              {'Medicines'}
-            </Text>
-          </TouchableOpacity>
-          {isPortrait && (
-            <TouchableOpacity
-              onPress={() => navigation.navigate('PatientsScreen')}
-              style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
-              <Text style={[styles.text, {color: theme.text}]}>
-                {'Patients'}
-              </Text>
-            </TouchableOpacity>
-          )}
-          <TouchableOpacity
-            onPress={() => navigation.navigate('VaccinationScreen')}
-            style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
-            <Text style={[styles.text, {color: theme.text}]}>
-              {'Vaccination'}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => navigation.navigate('DocumentsScreen')}
-            style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
-            <Text style={[styles.text, {color: theme.text}]}>
-              {'Documents'}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => navigation.navigate('InventoryScreen')}
-            style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
-            <Text style={[styles.text, {color: theme.text}]}>
-              {'Inventory'}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => navigation.navigate('PathologyScreen')}
-            style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
-            <Text style={[styles.text, {color: theme.text}]}>
-              {'Pathology'}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => navigation.navigate('ReportsScreen')}
-            style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
-            <Text style={[styles.text, {color: theme.text}]}>{'Reports'}</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => navigation.navigate('RadiologyScreen')}
-            style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
-            <Text style={[styles.text, {color: theme.text}]}>
-              {'Radiology'}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => navigation.navigate('SMSScreen')}
-            style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
-            <Text style={[styles.text, {color: theme.text}]}>{'SMS/Mail'}</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => navigation.navigate('ServiceScreen')}
-            style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
-            <Text style={[styles.text, {color: theme.text}]}>{'Services'}</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => navigation.navigate('TransactionsScreen')}
-            style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
-            <Text style={[styles.text, {color: theme.text}]}>
-              {'Transactions'}
-            </Text>
-          </TouchableOpacity>
+          {rolePermission.map((item, index) => {
+            if (item.main_module == 'Billings') {
+              return (
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('BillingScreen')}
+                  style={[
+                    styles.menuOption,
+                    {backgroundColor: theme.headerColor},
+                  ]}>
+                  <Text style={[styles.text, {color: theme.text}]}>
+                    {'Billings'}
+                  </Text>
+                </TouchableOpacity>
+              );
+            }
+          })}
+          {rolePermission.map((item, index) => {
+            if (item.main_module == 'Bed Managements') {
+              return (
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('BedScreen')}
+                  style={[
+                    styles.menuOption,
+                    {backgroundColor: theme.headerColor},
+                  ]}>
+                  <Text style={[styles.text, {color: theme.text}]}>
+                    {'Bed Management'}
+                  </Text>
+                </TouchableOpacity>
+              );
+            }
+          })}
+          {rolePermission.map((item, index) => {
+            if (item.main_module == 'Blood Banks') {
+              return (
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('BloodBankScreen')}
+                  style={[
+                    styles.menuOption,
+                    {backgroundColor: theme.headerColor},
+                  ]}>
+                  <Text style={[styles.text, {color: theme.text}]}>
+                    {'Blood Bank'}
+                  </Text>
+                </TouchableOpacity>
+              );
+            }
+          })}
+          {rolePermission.map((item, index) => {
+            if (item.main_module == 'Prescriptions') {
+              return (
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('PrescriptionScreen')}
+                  style={[
+                    styles.menuOption,
+                    {backgroundColor: theme.headerColor},
+                  ]}>
+                  <Text style={[styles.text, {color: theme.text}]}>
+                    {'Prescriptions'}
+                  </Text>
+                </TouchableOpacity>
+              );
+            }
+          })}
+          {rolePermission.map((item, index) => {
+            if (item.main_module == 'Diagnosis') {
+              return (
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('DiagnosisScreen')}
+                  style={[
+                    styles.menuOption,
+                    {backgroundColor: theme.headerColor},
+                  ]}>
+                  <Text style={[styles.text, {color: theme.text}]}>
+                    {'Diagnosis'}
+                  </Text>
+                </TouchableOpacity>
+              );
+            }
+          })}
+          {rolePermission.map((item, index) => {
+            if (item.main_module == 'Enquiries') {
+              return (
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('EnquiriesScreen')}
+                  style={[
+                    styles.menuOption,
+                    {backgroundColor: theme.headerColor},
+                  ]}>
+                  <Text style={[styles.text, {color: theme.text}]}>
+                    {'Enquiries'}
+                  </Text>
+                </TouchableOpacity>
+              );
+            }
+          })}
+          {rolePermission.map((item, index) => {
+            if (item.main_module == 'Finance') {
+              return (
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('FinanceScreen')}
+                  style={[
+                    styles.menuOption,
+                    {backgroundColor: theme.headerColor},
+                  ]}>
+                  <Text style={[styles.text, {color: theme.text}]}>
+                    {'Finance'}
+                  </Text>
+                </TouchableOpacity>
+              );
+            }
+          })}
+          {rolePermission.map((item, index) => {
+            if (item.main_module == 'Front Office') {
+              return (
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('FrontOfficeScreen')}
+                  style={[
+                    styles.menuOption,
+                    {backgroundColor: theme.headerColor},
+                  ]}>
+                  <Text style={[styles.text, {color: theme.text}]}>
+                    {'Front Office'}
+                  </Text>
+                </TouchableOpacity>
+              );
+            }
+          })}
+          {rolePermission.map((item, index) => {
+            if (item.main_module == 'Hospital Charges') {
+              return (
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('HospitalChargesScreen')}
+                  style={[
+                    styles.menuOption,
+                    {backgroundColor: theme.headerColor},
+                  ]}>
+                  <Text style={[styles.text, {color: theme.text}]}>
+                    {'Hospital Charges'}
+                  </Text>
+                </TouchableOpacity>
+              );
+            }
+          })}
+          {rolePermission.map((item, index) => {
+            if (item.main_module == 'IPD/OPD') {
+              return (
+                isPortrait && (
+                  <TouchableOpacity
+                    onPress={() => navigation.navigate('IPDScreen')}
+                    style={[
+                      styles.menuOption,
+                      {backgroundColor: theme.headerColor},
+                    ]}>
+                    <Text style={[styles.text, {color: theme.text}]}>
+                      {'IPD/OPD'}
+                    </Text>
+                  </TouchableOpacity>
+                )
+              );
+            }
+          })}
+          {rolePermission.map((item, index) => {
+            if (item.main_module == 'Live Consultations') {
+              return (
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('LiveConsultationScreen')}
+                  style={[
+                    styles.menuOption,
+                    {backgroundColor: theme.headerColor},
+                  ]}>
+                  <Text style={[styles.text, {color: theme.text}]}>
+                    {'Live Consultations'}
+                  </Text>
+                </TouchableOpacity>
+              );
+            }
+          })}
+          {rolePermission.map((item, index) => {
+            if (item.main_module == 'Medicines') {
+              return (
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('MedicineScreen')}
+                  style={[
+                    styles.menuOption,
+                    {backgroundColor: theme.headerColor},
+                  ]}>
+                  <Text style={[styles.text, {color: theme.text}]}>
+                    {'Medicines'}
+                  </Text>
+                </TouchableOpacity>
+              );
+            }
+          })}
+          {rolePermission.map((item, index) => {
+            if (item.main_module == 'Patients') {
+              return (
+                isPortrait && (
+                  <TouchableOpacity
+                    onPress={() => navigation.navigate('PatientsScreen')}
+                    style={[
+                      styles.menuOption,
+                      {backgroundColor: theme.headerColor},
+                    ]}>
+                    <Text style={[styles.text, {color: theme.text}]}>
+                      {'Patients'}
+                    </Text>
+                  </TouchableOpacity>
+                )
+              );
+            }
+          })}
+          {rolePermission.map((item, index) => {
+            if (item.main_module == 'Vaccinations') {
+              return (
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('VaccinationScreen')}
+                  style={[
+                    styles.menuOption,
+                    {backgroundColor: theme.headerColor},
+                  ]}>
+                  <Text style={[styles.text, {color: theme.text}]}>
+                    {'Vaccination'}
+                  </Text>
+                </TouchableOpacity>
+              );
+            }
+          })}
+          {rolePermission.map((item, index) => {
+            if (item.main_module == 'Documents') {
+              return (
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('DocumentsScreen')}
+                  style={[
+                    styles.menuOption,
+                    {backgroundColor: theme.headerColor},
+                  ]}>
+                  <Text style={[styles.text, {color: theme.text}]}>
+                    {'Documents'}
+                  </Text>
+                </TouchableOpacity>
+              );
+            }
+          })}
+          {rolePermission.map((item, index) => {
+            if (item.main_module == 'Inventory') {
+              return (
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('InventoryScreen')}
+                  style={[
+                    styles.menuOption,
+                    {backgroundColor: theme.headerColor},
+                  ]}>
+                  <Text style={[styles.text, {color: theme.text}]}>
+                    {'Inventory'}
+                  </Text>
+                </TouchableOpacity>
+              );
+            }
+          })}
+          {rolePermission.map((item, index) => {
+            if (item.main_module == 'Pathology') {
+              return (
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('PathologyScreen')}
+                  style={[
+                    styles.menuOption,
+                    {backgroundColor: theme.headerColor},
+                  ]}>
+                  <Text style={[styles.text, {color: theme.text}]}>
+                    {'Pathology'}
+                  </Text>
+                </TouchableOpacity>
+              );
+            }
+          })}
+          {rolePermission.map((item, index) => {
+            if (item.main_module == 'Reports') {
+              return (
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('ReportsScreen')}
+                  style={[
+                    styles.menuOption,
+                    {backgroundColor: theme.headerColor},
+                  ]}>
+                  <Text style={[styles.text, {color: theme.text}]}>
+                    {'Reports'}
+                  </Text>
+                </TouchableOpacity>
+              );
+            }
+          })}
+          {rolePermission.map((item, index) => {
+            if (item.main_module == 'Radiology') {
+              return (
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('RadiologyScreen')}
+                  style={[
+                    styles.menuOption,
+                    {backgroundColor: theme.headerColor},
+                  ]}>
+                  <Text style={[styles.text, {color: theme.text}]}>
+                    {'Radiology'}
+                  </Text>
+                </TouchableOpacity>
+              );
+            }
+          })}
+          {rolePermission.map((item, index) => {
+            if (item.main_module == 'SMS/Mail') {
+              return (
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('SMSScreen')}
+                  style={[
+                    styles.menuOption,
+                    {backgroundColor: theme.headerColor},
+                  ]}>
+                  <Text style={[styles.text, {color: theme.text}]}>
+                    {'SMS/Mail'}
+                  </Text>
+                </TouchableOpacity>
+              );
+            }
+          })}
+          {rolePermission.map((item, index) => {
+            if (item.main_module == 'Services') {
+              return (
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('ServiceScreen')}
+                  style={[
+                    styles.menuOption,
+                    {backgroundColor: theme.headerColor},
+                  ]}>
+                  <Text style={[styles.text, {color: theme.text}]}>
+                    {'Services'}
+                  </Text>
+                </TouchableOpacity>
+              );
+            }
+          })}
+          {rolePermission.map((item, index) => {
+            if (item.main_module == 'Transactions') {
+              return (
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('TransactionsScreen')}
+                  style={[
+                    styles.menuOption,
+                    {backgroundColor: theme.headerColor},
+                  ]}>
+                  <Text style={[styles.text, {color: theme.text}]}>
+                    {'Transactions'}
+                  </Text>
+                </TouchableOpacity>
+              );
+            }
+          })}
 
           <TouchableOpacity
             style={styles.closeButton}

@@ -66,6 +66,7 @@ const AppointmentComponent = ({
   totalPage,
   setStatusId,
   statusId,
+  appointmentAction,
 }) => {
   const departmentData = useSelector(state => state.departmentData);
   const doctorData = useSelector(state => state.doctorData);
@@ -369,6 +370,7 @@ const AppointmentComponent = ({
                 />
               </TouchableOpacity>
             )}
+            {/* {appointmentAction.includes('edit') && ( */}
             <TouchableOpacity
               onPress={async () => {
                 let allData = await onGetSpecificDoctor(item.id);
@@ -388,6 +390,7 @@ const AppointmentComponent = ({
                 source={editing}
               />
             </TouchableOpacity>
+            {/* )} */}
           </View>
         )}
       </View>
@@ -542,6 +545,7 @@ const AppointmentComponent = ({
               style={[styles.searchView, {color: theme.text}]}
             />
             <View style={styles.filterView}>
+              {/* {appointmentAction.includes('create') && ( */}
               <TouchableOpacity
                 onPress={() => setAddHolidayVisible(true)}
                 style={[
@@ -550,6 +554,7 @@ const AppointmentComponent = ({
                 ]}>
                 <Text style={styles.actionText}>New Appointment</Text>
               </TouchableOpacity>
+              {/* )} */}
             </View>
           </View>
           <View
@@ -695,12 +700,6 @@ const AppointmentComponent = ({
               <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
                 Patient:<Text style={styles.dataHistoryText4}>*</Text>
               </Text>
-              {/* <TextInput
-                value={patient}
-                placeholder={'Select'}
-                onChangeText={text => setPatient(text)}
-                style={[styles.nameTextView, {width: '100%'}]}
-              /> */}
               <SelectDropdown
                 data={user_data}
                 onSelect={(selectedItem, index) => {
@@ -746,12 +745,6 @@ const AppointmentComponent = ({
               <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
                 Doctor Department:<Text style={styles.dataHistoryText4}>*</Text>
               </Text>
-              {/* <TextInput
-                value={department}
-                placeholder={'Select'}
-                onChangeText={text => setDepartment(text)}
-                style={[styles.nameTextView, {width: '100%'}]}
-              /> */}
               <SelectDropdown
                 data={departmentData}
                 onSelect={(selectedItem, index) => {
@@ -798,12 +791,6 @@ const AppointmentComponent = ({
               <Text style={[styles.dataHistoryText1, {color: theme.text}]}>
                 Doctor:<Text style={styles.dataHistoryText4}>*</Text>
               </Text>
-              {/* <TextInput
-                value={doctor}
-                placeholder={'Select'}
-                onChangeText={text => setDoctor(text)}
-                style={[styles.nameTextView, {width: '100%'}]}
-              /> */}
               <SelectDropdown
                 data={doctorData}
                 onSelect={(selectedItem, index) => {

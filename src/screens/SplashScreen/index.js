@@ -45,6 +45,7 @@ import {
   fetchDepartmentData,
   fetchDoctorData,
   fetchRoleData,
+  fetchRolePermission,
   fetchUserData,
 } from '../../redux/reducer';
 
@@ -61,6 +62,21 @@ export const SplashScreen = ({navigation}) => {
   const onCheckAuth = async () => {
     const token = await AsyncStorage.getItem('accessToken');
     if (token !== null) {
+      const profileData = await onGetCommonApi('get-profile');
+      console.log('GetAccountData>>', profileData.data.data.user.id);
+      if (profileData.data.success) {
+        const specificData = await onGetCommonApi(
+          `fetch-user/${profileData.data.data.user.id}`,
+        );
+        if (specificData.data.success) {
+          const roleData = await onGetCommonApi(
+            `role-permissions-edit/${specificData.data.message.department_id}`,
+          );
+          if (roleData.data.flag == 1) {
+            dispatch(fetchRolePermission(roleData.data.data.privileges));
+          }
+        }
+      }
       const DashboardData = await onDashboardGetApi();
       console.log('Get DashboardData Response::', DashboardData.data.data);
       if (DashboardData.data.data) {

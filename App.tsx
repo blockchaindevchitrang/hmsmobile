@@ -58,18 +58,29 @@ import LiveConsultationScreen from './src/screens/LiveConsultationScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import ChangePasswordScreen from './src/screens/ChangePasswordScreen';
 import useOrientation from './src/components/OrientationComponent';
+import {useSelector} from 'react-redux';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
+interface RoleData {
+  rolePermission: [
+    {
+      main_module: string;
+      privileges: string[];
+    },
+  ];
+}
+
 const TabStack = () => {
+  const rolePermission = useSelector((state: RoleData) => state.rolePermission);
   const orientation = useOrientation(); // Get current orientation
   const isPortrait = orientation === 'portrait';
   const {theme} = useTheme();
+  console.log('Get Role Data>>>', rolePermission);
   return (
     <Tab.Navigator
-      initialRouteName="PricePrediction"
-      // tabBar={TabBar}
+      initialRouteName="DashboardScreen"
       screenOptions={{
         tabBarShowLabel: false,
         tabBarStyle: {
@@ -96,6 +107,9 @@ const TabStack = () => {
           elevation: 3,
         },
       }}>
+      {/* {rolePermission.map(item => {
+        if (item.main_module == 'Dashboard') {
+          return ( */}
       <Tab.Screen
         name="DashboardScreen"
         component={DashboardScreen}
@@ -105,13 +119,20 @@ const TabStack = () => {
             <View
               style={[
                 isPortrait ? styles.bottomView : styles.bottomView1,
-                {backgroundColor: focused ? COLORS.white : theme.headerColor},
+                {
+                  backgroundColor: focused
+                    ? COLORS.white
+                    : theme.headerColor,
+                },
               ]}>
               <Image style={styles.imageView} source={chart} />
             </View>
           ),
         }}
       />
+      {/* );
+        }
+      })} */}
       <Tab.Screen
         name="AppointmentScreen"
         component={AppointmentScreen}

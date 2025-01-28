@@ -40,27 +40,14 @@ import {useSelector} from 'react-redux';
 import useOrientation from '../../components/OrientationComponent';
 
 export const UsersScreen = ({navigation}) => {
-  const roleData = useSelector(state => state.roleData);
+  const roleData = useSelector(state => state.rolePermission);
   const {t} = useTranslation();
   const {theme} = useTheme();
   const orientation = useOrientation(); // Get current orientation
   const isPortrait = orientation === 'portrait';
   const styles = isPortrait ? portraitStyles : landscapeStyles;
-  const [index, setIndex] = React.useState(0);
-  const [routes] = React.useState([
-    {key: 'user', title: 'Users'},
-    // {key: 'role', title: 'Role'},
-    {key: 'accountant', title: 'Accountants'},
-    {key: 'nurses', title: 'Nurses'},
-    {key: 'receptionists', title: 'Receptionists'},
-    {key: 'technicians', title: 'Lab Technicians'},
-    {key: 'pharmacists', title: 'Pharmacists'},
-  ]);
-
   const [searchUser, setSearchUser] = useState('');
-  const [searchRole, setSearchRole] = useState('');
   const [searchAccountant, setSearchAccountant] = useState('');
-  const [searchBreak, setSearchBreak] = useState('');
   const [searchNurse, setSearchNurse] = useState('');
   const [searchReceptionist, setSearchReceptionist] = useState('');
   const [searchLabTechnician, setSearchLabTechnician] = useState('');
@@ -89,113 +76,42 @@ export const UsersScreen = ({navigation}) => {
   const [receptionistActive, setReceptionistActive] = useState(1);
   const [labTechnicianActive, setLabTechnicianActive] = useState(1);
   const [pharmacistActive, setPharmacistActive] = useState(1);
-  const [userDepartment, setUserDepartment] = useState('');
   const [refresh, setRefresh] = useState(false);
 
-  // const UserRoute = () => (
-  //   <UserList
-  //     searchBreak={searchUser}
-  //     setSearchBreak={setSearchUser}
-  //     allData={allData}
-  //   />
-  // );
+  let arrayData = [
+    'Logo',
+    'Users',
+    'Role',
+    'Accountant',
+    'Nurses',
+    'Receptionists',
+    'Lab Technicians',
+    'Pharmacists',
+  ];
 
-  // const RoleRoute = () => (
-  //   <TransactionComponent
-  //     searchBreak={searchRole}
-  //     setSearchBreak={setSearchRole}
-  //     allData={allData}
-  //   />
-  // );
-
-  // const AccountantRoute = () => (
-  //   <AccountantList
-  //     searchBreak={searchAccountant}
-  //     setSearchBreak={setSearchAccountant}
-  //     allData={accountantData}
-  //   />
-  // );
-
-  // const NursesRoute = () => (
-  //   <NursesList
-  //     searchBreak={searchNurse}
-  //     setSearchBreak={setSearchNurse}
-  //     allData={NurseData}
-  //   />
-  // );
-
-  // const ReceptionistRoute = () => (
-  //   <TransactionComponent
-  //     searchBreak={searchBreak}
-  //     setSearchBreak={setSearchBreak}
-  //     allData={allData}
-  //   />
-  // );
-
-  // const TechnicianRoute = () => (
-  //   <TransactionComponent
-  //     searchBreak={searchBreak}
-  //     setSearchBreak={setSearchBreak}
-  //     allData={allData}
-  //   />
-  // );
-
-  // const PharmacistRoute = () => (
-  //   <TransactionComponent
-  //     searchBreak={searchBreak}
-  //     setSearchBreak={setSearchBreak}
-  //     allData={allData}
-  //   />
-  // );
-
-  // const renderScene = SceneMap({
-  //   user: UserRoute,
-  //   role: RoleRoute,
-  //   accountant: AccountantRoute,
-  //   nurses: NursesRoute,
-  //   receptionists: ReceptionistRoute,
-  //   technicians: TechnicianRoute,
-  //   pharmacists: PharmacistRoute,
-  // });
-
-  // const renderItem =
-  //   ({navigationState, position}) =>
-  //   ({route, index}) => {
-  //     const isActive = navigationState.index === index;
-  //     return (
-  //       <View
-  //         style={[
-  //           styles.tab,
-  //           {
-  //             backgroundColor: isActive
-  //               ? COLORS.headerGreenColor
-  //               : COLORS.greyColor,
-  //           },
-  //         ]}>
-  //         <View style={[styles.item]}>
-  //           <Text style={[styles.label]}>{route.title}</Text>
-  //         </View>
-  //       </View>
-  //     );
-  //   };
-
-  // const renderTabBar = (
-  //   props: SceneRendererProps & {navigationState: State},
-  // ) => (
-  //   <View style={[styles.tabbar, {backgroundColor: theme.lightColor}]}>
-  //     <ScrollView horizontal bounces={false} showsHorizontalScrollIndicator={false}>
-  //       {props.navigationState.routes.map((route: Route, index: number) => {
-  //         return (
-  //           <TouchableWithoutFeedback
-  //             key={route.key}
-  //             onPress={() => props.jumpTo(route.key)}>
-  //             {renderItem(props)({route, index})}
-  //           </TouchableWithoutFeedback>
-  //         );
-  //       })}
-  //     </ScrollView>
-  //   </View>
-  // );
+  useEffect(() => {
+    let dataArray = [];
+    let appointmentVisible = false;
+    let transactionVisible = false;
+    rolePermission.map(item => {
+      if (item.main_module == 'Users') {
+        item.privileges.map(item1 => {
+          if (item1.end_point == 'appointments') {
+            dataArray = item1.action.split(',').map(action => action.trim());
+            appointmentVisible = true;
+          } else if (item1.end_point == 'appointment_transaction') {
+            transactionVisible = true;
+          }
+        });
+      }
+    });
+    if (!appointmentVisible) {
+      arrayData = ['Logo', 'Appointments Transaction'];
+    } else if (!transactionVisible) {
+      arrayData = ['Logo', 'Appointments'];
+    }
+    setAppointmentAction(dataArray);
+  }, [roleData]);
 
   useEffect(() => {
     onGetUserData();
@@ -517,16 +433,7 @@ export const UsersScreen = ({navigation}) => {
 
             <View style={styles.mainModalView}>
               <View style={styles.menuContainer}>
-                {[
-                  'Logo',
-                  'Users',
-                  'Role',
-                  'Accountant',
-                  'Nurses',
-                  'Receptionists',
-                  'Lab Technicians',
-                  'Pharmacists',
-                ].map((option, index) => (
+                {arrayData.map((option, index) => (
                   <>
                     {option == 'Logo' ? (
                       <Animated.View
