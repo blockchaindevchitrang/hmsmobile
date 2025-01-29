@@ -60,6 +60,7 @@ const AccountantList = ({
   totalPage,
   setStatusId,
   statusId,
+  accountantAction,
 }) => {
   const orientation = useOrientation(); // Get current orientation
   const isPortrait = orientation === 'portrait';
@@ -406,7 +407,18 @@ const AccountantList = ({
           styles.dataHistoryView,
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
-        <View style={[styles.nameDataView]}>
+        <View
+          style={[
+            styles.nameDataView,
+            {
+              width: isPortrait
+                ? wp(55)
+                : accountantAction.includes('edit') ||
+                  accountantAction.includes('delete')
+                ? wp(56.1)
+                : wp(76.1),
+            },
+          ]}>
           {item.name && (
             <ProfilePhoto style={styles.photoStyle} username={item.name} />
           )}
@@ -416,69 +428,82 @@ const AccountantList = ({
           </View>
         </View>
         <Text
-          style={[styles.dataHistoryText, {width: wp(26), textAlign: 'left'}]}>
+          style={[styles.dataHistoryText, {width: accountantAction.includes('status') ? wp(26) : isPortrait ? wp(34) : wp(54), textAlign: 'left'}]}>
           {item.phone}
         </Text>
-        <View style={[styles.switchView]}>
-          <Switch
-            trackColor={{
-              false:
-                item.status == 'Active' ? COLORS.greenColor : COLORS.errorColor,
-              true:
-                item.status == 'Active' ? COLORS.greenColor : COLORS.errorColor,
-            }}
-            thumbColor={item.status == 'Active' ? '#f4f3f4' : '#f4f3f4'}
-            ios_backgroundColor={COLORS.errorColor}
-            onValueChange={() => {}}
-            value={item.status == 'Active' ? true : false}
-          />
-        </View>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={async () => {
-              let allData = await onGetSpecificDoctor(item.id);
-              setUserId(item.id);
-              const [first, last] = item.name.split(',');
-              setFirstName(first);
-              setLastName(last);
-              if (isImageFormat(item?.image_url)) {
-                setAvatar(parseFileFromUrl(item?.image_url));
-              }
-              setEmail(item.email);
-              if (allData.dob != null) {
-                setDateOfBirth(new Date(allData.dob));
-              }
-              setGenderType(allData.gender == 0 ? 'male' : 'female');
-              setAddress(allData.address1);
-              setCity(allData.city);
-              setAddress1(allData.address2);
-              setPostalCode(allData.postal_code);
-              setQualification(allData.qualification);
-              setDesignation(allData.designation);
-              setNumber(allData.phone);
-              setStatus(allData.status == 'Active' ? true : false);
-              if (allData?.blood_group != null) {
-                setBloodSelected(allData?.blood_group);
-              }
-              setNewUserVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
+        {accountantAction.includes('status') && (
+          <View style={[styles.switchView]}>
+            <Switch
+              trackColor={{
+                false:
+                  item.status == 'Active'
+                    ? COLORS.greenColor
+                    : COLORS.errorColor,
+                true:
+                  item.status == 'Active'
+                    ? COLORS.greenColor
+                    : COLORS.errorColor,
+              }}
+              thumbColor={item.status == 'Active' ? '#f4f3f4' : '#f4f3f4'}
+              ios_backgroundColor={COLORS.errorColor}
+              onValueChange={() => {}}
+              value={item.status == 'Active' ? true : false}
             />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+          </View>
+        )}
+        {accountantAction.includes('edit') ||
+          (accountantAction.includes('delete') && (
+            <View style={styles.actionDataView}>
+              {accountantAction.includes('edit') && (
+                <TouchableOpacity
+                  onPress={async () => {
+                    let allData = await onGetSpecificDoctor(item.id);
+                    setUserId(item.id);
+                    const [first, last] = item.name.split(',');
+                    setFirstName(first);
+                    setLastName(last);
+                    if (isImageFormat(item?.image_url)) {
+                      setAvatar(parseFileFromUrl(item?.image_url));
+                    }
+                    setEmail(item.email);
+                    if (allData.dob != null) {
+                      setDateOfBirth(new Date(allData.dob));
+                    }
+                    setGenderType(allData.gender == 0 ? 'male' : 'female');
+                    setAddress(allData.address1);
+                    setCity(allData.city);
+                    setAddress1(allData.address2);
+                    setPostalCode(allData.postal_code);
+                    setQualification(allData.qualification);
+                    setDesignation(allData.designation);
+                    setNumber(allData.phone);
+                    setStatus(allData.status == 'Active' ? true : false);
+                    if (allData?.blood_group != null) {
+                      setBloodSelected(allData?.blood_group);
+                    }
+                    setNewUserVisible(true);
+                  }}>
+                  <Image
+                    style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                    source={editing}
+                  />
+                </TouchableOpacity>
+              )}
+              {accountantAction.includes('delete') && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setUserId(item.id);
+                    setDeleteUser(true);
+                  }}
+                  style={{marginLeft: wp(2)}}>
+                  <Image
+                    style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                    source={deleteIcon}
+                  />
+                </TouchableOpacity>
+              )}
+            </View>
+          ))}
       </View>
     );
   };
@@ -506,31 +531,33 @@ const AccountantList = ({
                   style={styles.filterView1}>
                   <Image style={styles.filterImage} source={filter} />
                 </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => {
-                    setUserId('');
-                    setFirstName('');
-                    setLastName('');
-                    setEmail('');
-                    setDateOfBirth(new Date());
-                    setGenderType('female');
-                    setAddress('');
-                    setCity('');
-                    setPostalCode('');
-                    setAvatar(null);
-                    setAddress1('');
-                    setPassword('');
-                    setConfirmPassword('');
-                    setBloodSelected('');
-                    setDesignation('');
-                    setQualification('');
-                    setErrorMessage('');
-                    setErrorVisible(false);
-                    setNewUserVisible(true);
-                  }}
-                  style={styles.actionView}>
-                  <Text style={styles.actionText}>New Accountant</Text>
-                </TouchableOpacity>
+                {accountantAction.includes('create') && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setUserId('');
+                      setFirstName('');
+                      setLastName('');
+                      setEmail('');
+                      setDateOfBirth(new Date());
+                      setGenderType('female');
+                      setAddress('');
+                      setCity('');
+                      setPostalCode('');
+                      setAvatar(null);
+                      setAddress1('');
+                      setPassword('');
+                      setConfirmPassword('');
+                      setBloodSelected('');
+                      setDesignation('');
+                      setQualification('');
+                      setErrorMessage('');
+                      setErrorVisible(false);
+                      setNewUserVisible(true);
+                    }}
+                    style={styles.actionView}>
+                    <Text style={styles.actionText}>New Accountant</Text>
+                  </TouchableOpacity>
+                )}
                 <Modal
                   animationType="none"
                   transparent={true}
@@ -603,31 +630,33 @@ const AccountantList = ({
                 style={styles.filterView1}>
                 <Image style={styles.filterImage} source={filter} />
               </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => {
-                  setUserId('');
-                  setFirstName('');
-                  setLastName('');
-                  setEmail('');
-                  setDateOfBirth(new Date());
-                  setGenderType('female');
-                  setAddress('');
-                  setCity('');
-                  setPostalCode('');
-                  setAvatar(null);
-                  setAddress1('');
-                  setPassword('');
-                  setConfirmPassword('');
-                  setBloodSelected('');
-                  setDesignation('');
-                  setQualification('');
-                  setErrorMessage('');
-                  setErrorVisible(false);
-                  setNewUserVisible(true);
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>New Accountant</Text>
-              </TouchableOpacity>
+              {accountantAction.includes('create') && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setUserId('');
+                    setFirstName('');
+                    setLastName('');
+                    setEmail('');
+                    setDateOfBirth(new Date());
+                    setGenderType('female');
+                    setAddress('');
+                    setCity('');
+                    setPostalCode('');
+                    setAvatar(null);
+                    setAddress1('');
+                    setPassword('');
+                    setConfirmPassword('');
+                    setBloodSelected('');
+                    setDesignation('');
+                    setQualification('');
+                    setErrorMessage('');
+                    setErrorVisible(false);
+                    setNewUserVisible(true);
+                  }}
+                  style={styles.actionView}>
+                  <Text style={styles.actionText}>New Accountant</Text>
+                </TouchableOpacity>
+              )}
               <Modal
                 animationType="none"
                 transparent={true}
@@ -705,23 +734,28 @@ const AccountantList = ({
                   <Text
                     style={[
                       styles.titleText,
-                      {width: isPortrait ? wp(55) : wp(56.1)},
+                      {width: isPortrait ? wp(55) : accountantAction.includes('edit') || accountantAction.includes('delete') ? wp(56.1) : wp(76.1)},
                     ]}>
                     {'ACCOUNTANTS'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(26)}]}>
+                  <Text style={[styles.titleText, {width: accountantAction.includes('status') ? wp(26) : isPortrait ? wp(34) : wp(54)}]}>
                     {'PHONE'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(24)}]}>
-                    {'STATUS'}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: wp(16), textAlign: 'center'},
-                    ]}>
-                    {'ACTION'}
-                  </Text>
+                  {accountantAction.includes('status') && (
+                    <Text style={[styles.titleText, {width: wp(24)}]}>
+                      {'STATUS'}
+                    </Text>
+                  )}
+                  {accountantAction.includes('edit') ||
+                    (accountantAction.includes('delete') && (
+                      <Text
+                        style={[
+                          styles.titleText,
+                          {width: wp(16), textAlign: 'center'},
+                        ]}>
+                        {'ACTION'}
+                      </Text>
+                    ))}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

@@ -66,6 +66,7 @@ const LabTechniciansList = ({
   totalPage,
   setStatusId,
   statusId,
+  labAction,
 }) => {
   const orientation = useOrientation(); // Get current orientation
   const isPortrait = orientation === 'portrait';
@@ -414,7 +415,17 @@ const LabTechniciansList = ({
           styles.dataHistoryView,
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
-        <View style={[styles.nameDataView]}>
+        <View
+          style={[
+            styles.nameDataView,
+            {
+              width: isPortrait
+                ? wp(55)
+                : labAction.includes('status')
+                ? wp(55)
+                : wp(83),
+            },
+          ]}>
           {item.name && (
             <ProfilePhoto style={styles.photoStyle} username={item.name} />
           )}
@@ -424,70 +435,93 @@ const LabTechniciansList = ({
           </View>
         </View>
         <Text
-          style={[styles.dataHistoryText, {width: wp(27), textAlign: 'left'}]}>
+          style={[
+            styles.dataHistoryText,
+            {
+              width: isPortrait
+                ? wp(32)
+                : labAction.includes('edit') || labAction.includes('delete')
+                ? wp(27)
+                : wp(47),
+              textAlign: 'left',
+            },
+          ]}>
           {item.designation}
         </Text>
-        <View style={[styles.switchView]}>
-          <Switch
-            trackColor={{
-              false:
-                item.status == 'Active' ? COLORS.greenColor : COLORS.errorColor,
-              true:
-                item.status == 'Active' ? COLORS.greenColor : COLORS.errorColor,
-            }}
-            thumbColor={item.status == 'Active' ? '#f4f3f4' : '#f4f3f4'}
-            ios_backgroundColor={COLORS.errorColor}
-            onValueChange={() => {}}
-            value={item.status == 'Active' ? true : false}
-          />
-        </View>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={async () => {
-              let allData = await onGetSpecificDoctor(item.id);
-              setUserId(item.id);
-              const [first, last] = item.name.split(',');
-              setFirstName(first);
-              setLastName(last);
-              if (isImageFormat(item?.image_url)) {
-                setAvatar(parseFileFromUrl(item?.image_url));
-              }
-              setEmail(item.email);
-              setDesignation(allData.designation);
-              if (allData.dob != null) {
-                setDateOfBirth(new Date(allData.dob));
-              }
-              setGenderType(allData.gender == 0 ? 'male' : 'female');
-              setAddress(allData.address1);
-              setCity(allData.city);
-              setAddress1(allData.address2);
-              setPostalCode(allData.postal_code);
-              setQualification(allData.qualification);
-              setNumber(allData.phone);
-              setStatus(allData.status == 'Active' ? true : false);
-              if (allData?.blood_group != null) {
-                setBloodSelected(allData?.blood_group);
-              }
-              setCountry(allData.country);
-              setNewUserVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
+        {labAction.includes('status') && (
+          <View style={[styles.switchView]}>
+            <Switch
+              trackColor={{
+                false:
+                  item.status == 'Active'
+                    ? COLORS.greenColor
+                    : COLORS.errorColor,
+                true:
+                  item.status == 'Active'
+                    ? COLORS.greenColor
+                    : COLORS.errorColor,
+              }}
+              thumbColor={item.status == 'Active' ? '#f4f3f4' : '#f4f3f4'}
+              ios_backgroundColor={COLORS.errorColor}
+              onValueChange={() => {}}
+              value={item.status == 'Active' ? true : false}
             />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+          </View>
+        )}
+        {labAction.includes('edit') ||
+          (labAction.includes('delete') && (
+            <View style={styles.actionDataView}>
+              {labAction.includes('edit') && (
+                <TouchableOpacity
+                  onPress={async () => {
+                    let allData = await onGetSpecificDoctor(item.id);
+                    setUserId(item.id);
+                    const [first, last] = item.name.split(',');
+                    setFirstName(first);
+                    setLastName(last);
+                    if (isImageFormat(item?.image_url)) {
+                      setAvatar(parseFileFromUrl(item?.image_url));
+                    }
+                    setEmail(item.email);
+                    setDesignation(allData.designation);
+                    if (allData.dob != null) {
+                      setDateOfBirth(new Date(allData.dob));
+                    }
+                    setGenderType(allData.gender == 0 ? 'male' : 'female');
+                    setAddress(allData.address1);
+                    setCity(allData.city);
+                    setAddress1(allData.address2);
+                    setPostalCode(allData.postal_code);
+                    setQualification(allData.qualification);
+                    setNumber(allData.phone);
+                    setStatus(allData.status == 'Active' ? true : false);
+                    if (allData?.blood_group != null) {
+                      setBloodSelected(allData?.blood_group);
+                    }
+                    setCountry(allData.country);
+                    setNewUserVisible(true);
+                  }}>
+                  <Image
+                    style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                    source={editing}
+                  />
+                </TouchableOpacity>
+              )}
+              {labAction.includes('delete') && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setUserId(item.id);
+                    setDeleteUser(true);
+                  }}
+                  style={{marginLeft: wp(2)}}>
+                  <Image
+                    style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                    source={deleteIcon}
+                  />
+                </TouchableOpacity>
+              )}
+            </View>
+          ))}
       </View>
     );
   };
@@ -513,32 +547,34 @@ const LabTechniciansList = ({
                   style={styles.filterView1}>
                   <Image style={styles.filterImage} source={filter} />
                 </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => {
-                    setUserId('');
-                    setFirstName('');
-                    setLastName('');
-                    setEmail('');
-                    setDesignation('');
-                    setDateOfBirth(new Date());
-                    setGenderType('female');
-                    setAddress('');
-                    setCity('');
-                    setCountry('');
-                    setPostalCode('');
-                    setAvatar(null);
-                    setAddress1('');
-                    setPassword('');
-                    setConfirmPassword('');
-                    setBloodSelected('');
-                    setQualification('');
-                    setErrorMessage('');
-                    setErrorVisible(false);
-                    setNewUserVisible(true);
-                  }}
-                  style={styles.actionView}>
-                  <Text style={styles.actionText}>New Lab Technician</Text>
-                </TouchableOpacity>
+                {labAction.includes('create') && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setUserId('');
+                      setFirstName('');
+                      setLastName('');
+                      setEmail('');
+                      setDesignation('');
+                      setDateOfBirth(new Date());
+                      setGenderType('female');
+                      setAddress('');
+                      setCity('');
+                      setCountry('');
+                      setPostalCode('');
+                      setAvatar(null);
+                      setAddress1('');
+                      setPassword('');
+                      setConfirmPassword('');
+                      setBloodSelected('');
+                      setQualification('');
+                      setErrorMessage('');
+                      setErrorVisible(false);
+                      setNewUserVisible(true);
+                    }}
+                    style={styles.actionView}>
+                    <Text style={styles.actionText}>New Lab Technician</Text>
+                  </TouchableOpacity>
+                )}
                 <Modal
                   animationType="none"
                   transparent={true}
@@ -608,32 +644,34 @@ const LabTechniciansList = ({
                 style={styles.filterView1}>
                 <Image style={styles.filterImage} source={filter} />
               </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => {
-                  setUserId('');
-                  setFirstName('');
-                  setLastName('');
-                  setEmail('');
-                  setDesignation('');
-                  setDateOfBirth(new Date());
-                  setGenderType('female');
-                  setAddress('');
-                  setCity('');
-                  setCountry('');
-                  setPostalCode('');
-                  setAvatar(null);
-                  setAddress1('');
-                  setPassword('');
-                  setConfirmPassword('');
-                  setBloodSelected('');
-                  setQualification('');
-                  setErrorMessage('');
-                  setErrorVisible(false);
-                  setNewUserVisible(true);
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>New Lab Technician</Text>
-              </TouchableOpacity>
+              {labAction.includes('create') && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setUserId('');
+                    setFirstName('');
+                    setLastName('');
+                    setEmail('');
+                    setDesignation('');
+                    setDateOfBirth(new Date());
+                    setGenderType('female');
+                    setAddress('');
+                    setCity('');
+                    setCountry('');
+                    setPostalCode('');
+                    setAvatar(null);
+                    setAddress1('');
+                    setPassword('');
+                    setConfirmPassword('');
+                    setBloodSelected('');
+                    setQualification('');
+                    setErrorMessage('');
+                    setErrorVisible(false);
+                    setNewUserVisible(true);
+                  }}
+                  style={styles.actionView}>
+                  <Text style={styles.actionText}>New Lab Technician</Text>
+                </TouchableOpacity>
+              )}
               <Modal
                 animationType="none"
                 transparent={true}
@@ -697,25 +735,54 @@ const LabTechniciansList = ({
           )}
           <View
             style={[styles.activeView, {backgroundColor: theme.headerColor}]}>
-            <ScrollView horizontal  bounces={false} showsHorizontalScrollIndicator={false}>
+            <ScrollView
+              horizontal
+              bounces={false}
+              showsHorizontalScrollIndicator={false}>
               <View>
                 <View
                   style={[
                     styles.titleActiveView,
                     {backgroundColor: theme.headerColor},
                   ]}>
-                  <Text style={[styles.titleText, {width: wp(55)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {
+                        width: isPortrait
+                          ? wp(55)
+                          : labAction.includes('status')
+                          ? wp(55)
+                          : wp(83),
+                      },
+                    ]}>
                     {'LAB TECHNICIAN'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(27)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {
+                        width: isPortrait
+                          ? wp(32)
+                          : labAction.includes('edit') ||
+                            labAction.includes('delete')
+                          ? wp(27)
+                          : wp(47),
+                      },
+                    ]}>
                     {'DESIGNATION'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(24)}]}>
-                    {'STATUS'}
-                  </Text>
-                  <Text style={[styles.titleText, {width: wp(16)}]}>
-                    {'ACTION'}
-                  </Text>
+                  {labAction.includes('status') && (
+                    <Text style={[styles.titleText, {width: wp(24)}]}>
+                      {'STATUS'}
+                    </Text>
+                  )}
+                  {labAction.includes('edit') ||
+                    (labAction.includes('delete') && (
+                      <Text style={[styles.titleText, {width: wp(16)}]}>
+                        {'ACTION'}
+                      </Text>
+                    ))}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList
@@ -933,12 +1000,6 @@ const LabTechniciansList = ({
 
               <View style={{width: '48%'}}>
                 <Text style={styles.dataHistoryText1}>DATE OF BIRTH</Text>
-                {/* <TextInput
-                          value={firstName}
-                          placeholder={'Enter first name'}
-                          onChangeText={text => setFirstName(text)}
-                          style={[styles.nameTextView, {width: '100%'}]}
-                        /> */}
                 <Text
                   style={[
                     styles.nameTextView,

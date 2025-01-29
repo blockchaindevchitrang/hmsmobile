@@ -247,7 +247,13 @@ const permissionOption = [
   },
 ];
 
-const RoleList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
+const RoleList = ({
+  searchBreak,
+  setSearchBreak,
+  allData,
+  onGetData,
+  roleAction,
+}) => {
   const {theme} = useTheme();
   const orientation = useOrientation();
   const isPortrait = orientation === 'portrait';
@@ -419,29 +425,45 @@ const RoleList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
         <Text
           style={[
             styles.dataHistoryText,
-            {width: isPortrait ? wp(40) : wp(75.1), textAlign: 'left'},
+            {
+              width: isPortrait
+                ? roleAction.includes('edit') || roleAction.includes('delete')
+                  ? wp(40)
+                  : wp(56)
+                : roleAction.includes('edit') || roleAction.includes('delete')
+                ? wp(75.1)
+                : wp(95),
+              textAlign: 'left',
+            },
           ]}>
           {item?.permissions?.join(',  ')}
         </Text>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity onPress={() => onGetSpecificModules(item.id)}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        {roleAction.includes('edit') ||
+          (roleAction.includes('delete') && (
+            <View style={styles.actionDataView}>
+              {roleAction.includes('edit') && (
+                <TouchableOpacity onPress={() => onGetSpecificModules(item.id)}>
+                  <Image
+                    style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                    source={editing}
+                  />
+                </TouchableOpacity>
+              )}
+              {roleAction.includes('delete') && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setUserId(item.id);
+                    setDeleteUser(true);
+                  }}
+                  style={{marginLeft: wp(2)}}>
+                  <Image
+                    style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                    source={deleteIcon}
+                  />
+                </TouchableOpacity>
+              )}
+            </View>
+          ))}
       </View>
     );
   };
@@ -710,18 +732,20 @@ const RoleList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
               style={[styles.searchView, {color: theme.text}]}
             />
             <View style={styles.filterView}>
-              <TouchableOpacity
-                onPress={() => {
-                  setUserId('');
-                  setFirstName('');
-                  setErrorMessage('');
-                  setErrorVisible(false);
-                  onGetModules();
-                  setNewUserVisible(true);
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>New Role</Text>
-              </TouchableOpacity>
+              {roleAction.includes('create') && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setUserId('');
+                    setFirstName('');
+                    setErrorMessage('');
+                    setErrorVisible(false);
+                    onGetModules();
+                    setNewUserVisible(true);
+                  }}
+                  style={styles.actionView}>
+                  <Text style={styles.actionText}>New Role</Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
           <View
@@ -746,17 +770,30 @@ const RoleList = ({searchBreak, setSearchBreak, allData, onGetData}) => {
                   <Text
                     style={[
                       styles.titleText,
-                      {width: isPortrait ? wp(40) : wp(75.1)},
+                      {
+                        width: isPortrait
+                          ? roleAction.includes('edit') ||
+                            roleAction.includes('delete')
+                            ? wp(40)
+                            : wp(56)
+                          : roleAction.includes('edit') ||
+                            roleAction.includes('delete')
+                          ? wp(75.1)
+                          : wp(95),
+                      },
                     ]}>
                     {'PERMISSIONS'}
                   </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: wp(16), textAlign: 'center'},
-                    ]}>
-                    {'ACTION'}
-                  </Text>
+                  {roleAction.includes('edit') ||
+                    (roleAction.includes('delete') && (
+                      <Text
+                        style={[
+                          styles.titleText,
+                          {width: wp(16), textAlign: 'center'},
+                        ]}>
+                        {'ACTION'}
+                      </Text>
+                    ))}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

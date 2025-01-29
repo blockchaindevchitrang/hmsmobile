@@ -69,6 +69,7 @@ const UserList = ({
   typeId,
   setUserTypeName,
   userTypeName,
+  userAction,
 }) => {
   const roleData = useSelector(state => state.roleData);
   const {theme} = useTheme();
@@ -201,7 +202,19 @@ const UserList = ({
           styles.dataHistoryView,
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
-        <View style={[styles.nameDataView]}>
+        <View
+          style={[
+            styles.nameDataView,
+            {
+              width: isPortrait
+                ? wp(60)
+                : userAction.includes('status')
+                ? wp(40)
+                : userAction.includes('edit') || userAction.includes('delete')
+                ? wp(64)
+                : wp(80),
+            },
+          ]}>
           {item.name && (
             <ProfilePhoto style={styles.photoStyle} username={item.name} />
           )}
@@ -215,76 +228,94 @@ const UserList = ({
         <Text
           style={[
             styles.dataHistoryText,
-            {width: isPortrait ? wp(26) : wp(24), textAlign: 'left'},
+            {
+              width: isPortrait
+                ? wp(26)
+                : userAction.includes('email')
+                ? wp(24)
+                : wp(50),
+              textAlign: 'left',
+            },
           ]}>
           {item.department}
         </Text>
-        <View style={[styles.switchView]}>
-          <Switch
-            trackColor={{
-              false: item.verify ? COLORS.greenColor : COLORS.errorColor,
-              true: item.verify ? COLORS.greenColor : COLORS.errorColor,
-            }}
-            thumbColor={item.verify ? '#f4f3f4' : '#f4f3f4'}
-            ios_backgroundColor={COLORS.errorColor}
-            onValueChange={() => {}}
-            value={item.verify}
-          />
-        </View>
-        <View
-          style={[styles.switchView, {width: isPortrait ? wp(24) : wp(20)}]}>
-          <Switch
-            trackColor={{
-              false: item.status ? COLORS.greenColor : COLORS.errorColor,
-              true: item.status ? COLORS.greenColor : COLORS.errorColor,
-            }}
-            thumbColor={item.status ? '#f4f3f4' : '#f4f3f4'}
-            ios_backgroundColor={COLORS.errorColor}
-            onValueChange={() => {}}
-            value={item.status}
-          />
-        </View>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={async () => {
-              let allData = await onGetSpecificDoctor(item.id);
-              setUserId(item.id);
-              const [first, last] = item.name.split(',');
-              if (isImageFormat(item?.image_url)) {
-                setAvatar(parseFileFromUrl(item?.image_url));
-              }
-              setFirstName(first);
-              setLastName(last);
-              setEmail(item.email);
-              setRole(allData.department_id);
-              setDoctorSelectedName(item?.department);
-              if (allData.dob != null) {
-                setDateOfBirth(new Date(allData.dob));
-              }
-              setGenderType(allData.gender == 0 ? 'male' : 'female');
-              setAddress(allData.address1);
-              setCity(allData.city);
-              setCountry(allData.country);
-              setPostalCode(allData.postal_code);
-              setNewUserVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
+        {userAction.includes('email') && (
+          <View style={[styles.switchView]}>
+            <Switch
+              trackColor={{
+                false: item.verify ? COLORS.greenColor : COLORS.errorColor,
+                true: item.verify ? COLORS.greenColor : COLORS.errorColor,
+              }}
+              thumbColor={item.verify ? '#f4f3f4' : '#f4f3f4'}
+              ios_backgroundColor={COLORS.errorColor}
+              onValueChange={() => {}}
+              value={item.verify}
             />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
+          </View>
+        )}
+        {userAction.includes('status') && (
+          <View
+            style={[styles.switchView, {width: isPortrait ? wp(24) : wp(20)}]}>
+            <Switch
+              trackColor={{
+                false: item.status ? COLORS.greenColor : COLORS.errorColor,
+                true: item.status ? COLORS.greenColor : COLORS.errorColor,
+              }}
+              thumbColor={item.status ? '#f4f3f4' : '#f4f3f4'}
+              ios_backgroundColor={COLORS.errorColor}
+              onValueChange={() => {}}
+              value={item.status}
             />
-          </TouchableOpacity>
-        </View>
+          </View>
+        )}
+        {userAction.includes('edit') ||
+          (userAction.includes('delete') && (
+            <View style={styles.actionDataView}>
+              {userAction.includes('edit') && (
+                <TouchableOpacity
+                  onPress={async () => {
+                    let allData = await onGetSpecificDoctor(item.id);
+                    setUserId(item.id);
+                    const [first, last] = item.name.split(',');
+                    if (isImageFormat(item?.image_url)) {
+                      setAvatar(parseFileFromUrl(item?.image_url));
+                    }
+                    setFirstName(first);
+                    setLastName(last);
+                    setEmail(item.email);
+                    setRole(allData.department_id);
+                    setDoctorSelectedName(item?.department);
+                    if (allData.dob != null) {
+                      setDateOfBirth(new Date(allData.dob));
+                    }
+                    setGenderType(allData.gender == 0 ? 'male' : 'female');
+                    setAddress(allData.address1);
+                    setCity(allData.city);
+                    setCountry(allData.country);
+                    setPostalCode(allData.postal_code);
+                    setNewUserVisible(true);
+                  }}>
+                  <Image
+                    style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                    source={editing}
+                  />
+                </TouchableOpacity>
+              )}
+              {userAction.includes('delete') && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setUserId(item.id);
+                    setDeleteUser(true);
+                  }}
+                  style={{marginLeft: wp(2)}}>
+                  <Image
+                    style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                    source={deleteIcon}
+                  />
+                </TouchableOpacity>
+              )}
+            </View>
+          ))}
       </View>
     );
   };
@@ -533,26 +564,28 @@ const UserList = ({
                 onPress={() => setFilterVisible(true)}>
                 <Image style={styles.filterImage} source={filter} />
               </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => {
-                  setUserId('');
-                  setFirstName('');
-                  setLastName('');
-                  setEmail('');
-                  setRole('');
-                  setDateOfBirth(new Date());
-                  setGenderType('female');
-                  setAddress('');
-                  setCity('');
-                  setCountry('');
-                  setPostalCode('');
-                  setErrorVisible(false);
-                  setErrorMessage('');
-                  setNewUserVisible(true);
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>New User</Text>
-              </TouchableOpacity>
+              {userAction.includes('create') && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setUserId('');
+                    setFirstName('');
+                    setLastName('');
+                    setEmail('');
+                    setRole('');
+                    setDateOfBirth(new Date());
+                    setGenderType('female');
+                    setAddress('');
+                    setCity('');
+                    setCountry('');
+                    setPostalCode('');
+                    setErrorVisible(false);
+                    setErrorMessage('');
+                    setNewUserVisible(true);
+                  }}
+                  style={styles.actionView}>
+                  <Text style={styles.actionText}>New User</Text>
+                </TouchableOpacity>
+              )}
               <Modal
                 animationType="none"
                 transparent={true}
@@ -664,38 +697,60 @@ const UserList = ({
                   <Text
                     style={[
                       styles.titleText,
-                      {width: isPortrait ? wp(60) : wp(40)},
+                      {
+                        width: isPortrait
+                          ? wp(60)
+                          : userAction.includes('status')
+                          ? wp(40)
+                          : userAction.includes('edit') ||
+                            userAction.includes('delete')
+                          ? wp(64)
+                          : wp(80),
+                      },
                     ]}>
                     {'USERS'}
                   </Text>
                   <Text
                     style={[
                       styles.titleText,
-                      {width: isPortrait ? wp(26) : wp(24)},
+                      {
+                        width: isPortrait
+                          ? wp(26)
+                          : userAction.includes('email')
+                          ? wp(24)
+                          : wp(50),
+                      },
                     ]}>
                     {'ROLE'}
                   </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: isPortrait ? wp(24) : wp(22)},
-                    ]}>
-                    {'EMAIL VERIFIED'}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: isPortrait ? wp(24) : wp(20)},
-                    ]}>
-                    {'STATUS'}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: isPortrait ? wp(16) : wp(12)},
-                    ]}>
-                    {'ACTION'}
-                  </Text>
+                  {userAction.includes('email') && (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: isPortrait ? wp(24) : wp(22)},
+                      ]}>
+                      {'EMAIL VERIFIED'}
+                    </Text>
+                  )}
+                  {userAction.includes('status') && (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: isPortrait ? wp(24) : wp(20)},
+                      ]}>
+                      {'STATUS'}
+                    </Text>
+                  )}
+                  {userAction.includes('edit') ||
+                    (userAction.includes('delete') && (
+                      <Text
+                        style={[
+                          styles.titleText,
+                          {width: isPortrait ? wp(16) : wp(12)},
+                        ]}>
+                        {'ACTION'}
+                      </Text>
+                    ))}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

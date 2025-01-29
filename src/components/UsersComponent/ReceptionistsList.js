@@ -66,6 +66,7 @@ const ReceptionistsList = ({
   totalPage,
   setStatusId,
   statusId,
+  receptionAction,
 }) => {
   const orientation = useOrientation(); // Get current orientation
   const isPortrait = orientation === 'portrait';
@@ -413,19 +414,49 @@ const ReceptionistsList = ({
           styles.dataHistoryView,
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
-        <View style={[styles.nameDataView]}>
+        <View
+          style={[
+            styles.nameDataView,
+            {
+              width: isPortrait
+                ? wp(55)
+                : receptionAction.includes('status')
+                ? wp(37)
+                : wp(65.1),
+            },
+          ]}>
           {item.name && (
             <ProfilePhoto style={styles.photoStyle} username={item.name} />
           )}
           <View>
             <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
-            <Text style={[styles.dataHistoryText1]}>{item.email}</Text>
+            <Text
+              style={[
+                styles.dataHistoryText1,
+                {
+                  width: isPortrait
+                    ? wp(45)
+                    : receptionAction.includes('status')
+                    ? wp(33)
+                    : wp(55),
+                },
+              ]}>
+              {item.email}
+            </Text>
           </View>
         </View>
         <Text
           style={[
             styles.dataHistoryText,
-            {width: isPortrait ? wp(27) : wp(22), textAlign: 'left'},
+            {
+              width: isPortrait
+                ? wp(27)
+                : receptionAction.includes('edit') ||
+                  receptionAction.includes('delete')
+                ? wp(22)
+                : wp(41),
+              textAlign: 'left',
+            },
           ]}>
           {item.designation}
         </Text>
@@ -436,67 +467,80 @@ const ReceptionistsList = ({
           ]}>
           {item.phone}
         </Text>
-        <View style={[styles.switchView]}>
-          <Switch
-            trackColor={{
-              false:
-                item.status == 'Active' ? COLORS.greenColor : COLORS.errorColor,
-              true:
-                item.status == 'Active' ? COLORS.greenColor : COLORS.errorColor,
-            }}
-            thumbColor={item.status == 'Active' ? '#f4f3f4' : '#f4f3f4'}
-            ios_backgroundColor={COLORS.errorColor}
-            onValueChange={() => {}}
-            value={item.status == 'Active' ? true : false}
-          />
-        </View>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={async () => {
-              let allData = await onGetSpecificDoctor(item.id);
-              setUserId(item.id);
-              const [first, last] = item.name.split(',');
-              setFirstName(first);
-              setLastName(last);
-              if (isImageFormat(item?.image_url)) {
-                setAvatar(parseFileFromUrl(item?.image_url));
-              }
-              setEmail(item.email);
-              setDesignation(allData.designation);
-              if (allData.dob != null) {
-                setDateOfBirth(new Date(allData.dob));
-              }
-              setGenderType(allData.gender == 0 ? 'male' : 'female');
-              setAddress(allData.address1);
-              setCity(allData.city);
-              setAddress1(allData.address2);
-              setCountry(allData.country);
-              setPostalCode(allData.postal_code);
-              setQualification(allData.qualification);
-              setNumber(allData.phone);
-              setStatus(allData.status == 'Active' ? true : false);
-              if (allData?.blood_group != null) {
-                setBloodSelected(allData?.blood_group);
-              }
-              setNewUserVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
+        {receptionAction.includes('status') && (
+          <View style={[styles.switchView]}>
+            <Switch
+              trackColor={{
+                false:
+                  item.status == 'Active'
+                    ? COLORS.greenColor
+                    : COLORS.errorColor,
+                true:
+                  item.status == 'Active'
+                    ? COLORS.greenColor
+                    : COLORS.errorColor,
+              }}
+              thumbColor={item.status == 'Active' ? '#f4f3f4' : '#f4f3f4'}
+              ios_backgroundColor={COLORS.errorColor}
+              onValueChange={() => {}}
+              value={item.status == 'Active' ? true : false}
             />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+          </View>
+        )}
+        {receptionAction.includes('edit') ||
+          (receptionAction.includes('delete') && (
+            <View style={styles.actionDataView}>
+              {receptionAction.includes('edit') && (
+                <TouchableOpacity
+                  onPress={async () => {
+                    let allData = await onGetSpecificDoctor(item.id);
+                    setUserId(item.id);
+                    const [first, last] = item.name.split(',');
+                    setFirstName(first);
+                    setLastName(last);
+                    if (isImageFormat(item?.image_url)) {
+                      setAvatar(parseFileFromUrl(item?.image_url));
+                    }
+                    setEmail(item.email);
+                    setDesignation(allData.designation);
+                    if (allData.dob != null) {
+                      setDateOfBirth(new Date(allData.dob));
+                    }
+                    setGenderType(allData.gender == 0 ? 'male' : 'female');
+                    setAddress(allData.address1);
+                    setCity(allData.city);
+                    setAddress1(allData.address2);
+                    setCountry(allData.country);
+                    setPostalCode(allData.postal_code);
+                    setQualification(allData.qualification);
+                    setNumber(allData.phone);
+                    setStatus(allData.status == 'Active' ? true : false);
+                    if (allData?.blood_group != null) {
+                      setBloodSelected(allData?.blood_group);
+                    }
+                    setNewUserVisible(true);
+                  }}>
+                  <Image
+                    style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                    source={editing}
+                  />
+                </TouchableOpacity>
+              )}
+              {receptionAction.includes('delete') && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setUserId(item.id);
+                    setDeleteUser(true);
+                  }}
+                  style={{marginLeft: wp(2)}}>
+                  <Image
+                    style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                    source={deleteIcon}
+                  />
+                </TouchableOpacity>
+              )}
+            </View>
+          ))}
       </View>
     );
   };
@@ -524,32 +568,34 @@ const ReceptionistsList = ({
                   style={styles.filterView1}>
                   <Image style={styles.filterImage} source={filter} />
                 </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => {
-                    setUserId('');
-                    setFirstName('');
-                    setLastName('');
-                    setEmail('');
-                    setDesignation('');
-                    setDateOfBirth(new Date());
-                    setGenderType('female');
-                    setAddress('');
-                    setCity('');
-                    setCountry('');
-                    setPostalCode('');
-                    setAvatar(null);
-                    setAddress1('');
-                    setPassword('');
-                    setConfirmPassword('');
-                    setBloodSelected('');
-                    setQualification('');
-                    setErrorMessage('');
-                    setErrorVisible(false);
-                    setNewUserVisible(true);
-                  }}
-                  style={styles.actionView}>
-                  <Text style={styles.actionText}>New Receptionist</Text>
-                </TouchableOpacity>
+                {receptionAction.includes('create') && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setUserId('');
+                      setFirstName('');
+                      setLastName('');
+                      setEmail('');
+                      setDesignation('');
+                      setDateOfBirth(new Date());
+                      setGenderType('female');
+                      setAddress('');
+                      setCity('');
+                      setCountry('');
+                      setPostalCode('');
+                      setAvatar(null);
+                      setAddress1('');
+                      setPassword('');
+                      setConfirmPassword('');
+                      setBloodSelected('');
+                      setQualification('');
+                      setErrorMessage('');
+                      setErrorVisible(false);
+                      setNewUserVisible(true);
+                    }}
+                    style={styles.actionView}>
+                    <Text style={styles.actionText}>New Receptionist</Text>
+                  </TouchableOpacity>
+                )}
                 <Modal
                   animationType="none"
                   transparent={true}
@@ -621,32 +667,34 @@ const ReceptionistsList = ({
                 style={styles.filterView1}>
                 <Image style={styles.filterImage} source={filter} />
               </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => {
-                  setUserId('');
-                  setFirstName('');
-                  setLastName('');
-                  setEmail('');
-                  setDesignation('');
-                  setDateOfBirth(new Date());
-                  setGenderType('female');
-                  setAddress('');
-                  setCity('');
-                  setCountry('');
-                  setPostalCode('');
-                  setAvatar(null);
-                  setAddress1('');
-                  setPassword('');
-                  setConfirmPassword('');
-                  setBloodSelected('');
-                  setQualification('');
-                  setErrorMessage('');
-                  setErrorVisible(false);
-                  setNewUserVisible(true);
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>New Receptionist</Text>
-              </TouchableOpacity>
+              {receptionAction.includes('create') && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setUserId('');
+                    setFirstName('');
+                    setLastName('');
+                    setEmail('');
+                    setDesignation('');
+                    setDateOfBirth(new Date());
+                    setGenderType('female');
+                    setAddress('');
+                    setCity('');
+                    setCountry('');
+                    setPostalCode('');
+                    setAvatar(null);
+                    setAddress1('');
+                    setPassword('');
+                    setConfirmPassword('');
+                    setBloodSelected('');
+                    setQualification('');
+                    setErrorMessage('');
+                    setErrorVisible(false);
+                    setNewUserVisible(true);
+                  }}
+                  style={styles.actionView}>
+                  <Text style={styles.actionText}>New Receptionist</Text>
+                </TouchableOpacity>
+              )}
               <Modal
                 animationType="none"
                 transparent={true}
@@ -723,14 +771,27 @@ const ReceptionistsList = ({
                   <Text
                     style={[
                       styles.titleText,
-                      {width: isPortrait ? wp(55) : wp(37)},
+                      {
+                        width: isPortrait
+                          ? wp(55)
+                          : receptionAction.includes('status')
+                          ? wp(37)
+                          : wp(65.1),
+                      },
                     ]}>
                     {'RECEPTIONIST'}
                   </Text>
                   <Text
                     style={[
                       styles.titleText,
-                      {width: isPortrait ? wp(27) : wp(22)},
+                      {
+                        width: isPortrait
+                          ? wp(27)
+                          : receptionAction.includes('edit') ||
+                            receptionAction.includes('delete')
+                          ? wp(22)
+                          : wp(41),
+                      },
                     ]}>
                     {'DESIGNATION'}
                   </Text>
@@ -741,16 +802,21 @@ const ReceptionistsList = ({
                     ]}>
                     {'PHONE'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(24)}]}>
-                    {'STATUS'}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: isPortrait ? wp(16) : wp(15)},
-                    ]}>
-                    {'ACTION'}
-                  </Text>
+                  {receptionAction.includes('status') && (
+                    <Text style={[styles.titleText, {width: wp(24)}]}>
+                      {'STATUS'}
+                    </Text>
+                  )}
+                  {receptionAction.includes('edit') ||
+                    (receptionAction.includes('delete') && (
+                      <Text
+                        style={[
+                          styles.titleText,
+                          {width: isPortrait ? wp(16) : wp(15)},
+                        ]}>
+                        {'ACTION'}
+                      </Text>
+                    ))}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

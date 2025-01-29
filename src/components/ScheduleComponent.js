@@ -49,6 +49,7 @@ const ScheduleComponent = ({
   onGetData,
   addScheduleVisible,
   setAddScheduleVisible,
+  scheduleAction,
 }) => {
   const orientation = useOrientation(); // Get current orientation
   const isPortrait = orientation === 'portrait';
@@ -329,177 +330,184 @@ const ScheduleComponent = ({
         <Text style={[styles.dataHistoryText, {width: wp(25)}]}>
           {item.per_patient_time}
         </Text>
-        <View style={[styles.actionDataView]}>
-          <TouchableOpacity
-            onPress={async () => {
-              let dataUrl = await onGetSpecificDoctor(item.id);
-              setUserId(item.id);
-              setAddScheduleVisible(false);
-              setDoctorId(dataUrl.doctor_id);
-              setDoctorName(item.doctor_name);
-              setAdmissionDate(dataUrl.per_patient_time);
-              if (dataUrl.schedule_days.length > 0) {
-                const updatedArray = parameterArray.map(day => {
-                  const schedule = dataUrl.schedule_days.find(
-                    item => item.day === day.name,
-                  );
-                  if (schedule) {
-                    return {
-                      ...day,
-                      from: schedule.from,
-                      to: schedule.to,
-                    };
-                  }
-                  return day; // Return the original day if no schedule is found
-                });
+        {scheduleAction.includes('view') ||
+          (scheduleAction.includes('edit') && (
+            <View style={[styles.actionDataView]}>
+              {scheduleAction.includes('view') && (
+                <TouchableOpacity
+                  onPress={async () => {
+                    let dataUrl = await onGetSpecificDoctor(item.id);
+                    setUserId(item.id);
+                    setAddScheduleVisible(false);
+                    setDoctorId(dataUrl.doctor_id);
+                    setDoctorName(item.doctor_name);
+                    setAdmissionDate(dataUrl.per_patient_time);
+                    if (dataUrl.schedule_days.length > 0) {
+                      const updatedArray = parameterArray.map(day => {
+                        const schedule = dataUrl.schedule_days.find(
+                          item => item.day === day.name,
+                        );
+                        if (schedule) {
+                          return {
+                            ...day,
+                            from: schedule.from,
+                            to: schedule.to,
+                          };
+                        }
+                        return day; // Return the original day if no schedule is found
+                      });
 
-                setParameterArray(updatedArray);
-              } else {
-                [
-                  {
-                    name: 'Monday',
-                    from: null,
-                    to: null,
-                    fromVisible: false,
-                    toVisible: false,
-                  },
-                  {
-                    name: 'Tuesday',
-                    from: null,
-                    to: null,
-                    fromVisible: false,
-                    toVisible: false,
-                  },
-                  {
-                    name: 'Wednesday',
-                    from: null,
-                    to: null,
-                    fromVisible: false,
-                    toVisible: false,
-                  },
-                  {
-                    name: 'Thursday',
-                    from: null,
-                    to: null,
-                    fromVisible: false,
-                    toVisible: false,
-                  },
-                  {
-                    name: 'Friday',
-                    from: null,
-                    to: null,
-                    fromVisible: false,
-                    toVisible: false,
-                  },
-                  {
-                    name: 'Saturday',
-                    from: null,
-                    to: null,
-                    fromVisible: false,
-                    toVisible: false,
-                  },
-                  {
-                    name: 'Sunday',
-                    from: null,
-                    to: null,
-                    fromVisible: false,
-                    toVisible: false,
-                  },
-                ];
-              }
+                      setParameterArray(updatedArray);
+                    } else {
+                      [
+                        {
+                          name: 'Monday',
+                          from: null,
+                          to: null,
+                          fromVisible: false,
+                          toVisible: false,
+                        },
+                        {
+                          name: 'Tuesday',
+                          from: null,
+                          to: null,
+                          fromVisible: false,
+                          toVisible: false,
+                        },
+                        {
+                          name: 'Wednesday',
+                          from: null,
+                          to: null,
+                          fromVisible: false,
+                          toVisible: false,
+                        },
+                        {
+                          name: 'Thursday',
+                          from: null,
+                          to: null,
+                          fromVisible: false,
+                          toVisible: false,
+                        },
+                        {
+                          name: 'Friday',
+                          from: null,
+                          to: null,
+                          fromVisible: false,
+                          toVisible: false,
+                        },
+                        {
+                          name: 'Saturday',
+                          from: null,
+                          to: null,
+                          fromVisible: false,
+                          toVisible: false,
+                        },
+                        {
+                          name: 'Sunday',
+                          from: null,
+                          to: null,
+                          fromVisible: false,
+                          toVisible: false,
+                        },
+                      ];
+                    }
 
-              setViewSchedule(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: theme.headerColor}]}
-              source={view}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={async () => {
-              let dataUrl = await onGetSpecificDoctor(item.id);
-              setUserId(item.id);
-              setDoctorId(dataUrl.doctor_id);
-              setDoctorName(item.doctor_name);
-              setAdmissionDate(dataUrl.per_patient_time);
-              if (dataUrl.schedule_days.length > 0) {
-                const updatedArray = parameterArray.map(day => {
-                  const schedule = dataUrl.schedule_days.find(
-                    item => item.day === day.name,
-                  );
-                  if (schedule) {
-                    return {
-                      ...day,
-                      from: schedule.from,
-                      to: schedule.to,
-                    };
-                  }
-                  return day; // Return the original day if no schedule is found
-                });
+                    setViewSchedule(true);
+                  }}>
+                  <Image
+                    style={[styles.editImage, {tintColor: theme.headerColor}]}
+                    source={view}
+                  />
+                </TouchableOpacity>
+              )}
+              {scheduleAction.includes('edit') && (
+                <TouchableOpacity
+                  onPress={async () => {
+                    let dataUrl = await onGetSpecificDoctor(item.id);
+                    setUserId(item.id);
+                    setDoctorId(dataUrl.doctor_id);
+                    setDoctorName(item.doctor_name);
+                    setAdmissionDate(dataUrl.per_patient_time);
+                    if (dataUrl.schedule_days.length > 0) {
+                      const updatedArray = parameterArray.map(day => {
+                        const schedule = dataUrl.schedule_days.find(
+                          item => item.day === day.name,
+                        );
+                        if (schedule) {
+                          return {
+                            ...day,
+                            from: schedule.from,
+                            to: schedule.to,
+                          };
+                        }
+                        return day; // Return the original day if no schedule is found
+                      });
 
-                setParameterArray(updatedArray);
-              } else {
-                [
-                  {
-                    name: 'Monday',
-                    from: null,
-                    to: null,
-                    fromVisible: false,
-                    toVisible: false,
-                  },
-                  {
-                    name: 'Tuesday',
-                    from: null,
-                    to: null,
-                    fromVisible: false,
-                    toVisible: false,
-                  },
-                  {
-                    name: 'Wednesday',
-                    from: null,
-                    to: null,
-                    fromVisible: false,
-                    toVisible: false,
-                  },
-                  {
-                    name: 'Thursday',
-                    from: null,
-                    to: null,
-                    fromVisible: false,
-                    toVisible: false,
-                  },
-                  {
-                    name: 'Friday',
-                    from: null,
-                    to: null,
-                    fromVisible: false,
-                    toVisible: false,
-                  },
-                  {
-                    name: 'Saturday',
-                    from: null,
-                    to: null,
-                    fromVisible: false,
-                    toVisible: false,
-                  },
-                  {
-                    name: 'Sunday',
-                    from: null,
-                    to: null,
-                    fromVisible: false,
-                    toVisible: false,
-                  },
-                ];
-              }
-              setAddScheduleVisible(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-        </View>
+                      setParameterArray(updatedArray);
+                    } else {
+                      [
+                        {
+                          name: 'Monday',
+                          from: null,
+                          to: null,
+                          fromVisible: false,
+                          toVisible: false,
+                        },
+                        {
+                          name: 'Tuesday',
+                          from: null,
+                          to: null,
+                          fromVisible: false,
+                          toVisible: false,
+                        },
+                        {
+                          name: 'Wednesday',
+                          from: null,
+                          to: null,
+                          fromVisible: false,
+                          toVisible: false,
+                        },
+                        {
+                          name: 'Thursday',
+                          from: null,
+                          to: null,
+                          fromVisible: false,
+                          toVisible: false,
+                        },
+                        {
+                          name: 'Friday',
+                          from: null,
+                          to: null,
+                          fromVisible: false,
+                          toVisible: false,
+                        },
+                        {
+                          name: 'Saturday',
+                          from: null,
+                          to: null,
+                          fromVisible: false,
+                          toVisible: false,
+                        },
+                        {
+                          name: 'Sunday',
+                          from: null,
+                          to: null,
+                          fromVisible: false,
+                          toVisible: false,
+                        },
+                      ];
+                    }
+                    setAddScheduleVisible(true);
+                  }}
+                  style={{marginLeft: wp(2)}}>
+                  <Image
+                    style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                    source={editing}
+                  />
+                </TouchableOpacity>
+              )}
+            </View>
+          ))}
       </View>
     );
   };
@@ -544,68 +552,70 @@ const ScheduleComponent = ({
                 style={[styles.searchView, {color: theme.text}]}
               />
               <View style={styles.filterView}>
-                <TouchableOpacity
-                  onPress={() => {
-                    setDoctorId('');
-                    setDoctorName('');
-                    setAdmissionDate(null);
-                    setParameterArray([
-                      {
-                        name: 'Monday',
-                        from: null,
-                        to: null,
-                        fromVisible: false,
-                        toVisible: false,
-                      },
-                      {
-                        name: 'Tuesday',
-                        from: null,
-                        to: null,
-                        fromVisible: false,
-                        toVisible: false,
-                      },
-                      {
-                        name: 'Wednesday',
-                        from: null,
-                        to: null,
-                        fromVisible: false,
-                        toVisible: false,
-                      },
-                      {
-                        name: 'Thursday',
-                        from: null,
-                        to: null,
-                        fromVisible: false,
-                        toVisible: false,
-                      },
-                      {
-                        name: 'Friday',
-                        from: null,
-                        to: null,
-                        fromVisible: false,
-                        toVisible: false,
-                      },
-                      {
-                        name: 'Saturday',
-                        from: null,
-                        to: null,
-                        fromVisible: false,
-                        toVisible: false,
-                      },
-                      {
-                        name: 'Sunday',
-                        from: null,
-                        to: null,
-                        fromVisible: false,
-                        toVisible: false,
-                      },
-                    ]);
-                    setDateModalVisible(false);
-                    setAddScheduleVisible(true);
-                  }}
-                  style={styles.actionView}>
-                  <Text style={styles.actionText}>New Schedule</Text>
-                </TouchableOpacity>
+                {scheduleAction.includes('create') && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setDoctorId('');
+                      setDoctorName('');
+                      setAdmissionDate(null);
+                      setParameterArray([
+                        {
+                          name: 'Monday',
+                          from: null,
+                          to: null,
+                          fromVisible: false,
+                          toVisible: false,
+                        },
+                        {
+                          name: 'Tuesday',
+                          from: null,
+                          to: null,
+                          fromVisible: false,
+                          toVisible: false,
+                        },
+                        {
+                          name: 'Wednesday',
+                          from: null,
+                          to: null,
+                          fromVisible: false,
+                          toVisible: false,
+                        },
+                        {
+                          name: 'Thursday',
+                          from: null,
+                          to: null,
+                          fromVisible: false,
+                          toVisible: false,
+                        },
+                        {
+                          name: 'Friday',
+                          from: null,
+                          to: null,
+                          fromVisible: false,
+                          toVisible: false,
+                        },
+                        {
+                          name: 'Saturday',
+                          from: null,
+                          to: null,
+                          fromVisible: false,
+                          toVisible: false,
+                        },
+                        {
+                          name: 'Sunday',
+                          from: null,
+                          to: null,
+                          fromVisible: false,
+                          toVisible: false,
+                        },
+                      ]);
+                      setDateModalVisible(false);
+                      setAddScheduleVisible(true);
+                    }}
+                    style={styles.actionView}>
+                    <Text style={styles.actionText}>New Schedule</Text>
+                  </TouchableOpacity>
+                )}
               </View>
             </View>
             <View
@@ -626,9 +636,12 @@ const ScheduleComponent = ({
                   <Text style={[styles.titleText, {width: wp(25)}]}>
                     {'PER PATIENT TIME'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(15)}]}>
-                    {'ACTION'}
-                  </Text>
+                  {scheduleAction.includes('view') ||
+                    (scheduleAction.includes('edit') && (
+                      <Text style={[styles.titleText, {width: wp(15)}]}>
+                        {'ACTION'}
+                      </Text>
+                    ))}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

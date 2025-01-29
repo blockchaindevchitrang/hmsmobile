@@ -25,104 +25,12 @@ import IPDList from '../../components/IPDComponent/IPDList';
 import OPDList from '../../components/IPDComponent/OPDList';
 import {onGetCommonApi} from '../../services/Api';
 import useOrientation from '../../components/OrientationComponent';
+import {useSelector} from 'react-redux';
 
-const BloodIssueData = [
-  {
-    id: 1,
-    admission: 'OMGFK57O',
-    name: 'Joey Tribiyani',
-    mail: 'joey@gmail.com',
-    date: '22:02:00 2023-05-25',
-    bed: 'Single-10',
-    status: 'Paid',
-  },
-  {
-    id: 2,
-    admission: 'OMGFK571',
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    date: '22:02:00 2023-05-25',
-    bed: 'General Ward',
-    status: 'Unpaid',
-  },
-  {
-    id: 3,
-    admission: 'OMGFK572',
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    date: '22:02:00 2023-05-25',
-    bed: 'VVIP-32',
-    status: 'Paid',
-  },
-  {
-    id: 4,
-    admission: 'OMGFK573',
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    date: '22:02:00 2023-05-25',
-    bed: 'General Ward',
-    status: 'Unpaid',
-  },
-  {
-    id: 5,
-    admission: 'OMGFK574',
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    date: '22:02:00 2023-05-25',
-    bed: 'General Ward',
-    status: 'Unpaid',
-  },
-];
-
-const ODPData = [
-  {
-    id: 1,
-    admission: 'OMGFK57O',
-    name: 'Joey Tribiyani',
-    mail: 'joey@gmail.com',
-    date: '22:02:00 2023-05-25',
-    charge: '$1,200.00',
-    payment: 'Card',
-  },
-  {
-    id: 2,
-    admission: 'OMGFK571',
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    date: '22:02:00 2023-05-25',
-    charge: '$600.00',
-    payment: 'Cash',
-  },
-  {
-    id: 3,
-    admission: 'OMGFK572',
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    date: '22:02:00 2023-05-25',
-    charge: '$1,500.00',
-    payment: 'Card',
-  },
-  {
-    id: 4,
-    admission: 'OMGFK573',
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    date: '22:02:00 2023-05-25',
-    charge: '$600.00',
-    payment: 'Cash',
-  },
-  {
-    id: 5,
-    admission: 'OMGFK574',
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    date: '22:02:00 2023-05-25',
-    charge: '$600.00',
-    payment: 'Cash',
-  },
-];
+let arrayData = ['Logo', 'IPD Patients', 'OPD Patients'];
 
 export const IPDScreen = ({navigation}) => {
+  const rolePermission = useSelector(state => state.rolePermission);
   const {t} = useTranslation();
   const {theme} = useTheme();
   const orientation = useOrientation(); // Get current orientation
@@ -139,6 +47,54 @@ export const IPDScreen = ({navigation}) => {
   const [totalPage, setTotalPage] = useState('1');
   const [OPDPage, setOPDPage] = useState('1');
   const [statusId, setStatusId] = useState(3);
+  const [ipdAction, setIPDAction] = useState([]);
+  const [opdAction, setOPDAction] = useState([]);
+
+  useEffect(() => {
+    const visibility = {
+      ipdVisible: false,
+      opdVisible: false,
+    };
+    // Helper function to process privileges
+    const processPrivileges = (
+      privileges,
+      endPoint,
+      setAction,
+      visibilityKey,
+    ) => {
+      const privilege = privileges.find(item => item.end_point === endPoint);
+      if (privilege) {
+        setAction(privilege.action.split(',').map(action => action.trim()));
+        visibility[visibilityKey] = true;
+      }
+    };
+
+    // Iterate over role permissions
+    rolePermission.forEach(item => {
+      if (item.main_module === 'IPD/OPD') {
+        processPrivileges(
+          item.privileges,
+          'IPD Patients',
+          setIPDAction,
+          'ipdVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'OPD Patients',
+          setOPDAction,
+          'opdVisible',
+        );
+        // Handle arrayData based on visibility
+        const {ipdVisible, opdVisible} = visibility;
+
+        arrayData = [
+          'Logo',
+          ipdVisible && 'IPD Patients',
+          opdVisible && 'OPD Patients',
+        ].filter(Boolean);
+      }
+    });
+  }, [rolePermission]);
 
   const animations = useRef(
     [0, 0, 0].map(() => new Animated.Value(300)),
@@ -255,6 +211,7 @@ export const IPDScreen = ({navigation}) => {
             setPageCount={setPageCount}
             statusId={statusId}
             setStatusId={setStatusId}
+            ipdAction={ipdAction}
           />
         ) : (
           selectedView == 'OPD Patients' && (
@@ -266,6 +223,7 @@ export const IPDScreen = ({navigation}) => {
               totalPage={OPDPage}
               pageCount={pageCount}
               setPageCount={setPageCount}
+              opdAction={opdAction}
             />
           )
         )}
@@ -286,50 +244,48 @@ export const IPDScreen = ({navigation}) => {
 
             <View style={styles.mainModalView}>
               <View style={styles.menuContainer}>
-                {['Logo', 'IPD Patients', 'OPD Patients'].map(
-                  (option, index) => (
-                    <>
-                      {option == 'Logo' ? (
-                        <Animated.View
-                          key={index}
-                          style={[
-                            styles.logoMenu,
-                            {
-                              transform: [{translateY: animations[index]}],
-                              opacity: opacities[index],
-                              marginBottom: hp(1),
-                            },
-                          ]}>
-                          <Image
-                            source={headerLogo}
-                            style={styles.headerLogoImage}
-                          />
-                        </Animated.View>
-                      ) : (
-                        <Animated.View
-                          key={index}
-                          style={[
-                            styles.menuOption,
-                            {
-                              transform: [{translateY: animations[index]}],
-                              opacity: opacities[index],
-                              backgroundColor: theme.headerColor,
-                            },
-                          ]}>
-                          <TouchableOpacity
-                            style={styles.optionButton}
-                            onPress={() => {
-                              setSelectedView(option);
-                              setPageCount('1');
-                              toggleMenu(false);
-                            }}>
-                            <Text style={styles.menuItem}>{option}</Text>
-                          </TouchableOpacity>
-                        </Animated.View>
-                      )}
-                    </>
-                  ),
-                )}
+                {arrayData.map((option, index) => (
+                  <>
+                    {option == 'Logo' ? (
+                      <Animated.View
+                        key={index}
+                        style={[
+                          styles.logoMenu,
+                          {
+                            transform: [{translateY: animations[index]}],
+                            opacity: opacities[index],
+                            marginBottom: hp(1),
+                          },
+                        ]}>
+                        <Image
+                          source={headerLogo}
+                          style={styles.headerLogoImage}
+                        />
+                      </Animated.View>
+                    ) : (
+                      <Animated.View
+                        key={index}
+                        style={[
+                          styles.menuOption,
+                          {
+                            transform: [{translateY: animations[index]}],
+                            opacity: opacities[index],
+                            backgroundColor: theme.headerColor,
+                          },
+                        ]}>
+                        <TouchableOpacity
+                          style={styles.optionButton}
+                          onPress={() => {
+                            setSelectedView(option);
+                            setPageCount('1');
+                            toggleMenu(false);
+                          }}>
+                          <Text style={styles.menuItem}>{option}</Text>
+                        </TouchableOpacity>
+                      </Animated.View>
+                    )}
+                  </>
+                ))}
 
                 <View style={styles.logoMenu}>
                   <TouchableOpacity

@@ -66,6 +66,7 @@ const NursesList = ({
   totalPage,
   setStatusId,
   statusId,
+  nurseAction,
 }) => {
   const orientation = useOrientation(); // Get current orientation
   const isPortrait = orientation === 'portrait';
@@ -414,26 +415,54 @@ const NursesList = ({
           styles.dataHistoryView,
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
-        <View style={[styles.nameDataView]}>
+        <View
+          style={[
+            styles.nameDataView,
+            {
+              width: isPortrait
+                ? wp(55)
+                : nurseAction.includes('status')
+                ? wp(37)
+                : wp(51),
+            },
+          ]}>
           {item.name && (
             <ProfilePhoto style={styles.photoStyle} username={item.name} />
           )}
           <View>
             <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
-            <Text style={[styles.dataHistoryText1]}>{item.email}</Text>
+            <Text
+              style={[
+                styles.dataHistoryText1,
+                {
+                  width: isPortrait
+                    ? wp(45)
+                    : nurseAction.includes('status')
+                    ? wp(33)
+                    : wp(45),
+                },
+              ]}>
+              {item.email}
+            </Text>
           </View>
         </View>
         <Text
           style={[
             styles.dataHistoryText,
-            {width: isPortrait ? wp(26) : wp(16), textAlign: 'left'},
+            {width: isPortrait ? wp(26) : wp(17), textAlign: 'left'},
           ]}>
           {item.phone}
         </Text>
         <Text
           style={[
             styles.dataHistoryText,
-            {width: isPortrait ? wp(30) : wp(20)},
+            {
+              width: isPortrait
+                ? wp(30)
+                : nurseAction.includes('edit') || nurseAction.includes('delete')
+                ? wp(20)
+                : wp(35),
+            },
           ]}>
           {item.qualification}
         </Text>
@@ -444,67 +473,80 @@ const NursesList = ({
           ]}>
           {moment(item.dob).format('DD MMM, YYYY')}
         </Text>
-        <View style={[styles.switchView]}>
-          <Switch
-            trackColor={{
-              false:
-                item.status == 'Active' ? COLORS.greenColor : COLORS.errorColor,
-              true:
-                item.status == 'Active' ? COLORS.greenColor : COLORS.errorColor,
-            }}
-            thumbColor={item.status == 'Active' ? '#f4f3f4' : '#f4f3f4'}
-            ios_backgroundColor={COLORS.errorColor}
-            onValueChange={() => {}}
-            value={item.status == 'Active' ? true : false}
-          />
-        </View>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={async () => {
-              let allData = await onGetSpecificDoctor(item.id);
-              setUserId(item.id);
-              const [first, last] = item.name.split(',');
-              setFirstName(first);
-              setLastName(last);
-              if (isImageFormat(item?.image_url)) {
-                setAvatar(parseFileFromUrl(item?.image_url));
-              }
-              setEmail(item.email);
-              setDesignation(allData.designation);
-              if (allData.dob != null) {
-                setDateOfBirth(new Date(allData.dob));
-              }
-              setGenderType(item.gender == 0 ? 'male' : 'female');
-              setAddress(item.address1);
-              setCity(item.city);
-              setCountry(item.country);
-              setPostalCode(item.postal_code);
-              setAddress1(allData.address2);
-              setQualification(allData.qualification);
-              setNumber(allData.phone);
-              setStatus(allData.status == 'Active' ? true : false);
-              if (allData?.blood_group != null) {
-                setBloodSelected(allData?.blood_group);
-              }
-              setNewUserVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
+        {nurseAction.includes('status') && (
+          <View style={[styles.switchView]}>
+            <Switch
+              trackColor={{
+                false:
+                  item.status == 'Active'
+                    ? COLORS.greenColor
+                    : COLORS.errorColor,
+                true:
+                  item.status == 'Active'
+                    ? COLORS.greenColor
+                    : COLORS.errorColor,
+              }}
+              thumbColor={item.status == 'Active' ? '#f4f3f4' : '#f4f3f4'}
+              ios_backgroundColor={COLORS.errorColor}
+              onValueChange={() => {}}
+              value={item.status == 'Active' ? true : false}
             />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+          </View>
+        )}
+        {nurseAction.includes('edit') ||
+          (nurseAction.includes('delete') && (
+            <View style={styles.actionDataView}>
+              {nurseAction.includes('edit') && (
+                <TouchableOpacity
+                  onPress={async () => {
+                    let allData = await onGetSpecificDoctor(item.id);
+                    setUserId(item.id);
+                    const [first, last] = item.name.split(',');
+                    setFirstName(first);
+                    setLastName(last);
+                    if (isImageFormat(item?.image_url)) {
+                      setAvatar(parseFileFromUrl(item?.image_url));
+                    }
+                    setEmail(item.email);
+                    setDesignation(allData.designation);
+                    if (allData.dob != null) {
+                      setDateOfBirth(new Date(allData.dob));
+                    }
+                    setGenderType(item.gender == 0 ? 'male' : 'female');
+                    setAddress(item.address1);
+                    setCity(item.city);
+                    setCountry(item.country);
+                    setPostalCode(item.postal_code);
+                    setAddress1(allData.address2);
+                    setQualification(allData.qualification);
+                    setNumber(allData.phone);
+                    setStatus(allData.status == 'Active' ? true : false);
+                    if (allData?.blood_group != null) {
+                      setBloodSelected(allData?.blood_group);
+                    }
+                    setNewUserVisible(true);
+                  }}>
+                  <Image
+                    style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                    source={editing}
+                  />
+                </TouchableOpacity>
+              )}
+              {nurseAction.includes('delete') && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setUserId(item.id);
+                    setDeleteUser(true);
+                  }}
+                  style={{marginLeft: wp(2)}}>
+                  <Image
+                    style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                    source={deleteIcon}
+                  />
+                </TouchableOpacity>
+              )}
+            </View>
+          ))}
       </View>
     );
   };
@@ -531,32 +573,34 @@ const NursesList = ({
                 style={styles.filterView1}>
                 <Image style={styles.filterImage} source={filter} />
               </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => {
-                  setUserId('');
-                  setFirstName('');
-                  setLastName('');
-                  setEmail('');
-                  setDesignation('');
-                  setDateOfBirth(new Date());
-                  setGenderType('female');
-                  setAddress('');
-                  setCity('');
-                  setCountry('');
-                  setPostalCode('');
-                  setAvatar(null);
-                  setAddress1('');
-                  setPassword('');
-                  setConfirmPassword('');
-                  setBloodSelected('');
-                  setQualification('');
-                  setErrorMessage('');
-                  setErrorVisible(false);
-                  setNewUserVisible(true);
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>New Nurse</Text>
-              </TouchableOpacity>
+              {nurseAction.includes('create') && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setUserId('');
+                    setFirstName('');
+                    setLastName('');
+                    setEmail('');
+                    setDesignation('');
+                    setDateOfBirth(new Date());
+                    setGenderType('female');
+                    setAddress('');
+                    setCity('');
+                    setCountry('');
+                    setPostalCode('');
+                    setAvatar(null);
+                    setAddress1('');
+                    setPassword('');
+                    setConfirmPassword('');
+                    setBloodSelected('');
+                    setQualification('');
+                    setErrorMessage('');
+                    setErrorVisible(false);
+                    setNewUserVisible(true);
+                  }}
+                  style={styles.actionView}>
+                  <Text style={styles.actionText}>New Nurse</Text>
+                </TouchableOpacity>
+              )}
               <Modal
                 animationType="none"
                 transparent={true}
@@ -634,21 +678,34 @@ const NursesList = ({
                   <Text
                     style={[
                       styles.titleText,
-                      {width: isPortrait ? wp(55) : wp(37)},
+                      {
+                        width: isPortrait
+                          ? wp(55)
+                          : nurseAction.includes('status')
+                          ? wp(37)
+                          : wp(51),
+                      },
                     ]}>
                     {'NURSES'}
                   </Text>
                   <Text
                     style={[
                       styles.titleText,
-                      {width: isPortrait ? wp(26) : wp(16)},
+                      {width: isPortrait ? wp(26) : wp(17)},
                     ]}>
                     {'PHONE'}
                   </Text>
                   <Text
                     style={[
                       styles.titleText,
-                      {width: isPortrait ? wp(30) : wp(20)},
+                      {
+                        width: isPortrait
+                          ? wp(30)
+                          : nurseAction.includes('edit') ||
+                            nurseAction.includes('delete')
+                          ? wp(20)
+                          : wp(35),
+                      },
                     ]}>
                     {'QUALIFICATION'}
                   </Text>
@@ -659,20 +716,25 @@ const NursesList = ({
                     ]}>
                     {'BIRTH DATE'}
                   </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: isPortrait ? wp(24) : wp(10)},
-                    ]}>
-                    {'STATUS'}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: isPortrait ? wp(16) : wp(10)},
-                    ]}>
-                    {'ACTION'}
-                  </Text>
+                  {nurseAction.includes('status') && (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: isPortrait ? wp(24) : wp(10)},
+                      ]}>
+                      {'STATUS'}
+                    </Text>
+                  )}
+                  {nurseAction.includes('edit') ||
+                    (nurseAction.includes('delete') && (
+                      <Text
+                        style={[
+                          styles.titleText,
+                          {width: isPortrait ? wp(16) : wp(10)},
+                        ]}>
+                        {'ACTION'}
+                      </Text>
+                    ))}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

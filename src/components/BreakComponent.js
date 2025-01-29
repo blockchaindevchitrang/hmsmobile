@@ -38,6 +38,7 @@ const BreakComponent = ({
   pageCount,
   setPageCount,
   totalPage,
+  breakAction,
 }) => {
   const doctorData = useSelector(state => state.doctorData);
   const {theme} = useTheme();
@@ -86,25 +87,37 @@ const BreakComponent = ({
             <Text style={[styles.dataListText1]}>{item.break_to}</Text>
           </View>
         </View>
-        <View style={[styles.switchView]}>
+        <View
+          style={[
+            styles.switchView,
+            {
+              width: isPortrait
+                ? wp(24)
+                : breakAction.includes('delete')
+                ? wp(20)
+                : wp(42),
+            },
+          ]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.purpleColor}]}>
             <Text style={styles.dataListText1} numberOfLines={2}>
               {item.date}
             </Text>
           </View>
         </View>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={() => {
-              setEditId(item.id);
-              setDeleteUser(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        {breakAction.includes('delete') && (
+          <View style={styles.actionDataView}>
+            <TouchableOpacity
+              onPress={() => {
+                setEditId(item.id);
+                setDeleteUser(true);
+              }}>
+              <Image
+                style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                source={deleteIcon}
+              />
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
     );
   };
@@ -185,18 +198,20 @@ const BreakComponent = ({
               style={[styles.searchView, {color: theme.text}]}
             />
             <View style={styles.filterView}>
-              <TouchableOpacity
-                onPress={() => {
-                  setDoctorBreakName('');
-                  setFromTime(null);
-                  setToTime(null);
-                  setBreakType('every');
-                  setSingleDate(null);
-                  setAddHolidayVisible(true);
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>Add Breaks</Text>
-              </TouchableOpacity>
+              {breakAction.includes('create') && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setDoctorBreakName('');
+                    setFromTime(null);
+                    setToTime(null);
+                    setBreakType('every');
+                    setSingleDate(null);
+                    setAddHolidayVisible(true);
+                  }}
+                  style={styles.actionView}>
+                  <Text style={styles.actionText}>Add Breaks</Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
           <View
@@ -235,17 +250,25 @@ const BreakComponent = ({
                   <Text
                     style={[
                       styles.titleText,
-                      {width: isPortrait ? wp(24) : wp(20)},
+                      {
+                        width: isPortrait
+                          ? wp(24)
+                          : breakAction.includes('delete')
+                          ? wp(20)
+                          : wp(42),
+                      },
                     ]}>
                     {'DAYS'}
                   </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: isPortrait ? wp(20) : wp(18)},
-                    ]}>
-                    {'ACTION'}
-                  </Text>
+                  {breakAction.includes('delete') && (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: isPortrait ? wp(20) : wp(18)},
+                      ]}>
+                      {'ACTION'}
+                    </Text>
+                  )}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

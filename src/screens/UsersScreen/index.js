@@ -39,6 +39,17 @@ import RoleList from '../../components/UsersComponent/RoleList';
 import {useSelector} from 'react-redux';
 import useOrientation from '../../components/OrientationComponent';
 
+let arrayData = [
+  'Logo',
+  'Users',
+  'Role',
+  'Accountant',
+  'Nurses',
+  'Receptionists',
+  'Lab Technicians',
+  'Pharmacists',
+];
+
 export const UsersScreen = ({navigation}) => {
   const roleData = useSelector(state => state.rolePermission);
   const {t} = useTranslation();
@@ -77,40 +88,173 @@ export const UsersScreen = ({navigation}) => {
   const [labTechnicianActive, setLabTechnicianActive] = useState(1);
   const [pharmacistActive, setPharmacistActive] = useState(1);
   const [refresh, setRefresh] = useState(false);
-
-  let arrayData = [
-    'Logo',
-    'Users',
-    'Role',
-    'Accountant',
-    'Nurses',
-    'Receptionists',
-    'Lab Technicians',
-    'Pharmacists',
-  ];
+  const [userAction, setUserAction] = useState([]);
+  const [roleAction, setRoleAction] = useState([]);
+  const [accountantAction, setAccountantAction] = useState([]);
+  const [nurseAction, setNurseAction] = useState([]);
+  const [receptionAction, setReceptionAction] = useState([]);
+  const [labAction, setLabAction] = useState([]);
+  const [pharmacistAction, setPharmacistAction] = useState([]);
 
   useEffect(() => {
-    let dataArray = [];
-    let appointmentVisible = false;
-    let transactionVisible = false;
-    rolePermission.map(item => {
-      if (item.main_module == 'Users') {
-        item.privileges.map(item1 => {
-          if (item1.end_point == 'appointments') {
-            dataArray = item1.action.split(',').map(action => action.trim());
-            appointmentVisible = true;
-          } else if (item1.end_point == 'appointment_transaction') {
-            transactionVisible = true;
-          }
-        });
+    // let dataArray = [];
+    // let userVisible = false;
+    // let roleVisible = false;
+    // let accountantVisible = false;
+    // let nurseVisible = false;
+    // let receptionistVisible = false;
+    // let labVisible = false;
+    // let pharmacistVisible = false;
+    // rolePermission.map(item => {
+    //   if (item.main_module == 'Users') {
+    //     item.privileges.map(item1 => {
+    //       if (item1.end_point == 'view_users') {
+    //         setUserAction(item1.action.split(',').map(action => action.trim()));
+    //         userVisible = true;
+    //       } else if (item1.end_point == 'accountants') {
+    //         setAccountantAction(
+    //           item1.action.split(',').map(action => action.trim()),
+    //         );
+    //         accountantVisible = true;
+    //       } else if (item1.end_point == 'nurses') {
+    //         setNurseAction(
+    //           item1.action.split(',').map(action => action.trim()),
+    //         );
+    //         nurseVisible = true;
+    //       } else if (item1.end_point == 'receptionist') {
+    //         setReceptionAction(
+    //           item1.action.split(',').map(action => action.trim()),
+    //         );
+    //         receptionistVisible = true;
+    //       } else if (item1.end_point == 'lab-technicians') {
+    //         setLabAction(item1.action.split(',').map(action => action.trim()));
+    //         labVisible = true;
+    //       } else if (item1.end_point == 'phamacists') {
+    //         setPharmacistAction(
+    //           item1.action.split(',').map(action => action.trim()),
+    //         );
+    //         pharmacistVisible = true;
+    //       } else if (item1.end_point == 'role') {
+    //         setRoleAction(item1.action.split(',').map(action => action.trim()));
+    //         roleVisible = true;
+    //       }
+    //     });
+    //     if (!userVisible && !roleVisible && !accountantVisible && !nurseVisible && !receptionistVisible && !labVisible) {
+    //       arrayData = [
+    //         'Logo',
+    //         'Users',
+    //         'Role',
+    //         'Accountant',
+    //         'Nurses',
+    //         'Receptionists',
+    //         'Lab Technicians',
+    //       ];
+    //     } else if (!userVisible && !roleVisible && !accountantVisible && !nurseVisible && !receptionistVisible && !pharmacistVisible) {
+    //       arrayData = [
+    //         'Logo',
+    //         'Users',
+    //         'Role',
+    //         'Accountant',
+    //         'Nurses',
+    //         'Receptionists',
+    //         'Pharmacists',
+    //       ];
+    //     }
+    //   }
+    // });
+    const visibility = {
+      userVisible: false,
+      roleVisible: false,
+      accountantVisible: false,
+      nurseVisible: false,
+      receptionistVisible: false,
+      labVisible: false,
+      pharmacistVisible: false,
+    };
+
+    // Helper function to process privileges
+    const processPrivileges = (
+      privileges,
+      endPoint,
+      setAction,
+      visibilityKey,
+    ) => {
+      const privilege = privileges.find(item => item.end_point === endPoint);
+      if (privilege) {
+        setAction(privilege.action.split(',').map(action => action.trim()));
+        visibility[visibilityKey] = true;
+      }
+    };
+
+    // Iterate over role permissions
+    roleData.forEach(item => {
+      if (item.main_module === 'Users') {
+        processPrivileges(
+          item.privileges,
+          'view_users',
+          setUserAction,
+          'userVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'accountants',
+          setAccountantAction,
+          'accountantVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'nurses',
+          setNurseAction,
+          'nurseVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'receptionist',
+          setReceptionAction,
+          'receptionistVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'lab-technicians',
+          setLabAction,
+          'labVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'phamacists',
+          setPharmacistAction,
+          'pharmacistVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'role',
+          setRoleAction,
+          'roleVisible',
+        );
       }
     });
-    if (!appointmentVisible) {
-      arrayData = ['Logo', 'Appointments Transaction'];
-    } else if (!transactionVisible) {
-      arrayData = ['Logo', 'Appointments'];
-    }
-    setAppointmentAction(dataArray);
+
+    // Handle arrayData based on visibility
+    const {
+      userVisible,
+      roleVisible,
+      accountantVisible,
+      nurseVisible,
+      receptionistVisible,
+      labVisible,
+      pharmacistVisible,
+    } = visibility;
+
+    arrayData = [
+      'Logo',
+      userVisible && 'Users',
+      roleVisible && 'Role',
+      accountantVisible && 'Accountant',
+      nurseVisible && 'Nurses',
+      receptionistVisible && 'Receptionists',
+      labVisible && 'Lab Technicians',
+      pharmacistVisible && 'Pharmacists',
+    ].filter(Boolean);
   }, [roleData]);
 
   useEffect(() => {
@@ -345,6 +489,7 @@ export const UsersScreen = ({navigation}) => {
             typeId={userType}
             setUserTypeName={setUserTypeName}
             userTypeName={userTypeName}
+            userAction={userAction}
           />
         ) : selectedView == 'Role' ? (
           <RoleList
@@ -352,6 +497,7 @@ export const UsersScreen = ({navigation}) => {
             setSearchBreak={setSearchAccountant}
             allData={rolePermission}
             onGetData={onGetRolePermissionData}
+            roleAction={roleAction}
           />
         ) : selectedView == 'Accountant' ? (
           <AccountantList
@@ -364,6 +510,7 @@ export const UsersScreen = ({navigation}) => {
             totalPage={accountantTotalPage}
             setStatusId={setAccountantActive}
             statusId={accountantActive}
+            accountantAction={accountantAction}
           />
         ) : selectedView == 'Nurses' ? (
           <NursesList
@@ -376,6 +523,7 @@ export const UsersScreen = ({navigation}) => {
             totalPage={nurseTotalPage}
             setStatusId={setNurseActive}
             statusId={nurseActive}
+            nurseAction={nurseAction}
           />
         ) : selectedView == 'Receptionists' ? (
           <ReceptionistsList
@@ -388,6 +536,7 @@ export const UsersScreen = ({navigation}) => {
             totalPage={receptionistTotalPage}
             setStatusId={setReceptionistActive}
             statusId={receptionistActive}
+            receptionAction={receptionAction}
           />
         ) : selectedView == 'Lab Technicians' ? (
           <LabTechniciansList
@@ -400,6 +549,7 @@ export const UsersScreen = ({navigation}) => {
             totalPage={labTechnicianTotalPage}
             setStatusId={setLabTechnicianActive}
             statusId={labTechnicianActive}
+            labAction={labAction}
           />
         ) : (
           selectedView == 'Pharmacists' && (
@@ -413,6 +563,7 @@ export const UsersScreen = ({navigation}) => {
               totalPage={pharmacistTotalPage}
               setStatusId={setPharmacistActive}
               statusId={pharmacistActive}
+              pharmacistAction={pharmacistAction}
             />
           )
         )}

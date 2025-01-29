@@ -48,6 +48,7 @@ import FlashMessage, {
   hideMessage,
 } from 'react-native-flash-message';
 import moment from 'moment';
+import {useSelector} from 'react-redux';
 import useOrientation from '../../components/OrientationComponent';
 
 const scheduleData = [
@@ -126,7 +127,17 @@ const breakData = [
   },
 ];
 
+let arrayData = [
+  'Logo',
+  'Doctor',
+  'Doctor Departments',
+  'Schedules',
+  'Doctor Holidays',
+  'Breaks',
+];
+
 export const DoctorScreen = ({navigation}) => {
+  const rolePermission = useSelector(state => state.rolePermission);
   const orientation = useOrientation(); // Get current orientation
   const isPortrait = orientation === 'portrait';
   const styles = isPortrait ? portraitStyles : landscapeStyles;
@@ -196,6 +207,11 @@ export const DoctorScreen = ({navigation}) => {
   const [errorVisible, setErrorVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [scheduleList, setScheduleList] = useState([]);
+  const [doctorAction, setDoctorAction] = useState([]);
+  const [departmentAction, setDepartmentAction] = useState([]);
+  const [scheduleAction, setScheduleAction] = useState([]);
+  const [holidayAction, setHolidayAction] = useState([]);
+  const [breakAction, setBreakAction] = useState([]);
   const {t} = useTranslation();
   const {theme} = useTheme();
 
@@ -205,6 +221,82 @@ export const DoctorScreen = ({navigation}) => {
   const opacities = useRef(
     [0, 0, 0, 0, 0, 0, 0, 0].map(() => new Animated.Value(0)),
   ).current;
+
+  useEffect(() => {
+    const visibility = {
+      doctorVisible: false,
+      departmentVisible: false,
+      scheduleVisible: false,
+      holidayVisible: false,
+      breakVisible: false,
+    };
+    // Helper function to process privileges
+    const processPrivileges = (
+      privileges,
+      endPoint,
+      setAction,
+      visibilityKey,
+    ) => {
+      const privilege = privileges.find(item => item.end_point === endPoint);
+      if (privilege) {
+        setAction(privilege.action.split(',').map(action => action.trim()));
+        visibility[visibilityKey] = true;
+      }
+    };
+
+    // Iterate over role permissions
+    rolePermission.forEach(item => {
+      if (item.main_module === 'Doctors') {
+        processPrivileges(
+          item.privileges,
+          'doctors',
+          setDoctorAction,
+          'doctorVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'doctor_departments',
+          setDepartmentAction,
+          'departmentVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'schedules',
+          setScheduleAction,
+          'scheduleVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'doctor_holidays',
+          setHolidayAction,
+          'holidayVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'breaks',
+          setBreakAction,
+          'breakVisible',
+        );
+        // Handle arrayData based on visibility
+        const {
+          doctorVisible,
+          departmentVisible,
+          scheduleVisible,
+          holidayVisible,
+          breakVisible,
+        } = visibility;
+
+        arrayData = [
+          'Logo',
+          doctorVisible && 'Doctor',
+          departmentVisible && 'Doctor Departments',
+          scheduleVisible && 'Schedules',
+          holidayVisible && 'Doctor Holidays',
+          breakVisible && 'Breaks',
+        ].filter(Boolean);
+      }
+    });
+  }, [rolePermission]);
 
   useEffect(() => {
     onGetDoctorData();
@@ -643,15 +735,6 @@ export const DoctorScreen = ({navigation}) => {
           moreButtonClick={() => toggleMenu(true)}
         />
       </View>
-      {/* <TabView
-        navigationState={{index, routes}}
-        renderScene={renderScene}
-        onIndexChange={setIndex}
-        pagerStyle={{backgroundColor: theme.background}}
-        style={{backgroundColor: 'red'}}
-        renderTabBar={renderTabBar}
-        swipeEnabled={false}
-      /> */}
       <View style={styles.mainView}>
         {selectedView == 'Doctor' ? (
           <DoctorComponent
@@ -723,6 +806,7 @@ export const DoctorScreen = ({navigation}) => {
             totalPage={totalPage}
             statusId={statusId}
             setStatusId={setStatusId}
+            doctorAction={doctorAction}
           />
         ) : selectedView == 'Doctor Departments' ? (
           <DepartmentComponent
@@ -750,6 +834,7 @@ export const DoctorScreen = ({navigation}) => {
             totalPage={departmentPage}
             loading={isLoading}
             setLoading={setIsLoading}
+            departmentAction={departmentAction}
           />
         ) : selectedView == 'Schedules' ? (
           <ScheduleComponent
@@ -759,6 +844,7 @@ export const DoctorScreen = ({navigation}) => {
             addScheduleVisible={addScheduleVisible}
             setAddScheduleVisible={setAddScheduleVisible}
             onGetData={onGetDoctorScheduleData}
+            scheduleAction={scheduleAction}
           />
         ) : selectedView == 'Doctor Holidays' ? (
           <HolidayComponent
@@ -789,6 +875,7 @@ export const DoctorScreen = ({navigation}) => {
             totalPage={holidayPage}
             loading={isLoading}
             setLoading={setIsLoading}
+            holidayAction={holidayAction}
           />
         ) : (
           selectedView == 'Breaks' && (
@@ -802,6 +889,7 @@ export const DoctorScreen = ({navigation}) => {
               totalPage={breakPage}
               loading={isLoading}
               setLoading={setIsLoading}
+              breakAction={breakAction}
             />
           )
         )}
@@ -822,14 +910,7 @@ export const DoctorScreen = ({navigation}) => {
 
             <View style={styles.mainModalView}>
               <View style={styles.menuContainer}>
-                {[
-                  'Logo',
-                  'Doctor',
-                  'Doctor Departments',
-                  'Schedules',
-                  'Doctor Holidays',
-                  'Breaks',
-                ].map((option, index) => (
+                {arrayData.map((option, index) => (
                   <>
                     {option == 'Logo' ? (
                       <Animated.View

@@ -58,6 +58,7 @@ const IPDList = ({
   setPageCount,
   statusId,
   setStatusId,
+  ipdAction,
 }) => {
   const orientation = useOrientation(); // Get current orientation
   const isPortrait = orientation === 'portrait';
@@ -382,58 +383,65 @@ const IPDList = ({
           style={[styles.switchView, {width: isPortrait ? wp(28) : wp(20)}]}>
           <Text style={[styles.dataListText1]}>{item.bill_status}</Text>
         </View>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={async () => {
-              let allDatas = await onGetSpecificDoctor(item.id);
-              setUserId(item.id);
-              setPatientId(allDatas.patient_id);
-              setPatientName(item.patient_name);
-              let allDatas1 = await onGetCaseData(allDatas.patient_id);
-              const accountantData = allDatas1.filter(
-                user => user.id == allDatas.case_id,
-              );
-              if (accountantData.length > 0) {
-                setCaseName(accountantData[0].name);
-              }
-              setCaseId(allDatas.case_id);
-              setHeight(JSON.stringify(allDatas.height));
-              setWeight(JSON.stringify(allDatas.weight));
-              setBloodPressure(allDatas.bp);
-              setAdmissionDate(new Date(allDatas.admission_date));
-              setDoctorId(allDatas.doctor_id);
-              setDoctorName(item.doctor_name);
-              setBedTypeId(allDatas.bed_type_id);
-              setBedTypeName(item.bed_type);
-              setBedId(allDatas.bed_id);
-              const accountantData1 = bedData.filter(
-                user => user.id === allDatas.bed_id,
-              );
-              if (accountantData1.length > 0) {
-                setBedName(accountantData1[0].name);
-              }
-              setOldPatient(allDatas.is_old_patient);
-              setSymptoms(allDatas.symptoms);
-              setDescription(allDatas.notes);
-              setNewBloodIssueVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        {ipdAction.includes('edit') ||
+          (ipdAction.includes('delete') && (
+            <View style={styles.actionDataView}>
+              {ipdAction.includes('edit') && (
+                <TouchableOpacity
+                  onPress={async () => {
+                    let allDatas = await onGetSpecificDoctor(item.id);
+                    setUserId(item.id);
+                    setPatientId(allDatas.patient_id);
+                    setPatientName(item.patient_name);
+                    let allDatas1 = await onGetCaseData(allDatas.patient_id);
+                    const accountantData = allDatas1.filter(
+                      user => user.id == allDatas.case_id,
+                    );
+                    if (accountantData.length > 0) {
+                      setCaseName(accountantData[0].name);
+                    }
+                    setCaseId(allDatas.case_id);
+                    setHeight(JSON.stringify(allDatas.height));
+                    setWeight(JSON.stringify(allDatas.weight));
+                    setBloodPressure(allDatas.bp);
+                    setAdmissionDate(new Date(allDatas.admission_date));
+                    setDoctorId(allDatas.doctor_id);
+                    setDoctorName(item.doctor_name);
+                    setBedTypeId(allDatas.bed_type_id);
+                    setBedTypeName(item.bed_type);
+                    setBedId(allDatas.bed_id);
+                    const accountantData1 = bedData.filter(
+                      user => user.id === allDatas.bed_id,
+                    );
+                    if (accountantData1.length > 0) {
+                      setBedName(accountantData1[0].name);
+                    }
+                    setOldPatient(allDatas.is_old_patient);
+                    setSymptoms(allDatas.symptoms);
+                    setDescription(allDatas.notes);
+                    setNewBloodIssueVisible(true);
+                  }}>
+                  <Image
+                    style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                    source={editing}
+                  />
+                </TouchableOpacity>
+              )}
+              {ipdAction.includes('delete') && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setUserId(item.id);
+                    setDeleteUser(true);
+                  }}
+                  style={{marginLeft: wp(2)}}>
+                  <Image
+                    style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                    source={deleteIcon}
+                  />
+                </TouchableOpacity>
+              )}
+            </View>
+          ))}
       </View>
     );
   };

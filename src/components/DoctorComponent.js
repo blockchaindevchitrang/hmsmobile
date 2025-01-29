@@ -122,6 +122,7 @@ const DoctorComponent = ({
   totalPage,
   statusId,
   setStatusId,
+  doctorAction,
 }) => {
   const departmentData = useSelector(state => state.departmentData);
   const bloodData = useSelector(state => state.bloodData);
@@ -267,93 +268,121 @@ const DoctorComponent = ({
         <Text
           style={[
             styles.dataHistoryText,
-            {width: isPortrait ? wp(24) : wp(20)},
+            {
+              width: isPortrait
+                ? wp(24)
+                : doctorAction.includes('edit') ||
+                  doctorAction.includes('delete')
+                ? wp(20)
+                : wp(42),
+            },
           ]}>
           {item.specialist}
         </Text>
         <Text
           style={[
             styles.dataHistoryText,
-            {width: isPortrait ? wp(28) : wp(26)},
+            {
+              width: isPortrait
+                ? wp(28)
+                : doctorAction.includes('status')
+                ? wp(26)
+                : wp(44),
+            },
           ]}>
           {item.qualification}
         </Text>
-        <View
-          style={[styles.switchView, {width: isPortrait ? wp(16) : wp(14)}]}>
-          <Switch
-            trackColor={{
-              false: item.status == 1 ? COLORS.greenColor : COLORS.errorColor,
-              true: item.status == 1 ? COLORS.greenColor : COLORS.errorColor,
-            }}
-            thumbColor={item.status == 1 ? '#f4f3f4' : '#f4f3f4'}
-            ios_backgroundColor={COLORS.errorColor}
-            onValueChange={() => onStatusChange(item, index)}
-            value={item.status == 1 ? true : false}
-          />
-        </View>
-        <View
-          style={[
-            styles.actionDataView,
-            {width: isPortrait ? wp(20) : wp(18)},
-          ]}>
-          <TouchableOpacity
-            onPress={async () => {
-              let allData = await onGetSpecificDoctor(item.id);
-              console.log('Get Value Of Doctor::', allData);
-              const matchingKey = Object.entries(
-                allData.doctorsDepartments,
-              ).find(
-                ([key, value]) =>
-                  value === allData?.doctor_detail?.doctor_department,
-              )?.[0];
-              const [first, last] =
-                allData.doctor_detail.doctor_name.split(' ');
-              setEditId(allData?.doctor_detail?.id);
-              setFirstName(first);
-              setLastName(last);
-              if (isImageFormat(allData?.doctor_detail?.doctor_image)) {
-                setAvatar(
-                  parseFileFromUrl(allData?.doctor_detail?.doctor_image),
-                );
-              }
-              setGenderType(
-                allData?.doctor_detail?.gender == 'Female' ? 'female' : 'male',
-              );
-              setDateOfBirth(new Date(allData?.doctor_detail?.date_of_birth));
-              setDoctorContact(allData?.doctor_detail?.phone);
-              setDoctorEmail(allData?.doctor_detail?.email);
-              setDescription(allData?.doctor_detail?.description);
-              setQualification(allData?.doctor_detail?.qualification);
-              setSpecialist(allData?.doctor_detail?.specialist);
-              setBloodSelected(allData?.doctor_detail?.blood_group);
-              console.log('Get ImageLLLL', matchingKey);
-              setPractice(matchingKey);
-              setDoctorSelectedName(allData?.doctor_detail?.doctor_department);
-              setCharge(`${allData?.doctor_detail?.appointment_charge}`);
-              setDesignation(allData?.doctor_detail?.designation);
-              setAddress1(allData?.doctor_detail?.address1);
-              setAddress2(allData?.doctor_detail?.address2);
-              setDoctorCity(allData?.doctor_detail?.city);
-              setDoctorZip(allData?.doctor_detail?.zip);
-              setAddDoctorVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
+        {doctorAction.includes('status') && (
+          <View
+            style={[styles.switchView, {width: isPortrait ? wp(16) : wp(14)}]}>
+            <Switch
+              trackColor={{
+                false: item.status == 1 ? COLORS.greenColor : COLORS.errorColor,
+                true: item.status == 1 ? COLORS.greenColor : COLORS.errorColor,
+              }}
+              thumbColor={item.status == 1 ? '#f4f3f4' : '#f4f3f4'}
+              ios_backgroundColor={COLORS.errorColor}
+              onValueChange={() => onStatusChange(item, index)}
+              value={item.status == 1 ? true : false}
             />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={{marginLeft: wp(2)}}
-            onPress={() => {
-              setEditId(item.id);
-              setDeleteUser(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+          </View>
+        )}
+        {doctorAction.includes('edit') ||
+          (doctorAction.includes('delete') && (
+            <View
+              style={[
+                styles.actionDataView,
+                {width: isPortrait ? wp(20) : wp(18)},
+              ]}>
+              {doctorAction.includes('edit') && (
+                <TouchableOpacity
+                  onPress={async () => {
+                    let allData = await onGetSpecificDoctor(item.id);
+                    console.log('Get Value Of Doctor::', allData);
+                    const matchingKey = Object.entries(
+                      allData.doctorsDepartments,
+                    ).find(
+                      ([key, value]) =>
+                        value === allData?.doctor_detail?.doctor_department,
+                    )?.[0];
+                    const [first, last] =
+                      allData.doctor_detail.doctor_name.split(' ');
+                    setEditId(allData?.doctor_detail?.id);
+                    setFirstName(first);
+                    setLastName(last);
+                    if (isImageFormat(allData?.doctor_detail?.doctor_image)) {
+                      setAvatar(
+                        parseFileFromUrl(allData?.doctor_detail?.doctor_image),
+                      );
+                    }
+                    setGenderType(
+                      allData?.doctor_detail?.gender == 'Female'
+                        ? 'female'
+                        : 'male',
+                    );
+                    setDateOfBirth(
+                      new Date(allData?.doctor_detail?.date_of_birth),
+                    );
+                    setDoctorContact(allData?.doctor_detail?.phone);
+                    setDoctorEmail(allData?.doctor_detail?.email);
+                    setDescription(allData?.doctor_detail?.description);
+                    setQualification(allData?.doctor_detail?.qualification);
+                    setSpecialist(allData?.doctor_detail?.specialist);
+                    setBloodSelected(allData?.doctor_detail?.blood_group);
+                    console.log('Get ImageLLLL', matchingKey);
+                    setPractice(matchingKey);
+                    setDoctorSelectedName(
+                      allData?.doctor_detail?.doctor_department,
+                    );
+                    setCharge(`${allData?.doctor_detail?.appointment_charge}`);
+                    setDesignation(allData?.doctor_detail?.designation);
+                    setAddress1(allData?.doctor_detail?.address1);
+                    setAddress2(allData?.doctor_detail?.address2);
+                    setDoctorCity(allData?.doctor_detail?.city);
+                    setDoctorZip(allData?.doctor_detail?.zip);
+                    setAddDoctorVisible(true);
+                  }}>
+                  <Image
+                    style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                    source={editing}
+                  />
+                </TouchableOpacity>
+              )}
+              {doctorAction.includes('delete') && (
+                <TouchableOpacity
+                  style={{marginLeft: wp(2)}}
+                  onPress={() => {
+                    setEditId(item.id);
+                    setDeleteUser(true);
+                  }}>
+                  <Image
+                    style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                    source={deleteIcon}
+                  />
+                </TouchableOpacity>
+              )}
+            </View>
+          ))}
       </View>
     );
   };
@@ -454,9 +483,11 @@ const DoctorComponent = ({
                 }}>
                 <MenuTrigger text={''} />
                 <MenuOptions style={{marginVertical: hp(0.5)}}>
-                  <MenuOption value={'add'}>
-                    <Text style={styles.dataHistoryText3}>New Doctor</Text>
-                  </MenuOption>
+                  {doctorAction.includes('create') && (
+                    <MenuOption value={'add'}>
+                      <Text style={styles.dataHistoryText3}>New Doctor</Text>
+                    </MenuOption>
+                  )}
                   <MenuOption value={'excel'}>
                     <Text style={styles.dataHistoryText3}>Export to Excel</Text>
                   </MenuOption>
@@ -537,6 +568,7 @@ const DoctorComponent = ({
             <ScrollView
               horizontal
               bounces={false}
+              style={{width: '100%'}}
               showsHorizontalScrollIndicator={false}>
               <View>
                 <View
@@ -554,31 +586,49 @@ const DoctorComponent = ({
                   <Text
                     style={[
                       styles.titleText,
-                      {width: isPortrait ? wp(24) : wp(20)},
+                      {
+                        width: isPortrait
+                          ? wp(24)
+                          : doctorAction.includes('edit') ||
+                            doctorAction.includes('delete')
+                          ? wp(20)
+                          : wp(42),
+                      },
                     ]}>
                     {'SPECIALIST'}
                   </Text>
                   <Text
                     style={[
                       styles.titleText,
-                      {width: isPortrait ? wp(28) : wp(26)},
+                      {
+                        width: isPortrait
+                          ? wp(28)
+                          : doctorAction.includes('status')
+                          ? wp(26)
+                          : wp(44),
+                      },
                     ]}>
                     {'QUALIFICATION'}
                   </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: isPortrait ? wp(16) : wp(14)},
-                    ]}>
-                    {'STATUS'}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: isPortrait ? wp(20) : wp(18)},
-                    ]}>
-                    {'ACTION'}
-                  </Text>
+                  {doctorAction.includes('status') && (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: isPortrait ? wp(16) : wp(14)},
+                      ]}>
+                      {'STATUS'}
+                    </Text>
+                  )}
+                  {doctorAction.includes('edit') ||
+                    (doctorAction.includes('delete') && (
+                      <Text
+                        style={[
+                          styles.titleText,
+                          {width: isPortrait ? wp(20) : wp(18)},
+                        ]}>
+                        {'ACTION'}
+                      </Text>
+                    ))}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList
@@ -1663,6 +1713,7 @@ const portraitStyles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     alignSelf: 'flex-start',
+    justifyContent: 'space-between',
   },
   dataHistoryText: {
     fontSize: hp(1.8),
@@ -2118,6 +2169,7 @@ const landscapeStyles = StyleSheet.create({
     flexDirection: 'row',
     marginTop: hp(1),
     paddingBottom: hp(0.5),
+    justifyContent: 'space-between',
   },
   titleText: {
     fontSize: hp(1.7),

@@ -57,6 +57,7 @@ const HolidayComponent = ({
   pageCount,
   setPageCount,
   totalPage,
+  holidayAction,
 }) => {
   const doctorData = useSelector(state => state.doctorData);
   const {theme} = useTheme();
@@ -86,21 +87,33 @@ const HolidayComponent = ({
         <Text style={[styles.dataHistoryText, {width: wp(25)}]}>
           {item.reason}
         </Text>
-        <Text style={[styles.dataHistoryText, {width: wp(30)}]}>
+        <Text
+          style={[
+            styles.dataHistoryText,
+            {
+              width: isPortrait
+                ? wp(30)
+                : holidayAction.includes('delete')
+                ? wp(30)
+                : wp(47),
+            },
+          ]}>
           {item.date}
         </Text>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={() => {
-              setEditId(item.id);
-              setDeleteUser(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        {holidayAction.includes('delete') && (
+          <View style={styles.actionDataView}>
+            <TouchableOpacity
+              onPress={() => {
+                setEditId(item.id);
+                setDeleteUser(true);
+              }}>
+              <Image
+                style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                source={deleteIcon}
+              />
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
     );
   };
@@ -181,18 +194,20 @@ const HolidayComponent = ({
               style={[styles.searchView, {color: theme.text}]}
             />
             <View style={styles.filterView}>
-              <TouchableOpacity
-                onPress={() => {
-                  setEditId('');
-                  setDoctorName('');
-                  setDoctorSelectedName('');
-                  setHolidayDate(new Date());
-                  setHolidayReason('');
-                  setAddHolidayVisible(true);
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>Add Holiday</Text>
-              </TouchableOpacity>
+              {holidayAction.includes('create') && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setEditId('');
+                    setDoctorName('');
+                    setDoctorSelectedName('');
+                    setHolidayDate(new Date());
+                    setHolidayReason('');
+                    setAddHolidayVisible(true);
+                  }}
+                  style={styles.actionView}>
+                  <Text style={styles.actionText}>Add Holiday</Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
           <View
@@ -213,12 +228,24 @@ const HolidayComponent = ({
                   <Text style={[styles.titleText1, {width: wp(25)}]}>
                     {'REASON'}
                   </Text>
-                  <Text style={[styles.titleText1, {width: wp(30)}]}>
+                  <Text
+                    style={[
+                      styles.titleText1,
+                      {
+                        width: isPortrait
+                          ? wp(30)
+                          : holidayAction.includes('delete')
+                          ? wp(30)
+                          : wp(47),
+                      },
+                    ]}>
                     {'DATE'}
                   </Text>
-                  <Text style={[styles.titleText1, {width: wp(15)}]}>
-                    {'ACTION'}
-                  </Text>
+                  {holidayAction.includes('delete') && (
+                    <Text style={[styles.titleText1, {width: wp(15)}]}>
+                      {'ACTION'}
+                    </Text>
+                  )}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

@@ -66,6 +66,7 @@ const PharmacistsList = ({
   totalPage,
   setStatusId,
   statusId,
+  pharmacistAction,
 }) => {
   const orientation = useOrientation(); // Get current orientation
   const isPortrait = orientation === 'portrait';
@@ -414,7 +415,17 @@ const PharmacistsList = ({
           styles.dataHistoryView,
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
-        <View style={[styles.nameDataView]}>
+        <View
+          style={[
+            styles.nameDataView,
+            {
+              width: isPortrait
+                ? wp(55)
+                : pharmacistAction.includes('status')
+                ? wp(55)
+                : wp(83),
+            },
+          ]}>
           {item.name && (
             <ProfilePhoto style={styles.photoStyle} username={item.name} />
           )}
@@ -424,70 +435,94 @@ const PharmacistsList = ({
           </View>
         </View>
         <Text
-          style={[styles.dataHistoryText, {width: wp(27), textAlign: 'left'}]}>
+          style={[
+            styles.dataHistoryText,
+            {
+              width: isPortrait
+                ? wp(32)
+                : pharmacistAction.includes('edit') ||
+                  pharmacistAction.includes('delete')
+                ? wp(27)
+                : wp(47),
+              textAlign: 'left',
+            },
+          ]}>
           {item.blood}
         </Text>
-        <View style={[styles.switchView]}>
-          <Switch
-            trackColor={{
-              false:
-                item.status == 'Active' ? COLORS.greenColor : COLORS.errorColor,
-              true:
-                item.status == 'Active' ? COLORS.greenColor : COLORS.errorColor,
-            }}
-            thumbColor={item.status == 'Active' ? '#f4f3f4' : '#f4f3f4'}
-            ios_backgroundColor={COLORS.errorColor}
-            onValueChange={() => {}}
-            value={item.status == 'Active' ? true : false}
-          />
-        </View>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={async () => {
-              let allData = await onGetSpecificDoctor(item.id);
-              setUserId(item.id);
-              const [first, last] = item.name.split(',');
-              setFirstName(first);
-              setLastName(last);
-              if (isImageFormat(item?.image_url)) {
-                setAvatar(parseFileFromUrl(item?.image_url));
-              }
-              setEmail(item.email);
-              setDesignation(allData.designation);
-              if (allData.dob != null) {
-                setDateOfBirth(new Date(allData.dob));
-              }
-              setGenderType(allData.gender == 0 ? 'male' : 'female');
-              setAddress(allData.address1);
-              setCity(allData.city);
-              setAddress1(allData.address2);
-              setPostalCode(allData.postal_code);
-              setQualification(allData.qualification);
-              setNumber(allData.phone);
-              setStatus(allData.status == 'Active' ? true : false);
-              if (allData?.blood_group != null) {
-                setBloodSelected(allData?.blood_group);
-              }
-              setCountry(allData.country);
-              setNewUserVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
+        {pharmacistAction.includes('status') && (
+          <View style={[styles.switchView]}>
+            <Switch
+              trackColor={{
+                false:
+                  item.status == 'Active'
+                    ? COLORS.greenColor
+                    : COLORS.errorColor,
+                true:
+                  item.status == 'Active'
+                    ? COLORS.greenColor
+                    : COLORS.errorColor,
+              }}
+              thumbColor={item.status == 'Active' ? '#f4f3f4' : '#f4f3f4'}
+              ios_backgroundColor={COLORS.errorColor}
+              onValueChange={() => {}}
+              value={item.status == 'Active' ? true : false}
             />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+          </View>
+        )}
+        {pharmacistAction.includes('edit') ||
+          (pharmacistAction.includes('delete') && (
+            <View style={styles.actionDataView}>
+              {pharmacistAction.includes('edit') && (
+                <TouchableOpacity
+                  onPress={async () => {
+                    let allData = await onGetSpecificDoctor(item.id);
+                    setUserId(item.id);
+                    const [first, last] = item.name.split(',');
+                    setFirstName(first);
+                    setLastName(last);
+                    if (isImageFormat(item?.image_url)) {
+                      setAvatar(parseFileFromUrl(item?.image_url));
+                    }
+                    setEmail(item.email);
+                    setDesignation(allData.designation);
+                    if (allData.dob != null) {
+                      setDateOfBirth(new Date(allData.dob));
+                    }
+                    setGenderType(allData.gender == 0 ? 'male' : 'female');
+                    setAddress(allData.address1);
+                    setCity(allData.city);
+                    setAddress1(allData.address2);
+                    setPostalCode(allData.postal_code);
+                    setQualification(allData.qualification);
+                    setNumber(allData.phone);
+                    setStatus(allData.status == 'Active' ? true : false);
+                    if (allData?.blood_group != null) {
+                      setBloodSelected(allData?.blood_group);
+                    }
+                    setCountry(allData.country);
+                    setNewUserVisible(true);
+                  }}>
+                  <Image
+                    style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                    source={editing}
+                  />
+                </TouchableOpacity>
+              )}
+              {pharmacistAction.includes('delete') && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setUserId(item.id);
+                    setDeleteUser(true);
+                  }}
+                  style={{marginLeft: wp(2)}}>
+                  <Image
+                    style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                    source={deleteIcon}
+                  />
+                </TouchableOpacity>
+              )}
+            </View>
+          ))}
       </View>
     );
   };
@@ -513,32 +548,34 @@ const PharmacistsList = ({
                   onPress={() => setFilterVisible(true)}>
                   <Image style={styles.filterImage} source={filter} />
                 </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => {
-                    setUserId('');
-                    setFirstName('');
-                    setLastName('');
-                    setEmail('');
-                    setDesignation('');
-                    setDateOfBirth(new Date());
-                    setGenderType('female');
-                    setAddress('');
-                    setCity('');
-                    setCountry('');
-                    setPostalCode('');
-                    setAvatar(null);
-                    setAddress1('');
-                    setPassword('');
-                    setConfirmPassword('');
-                    setBloodSelected('');
-                    setQualification('');
-                    setErrorMessage('');
-                    setErrorVisible(false);
-                    setNewUserVisible(true);
-                  }}
-                  style={styles.actionView}>
-                  <Text style={styles.actionText}>New Pharmacists</Text>
-                </TouchableOpacity>
+                {pharmacistAction.includes('create') && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setUserId('');
+                      setFirstName('');
+                      setLastName('');
+                      setEmail('');
+                      setDesignation('');
+                      setDateOfBirth(new Date());
+                      setGenderType('female');
+                      setAddress('');
+                      setCity('');
+                      setCountry('');
+                      setPostalCode('');
+                      setAvatar(null);
+                      setAddress1('');
+                      setPassword('');
+                      setConfirmPassword('');
+                      setBloodSelected('');
+                      setQualification('');
+                      setErrorMessage('');
+                      setErrorVisible(false);
+                      setNewUserVisible(true);
+                    }}
+                    style={styles.actionView}>
+                    <Text style={styles.actionText}>New Pharmacists</Text>
+                  </TouchableOpacity>
+                )}
                 <Modal
                   animationType="none"
                   transparent={true}
@@ -608,32 +645,34 @@ const PharmacistsList = ({
                 onPress={() => setFilterVisible(true)}>
                 <Image style={styles.filterImage} source={filter} />
               </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => {
-                  setUserId('');
-                  setFirstName('');
-                  setLastName('');
-                  setEmail('');
-                  setDesignation('');
-                  setDateOfBirth(new Date());
-                  setGenderType('female');
-                  setAddress('');
-                  setCity('');
-                  setCountry('');
-                  setPostalCode('');
-                  setAvatar(null);
-                  setAddress1('');
-                  setPassword('');
-                  setConfirmPassword('');
-                  setBloodSelected('');
-                  setQualification('');
-                  setErrorMessage('');
-                  setErrorVisible(false);
-                  setNewUserVisible(true);
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>New Pharmacists</Text>
-              </TouchableOpacity>
+              {pharmacistAction.includes('create') && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setUserId('');
+                    setFirstName('');
+                    setLastName('');
+                    setEmail('');
+                    setDesignation('');
+                    setDateOfBirth(new Date());
+                    setGenderType('female');
+                    setAddress('');
+                    setCity('');
+                    setCountry('');
+                    setPostalCode('');
+                    setAvatar(null);
+                    setAddress1('');
+                    setPassword('');
+                    setConfirmPassword('');
+                    setBloodSelected('');
+                    setQualification('');
+                    setErrorMessage('');
+                    setErrorVisible(false);
+                    setNewUserVisible(true);
+                  }}
+                  style={styles.actionView}>
+                  <Text style={styles.actionText}>New Pharmacists</Text>
+                </TouchableOpacity>
+              )}
               <Modal
                 animationType="none"
                 transparent={true}
@@ -707,18 +746,44 @@ const PharmacistsList = ({
                     styles.titleActiveView,
                     {backgroundColor: theme.headerColor},
                   ]}>
-                  <Text style={[styles.titleText, {width: wp(55)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {
+                        width: isPortrait
+                          ? wp(55)
+                          : pharmacistAction.includes('status')
+                          ? wp(55)
+                          : wp(83),
+                      },
+                    ]}>
                     {'PHARMACISTS'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(27)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {
+                        width: isPortrait
+                          ? wp(32)
+                          : pharmacistAction.includes('edit') ||
+                            pharmacistAction.includes('delete')
+                          ? wp(27)
+                          : wp(47),
+                      },
+                    ]}>
                     {'BLOOD GROUP'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(24)}]}>
-                    {'STATUS'}
-                  </Text>
-                  <Text style={[styles.titleText, {width: wp(16)}]}>
-                    {'ACTION'}
-                  </Text>
+                  {pharmacistAction.includes('status') && (
+                    <Text style={[styles.titleText, {width: wp(24)}]}>
+                      {'STATUS'}
+                    </Text>
+                  )}
+                  {pharmacistAction.includes('edit') ||
+                    (pharmacistAction.includes('delete') && (
+                      <Text style={[styles.titleText, {width: wp(16)}]}>
+                        {'ACTION'}
+                      </Text>
+                    ))}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList
