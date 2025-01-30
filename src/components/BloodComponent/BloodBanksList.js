@@ -42,6 +42,7 @@ const BloodBanksList = ({
   pageCount,
   setPageCount,
   totalPage,
+  bloodBankAction,
 }) => {
   const {theme} = useTheme();
   const orientation = useOrientation();
@@ -220,31 +221,38 @@ const BloodBanksList = ({
         <View style={[styles.nameDataView, {width: wp(33)}]}>
           <Text style={[styles.dataHistoryText2]}>{item.remained_bags}</Text>
         </View>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setEventTitle(item.blood_group);
-              setDepartmentComment(`${item.remained_bags}`);
-              setNewAccountVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        {bloodBankAction.includes('edit') ||
+        bloodBankAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {bloodBankAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setEventTitle(item.blood_group);
+                  setDepartmentComment(`${item.remained_bags}`);
+                  setNewAccountVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {bloodBankAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: wp(2)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -264,15 +272,17 @@ const BloodBanksList = ({
               style={[styles.searchView, {color: theme.text}]}
             />
             <View style={styles.filterView}>
-              <TouchableOpacity
-                onPress={() => {
-                  setNewAccountVisible(true);
-                  setEventTitle('');
-                  setDepartmentComment('');
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>New Blood Group</Text>
-              </TouchableOpacity>
+              {bloodBankAction.includes('create') && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setNewAccountVisible(true);
+                    setEventTitle('');
+                    setDepartmentComment('');
+                  }}
+                  style={styles.actionView}>
+                  <Text style={styles.actionText}>New Blood Group</Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
           <View
@@ -288,9 +298,12 @@ const BloodBanksList = ({
               <Text style={[styles.titleText, {width: wp(33)}]}>
                 {'REMAINING BAGS'}
               </Text>
-              <Text style={[styles.titleText, {width: wp(16)}]}>
-                {'ACTION'}
-              </Text>
+              {bloodBankAction.includes('edit') ||
+              bloodBankAction.includes('delete') ? (
+                <Text style={[styles.titleText, {width: wp(16)}]}>
+                  {'ACTION'}
+                </Text>
+              ) : null}
             </View>
             <View style={styles.mainDataView}>
               <FlatList

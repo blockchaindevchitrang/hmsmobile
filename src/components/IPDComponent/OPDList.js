@@ -57,6 +57,7 @@ const OPDList = ({
   totalPage,
   pageCount,
   setPageCount,
+  opdAction,
 }) => {
   const orientation = useOrientation(); // Get current orientation
   const isPortrait = orientation === 'portrait';
@@ -304,19 +305,21 @@ const OPDList = ({
             <Text style={[styles.dataListText1]}>{item.payment_mode}</Text>
           </View>
         </View>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        {opdAction.includes('delete') && (
+          <View style={styles.actionDataView}>
+            <TouchableOpacity
+              onPress={() => {
+                setUserId(item.id);
+                setDeleteUser(true);
+              }}
+              style={{marginLeft: wp(2)}}>
+              <Image
+                style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                source={deleteIcon}
+              />
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
     );
   };
@@ -337,6 +340,42 @@ const OPDList = ({
             />
             {!isPortrait && (
               <View style={styles.filterView}>
+                {opdAction.includes('edit') && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setUserId('');
+                      setAllCaseData([]);
+                      setPatientId('');
+                      setPatientName('');
+                      setCaseName('');
+                      setCaseId('');
+                      setHeight('0');
+                      setWeight('0');
+                      setBloodPressure('');
+                      setAdmissionDate(new Date());
+                      setDoctorId('');
+                      setDoctorName('');
+                      setCharge('');
+                      setPaymentId('');
+                      setPaymentName('');
+                      setOldPatient('');
+                      setSymptoms('');
+                      setDescription('');
+                      setHistory('');
+                      setErrorMessage('');
+                      setErrorVisible(false);
+                      setNewBloodIssueVisible(true);
+                    }}
+                    style={styles.actionView}>
+                    <Text style={styles.actionText}>New OPD Patient</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+          </View>
+          {isPortrait && (
+            <View style={styles.filterView}>
+              {opdAction.includes('edit') && (
                 <TouchableOpacity
                   onPress={() => {
                     setUserId('');
@@ -365,39 +404,7 @@ const OPDList = ({
                   style={styles.actionView}>
                   <Text style={styles.actionText}>New OPD Patient</Text>
                 </TouchableOpacity>
-              </View>
-            )}
-          </View>
-          {isPortrait && (
-            <View style={styles.filterView}>
-              <TouchableOpacity
-                onPress={() => {
-                  setUserId('');
-                  setAllCaseData([]);
-                  setPatientId('');
-                  setPatientName('');
-                  setCaseName('');
-                  setCaseId('');
-                  setHeight('0');
-                  setWeight('0');
-                  setBloodPressure('');
-                  setAdmissionDate(new Date());
-                  setDoctorId('');
-                  setDoctorName('');
-                  setCharge('');
-                  setPaymentId('');
-                  setPaymentName('');
-                  setOldPatient('');
-                  setSymptoms('');
-                  setDescription('');
-                  setHistory('');
-                  setErrorMessage('');
-                  setErrorVisible(false);
-                  setNewBloodIssueVisible(true);
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>New OPD Patient</Text>
-              </TouchableOpacity>
+              )}
             </View>
           )}
           <View
@@ -454,13 +461,15 @@ const OPDList = ({
                     ]}>
                     {'PAYMENT MODE'}
                   </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: isPortrait ? wp(16) : wp(10)},
-                    ]}>
-                    {'ACTION'}
-                  </Text>
+                  {opdAction.includes('delete') && (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: isPortrait ? wp(16) : wp(10)},
+                      ]}>
+                      {'ACTION'}
+                    </Text>
+                  )}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

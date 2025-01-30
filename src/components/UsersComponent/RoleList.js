@@ -438,32 +438,31 @@ const RoleList = ({
           ]}>
           {item?.permissions?.join(',  ')}
         </Text>
-        {roleAction.includes('edit') ||
-          (roleAction.includes('delete') && (
-            <View style={styles.actionDataView}>
-              {roleAction.includes('edit') && (
-                <TouchableOpacity onPress={() => onGetSpecificModules(item.id)}>
-                  <Image
-                    style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-                    source={editing}
-                  />
-                </TouchableOpacity>
-              )}
-              {roleAction.includes('delete') && (
-                <TouchableOpacity
-                  onPress={() => {
-                    setUserId(item.id);
-                    setDeleteUser(true);
-                  }}
-                  style={{marginLeft: wp(2)}}>
-                  <Image
-                    style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-                    source={deleteIcon}
-                  />
-                </TouchableOpacity>
-              )}
-            </View>
-          ))}
+        {roleAction.includes('edit') || roleAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {roleAction.includes('edit') && (
+              <TouchableOpacity onPress={() => onGetSpecificModules(item.id)}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {roleAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: wp(2)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -785,15 +784,15 @@ const RoleList = ({
                     {'PERMISSIONS'}
                   </Text>
                   {roleAction.includes('edit') ||
-                    (roleAction.includes('delete') && (
-                      <Text
-                        style={[
-                          styles.titleText,
-                          {width: wp(16), textAlign: 'center'},
-                        ]}>
-                        {'ACTION'}
-                      </Text>
-                    ))}
+                  roleAction.includes('delete') ? (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: wp(16), textAlign: 'center'},
+                      ]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

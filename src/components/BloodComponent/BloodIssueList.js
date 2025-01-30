@@ -56,6 +56,7 @@ const BloodIssueList = ({
   totalPage,
   bloodDonorData,
   bloodBankData,
+  issueAction,
 }) => {
   const orientation = useOrientation();
   const isPortrait = orientation === 'portrait';
@@ -247,20 +248,26 @@ const BloodIssueList = ({
           ]}>
           {item.amount}
         </Text>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        {issueAction.includes('edit') || issueAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {issueAction.includes('edit') && (
+              <TouchableOpacity>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {issueAction.includes('delete') && (
+              <TouchableOpacity style={{marginLeft: wp(2)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -310,9 +317,13 @@ const BloodIssueList = ({
                 }}>
                 <MenuTrigger text={''} />
                 <MenuOptions style={{marginVertical: hp(0.5)}}>
-                  <MenuOption value={'add'}>
-                    <Text style={styles.dataHistoryText3}>New Blood Issue</Text>
-                  </MenuOption>
+                  {issueAction.includes('create') && (
+                    <MenuOption value={'add'}>
+                      <Text style={styles.dataHistoryText3}>
+                        New Blood Issue
+                      </Text>
+                    </MenuOption>
+                  )}
                   <MenuOption value={'excel'}>
                     <Text style={styles.dataHistoryText3}>Export to Excel</Text>
                   </MenuOption>
@@ -374,13 +385,16 @@ const BloodIssueList = ({
                     ]}>
                     {'AMOUNT'}
                   </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: isPortrait ? wp(16) : wp(12)},
-                    ]}>
-                    {'ACTION'}
-                  </Text>
+                  {issueAction.includes('edit') ||
+                  issueAction.includes('delete') ? (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: isPortrait ? wp(16) : wp(12)},
+                      ]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

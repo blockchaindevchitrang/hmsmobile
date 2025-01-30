@@ -33,8 +33,18 @@ import {
   onGetCommonApi,
 } from '../../services/Api';
 import useOrientation from '../../components/OrientationComponent';
+import {useSelector} from 'react-redux';
+
+let arrayData = [
+  'Logo',
+  'Blood Banks',
+  'Blood Donors',
+  'Blood Donations',
+  'Blood Issues',
+];
 
 export const BloodBankScreen = ({navigation}) => {
+  const rolePermission = useSelector(state => state.rolePermission);
   const {t} = useTranslation();
   const {theme} = useTheme();
   const orientation = useOrientation(); // Get current orientation
@@ -56,6 +66,74 @@ export const BloodBankScreen = ({navigation}) => {
   const [bloodDonorPage, setBloodDonorPage] = useState('1');
   const [donationPage, setDonationPage] = useState('1');
   const [bloodIssuePage, setBloodIssuePage] = useState('1');
+  const [bloodBankAction, setBloodBankAction] = useState([]);
+  const [donorAction, setDonorAction] = useState([]);
+  const [donationAction, setDonationAction] = useState([]);
+  const [issueAction, setIssueAction] = useState([]);
+
+  useEffect(() => {
+    const visibility = {
+      bloodBankVisible: false,
+      donorVisible: false,
+      donationVisible: false,
+      issueVisible: false,
+    };
+
+    // Helper function to process privileges
+    const processPrivileges = (
+      privileges,
+      endPoint,
+      setAction,
+      visibilityKey,
+    ) => {
+      const privilege = privileges.find(item => item.end_point === endPoint);
+      if (privilege) {
+        setAction(privilege.action.split(',').map(action => action.trim()));
+        visibility[visibilityKey] = true;
+      }
+    };
+
+    // Iterate over role permissions
+    rolePermission.forEach(item => {
+      if (item.main_module === 'Blood Banks') {
+        processPrivileges(
+          item.privileges,
+          'blood_banks',
+          setBloodBankAction,
+          'bloodBankVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'blooddonar',
+          setDonorAction,
+          'donorVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'blood_donations',
+          setDonationAction,
+          'donationVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'blood_issues',
+          setIssueAction,
+          'issueVisible',
+        );
+        // Handle arrayData based on visibility
+        const {bloodBankVisible, donorVisible, donationVisible, issueVisible} =
+          visibility;
+        console.log('Get Value::::>>>', visibility);
+        arrayData = [
+          'Logo',
+          bloodBankVisible && 'Blood Banks',
+          donorVisible && 'Blood Donors',
+          donationVisible && 'Blood Donations',
+          issueVisible && 'Blood Issues',
+        ].filter(Boolean);
+      }
+    });
+  }, [rolePermission]);
 
   const animations = useRef(
     [0, 0, 0, 0, 0].map(() => new Animated.Value(300)),
@@ -210,6 +288,7 @@ export const BloodBankScreen = ({navigation}) => {
             pageCount={pageCount}
             setPageCount={setPageCount}
             totalPage={totalPage}
+            bloodBankAction={bloodBankAction}
           />
         ) : selectedView == 'Blood Donors' ? (
           <BloodDonorList
@@ -220,6 +299,7 @@ export const BloodBankScreen = ({navigation}) => {
             pageCount={pageCount}
             setPageCount={setPageCount}
             totalPage={bloodDonorPage}
+            donorAction={donorAction}
           />
         ) : selectedView == 'Blood Donations' ? (
           <BloodDonationList
@@ -230,6 +310,7 @@ export const BloodBankScreen = ({navigation}) => {
             pageCount={pageCount}
             setPageCount={setPageCount}
             totalPage={donationPage}
+            donationAction={donationAction}
           />
         ) : (
           selectedView == 'Blood Issues' && (
@@ -243,6 +324,7 @@ export const BloodBankScreen = ({navigation}) => {
               totalPage={bloodIssuePage}
               bloodDonorData={bloodDonorData}
               bloodBankData={bloodBankData}
+              issueAction={issueAction}
             />
           )
         )}
@@ -263,13 +345,7 @@ export const BloodBankScreen = ({navigation}) => {
 
             <View style={styles.mainModalView}>
               <View style={styles.menuContainer}>
-                {[
-                  'Logo',
-                  'Blood Banks',
-                  'Blood Donors',
-                  'Blood Donations',
-                  'Blood Issues',
-                ].map((option, index) => (
+                {arrayData.map((option, index) => (
                   <>
                     {option == 'Logo' ? (
                       <Animated.View

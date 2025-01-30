@@ -64,6 +64,7 @@ const AccountList = ({
   statusId,
   setTypeId,
   typeId,
+  accountAction,
 }) => {
   const {theme} = useTheme();
   const menuRef = useRef(null);
@@ -146,57 +147,69 @@ const AccountList = ({
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
         <View
-          style={[styles.nameDataView, {width: isPortrait ? wp(35) : wp(40)}]}>
+          style={[styles.nameDataView, {width: isPortrait ? accountAction.includes('edit') || accountAction.includes('delete') ? wp(35) : wp(60) : accountAction.includes('edit') || accountAction.includes('delete') ? wp(40) : wp(60)}]}>
           <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
         </View>
         <View
-          style={[styles.switchView, {width: isPortrait ? wp(22) : wp(35.1)}]}>
+          style={[styles.switchView, {width: isPortrait ? accountAction.includes('status') ? wp(22) : wp(30) : accountAction.includes('status') ? wp(35.1) : wp(70.1)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
             <Text style={[styles.dataHistoryText]}>{item.type}</Text>
           </View>
         </View>
-        <View
-          style={[styles.switchView, {width: isPortrait ? wp(20) : wp(31)}]}>
-          <Switch
-            trackColor={{
-              false:
-                item.status == 'Active' ? COLORS.greenColor : COLORS.errorColor,
-              true:
-                item.status == 'Active' ? COLORS.greenColor : COLORS.errorColor,
-            }}
-            thumbColor={item.status ? '#f4f3f4' : '#f4f3f4'}
-            ios_backgroundColor={COLORS.errorColor}
-            onValueChange={() => {}}
-            value={item.status == 'Active' ? true : false}
-          />
-        </View>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={async () => {
-              setUserId(item.id);
-              setEventTitle(item.name);
-              setDepartmentComment(item.description);
-              setDepartmentType(item.type == 'Debit' ? 'debit' : 'credit');
-              setStatusVisible(item.status == 'Active' ? true : false);
-              setNewAccountVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
+        {accountAction.includes('status') && (
+          <View
+            style={[styles.switchView, {width: isPortrait ? wp(20) : wp(31)}]}>
+            <Switch
+              trackColor={{
+                false:
+                  item.status == 'Active'
+                    ? COLORS.greenColor
+                    : COLORS.errorColor,
+                true:
+                  item.status == 'Active'
+                    ? COLORS.greenColor
+                    : COLORS.errorColor,
+              }}
+              thumbColor={item.status ? '#f4f3f4' : '#f4f3f4'}
+              ios_backgroundColor={COLORS.errorColor}
+              onValueChange={() => {}}
+              value={item.status == 'Active' ? true : false}
             />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+          </View>
+        )}
+        {accountAction.includes('edit') || accountAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {accountAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={async () => {
+                  setUserId(item.id);
+                  setEventTitle(item.name);
+                  setDepartmentComment(item.description);
+                  setDepartmentType(item.type == 'Debit' ? 'debit' : 'credit');
+                  setStatusVisible(item.status == 'Active' ? true : false);
+                  setNewAccountVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {accountAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: wp(2)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -260,9 +273,11 @@ const AccountList = ({
                 }}>
                 <MenuTrigger text={''} />
                 <MenuOptions style={{marginVertical: hp(0.5)}}>
-                  <MenuOption value={'add'}>
-                    <Text style={styles.dataHistoryText3}>New Account</Text>
-                  </MenuOption>
+                  {accountAction.includes('create') && (
+                    <MenuOption value={'add'}>
+                      <Text style={styles.dataHistoryText3}>New Account</Text>
+                    </MenuOption>
+                  )}
                   <MenuOption value={'excel'}>
                     <Text style={styles.dataHistoryText3}>Export to Excel</Text>
                   </MenuOption>
@@ -378,31 +393,36 @@ const AccountList = ({
                   <Text
                     style={[
                       styles.titleText,
-                      {width: isPortrait ? wp(35) : wp(40)},
+                      {width: isPortrait ? accountAction.includes('edit') || accountAction.includes('delete') ? wp(35) : wp(60) : accountAction.includes('edit') || accountAction.includes('delete') ? wp(40) : wp(60)},
                     ]}>
                     {'ACCOUNTS'}
                   </Text>
                   <Text
                     style={[
                       styles.titleText,
-                      {width: isPortrait ? wp(22) : wp(35.1)},
+                      {width: isPortrait ? accountAction.includes('status') ? wp(22) : wp(30) : accountAction.includes('status') ? wp(35.1) : wp(70.1)},
                     ]}>
                     {'TYPE'}
                   </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: isPortrait ? wp(20) : wp(31)},
-                    ]}>
-                    {'STATUS'}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: wp(16), textAlign: 'center'},
-                    ]}>
-                    {'ACTION'}
-                  </Text>
+                  {accountAction.includes('status') && (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: isPortrait ? wp(20) : wp(31)},
+                      ]}>
+                      {'STATUS'}
+                    </Text>
+                  )}
+                  {accountAction.includes('edit') ||
+                  accountAction.includes('delete') ? (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: wp(16), textAlign: 'center'},
+                      ]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

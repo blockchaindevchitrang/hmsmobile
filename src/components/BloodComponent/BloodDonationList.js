@@ -48,6 +48,7 @@ const BloodDonationList = ({
   pageCount,
   setPageCount,
   totalPage,
+  donationAction,
 }) => {
   const orientation = useOrientation();
   const isPortrait = orientation === 'portrait';
@@ -250,33 +251,40 @@ const BloodDonationList = ({
             <Text style={[styles.dataHistoryText2]}>{item.bags}</Text>
           </View>
         </View>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={async () => {
-              let allDatas = await onGetSpecificDoctor(item.id);
-              setUserId(item.id);
-              setDonorId(allDatas?.blood_donor_id);
-              setDepartmentComment(JSON.stringify(item?.bags));
-              setEventTitle(item?.blooddonor_name);
-              setNewAccountVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={{marginLeft: wp(2)}}
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        {donationAction.includes('edit') ||
+        donationAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {donationAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={async () => {
+                  let allDatas = await onGetSpecificDoctor(item.id);
+                  setUserId(item.id);
+                  setDonorId(allDatas?.blood_donor_id);
+                  setDepartmentComment(JSON.stringify(item?.bags));
+                  setEventTitle(item?.blooddonor_name);
+                  setNewAccountVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {donationAction.includes('delete') && (
+              <TouchableOpacity
+                style={{marginLeft: wp(2)}}
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -297,6 +305,27 @@ const BloodDonationList = ({
             />
             {!isPortrait && (
               <View style={styles.filterView}>
+                {donationAction.includes('create') && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setUserId('');
+                      setDonorId('');
+                      setDepartmentComment('');
+                      setEventTitle('');
+                      setErrorVisible(false);
+                      setErrorMessage('');
+                      setNewAccountVisible(true);
+                    }}
+                    style={styles.actionView}>
+                    <Text style={styles.actionText}>New Blood Donation</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+          </View>
+          {isPortrait && (
+            <View style={styles.filterView}>
+              {donationAction.includes('create') && (
                 <TouchableOpacity
                   onPress={() => {
                     setUserId('');
@@ -310,24 +339,7 @@ const BloodDonationList = ({
                   style={styles.actionView}>
                   <Text style={styles.actionText}>New Blood Donation</Text>
                 </TouchableOpacity>
-              </View>
-            )}
-          </View>
-          {isPortrait && (
-            <View style={styles.filterView}>
-              <TouchableOpacity
-                onPress={() => {
-                  setUserId('');
-                  setDonorId('');
-                  setDepartmentComment('');
-                  setEventTitle('');
-                  setErrorVisible(false);
-                  setErrorMessage('');
-                  setNewAccountVisible(true);
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>New Blood Donation</Text>
-              </TouchableOpacity>
+              )}
             </View>
           )}
           <View
@@ -345,13 +357,16 @@ const BloodDonationList = ({
                 ]}>
                 {'BAGS'}
               </Text>
-              <Text
-                style={[
-                  styles.titleText,
-                  {width: wp(16), textAlign: 'center'},
-                ]}>
-                {'ACTION'}
-              </Text>
+              {donationAction.includes('edit') ||
+              donationAction.includes('delete') ? (
+                <Text
+                  style={[
+                    styles.titleText,
+                    {width: wp(16), textAlign: 'center'},
+                  ]}>
+                  {'ACTION'}
+                </Text>
+              ) : null}
             </View>
             <View style={styles.mainDataView}>
               <FlatList

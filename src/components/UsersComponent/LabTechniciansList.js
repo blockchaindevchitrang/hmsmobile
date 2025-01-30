@@ -468,60 +468,59 @@ const LabTechniciansList = ({
             />
           </View>
         )}
-        {labAction.includes('edit') ||
-          (labAction.includes('delete') && (
-            <View style={styles.actionDataView}>
-              {labAction.includes('edit') && (
-                <TouchableOpacity
-                  onPress={async () => {
-                    let allData = await onGetSpecificDoctor(item.id);
-                    setUserId(item.id);
-                    const [first, last] = item.name.split(',');
-                    setFirstName(first);
-                    setLastName(last);
-                    if (isImageFormat(item?.image_url)) {
-                      setAvatar(parseFileFromUrl(item?.image_url));
-                    }
-                    setEmail(item.email);
-                    setDesignation(allData.designation);
-                    if (allData.dob != null) {
-                      setDateOfBirth(new Date(allData.dob));
-                    }
-                    setGenderType(allData.gender == 0 ? 'male' : 'female');
-                    setAddress(allData.address1);
-                    setCity(allData.city);
-                    setAddress1(allData.address2);
-                    setPostalCode(allData.postal_code);
-                    setQualification(allData.qualification);
-                    setNumber(allData.phone);
-                    setStatus(allData.status == 'Active' ? true : false);
-                    if (allData?.blood_group != null) {
-                      setBloodSelected(allData?.blood_group);
-                    }
-                    setCountry(allData.country);
-                    setNewUserVisible(true);
-                  }}>
-                  <Image
-                    style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-                    source={editing}
-                  />
-                </TouchableOpacity>
-              )}
-              {labAction.includes('delete') && (
-                <TouchableOpacity
-                  onPress={() => {
-                    setUserId(item.id);
-                    setDeleteUser(true);
-                  }}
-                  style={{marginLeft: wp(2)}}>
-                  <Image
-                    style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-                    source={deleteIcon}
-                  />
-                </TouchableOpacity>
-              )}
-            </View>
-          ))}
+        {labAction.includes('edit') || labAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {labAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={async () => {
+                  let allData = await onGetSpecificDoctor(item.id);
+                  setUserId(item.id);
+                  const [first, last] = item.name.split(',');
+                  setFirstName(first);
+                  setLastName(last);
+                  if (isImageFormat(item?.image_url)) {
+                    setAvatar(parseFileFromUrl(item?.image_url));
+                  }
+                  setEmail(item.email);
+                  setDesignation(allData.designation);
+                  if (allData.dob != null) {
+                    setDateOfBirth(new Date(allData.dob));
+                  }
+                  setGenderType(allData.gender == 0 ? 'male' : 'female');
+                  setAddress(allData.address1);
+                  setCity(allData.city);
+                  setAddress1(allData.address2);
+                  setPostalCode(allData.postal_code);
+                  setQualification(allData.qualification);
+                  setNumber(allData.phone);
+                  setStatus(allData.status == 'Active' ? true : false);
+                  if (allData?.blood_group != null) {
+                    setBloodSelected(allData?.blood_group);
+                  }
+                  setCountry(allData.country);
+                  setNewUserVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {labAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: wp(2)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -778,11 +777,11 @@ const LabTechniciansList = ({
                     </Text>
                   )}
                   {labAction.includes('edit') ||
-                    (labAction.includes('delete') && (
-                      <Text style={[styles.titleText, {width: wp(16)}]}>
-                        {'ACTION'}
-                      </Text>
-                    ))}
+                  labAction.includes('delete') ? (
+                    <Text style={[styles.titleText, {width: wp(16)}]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

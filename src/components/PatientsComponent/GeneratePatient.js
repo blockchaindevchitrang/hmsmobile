@@ -43,6 +43,7 @@ const GeneratePatient = ({
   pageCount,
   setPageCount,
   smartCardTempList,
+  generateAction,
 }) => {
   const orientation = useOrientation();
   const isPortrait = orientation === 'portrait';
@@ -140,30 +141,34 @@ const GeneratePatient = ({
             <Text style={[styles.dataHistoryText5]}>{item.patient_email}</Text>
           </View>
         </View>
-        <View style={[styles.switchView, {width: isPortrait ? wp(35) : wp(27)}]}>
+        <View
+          style={[styles.switchView, {width: isPortrait ? wp(35) : wp(27)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
             <Text style={[styles.dataHistoryText1]}>
               {item.patient_unique_id}
             </Text>
           </View>
         </View>
-        <View style={[styles.switchView, {width: isPortrait ? wp(30) : wp(24)}]}>
+        <View
+          style={[styles.switchView, {width: isPortrait ? wp(30) : wp(24)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightGreen}]}>
             <Text style={[styles.dataHistoryText1]}>{item.template_name}</Text>
           </View>
         </View>
         <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
+          {generateAction.includes('delete') && (
+            <TouchableOpacity
+              onPress={() => {
+                setUserId(item.id);
+                setDeleteUser(true);
+              }}
+              style={{marginLeft: wp(2)}}>
+              <Image
+                style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                source={deleteIcon}
+              />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     );
@@ -185,21 +190,27 @@ const GeneratePatient = ({
             />
             {!isPortrait && (
               <View style={styles.filterView}>
-                <TouchableOpacity
-                  onPress={() => setNewUserVisible(true)}
-                  style={styles.actionView}>
-                  <Text style={styles.actionText}>New Patient Smart Cards</Text>
-                </TouchableOpacity>
+                {generateAction.includes('create') && (
+                  <TouchableOpacity
+                    onPress={() => setNewUserVisible(true)}
+                    style={styles.actionView}>
+                    <Text style={styles.actionText}>
+                      New Patient Smart Cards
+                    </Text>
+                  </TouchableOpacity>
+                )}
               </View>
             )}
           </View>
           {isPortrait && (
             <View style={styles.filterView}>
-              <TouchableOpacity
-                onPress={() => setNewUserVisible(true)}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>New Patient Smart Cards</Text>
-              </TouchableOpacity>
+              {generateAction.includes('create') && (
+                <TouchableOpacity
+                  onPress={() => setNewUserVisible(true)}
+                  style={styles.actionView}>
+                  <Text style={styles.actionText}>New Patient Smart Cards</Text>
+                </TouchableOpacity>
+              )}
             </View>
           )}
           <View
@@ -221,15 +232,29 @@ const GeneratePatient = ({
                     ]}>
                     {'PATIENT'}
                   </Text>
-                  <Text style={[styles.titleText, {width: isPortrait ? wp(35) : wp(27)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {width: isPortrait ? wp(35) : wp(27)},
+                    ]}>
                     {'PATIENT UNIQUE ID'}
                   </Text>
-                  <Text style={[styles.titleText, {width: isPortrait ? wp(30) : wp(24)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {width: isPortrait ? wp(30) : wp(24)},
+                    ]}>
                     {'TEMPLATE NAME'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(16), textAlign: 'center'}]}>
-                    {'ACTION'}
-                  </Text>
+                  {generateAction.includes('delete') && (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: wp(16), textAlign: 'center'},
+                      ]}>
+                      {'ACTION'}
+                    </Text>
+                  )}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

@@ -364,9 +364,9 @@ export const SettingScreen = ({navigation}) => {
               );
             }
           })}
-          {rolePermission.map((item, index) => {
+          {/* {rolePermission.map((item, index) => {
             if (item.main_module == 'Prescriptions') {
-              return (
+              return ( */}
                 <TouchableOpacity
                   onPress={() => navigation.navigate('PrescriptionScreen')}
                   style={[
@@ -377,9 +377,9 @@ export const SettingScreen = ({navigation}) => {
                     {'Prescriptions'}
                   </Text>
                 </TouchableOpacity>
-              );
+              {/* );
             }
-          })}
+          })} */}
           {rolePermission.map((item, index) => {
             if (item.main_module == 'Diagnosis') {
               return (
@@ -544,9 +544,9 @@ export const SettingScreen = ({navigation}) => {
               );
             }
           })}
-          {rolePermission.map((item, index) => {
+          {/* {rolePermission.map((item, index) => {
             if (item.main_module == 'Documents') {
-              return (
+              return ( */}
                 <TouchableOpacity
                   onPress={() => navigation.navigate('DocumentsScreen')}
                   style={[
@@ -557,9 +557,9 @@ export const SettingScreen = ({navigation}) => {
                     {'Documents'}
                   </Text>
                 </TouchableOpacity>
-              );
+              {/* );
             }
-          })}
+          })} */}
           {rolePermission.map((item, index) => {
             if (item.main_module == 'Inventory') {
               return (

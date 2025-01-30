@@ -62,6 +62,7 @@ const InvoicesList = ({
   pageCount,
   setPageCount,
   account,
+  invoiceAction,
 }) => {
   const orientation = useOrientation(); // Get current orientation
   const isPortrait = orientation === 'portrait';
@@ -387,11 +388,37 @@ const InvoicesList = ({
             <Text style={[styles.dataHistoryText1]}>{item.invoice_id}</Text>
           </View>
         </View>
-        <View style={[styles.nameDataView]}>
-          <ProfilePhoto username={item.name} />
+        <View
+          style={[
+            styles.nameDataView,
+            {
+              width: isPortrait
+                ? wp(55)
+                : invoiceAction.includes('edit') ||
+                  invoiceAction.includes('delete')
+                ? wp(40)
+                : wp(58.5),
+            },
+          ]}>
+          {item.name && (
+            <ProfilePhoto style={styles.photoStyle} username={item.name} />
+          )}
           <View>
             <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
-            <Text style={[styles.dataHistoryText5]}>{item.email}</Text>
+            <Text
+              style={[
+                styles.dataHistoryText5,
+                {
+                  width: isPortrait
+                    ? wp(45)
+                    : invoiceAction.includes('edit') ||
+                      invoiceAction.includes('delete')
+                    ? wp(34)
+                    : wp(50),
+                },
+              ]}>
+              {item.email}
+            </Text>
           </View>
         </View>
         <View
@@ -413,49 +440,55 @@ const InvoicesList = ({
             <Text style={[styles.dataHistoryText]}>{item.status}</Text>
           </View>
         </View>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={async () => {
-              let allDatas = await onGetSpecificDoctor(item.id);
-              console.log('gert Value:::', allDatas);
-              setUserId(item.id);
-              setPatientId(allDatas.invoice.patient_id);
-              setPatientName(item.name);
-              setDateOfBirth(new Date(allDatas.invoice.invoice_date));
-              setDiscount(JSON.stringify(allDatas.invoice.discount));
-              setStatusId(item.status == 'Pending' ? '0' : '1');
-              setStatusName(item.status);
-              let dataValue = [];
-              allDatas.invoice.invoice_items.map(item1 => {
-                dataValue.push({
-                  accountId: item1.account_id,
-                  accountName: allDatas.accounts[item1.account_id],
-                  description: item1.description,
-                  qty: JSON.stringify(item1.quantity),
-                  price: JSON.stringify(item1.price),
-                  amount: JSON.stringify(item1.total),
-                });
-              });
-              setParameterArray(dataValue);
-              setNewUserVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        {invoiceAction.includes('edit') || invoiceAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {invoiceAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={async () => {
+                  let allDatas = await onGetSpecificDoctor(item.id);
+                  console.log('gert Value:::', allDatas);
+                  setUserId(item.id);
+                  setPatientId(allDatas.invoice.patient_id);
+                  setPatientName(item.name);
+                  setDateOfBirth(new Date(allDatas.invoice.invoice_date));
+                  setDiscount(JSON.stringify(allDatas.invoice.discount));
+                  setStatusId(item.status == 'Pending' ? '0' : '1');
+                  setStatusName(item.status);
+                  let dataValue = [];
+                  allDatas.invoice.invoice_items.map(item1 => {
+                    dataValue.push({
+                      accountId: item1.account_id,
+                      accountName: allDatas.accounts[item1.account_id],
+                      description: item1.description,
+                      qty: JSON.stringify(item1.quantity),
+                      price: JSON.stringify(item1.price),
+                      amount: JSON.stringify(item1.total),
+                    });
+                  });
+                  setParameterArray(dataValue);
+                  setNewUserVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {invoiceAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: wp(2)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -491,6 +524,43 @@ const InvoicesList = ({
                 <TouchableOpacity style={styles.filterView1}>
                   <Image style={styles.filterImage} source={filter} />
                 </TouchableOpacity>
+                {invoiceAction.includes('create') && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setUserId('');
+                      setPatientId('');
+                      setPatientName('');
+                      setDiscount('');
+                      setDateOfBirth(new Date());
+                      setStatusId('1');
+                      setStatusName('Paid');
+                      setParameterArray([
+                        {
+                          accountId: '',
+                          accountName: '',
+                          description: '',
+                          qty: '',
+                          price: '',
+                          amount: '',
+                        },
+                      ]);
+                      setErrorVisible(false);
+                      setErrorMessage('');
+                      setNewUserVisible(true);
+                    }}
+                    style={styles.actionView}>
+                    <Text style={styles.actionText}>New Invoice</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+          </View>
+          {isPortrait && (
+            <View style={styles.filterView}>
+              <TouchableOpacity style={styles.filterView1}>
+                <Image style={styles.filterImage} source={filter} />
+              </TouchableOpacity>
+              {invoiceAction.includes('create') && (
                 <TouchableOpacity
                   onPress={() => {
                     setUserId('');
@@ -517,40 +587,7 @@ const InvoicesList = ({
                   style={styles.actionView}>
                   <Text style={styles.actionText}>New Invoice</Text>
                 </TouchableOpacity>
-              </View>
-            )}
-          </View>
-          {isPortrait && (
-            <View style={styles.filterView}>
-              <TouchableOpacity style={styles.filterView1}>
-                <Image style={styles.filterImage} source={filter} />
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => {
-                  setUserId('');
-                  setPatientId('');
-                  setPatientName('');
-                  setDiscount('');
-                  setDateOfBirth(new Date());
-                  setStatusId('1');
-                  setStatusName('Paid');
-                  setParameterArray([
-                    {
-                      accountId: '',
-                      accountName: '',
-                      description: '',
-                      qty: '',
-                      price: '',
-                      amount: '',
-                    },
-                  ]);
-                  setErrorVisible(false);
-                  setErrorMessage('');
-                  setNewUserVisible(true);
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>New Invoice</Text>
-              </TouchableOpacity>
+              )}
             </View>
           )}
           <View
@@ -575,7 +612,15 @@ const InvoicesList = ({
                   <Text
                     style={[
                       styles.titleText,
-                      {width: isPortrait ? wp(55) : wp(40), textAlign: 'left'},
+                      {
+                        width: isPortrait
+                          ? wp(55)
+                          : invoiceAction.includes('edit') ||
+                            invoiceAction.includes('delete')
+                          ? wp(40)
+                          : wp(58.5),
+                        textAlign: 'left',
+                      },
                     ]}>
                     {'PATIENT'}
                   </Text>
@@ -600,13 +645,16 @@ const InvoicesList = ({
                     ]}>
                     {'STATUS'}
                   </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: isPortrait ? wp(16) : wp(14.5)},
-                    ]}>
-                    {'ACTION'}
-                  </Text>
+                  {invoiceAction.includes('edit') ||
+                  invoiceAction.includes('delete') ? (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: isPortrait ? wp(16) : wp(14.5)},
+                      ]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList
@@ -1136,6 +1184,13 @@ const portraitStyles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: wp(3),
     marginVertical: hp(2),
+  },
+  photoStyle: {
+    width: wp(8),
+    height: wp(8),
+    borderRadius: wp(8),
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   searchView: {
     width: '100%',
@@ -1675,6 +1730,13 @@ const landscapeStyles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: wp(3),
     marginVertical: hp(2),
+  },
+  photoStyle: {
+    width: wp(5),
+    height: wp(5),
+    borderRadius: wp(5),
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   searchView: {
     width: '50%',

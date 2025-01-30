@@ -58,6 +58,7 @@ const BloodDonorList = ({
   pageCount,
   setPageCount,
   totalPage,
+  donorAction,
 }) => {
   const orientation = useOrientation();
   const isPortrait = orientation === 'portrait';
@@ -290,32 +291,36 @@ const BloodDonorList = ({
           </View>
         </View>
         <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDonorName(item.name);
-              setDonorAge(JSON.stringify(item.age));
-              setDepartmentType(item.gender == 'Male' ? 'male' : 'female');
-              setBloodGroup(item.blood_group);
-              setDateOfBirth(new Date(item.last_donate_date));
-              setAddDonorVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={{marginLeft: wp(2)}}
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
+          {donorAction.includes('edit') && (
+            <TouchableOpacity
+              onPress={() => {
+                setUserId(item.id);
+                setDonorName(item.name);
+                setDonorAge(JSON.stringify(item.age));
+                setDepartmentType(item.gender == 'Male' ? 'male' : 'female');
+                setBloodGroup(item.blood_group);
+                setDateOfBirth(new Date(item.last_donate_date));
+                setAddDonorVisible(true);
+              }}>
+              <Image
+                style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                source={editing}
+              />
+            </TouchableOpacity>
+          )}
+          {donorAction.includes('delete') && (
+            <TouchableOpacity
+              style={{marginLeft: wp(2)}}
+              onPress={() => {
+                setUserId(item.id);
+                setDeleteUser(true);
+              }}>
+              <Image
+                style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                source={deleteIcon}
+              />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     );
@@ -337,6 +342,27 @@ const BloodDonorList = ({
             />
             {!isPortrait && (
               <View style={styles.filterView}>
+                {donorAction.includes('create') && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setUserId('');
+                      setDonorName('');
+                      setDonorAge('');
+                      setDepartmentType('male');
+                      setBloodGroup('');
+                      setDateOfBirth(new Date());
+                      setAddDonorVisible(true);
+                    }}
+                    style={styles.actionView}>
+                    <Text style={styles.actionText}>New Blood Donor</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+          </View>
+          {isPortrait && (
+            <View style={styles.filterView}>
+              {donorAction.includes('create') && (
                 <TouchableOpacity
                   onPress={() => {
                     setUserId('');
@@ -350,24 +376,7 @@ const BloodDonorList = ({
                   style={styles.actionView}>
                   <Text style={styles.actionText}>New Blood Donor</Text>
                 </TouchableOpacity>
-              </View>
-            )}
-          </View>
-          {isPortrait && (
-            <View style={styles.filterView}>
-              <TouchableOpacity
-                onPress={() => {
-                  setUserId('');
-                  setDonorName('');
-                  setDonorAge('');
-                  setDepartmentType('male');
-                  setBloodGroup('');
-                  setDateOfBirth(new Date());
-                  setAddDonorVisible(true);
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>New Blood Donor</Text>
-              </TouchableOpacity>
+              )}
             </View>
           )}
           <View
@@ -417,13 +426,16 @@ const BloodDonorList = ({
                     ]}>
                     {'LAST DONATION DATE'}
                   </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: isPortrait ? wp(16) : wp(14)},
-                    ]}>
-                    {'ACTION'}
-                  </Text>
+                  {donorAction.includes('edit') ||
+                  donorAction.includes('delete') ? (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: isPortrait ? wp(16) : wp(14)},
+                      ]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

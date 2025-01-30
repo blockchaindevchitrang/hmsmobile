@@ -60,6 +60,7 @@ const BedAssignList = ({
   totalPage,
   setStatusId,
   statusId,
+  assignAction,
 }) => {
   const bedData = useSelector(state => state.bedData);
   const caseData = useSelector(state => state.caseData);
@@ -295,53 +296,65 @@ const BedAssignList = ({
             ? 'N/A'
             : moment(item.discharge_date).format('DD-MM-YYYY')}
         </Text>
-        <View
-          style={[styles.switchView, {width: isPortrait ? wp(16) : wp(12)}]}>
-          <Switch
-            trackColor={{
-              false:
-                item.status == 'Active' ? COLORS.greenColor : COLORS.errorColor,
-              true:
-                item.status == 'Active' ? COLORS.greenColor : COLORS.errorColor,
-            }}
-            thumbColor={item.status == 'Active' ? '#f4f3f4' : '#f4f3f4'}
-            ios_backgroundColor={COLORS.errorColor}
-            onValueChange={() => {}}
-            value={item.status == 'Active'}
-          />
-        </View>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={async () => {
-              let allDatas = await onGetSpecificDoctor(item.id);
-              setUserId(item.id);
-              setCaseId(item.case_id);
-              setCase(`${item.case_id} ${item.patient_name}`);
-              setBedId(allDatas.bed_id);
-              setBed(item.bed_name);
-              setDescription(allDatas.description);
-              setDateOfBirth(new Date(allDatas.assign_date));
-              setDischargeDate(new Date(allDatas.discharge_date));
-              setStatus(item?.status == 'Deactive' ? false : true);
-              setNewUserVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
+        {assignAction.includes('status') && (
+          <View
+            style={[styles.switchView, {width: isPortrait ? wp(16) : wp(12)}]}>
+            <Switch
+              trackColor={{
+                false:
+                  item.status == 'Active'
+                    ? COLORS.greenColor
+                    : COLORS.errorColor,
+                true:
+                  item.status == 'Active'
+                    ? COLORS.greenColor
+                    : COLORS.errorColor,
+              }}
+              thumbColor={item.status == 'Active' ? '#f4f3f4' : '#f4f3f4'}
+              ios_backgroundColor={COLORS.errorColor}
+              onValueChange={() => {}}
+              value={item.status == 'Active'}
             />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+          </View>
+        )}
+        {assignAction.includes('edit') || assignAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {assignAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={async () => {
+                  let allDatas = await onGetSpecificDoctor(item.id);
+                  setUserId(item.id);
+                  setCaseId(item.case_id);
+                  setCase(`${item.case_id} ${item.patient_name}`);
+                  setBedId(allDatas.bed_id);
+                  setBed(item.bed_name);
+                  setDescription(allDatas.description);
+                  setDateOfBirth(new Date(allDatas.assign_date));
+                  setDischargeDate(new Date(allDatas.discharge_date));
+                  setStatus(item?.status == 'Deactive' ? false : true);
+                  setNewUserVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {assignAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: wp(2)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -367,11 +380,26 @@ const BedAssignList = ({
                   onPress={() => setFilterVisible(true)}>
                   <Image style={styles.filterImage} source={filter} />
                 </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => setNewUserVisible(true)}
-                  style={styles.actionView}>
-                  <Text style={styles.actionText}>New Bed Assign</Text>
-                </TouchableOpacity>
+                {assignAction.includes('create') && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setUserId('');
+                      setCaseId('');
+                      setCase('');
+                      setBedId('');
+                      setBed('');
+                      setDescription('');
+                      setDateOfBirth(new Date());
+                      setDischargeDate(new Date());
+                      setStatus(false);
+                      setErrorMessage('');
+                      setErrorVisible(false);
+                      setNewUserVisible(true);
+                    }}
+                    style={styles.actionView}>
+                    <Text style={styles.actionText}>New Bed Assign</Text>
+                  </TouchableOpacity>
+                )}
                 <Modal
                   animationType="none"
                   transparent={true}
@@ -440,11 +468,26 @@ const BedAssignList = ({
                 onPress={() => setFilterVisible(true)}>
                 <Image style={styles.filterImage} source={filter} />
               </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => setNewUserVisible(true)}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>New Bed Assign</Text>
-              </TouchableOpacity>
+              {assignAction.includes('create') && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setUserId('');
+                    setCaseId('');
+                    setCase('');
+                    setBedId('');
+                    setBed('');
+                    setDescription('');
+                    setDateOfBirth(new Date());
+                    setDischargeDate(new Date());
+                    setStatus(false);
+                    setErrorMessage('');
+                    setErrorVisible(false);
+                    setNewUserVisible(true);
+                  }}
+                  style={styles.actionView}>
+                  <Text style={styles.actionText}>New Bed Assign</Text>
+                </TouchableOpacity>
+              )}
               <Modal
                 animationType="none"
                 transparent={true}
@@ -552,20 +595,25 @@ const BedAssignList = ({
                     ]}>
                     {'DISCHARGE DATE'}
                   </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: isPortrait ? wp(16) : wp(12)},
-                    ]}>
-                    {'STATUS'}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: isPortrait ? wp(16) : wp(12)},
-                    ]}>
-                    {'ACTION'}
-                  </Text>
+                  {assignAction.includes('status') && (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: isPortrait ? wp(16) : wp(12)},
+                      ]}>
+                      {'STATUS'}
+                    </Text>
+                  )}
+                  {assignAction.includes('edit') ||
+                  assignAction.includes('delete') ? (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: isPortrait ? wp(16) : wp(12)},
+                      ]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

@@ -268,54 +268,53 @@ const UserList = ({
             />
           </View>
         )}
-        {userAction.includes('edit') ||
-          (userAction.includes('delete') && (
-            <View style={styles.actionDataView}>
-              {userAction.includes('edit') && (
-                <TouchableOpacity
-                  onPress={async () => {
-                    let allData = await onGetSpecificDoctor(item.id);
-                    setUserId(item.id);
-                    const [first, last] = item.name.split(',');
-                    if (isImageFormat(item?.image_url)) {
-                      setAvatar(parseFileFromUrl(item?.image_url));
-                    }
-                    setFirstName(first);
-                    setLastName(last);
-                    setEmail(item.email);
-                    setRole(allData.department_id);
-                    setDoctorSelectedName(item?.department);
-                    if (allData.dob != null) {
-                      setDateOfBirth(new Date(allData.dob));
-                    }
-                    setGenderType(allData.gender == 0 ? 'male' : 'female');
-                    setAddress(allData.address1);
-                    setCity(allData.city);
-                    setCountry(allData.country);
-                    setPostalCode(allData.postal_code);
-                    setNewUserVisible(true);
-                  }}>
-                  <Image
-                    style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-                    source={editing}
-                  />
-                </TouchableOpacity>
-              )}
-              {userAction.includes('delete') && (
-                <TouchableOpacity
-                  onPress={() => {
-                    setUserId(item.id);
-                    setDeleteUser(true);
-                  }}
-                  style={{marginLeft: wp(2)}}>
-                  <Image
-                    style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-                    source={deleteIcon}
-                  />
-                </TouchableOpacity>
-              )}
-            </View>
-          ))}
+        {userAction.includes('edit') || userAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {userAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={async () => {
+                  let allData = await onGetSpecificDoctor(item.id);
+                  setUserId(item.id);
+                  const [first, last] = item.name.split(',');
+                  if (isImageFormat(item?.image_url)) {
+                    setAvatar(parseFileFromUrl(item?.image_url));
+                  }
+                  setFirstName(first);
+                  setLastName(last);
+                  setEmail(item.email);
+                  setRole(allData.department_id);
+                  setDoctorSelectedName(item?.department);
+                  if (allData.dob != null) {
+                    setDateOfBirth(new Date(allData.dob));
+                  }
+                  setGenderType(allData.gender == 0 ? 'male' : 'female');
+                  setAddress(allData.address1);
+                  setCity(allData.city);
+                  setCountry(allData.country);
+                  setPostalCode(allData.postal_code);
+                  setNewUserVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {userAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: wp(2)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -742,15 +741,15 @@ const UserList = ({
                     </Text>
                   )}
                   {userAction.includes('edit') ||
-                    (userAction.includes('delete') && (
-                      <Text
-                        style={[
-                          styles.titleText,
-                          {width: isPortrait ? wp(16) : wp(12)},
-                        ]}>
-                        {'ACTION'}
-                      </Text>
-                    ))}
+                  userAction.includes('delete') ? (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: isPortrait ? wp(16) : wp(12)},
+                      ]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

@@ -54,6 +54,7 @@ const PaymentList = ({
   totalPage,
   pageCount,
   setPageCount,
+  paymentAction,
 }) => {
   const orientation = useOrientation(); // Get current orientation
   const isPortrait = orientation === 'portrait';
@@ -212,7 +213,18 @@ const PaymentList = ({
         <View style={[styles.nameDataView]}>
           <Text style={[styles.dataHistoryText2]}>{item.account}</Text>
         </View>
-        <View style={[styles.switchView, {width: wp(30)}]}>
+        <View
+          style={[
+            styles.switchView,
+            {
+              width: isPortrait
+                ? wp(30)
+                : paymentAction.includes('edit') ||
+                  paymentAction.includes('delete')
+                ? wp(30)
+                : wp(50),
+            },
+          ]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
             <Text style={[styles.dataHistoryText1]}>{item.payment_date}</Text>
           </View>
@@ -223,36 +235,42 @@ const PaymentList = ({
         <Text style={[styles.dataHistoryText, {width: wp(24)}]}>
           {item.amount}
         </Text>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={async () => {
-              let allDatas = await onGetSpecificDoctor(item.id);
-              setUserId(item.id);
-              setAccount(item.account);
-              setAccountId(allDatas.payment.account_id);
-              setPaymentDate(new Date(allDatas.payment.payment_date));
-              setPayTo(item.pay_to);
-              setAmount(JSON.stringify(item.amount));
-              setDescription(allDatas.payment.description);
-              setNewUserVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        {paymentAction.includes('edit') || paymentAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {paymentAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={async () => {
+                  let allDatas = await onGetSpecificDoctor(item.id);
+                  setUserId(item.id);
+                  setAccount(item.account);
+                  setAccountId(allDatas.payment.account_id);
+                  setPaymentDate(new Date(allDatas.payment.payment_date));
+                  setPayTo(item.pay_to);
+                  setAmount(JSON.stringify(item.amount));
+                  setDescription(allDatas.payment.description);
+                  setNewUserVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {paymentAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: wp(2)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -336,9 +354,11 @@ const PaymentList = ({
                 }}>
                 <MenuTrigger text={''} />
                 <MenuOptions style={{marginVertical: hp(0.5)}}>
-                  <MenuOption value={'add'}>
-                    <Text style={styles.dataHistoryText3}>New Payment</Text>
-                  </MenuOption>
+                  {paymentAction.includes('create') && (
+                    <MenuOption value={'add'}>
+                      <Text style={styles.dataHistoryText3}>New Payment</Text>
+                    </MenuOption>
+                  )}
                   <MenuOption value={'excel'}>
                     <Text style={styles.dataHistoryText3}>Export to Excel</Text>
                   </MenuOption>
@@ -365,7 +385,18 @@ const PaymentList = ({
                     ]}>
                     {'ACCOUNT'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(30)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {
+                        width: isPortrait
+                          ? wp(30)
+                          : paymentAction.includes('edit') ||
+                            paymentAction.includes('delete')
+                          ? wp(30)
+                          : wp(50),
+                      },
+                    ]}>
                     {'PAYMENT DATE'}
                   </Text>
                   <Text style={[styles.titleText, {width: wp(16)}]}>
@@ -374,9 +405,12 @@ const PaymentList = ({
                   <Text style={[styles.titleText, {width: wp(24)}]}>
                     {'AMOUNT'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(16)}]}>
-                    {'ACTION'}
-                  </Text>
+                  {paymentAction.includes('edit') ||
+                  paymentAction.includes('delete') ? (
+                    <Text style={[styles.titleText, {width: wp(16)}]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

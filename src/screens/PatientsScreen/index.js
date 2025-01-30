@@ -44,354 +44,20 @@ import {
   onGetSpecificUsersDataApi,
 } from '../../services/Api';
 import useOrientation from '../../components/OrientationComponent';
+import {useSelector} from 'react-redux';
 
-const allData = [
-  {
-    id: 1,
-    name: 'Joey Tribiyani',
-    mail: 'joey@gmail.com',
-    phone: '9876543210',
-    group: 'O+',
-    status: true,
-  },
-  {
-    id: 2,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    phone: 'N/A',
-    group: 'AB-',
-    status: true,
-  },
-  {
-    id: 3,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    phone: '9876543210',
-    group: 'O+',
-    status: false,
-  },
-  {
-    id: 4,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    phone: '9876543210',
-    group: 'A+',
-    status: true,
-  },
-  {
-    id: 5,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    phone: '9876543210',
-    group: 'O+',
-    status: true,
-  },
-];
-
-const accountantData = [
-  {
-    id: 1,
-    admission: 'EMP0000001',
-    name: 'Joey Tribiyani',
-    mail: 'joey@gmail.com',
-    date: '22:02:00 2023-05-25',
-    mode: 'Cash',
-    amount: '$1000',
-    status: true,
-  },
-  {
-    id: 2,
-    admission: 'EMP0000002',
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    date: '22:02:00 2023-05-25',
-    mode: 'Cash',
-    amount: '$1,890.00',
-    status: true,
-  },
-  {
-    id: 3,
-    admission: 'EMP0000003',
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    date: '22:02:00 2023-05-25',
-    mode: 'Cash',
-    amount: '$1,580.00',
-    status: false,
-  },
-  {
-    id: 4,
-    admission: 'EMP0000004',
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    date: '22:02:00 2023-05-25',
-    mode: 'Cash',
-    amount: '$630.00',
-    status: true,
-  },
-  {
-    id: 5,
-    admission: 'EMP0000005',
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    date: '22:02:00 2023-05-25',
-    mode: 'Cash',
-    amount: '$1,890.00',
-    status: true,
-  },
-];
-
-const CaseHandlerData = [
-  {
-    id: 1,
-    admission: 'EMP0000001',
-    name: 'Joey Tribiyani',
-    mail: 'joey@gmail.com',
-    date: 'N/A',
-    phone: '9876543210',
-    qualification: 'Bsc',
-    status: true,
-  },
-  {
-    id: 2,
-    admission: 'EMP0000002',
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    date: 'N/A',
-    phone: 'N/A',
-    qualification: 'Msc',
-    status: true,
-  },
-  {
-    id: 3,
-    admission: 'EMP0000003',
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    date: '8th April, 1999',
-    phone: '9876543210',
-    qualification: '',
-    status: false,
-  },
-  {
-    id: 4,
-    admission: 'EMP0000004',
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    date: '10th May, 1998',
-    phone: '9876543210',
-    qualification: 'MCom',
-    status: true,
-  },
-  {
-    id: 5,
-    admission: 'EMP0000005',
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    date: '10th May, 1998',
-    phone: '9876543210',
-    qualification: 'Bsc',
-    status: true,
-  },
-];
-
-const NurseData = [
-  {
-    id: 1,
-    admission: 'EMP0000001',
-    name: 'Joey Tribiyani',
-    mail: 'joey@gmail.com',
-    package: 'Patient',
-    status: true,
-    insurance: 'Cooper Mccall',
-    date: '22:02:00 2023-05-25',
-    discharge_date: 'N/A',
-    number: 'N/A',
-  },
-  {
-    id: 2,
-    admission: 'EMP0000002',
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    package: 'Body Check up',
-    status: true,
-    insurance: 'Colleen Craig',
-    date: '22:02:00 2023-05-25',
-    discharge_date: 'N/A',
-    number: '4839920',
-  },
-  {
-    id: 3,
-    admission: 'EMP0000003',
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    package: 'N/A',
-    status: false,
-    insurance: 'Demo Insurance',
-    date: '22:02:00 2023-05-25',
-    discharge_date: '22:02:00 2023-05-25',
-    number: 'N/A',
-  },
-  {
-    id: 4,
-    admission: 'EMP0000004',
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    package: 'Patient',
-    status: true,
-    insurance: 'Demo Insurance',
-    date: '22:02:00 2023-05-25',
-    discharge_date: 'N/A',
-    number: 'N/A',
-  },
-  {
-    id: 5,
-    admission: 'EMP0000005',
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    package: 'Full Body Check up',
-    status: true,
-    insurance: 'Cooper Mccall',
-    date: '22:02:00 2023-05-25',
-    discharge_date: 'N/A',
-    number: '4839822',
-  },
-];
-
-const ReceptionistsData = [
-  {
-    id: 1,
-    name: 'Default',
-    header_color: 'black',
-    show_email: true,
-    show_phone: true,
-    show_DOB: true,
-    showGB: false,
-    show_address: true,
-    show_Patient: true,
-  },
-  {
-    id: 2,
-    name: 'Testing',
-    header_color: 'blue',
-    show_email: false,
-    show_phone: true,
-    show_DOB: true,
-    showGB: false,
-    show_address: true,
-    show_Patient: true,
-  },
-  {
-    id: 3,
-    name: 'Johnny',
-    header_color: 'green',
-    show_email: true,
-    show_phone: false,
-    show_DOB: true,
-    showGB: false,
-    show_address: true,
-    show_Patient: true,
-  },
-  {
-    id: 4,
-    name: 'Naledi Alisa',
-    header_color: 'red',
-    show_email: true,
-    show_phone: false,
-    show_DOB: true,
-    showGB: false,
-    show_address: true,
-    show_Patient: true,
-  },
-  {
-    id: 5,
-    name: 'Appoint',
-    header_color: 'yellow',
-    show_email: true,
-    show_phone: false,
-    show_DOB: true,
-    showGB: false,
-    show_address: true,
-    show_Patient: true,
-  },
-];
-
-const LabTechniciansData = [
-  {
-    id: 1,
-    name: 'Joey Tribiyani',
-    mail: 'joey@gmail.com',
-    status: true,
-    designation: 'Lab',
-  },
-  {
-    id: 2,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    status: true,
-    designation: 'Moderator',
-  },
-  {
-    id: 3,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    status: false,
-    designation: 'N/A',
-  },
-  {
-    id: 4,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    status: true,
-    designation: 'N/A',
-  },
-  {
-    id: 5,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    status: false,
-    designation: 'Lab',
-  },
-];
-
-const PharmacistsData = [
-  {
-    id: 1,
-    name: 'Joey Tribiyani',
-    mail: 'joey@gmail.com',
-    unique_id: 'N2JY0SK9',
-    template_name: 'Testing',
-  },
-  {
-    id: 2,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    unique_id: 'N2JY0SK9',
-    template_name: 'Testing',
-  },
-  {
-    id: 3,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    unique_id: 'N2JY0SK9',
-    template_name: 'Testing',
-  },
-  {
-    id: 4,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    unique_id: 'N2JY0SK9',
-    template_name: 'Testing',
-  },
-  {
-    id: 5,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    unique_id: 'N2JY0SK9',
-    template_name: 'Testing',
-  },
+let arrayData = [
+  'Logo',
+  'Patients',
+  'Cases',
+  'Case Handlers',
+  'Patient Admissions',
+  'Patient Smart Card Templates',
+  'Generate Patient Smart Cards',
 ];
 
 export const PatientsScreen = ({navigation}) => {
+  const rolePermission = useSelector(state => state.rolePermission);
   const {t} = useTranslation();
   const {theme} = useTheme();
   const orientation = useOrientation(); // Get current orientation
@@ -423,6 +89,97 @@ export const PatientsScreen = ({navigation}) => {
   const [statusId1, setStatusId1] = useState(1);
   const [statusId2, setStatusId2] = useState(1);
   const [admissionStatusId, setAdmissionStatusId] = useState(1);
+  const [patientAction, setPatientAction] = useState([]);
+  const [caseAction, setCaseAction] = useState([]);
+  const [handlerAction, setHandlerAction] = useState([]);
+  const [admissionAction, setAdmissionAction] = useState([]);
+  const [templateAction, setTemplateAction] = useState([]);
+  const [generateAction, setGenerateAction] = useState([]);
+
+  useEffect(() => {
+    const visibility = {
+      patientVisible: false,
+      caseVisible: false,
+      handlerVisible: false,
+      admissionVisible: false,
+      templateVisible: false,
+      generateVisible: false,
+    };
+    // Helper function to process privileges
+    const processPrivileges = (
+      privileges,
+      endPoint,
+      setAction,
+      visibilityKey,
+    ) => {
+      const privilege = privileges.find(item => item.end_point === endPoint);
+      if (privilege) {
+        setAction(privilege.action.split(',').map(action => action.trim()));
+        visibility[visibilityKey] = true;
+      }
+    };
+
+    // Iterate over role permissions
+    rolePermission.forEach(item => {
+      if (item.main_module === 'Patients') {
+        processPrivileges(
+          item.privileges,
+          'patients',
+          setPatientAction,
+          'patientVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'cases',
+          setCaseAction,
+          'caseVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'case_handlers',
+          setHandlerAction,
+          'handlerVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'patient_admissions',
+          setAdmissionAction,
+          'admissionVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'patient_smart_card_templates',
+          setTemplateAction,
+          'templateVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'generate_patient_smart_cards',
+          setGenerateAction,
+          'generateVisible',
+        );
+        // Handle arrayData based on visibility
+        const {
+          patientVisible,
+          caseVisible,
+          handlerVisible,
+          admissionVisible,
+          templateVisible,
+          generateVisible,
+        } = visibility;
+        console.log('Get Value::::>>>', visibility);
+        arrayData = [
+          'Logo',
+          patientVisible && 'Patients',
+          caseVisible && 'Cases',
+          handlerVisible && 'Case Handlers',
+          admissionVisible && 'Patient Admissions',
+          templateVisible && 'Patient Smart Card Templates',
+          generateVisible && 'Generate Patient Smart Cards',
+        ].filter(Boolean);
+      }
+    });
+  }, [rolePermission]);
 
   const animations = useRef(
     [0, 0, 0, 0, 0, 0, 0].map(() => new Animated.Value(300)),
@@ -668,6 +425,7 @@ export const PatientsScreen = ({navigation}) => {
             totalPage={totalPage}
             statusId={statusId}
             setStatusId={setStatusId}
+            patientAction={patientAction}
           />
         ) : selectedView == 'Cases' ? (
           <CasesList
@@ -680,6 +438,7 @@ export const PatientsScreen = ({navigation}) => {
             totalPage={casesPage}
             statusId={statusId1}
             setStatusId={setStatusId1}
+            caseAction={caseAction}
           />
         ) : selectedView == 'Case Handlers' ? (
           <CaseHandlerList
@@ -692,6 +451,7 @@ export const PatientsScreen = ({navigation}) => {
             totalPage={caseHandlerPage}
             statusId={statusId2}
             setStatusId={setStatusId2}
+            handlerAction={handlerAction}
           />
         ) : selectedView == 'Patient Admissions' ? (
           <PatientAdmissionList
@@ -704,6 +464,7 @@ export const PatientsScreen = ({navigation}) => {
             totalPage={admissionPage}
             statusId={admissionStatusId}
             setStatusId={setAdmissionStatusId}
+            admissionAction={admissionAction}
           />
         ) : selectedView == 'Patient Smart Card Templates' ? (
           <SmartCardTemplates
@@ -714,6 +475,7 @@ export const PatientsScreen = ({navigation}) => {
             pageCount={pageCount}
             setPageCount={setPageCount}
             totalPage={templatePage}
+            templateAction={templateAction}
           />
         ) : (
           selectedView == 'Generate Patient Smart Cards' && (
@@ -726,6 +488,7 @@ export const PatientsScreen = ({navigation}) => {
               setPageCount={setPageCount}
               totalPage={smartCardPage}
               smartCardTempList={smartCardTempList}
+              generateAction={generateAction}
             />
           )
         )}
@@ -746,15 +509,7 @@ export const PatientsScreen = ({navigation}) => {
 
             <View style={styles.mainModalView}>
               <View style={styles.menuContainer}>
-                {[
-                  'Logo',
-                  'Patients',
-                  'Cases',
-                  'Case Handlers',
-                  'Patient Admissions',
-                  'Patient Smart Card Templates',
-                  'Generate Patient Smart Cards',
-                ].map((option, index) => (
+                {arrayData.map((option, index) => (
                   <>
                     {option == 'Logo' ? (
                       <Animated.View

@@ -66,6 +66,7 @@ const CaseHandlerList = ({
   totalPage,
   statusId,
   setStatusId,
+  handlerAction,
 }) => {
   const orientation = useOrientation(); // Get current orientation
   const isPortrait = orientation === 'portrait';
@@ -395,13 +396,41 @@ const CaseHandlerList = ({
           styles.dataHistoryView,
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
-        <View style={[styles.nameDataView]}>
+        <View
+          style={[
+            styles.nameDataView,
+            {
+              width: isPortrait
+                ? wp(55)
+                : handlerAction.includes('edit') ||
+                  handlerAction.includes('delete')
+                ? handlerAction.includes('status')
+                  ? wp(37)
+                  : wp(60)
+                : wp(60),
+            },
+          ]}>
           {item.name && (
             <ProfilePhoto style={styles.photoStyle} username={item.name} />
           )}
           <View>
             <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
-            <Text style={[styles.dataHistoryText5]}>{item.email}</Text>
+            <Text
+              style={[
+                styles.dataHistoryText5,
+                {
+                  width: isPortrait
+                    ? wp(45)
+                    : handlerAction.includes('edit') ||
+                      handlerAction.includes('delete')
+                    ? handlerAction.includes('status')
+                      ? wp(33)
+                      : wp(50)
+                    : wp(50),
+                },
+              ]}>
+              {item.email}
+            </Text>
           </View>
         </View>
         <Text
@@ -422,66 +451,74 @@ const CaseHandlerList = ({
           ]}>
           {item.date}
         </Text>
-        <View
-          style={[styles.switchView, {width: isPortrait ? wp(20) : wp(12)}]}>
-          <Switch
-            trackColor={{
-              false: item.status ? COLORS.greenColor : COLORS.errorColor,
-              true: item.status ? COLORS.greenColor : COLORS.errorColor,
-            }}
-            thumbColor={item.status ? '#f4f3f4' : '#f4f3f4'}
-            ios_backgroundColor={COLORS.errorColor}
-            onValueChange={() => {}}
-            value={item.status}
-          />
-        </View>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={async () => {
-              let allData = await onGetSpecificDoctor(item.id);
-              setUserId(item.id);
-              const [first, last] = item.name.split(',');
-              setFirstName(first);
-              setLastName(last);
-              if (isImageFormat(item?.image_url)) {
-                setAvatar(parseFileFromUrl(item?.image_url));
-              }
-              setEmail(item.email);
-              setDesignation(allData.designation);
-              if (allData.dob != null) {
-                setDateOfBirth(new Date(allData.dob));
-              }
-              setGenderType(item.gender == 0 ? 'male' : 'female');
-              setAddress(item.address1);
-              setCity(item.city);
-              setCountry(item.country);
-              setPostalCode(item.postal_code);
-              setAddress1(allData.address2);
-              setQualification(allData.qualification);
-              setNumber(allData.phone);
-              setStatus(allData.status == 'Active' ? true : false);
-              if (allData?.blood_group != null) {
-                setBloodSelected(allData?.blood_group);
-              }
-              setNewUserVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
+        {handlerAction.includes('status') && (
+          <View
+            style={[styles.switchView, {width: isPortrait ? wp(20) : wp(12)}]}>
+            <Switch
+              trackColor={{
+                false: item.status ? COLORS.greenColor : COLORS.errorColor,
+                true: item.status ? COLORS.greenColor : COLORS.errorColor,
+              }}
+              thumbColor={item.status ? '#f4f3f4' : '#f4f3f4'}
+              ios_backgroundColor={COLORS.errorColor}
+              onValueChange={() => {}}
+              value={item.status}
             />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: isPortrait ? wp(2) : wp(1)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+          </View>
+        )}
+        {handlerAction.includes('edit') || handlerAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {handlerAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={async () => {
+                  let allData = await onGetSpecificDoctor(item.id);
+                  setUserId(item.id);
+                  const [first, last] = item.name.split(',');
+                  setFirstName(first);
+                  setLastName(last);
+                  if (isImageFormat(item?.image_url)) {
+                    setAvatar(parseFileFromUrl(item?.image_url));
+                  }
+                  setEmail(item.email);
+                  setDesignation(allData.designation);
+                  if (allData.dob != null) {
+                    setDateOfBirth(new Date(allData.dob));
+                  }
+                  setGenderType(item.gender == 0 ? 'male' : 'female');
+                  setAddress(item.address1);
+                  setCity(item.city);
+                  setCountry(item.country);
+                  setPostalCode(item.postal_code);
+                  setAddress1(allData.address2);
+                  setQualification(allData.qualification);
+                  setNumber(allData.phone);
+                  setStatus(allData.status == 'Active' ? true : false);
+                  if (allData?.blood_group != null) {
+                    setBloodSelected(allData?.blood_group);
+                  }
+                  setNewUserVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {handlerAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: isPortrait ? wp(2) : wp(1)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -543,11 +580,13 @@ const CaseHandlerList = ({
                 }}>
                 <MenuTrigger text={''} />
                 <MenuOptions style={{marginVertical: hp(0.5)}}>
-                  <MenuOption value={'add'}>
-                    <Text style={styles.dataHistoryText3}>
-                      New Case Handler
-                    </Text>
-                  </MenuOption>
+                  {handlerAction.includes('create') && (
+                    <MenuOption value={'add'}>
+                      <Text style={styles.dataHistoryText3}>
+                        New Case Handler
+                      </Text>
+                    </MenuOption>
+                  )}
                   <MenuOption value={'excel'}>
                     <Text style={styles.dataHistoryText3}>Export to Excel</Text>
                   </MenuOption>
@@ -628,7 +667,17 @@ const CaseHandlerList = ({
                   <Text
                     style={[
                       styles.titleText,
-                      {width: isPortrait ? wp(55) : wp(37), textAlign: 'left'},
+                      {
+                        width: isPortrait
+                          ? wp(55)
+                          : handlerAction.includes('edit') ||
+                            handlerAction.includes('delete')
+                          ? handlerAction.includes('status')
+                            ? wp(37)
+                            : wp(60)
+                          : wp(60),
+                        textAlign: 'left',
+                      },
                     ]}>
                     {'USERS'}
                   </Text>
@@ -653,20 +702,25 @@ const CaseHandlerList = ({
                     ]}>
                     {'BIRTH DATE'}
                   </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: isPortrait ? wp(20) : wp(12)},
-                    ]}>
-                    {'STATUS'}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: isPortrait ? wp(16) : wp(10)},
-                    ]}>
-                    {'ACTION'}
-                  </Text>
+                  {handlerAction.includes('status') && (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: isPortrait ? wp(20) : wp(12)},
+                      ]}>
+                      {'STATUS'}
+                    </Text>
+                  )}
+                  {handlerAction.includes('edit') ||
+                  handlerAction.includes('delete') ? (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: isPortrait ? wp(16) : wp(10)},
+                      ]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

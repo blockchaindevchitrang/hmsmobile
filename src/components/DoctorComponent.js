@@ -307,82 +307,81 @@ const DoctorComponent = ({
             />
           </View>
         )}
-        {doctorAction.includes('edit') ||
-          (doctorAction.includes('delete') && (
-            <View
-              style={[
-                styles.actionDataView,
-                {width: isPortrait ? wp(20) : wp(18)},
-              ]}>
-              {doctorAction.includes('edit') && (
-                <TouchableOpacity
-                  onPress={async () => {
-                    let allData = await onGetSpecificDoctor(item.id);
-                    console.log('Get Value Of Doctor::', allData);
-                    const matchingKey = Object.entries(
-                      allData.doctorsDepartments,
-                    ).find(
-                      ([key, value]) =>
-                        value === allData?.doctor_detail?.doctor_department,
-                    )?.[0];
-                    const [first, last] =
-                      allData.doctor_detail.doctor_name.split(' ');
-                    setEditId(allData?.doctor_detail?.id);
-                    setFirstName(first);
-                    setLastName(last);
-                    if (isImageFormat(allData?.doctor_detail?.doctor_image)) {
-                      setAvatar(
-                        parseFileFromUrl(allData?.doctor_detail?.doctor_image),
-                      );
-                    }
-                    setGenderType(
-                      allData?.doctor_detail?.gender == 'Female'
-                        ? 'female'
-                        : 'male',
+        {doctorAction.includes('edit') || doctorAction.includes('delete') ? (
+          <View
+            style={[
+              styles.actionDataView,
+              {width: isPortrait ? wp(20) : wp(18)},
+            ]}>
+            {doctorAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={async () => {
+                  let allData = await onGetSpecificDoctor(item.id);
+                  console.log('Get Value Of Doctor::', allData);
+                  const matchingKey = Object.entries(
+                    allData.doctorsDepartments,
+                  ).find(
+                    ([key, value]) =>
+                      value === allData?.doctor_detail?.doctor_department,
+                  )?.[0];
+                  const [first, last] =
+                    allData.doctor_detail.doctor_name.split(' ');
+                  setEditId(allData?.doctor_detail?.id);
+                  setFirstName(first);
+                  setLastName(last);
+                  if (isImageFormat(allData?.doctor_detail?.doctor_image)) {
+                    setAvatar(
+                      parseFileFromUrl(allData?.doctor_detail?.doctor_image),
                     );
-                    setDateOfBirth(
-                      new Date(allData?.doctor_detail?.date_of_birth),
-                    );
-                    setDoctorContact(allData?.doctor_detail?.phone);
-                    setDoctorEmail(allData?.doctor_detail?.email);
-                    setDescription(allData?.doctor_detail?.description);
-                    setQualification(allData?.doctor_detail?.qualification);
-                    setSpecialist(allData?.doctor_detail?.specialist);
-                    setBloodSelected(allData?.doctor_detail?.blood_group);
-                    console.log('Get ImageLLLL', matchingKey);
-                    setPractice(matchingKey);
-                    setDoctorSelectedName(
-                      allData?.doctor_detail?.doctor_department,
-                    );
-                    setCharge(`${allData?.doctor_detail?.appointment_charge}`);
-                    setDesignation(allData?.doctor_detail?.designation);
-                    setAddress1(allData?.doctor_detail?.address1);
-                    setAddress2(allData?.doctor_detail?.address2);
-                    setDoctorCity(allData?.doctor_detail?.city);
-                    setDoctorZip(allData?.doctor_detail?.zip);
-                    setAddDoctorVisible(true);
-                  }}>
-                  <Image
-                    style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-                    source={editing}
-                  />
-                </TouchableOpacity>
-              )}
-              {doctorAction.includes('delete') && (
-                <TouchableOpacity
-                  style={{marginLeft: wp(2)}}
-                  onPress={() => {
-                    setEditId(item.id);
-                    setDeleteUser(true);
-                  }}>
-                  <Image
-                    style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-                    source={deleteIcon}
-                  />
-                </TouchableOpacity>
-              )}
-            </View>
-          ))}
+                  }
+                  setGenderType(
+                    allData?.doctor_detail?.gender == 'Female'
+                      ? 'female'
+                      : 'male',
+                  );
+                  setDateOfBirth(
+                    new Date(allData?.doctor_detail?.date_of_birth),
+                  );
+                  setDoctorContact(allData?.doctor_detail?.phone);
+                  setDoctorEmail(allData?.doctor_detail?.email);
+                  setDescription(allData?.doctor_detail?.description);
+                  setQualification(allData?.doctor_detail?.qualification);
+                  setSpecialist(allData?.doctor_detail?.specialist);
+                  setBloodSelected(allData?.doctor_detail?.blood_group);
+                  console.log('Get ImageLLLL', matchingKey);
+                  setPractice(matchingKey);
+                  setDoctorSelectedName(
+                    allData?.doctor_detail?.doctor_department,
+                  );
+                  setCharge(`${allData?.doctor_detail?.appointment_charge}`);
+                  setDesignation(allData?.doctor_detail?.designation);
+                  setAddress1(allData?.doctor_detail?.address1);
+                  setAddress2(allData?.doctor_detail?.address2);
+                  setDoctorCity(allData?.doctor_detail?.city);
+                  setDoctorZip(allData?.doctor_detail?.zip);
+                  setAddDoctorVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {doctorAction.includes('delete') && (
+              <TouchableOpacity
+                style={{marginLeft: wp(2)}}
+                onPress={() => {
+                  setEditId(item.id);
+                  setDeleteUser(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -620,15 +619,15 @@ const DoctorComponent = ({
                     </Text>
                   )}
                   {doctorAction.includes('edit') ||
-                    (doctorAction.includes('delete') && (
-                      <Text
-                        style={[
-                          styles.titleText,
-                          {width: isPortrait ? wp(20) : wp(18)},
-                        ]}>
-                        {'ACTION'}
-                      </Text>
-                    ))}
+                  doctorAction.includes('delete') ? (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: isPortrait ? wp(20) : wp(18)},
+                      ]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

@@ -56,6 +56,7 @@ const DocumentList = ({
   totalPage,
   pageCount,
   setPageCount,
+  documentAction,
 }) => {
   const user_data = useSelector(state => state.user_data);
   const {theme} = useTheme();
@@ -331,39 +332,43 @@ const DocumentList = ({
           </View>
         </View>
         <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={async () => {
-              setUserId(item.id);
-              let allDatas = await onGetSpecificDoctor(item.id);
-              setTitle(item?.title);
-              setDocumentTypeId(allDatas?.document_type_id);
-              setDocumentType(item?.document_type);
-              setPatient(item?.patient_name);
-              setPatientId(allDatas?.patient_id);
-              setNote(allDatas?.notes);
-              if (item.file_name != '') {
-                if (isImageFormat(item?.file_name)) {
-                  setAvatar(parseFileFromUrl(item?.file_name));
+          {documentAction.includes('edit') && (
+            <TouchableOpacity
+              onPress={async () => {
+                setUserId(item.id);
+                let allDatas = await onGetSpecificDoctor(item.id);
+                setTitle(item?.title);
+                setDocumentTypeId(allDatas?.document_type_id);
+                setDocumentType(item?.document_type);
+                setPatient(item?.patient_name);
+                setPatientId(allDatas?.patient_id);
+                setNote(allDatas?.notes);
+                if (item.file_name != '') {
+                  if (isImageFormat(item?.file_name)) {
+                    setAvatar(parseFileFromUrl(item?.file_name));
+                  }
                 }
-              }
-              setNewAccountVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
+                setNewAccountVisible(true);
+              }}>
+              <Image
+                style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                source={editing}
+              />
+            </TouchableOpacity>
+          )}
+          {documentAction.includes('delete') && (
+            <TouchableOpacity
+              onPress={() => {
+                setUserId(item.id);
+                setDeleteUser(true);
+              }}
+              style={{marginLeft: wp(2)}}>
+              <Image
+                style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                source={deleteIcon}
+              />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     );
@@ -384,21 +389,23 @@ const DocumentList = ({
               style={[styles.searchView, {color: theme.text}]}
             />
             <View style={styles.filterView}>
-              <TouchableOpacity
-                onPress={() => {
-                  setUserId('');
-                  setTitle('');
-                  setDocumentTypeId('');
-                  setDocumentType('');
-                  setPatient('');
-                  setPatientId('');
-                  setNote('');
-                  setAvatar(null);
-                  setNewAccountVisible(true);
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>New Document</Text>
-              </TouchableOpacity>
+              {documentAction.includes('create') && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setUserId('');
+                    setTitle('');
+                    setDocumentTypeId('');
+                    setDocumentType('');
+                    setPatient('');
+                    setPatientId('');
+                    setNote('');
+                    setAvatar(null);
+                    setNewAccountVisible(true);
+                  }}
+                  style={styles.actionView}>
+                  <Text style={styles.actionText}>New Document</Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
 
@@ -435,6 +442,8 @@ const DocumentList = ({
                     ]}>
                     {'ACCOUNTANTS'}
                   </Text>
+                  {/* {documentAction.includes('edit') ||
+                  documentAction.includes('delete') ? ( */}
                   <Text
                     style={[
                       styles.titleText,
@@ -443,8 +452,12 @@ const DocumentList = ({
                         textAlign: 'center',
                       },
                     ]}>
-                    {'ACTION'}
+                    {documentAction.includes('edit') ||
+                    documentAction.includes('delete')
+                      ? 'ACTION'
+                      : null}
                   </Text>
+                  {/* ) : null} */}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

@@ -428,7 +428,17 @@ const AccountantList = ({
           </View>
         </View>
         <Text
-          style={[styles.dataHistoryText, {width: accountantAction.includes('status') ? wp(26) : isPortrait ? wp(34) : wp(54), textAlign: 'left'}]}>
+          style={[
+            styles.dataHistoryText,
+            {
+              width: accountantAction.includes('status')
+                ? wp(26)
+                : isPortrait
+                ? wp(34)
+                : wp(54),
+              textAlign: 'left',
+            },
+          ]}>
           {item.phone}
         </Text>
         {accountantAction.includes('status') && (
@@ -452,58 +462,58 @@ const AccountantList = ({
           </View>
         )}
         {accountantAction.includes('edit') ||
-          (accountantAction.includes('delete') && (
-            <View style={styles.actionDataView}>
-              {accountantAction.includes('edit') && (
-                <TouchableOpacity
-                  onPress={async () => {
-                    let allData = await onGetSpecificDoctor(item.id);
-                    setUserId(item.id);
-                    const [first, last] = item.name.split(',');
-                    setFirstName(first);
-                    setLastName(last);
-                    if (isImageFormat(item?.image_url)) {
-                      setAvatar(parseFileFromUrl(item?.image_url));
-                    }
-                    setEmail(item.email);
-                    if (allData.dob != null) {
-                      setDateOfBirth(new Date(allData.dob));
-                    }
-                    setGenderType(allData.gender == 0 ? 'male' : 'female');
-                    setAddress(allData.address1);
-                    setCity(allData.city);
-                    setAddress1(allData.address2);
-                    setPostalCode(allData.postal_code);
-                    setQualification(allData.qualification);
-                    setDesignation(allData.designation);
-                    setNumber(allData.phone);
-                    setStatus(allData.status == 'Active' ? true : false);
-                    if (allData?.blood_group != null) {
-                      setBloodSelected(allData?.blood_group);
-                    }
-                    setNewUserVisible(true);
-                  }}>
-                  <Image
-                    style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-                    source={editing}
-                  />
-                </TouchableOpacity>
-              )}
-              {accountantAction.includes('delete') && (
-                <TouchableOpacity
-                  onPress={() => {
-                    setUserId(item.id);
-                    setDeleteUser(true);
-                  }}
-                  style={{marginLeft: wp(2)}}>
-                  <Image
-                    style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-                    source={deleteIcon}
-                  />
-                </TouchableOpacity>
-              )}
-            </View>
-          ))}
+        accountantAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {accountantAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={async () => {
+                  let allData = await onGetSpecificDoctor(item.id);
+                  setUserId(item.id);
+                  const [first, last] = item.name.split(',');
+                  setFirstName(first);
+                  setLastName(last);
+                  if (isImageFormat(item?.image_url)) {
+                    setAvatar(parseFileFromUrl(item?.image_url));
+                  }
+                  setEmail(item.email);
+                  if (allData.dob != null) {
+                    setDateOfBirth(new Date(allData.dob));
+                  }
+                  setGenderType(allData.gender == 0 ? 'male' : 'female');
+                  setAddress(allData.address1);
+                  setCity(allData.city);
+                  setAddress1(allData.address2);
+                  setPostalCode(allData.postal_code);
+                  setQualification(allData.qualification);
+                  setDesignation(allData.designation);
+                  setNumber(allData.phone);
+                  setStatus(allData.status == 'Active' ? true : false);
+                  if (allData?.blood_group != null) {
+                    setBloodSelected(allData?.blood_group);
+                  }
+                  setNewUserVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {accountantAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: wp(2)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -734,11 +744,28 @@ const AccountantList = ({
                   <Text
                     style={[
                       styles.titleText,
-                      {width: isPortrait ? wp(55) : accountantAction.includes('edit') || accountantAction.includes('delete') ? wp(56.1) : wp(76.1)},
+                      {
+                        width: isPortrait
+                          ? wp(55)
+                          : accountantAction.includes('edit') ||
+                            accountantAction.includes('delete')
+                          ? wp(56.1)
+                          : wp(76.1),
+                      },
                     ]}>
                     {'ACCOUNTANTS'}
                   </Text>
-                  <Text style={[styles.titleText, {width: accountantAction.includes('status') ? wp(26) : isPortrait ? wp(34) : wp(54)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {
+                        width: accountantAction.includes('status')
+                          ? wp(26)
+                          : isPortrait
+                          ? wp(34)
+                          : wp(54),
+                      },
+                    ]}>
                     {'PHONE'}
                   </Text>
                   {accountantAction.includes('status') && (
@@ -747,15 +774,15 @@ const AccountantList = ({
                     </Text>
                   )}
                   {accountantAction.includes('edit') ||
-                    (accountantAction.includes('delete') && (
-                      <Text
-                        style={[
-                          styles.titleText,
-                          {width: wp(16), textAlign: 'center'},
-                        ]}>
-                        {'ACTION'}
-                      </Text>
-                    ))}
+                  accountantAction.includes('delete') ? (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: wp(16), textAlign: 'center'},
+                      ]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

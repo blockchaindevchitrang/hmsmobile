@@ -65,6 +65,7 @@ const PatientsList = ({
   totalPage,
   statusId,
   setStatusId,
+  patientAction,
 }) => {
   const orientation = useOrientation(); // Get current orientation
   const isPortrait = orientation === 'portrait';
@@ -232,7 +233,17 @@ const PatientsList = ({
           styles.dataHistoryView,
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
-        <View style={[styles.nameDataView]}>
+        <View
+          style={[
+            styles.nameDataView,
+            {
+              width: isPortrait
+                ? wp(55)
+                : patientAction.includes('status')
+                ? wp(45)
+                : wp(64),
+            },
+          ]}>
           {item?.patient_user?.first_name && (
             <ProfilePhoto
               style={styles.photoStyle}
@@ -251,7 +262,15 @@ const PatientsList = ({
         <Text
           style={[
             styles.dataHistoryText,
-            {width: isPortrait ? wp(30) : wp(22), textAlign: 'left'},
+            {
+              width: isPortrait
+                ? wp(30)
+                : patientAction.includes('edit') ||
+                  patientAction.includes('delete')
+                ? wp(22)
+                : wp(40),
+              textAlign: 'left',
+            },
           ]}>
           {item?.patient_user?.phone != null
             ? item?.patient_user?.phone
@@ -266,65 +285,79 @@ const PatientsList = ({
             ? item?.patient_user?.blood_group
             : 'N/A'}
         </Text>
-        <View style={[styles.switchView]}>
-          <Switch
-            trackColor={{
-              false:
-                item?.patient_user?.status == 1
-                  ? COLORS.greenColor
-                  : COLORS.errorColor,
-              true:
-                item?.patient_user?.status == 1
-                  ? COLORS.greenColor
-                  : COLORS.errorColor,
-            }}
-            thumbColor={item?.patient_user?.status == 1 ? '#f4f3f4' : '#f4f3f4'}
-            ios_backgroundColor={COLORS.errorColor}
-            onValueChange={() => {}}
-            value={item?.patient_user?.status == 1}
-          />
-        </View>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setFirstName(item.patient_user.first_name);
-              setLastName(item.patient_user.last_name);
-              setEmail(item.patient_user.email);
-              setDateOfBirth(new Date(item.patient_user.dob));
-              setPhone(
-                item.patient_user.phone != null ? item.patient_user.phone : '',
-              );
-              setGenderType(item.patient_user.gender == 0 ? 'male' : 'female');
-              setStatus(item.patient_user.status == 0 ? false : true);
-              setBloodGroup(
-                item.patient_user.blood_group != null
-                  ? item.patient_user.blood_group
-                  : '',
-              );
-              setAddress(item?.patient_user?.address1);
-              setAddress1(item?.patient_user?.address2);
-              setCity(item?.patient_user?.city);
-              setPostalCode(item?.patient_user?.postal_code);
-              setNewUserVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
+        {patientAction.includes('status') && (
+          <View style={[styles.switchView]}>
+            <Switch
+              trackColor={{
+                false:
+                  item?.patient_user?.status == 1
+                    ? COLORS.greenColor
+                    : COLORS.errorColor,
+                true:
+                  item?.patient_user?.status == 1
+                    ? COLORS.greenColor
+                    : COLORS.errorColor,
+              }}
+              thumbColor={
+                item?.patient_user?.status == 1 ? '#f4f3f4' : '#f4f3f4'
+              }
+              ios_backgroundColor={COLORS.errorColor}
+              onValueChange={() => {}}
+              value={item?.patient_user?.status == 1}
             />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+          </View>
+        )}
+        {patientAction.includes('edit') || patientAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {patientAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setFirstName(item.patient_user.first_name);
+                  setLastName(item.patient_user.last_name);
+                  setEmail(item.patient_user.email);
+                  setDateOfBirth(new Date(item.patient_user.dob));
+                  setPhone(
+                    item.patient_user.phone != null
+                      ? item.patient_user.phone
+                      : '',
+                  );
+                  setGenderType(
+                    item.patient_user.gender == 0 ? 'male' : 'female',
+                  );
+                  setStatus(item.patient_user.status == 0 ? false : true);
+                  setBloodGroup(
+                    item.patient_user.blood_group != null
+                      ? item.patient_user.blood_group
+                      : '',
+                  );
+                  setAddress(item?.patient_user?.address1);
+                  setAddress1(item?.patient_user?.address2);
+                  setCity(item?.patient_user?.city);
+                  setPostalCode(item?.patient_user?.postal_code);
+                  setNewUserVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {patientAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: wp(2)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -409,9 +442,11 @@ const PatientsList = ({
                 }}>
                 <MenuTrigger text={''} />
                 <MenuOptions style={{marginVertical: hp(0.5)}}>
-                  <MenuOption value={'add'}>
-                    <Text style={styles.dataHistoryText3}>New Patients</Text>
-                  </MenuOption>
+                  {patientAction.includes('create') && (
+                    <MenuOption value={'add'}>
+                      <Text style={styles.dataHistoryText3}>New Patients</Text>
+                    </MenuOption>
+                  )}
                   <MenuOption value={'excel'}>
                     <Text style={styles.dataHistoryText3}>Export to Excel</Text>
                   </MenuOption>
@@ -502,14 +537,27 @@ const PatientsList = ({
                   <Text
                     style={[
                       styles.titleText,
-                      {width: isPortrait ? wp(55) : wp(45)},
+                      {
+                        width: isPortrait
+                          ? wp(55)
+                          : patientAction.includes('status')
+                          ? wp(45)
+                          : wp(64),
+                      },
                     ]}>
                     {'PATIENTS'}
                   </Text>
                   <Text
                     style={[
                       styles.titleText,
-                      {width: isPortrait ? wp(30) : wp(22)},
+                      {
+                        width: isPortrait
+                          ? wp(30)
+                          : patientAction.includes('edit') ||
+                            patientAction.includes('delete')
+                          ? wp(22)
+                          : wp(40),
+                      },
                     ]}>
                     {'PHONE'}
                   </Text>
@@ -520,20 +568,25 @@ const PatientsList = ({
                     ]}>
                     {'BLOOD GROUP'}
                   </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: isPortrait ? wp(20) : wp(15)},
-                    ]}>
-                    {'STATUS'}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: isPortrait ? wp(16) : wp(14)},
-                    ]}>
-                    {'ACTION'}
-                  </Text>
+                  {patientAction.includes('status') && (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: isPortrait ? wp(20) : wp(15)},
+                      ]}>
+                      {'STATUS'}
+                    </Text>
+                  )}
+                  {patientAction.includes('edit') ||
+                  patientAction.includes('delete') ? (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: isPortrait ? wp(16) : wp(14)},
+                      ]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

@@ -62,6 +62,7 @@ const BedList = ({
   totalPage,
   setStatusId,
   statusId,
+  bedsAction,
 }) => {
   const bedTypeData = useSelector(state => state.bedTypeData);
   const orientation = useOrientation();
@@ -87,18 +88,27 @@ const BedList = ({
           styles.dataHistoryView,
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
-        <View style={[styles.switchView, {width: isPortrait ? wp(24) : wp(18)}]}>
+        <View
+          style={[styles.switchView, {width: isPortrait ? wp(24) : wp(18)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
             <Text style={[styles.dataHistoryText1]}>{item.bed_id}</Text>
           </View>
         </View>
-        <Text style={[styles.dataHistoryText, {width: isPortrait ? wp(16) : wp(14)}]}>
+        <Text
+          style={[
+            styles.dataHistoryText,
+            {width: isPortrait ? wp(16) : wp(14)},
+          ]}>
           {item.name}
         </Text>
         <View style={[styles.nameDataView]}>
           <Text style={[styles.dataHistoryText2]}>{item.bed_type}</Text>
         </View>
-        <Text style={[styles.dataHistoryText, {width: isPortrait ? wp(24) : wp(20)}]}>
+        <Text
+          style={[
+            styles.dataHistoryText,
+            {width: isPortrait ? wp(24) : wp(20)},
+          ]}>
           {item.charge}
         </Text>
         <View style={[styles.switchView, {width: wp(24)}]}>
@@ -107,18 +117,22 @@ const BedList = ({
           </View>
         </View>
         <View style={styles.actionDataView}>
-          <TouchableOpacity>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
+          {bedsAction.includes('edit') && (
+            <TouchableOpacity>
+              <Image
+                style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                source={editing}
+              />
+            </TouchableOpacity>
+          )}
+          {bedsAction.includes('delete') && (
+            <TouchableOpacity style={{marginLeft: wp(2)}}>
+              <Image
+                style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                source={deleteIcon}
+              />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     );
@@ -255,9 +269,11 @@ const BedList = ({
                 }}>
                 <MenuTrigger text={''} />
                 <MenuOptions style={{marginVertical: hp(0.5)}}>
-                  <MenuOption value={'add'}>
-                    <Text style={styles.dataHistoryText3}>New Bed</Text>
-                  </MenuOption>
+                  {bedsAction.includes('create') && (
+                    <MenuOption value={'add'}>
+                      <Text style={styles.dataHistoryText3}>New Bed</Text>
+                    </MenuOption>
+                  )}
                   <MenuOption value={'excel'}>
                     <Text style={styles.dataHistoryText3}>Export to Excel</Text>
                   </MenuOption>
@@ -299,7 +315,11 @@ const BedList = ({
                         renderButton={(selectedItem, isOpen) => {
                           console.log('Get Response>>>', selectedItem);
                           return (
-                            <View style={[styles.dropdown2BtnStyle2, {width: isPortrait ? '92%' : '100%'}]}>
+                            <View
+                              style={[
+                                styles.dropdown2BtnStyle2,
+                                {width: isPortrait ? '92%' : '100%'},
+                              ]}>
                               <Text style={styles.dropdownItemTxtStyle}>
                                 {selectedItem?.name || 'Select'}
                               </Text>
@@ -344,10 +364,18 @@ const BedList = ({
                     styles.titleActiveView,
                     {backgroundColor: theme.headerColor},
                   ]}>
-                  <Text style={[styles.titleText, {width: isPortrait ? wp(24) : wp(18)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {width: isPortrait ? wp(24) : wp(18)},
+                    ]}>
                     {'BED ID'}
                   </Text>
-                  <Text style={[styles.titleText, {width: isPortrait ? wp(16) : wp(14)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {width: isPortrait ? wp(16) : wp(14)},
+                    ]}>
                     {'BED'}
                   </Text>
                   <Text
@@ -357,15 +385,22 @@ const BedList = ({
                     ]}>
                     {'BED TYPE'}
                   </Text>
-                  <Text style={[styles.titleText, {width: isPortrait ? wp(24) : wp(20)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {width: isPortrait ? wp(24) : wp(20)},
+                    ]}>
                     {'CHARGE'}
                   </Text>
                   <Text style={[styles.titleText, {width: wp(24)}]}>
                     {'AVAILABLE'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(16)}]}>
-                    {'ACTION'}
-                  </Text>
+                  {bedsAction.includes('edit') ||
+                  bedsAction.includes('delete') ? (
+                    <Text style={[styles.titleText, {width: wp(16)}]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

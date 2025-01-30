@@ -59,6 +59,7 @@ const CasesList = ({
   totalPage,
   statusId,
   setStatusId,
+  caseAction,
 }) => {
   const orientation = useOrientation(); // Get current orientation
   const isPortrait = orientation === 'portrait';
@@ -267,53 +268,61 @@ const CasesList = ({
           ]}>
           {item.fee}
         </Text>
-        <View
-          style={[styles.switchView, {width: isPortrait ? wp(20) : wp(15)}]}>
-          <Switch
-            trackColor={{
-              false: item.status == 1 ? COLORS.greenColor : COLORS.errorColor,
-              true: item.status == 1 ? COLORS.greenColor : COLORS.errorColor,
-            }}
-            thumbColor={item.status == 1 ? '#f4f3f4' : '#f4f3f4'}
-            ios_backgroundColor={COLORS.errorColor}
-            onValueChange={() => {}}
-            value={item.status == 1 ? true : false}
-          />
-        </View>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={async () => {
-              let allDatas = await onGetSpecificDoctor(item.id);
-              setUserId(item.id);
-              console.log('get Reposnsee:::', allDatas.doctor_id);
-              setPatientId(allDatas.patient_id);
-              setPatientName(item.patient_name);
-              setDoctorId(allDatas.doctor_id);
-              setDoctorName(item.doctor_name);
-              setPhone(item.phone);
-              setDateOfBirth(new Date(allDatas.date));
-              setFee(JSON.stringify(item.fee));
-              setStatus(item.status == 1);
-              setNote(allDatas.description);
-              setNewUserVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
+        {caseAction.includes('status') && (
+          <View
+            style={[styles.switchView, {width: isPortrait ? wp(20) : wp(15)}]}>
+            <Switch
+              trackColor={{
+                false: item.status == 1 ? COLORS.greenColor : COLORS.errorColor,
+                true: item.status == 1 ? COLORS.greenColor : COLORS.errorColor,
+              }}
+              thumbColor={item.status == 1 ? '#f4f3f4' : '#f4f3f4'}
+              ios_backgroundColor={COLORS.errorColor}
+              onValueChange={() => {}}
+              value={item.status == 1 ? true : false}
             />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+          </View>
+        )}
+        {caseAction.includes('edit') || caseAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {caseAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={async () => {
+                  let allDatas = await onGetSpecificDoctor(item.id);
+                  setUserId(item.id);
+                  console.log('get Reposnsee:::', allDatas.doctor_id);
+                  setPatientId(allDatas.patient_id);
+                  setPatientName(item.patient_name);
+                  setDoctorId(allDatas.doctor_id);
+                  setDoctorName(item.doctor_name);
+                  setPhone(item.phone);
+                  setDateOfBirth(new Date(allDatas.date));
+                  setFee(JSON.stringify(item.fee));
+                  setStatus(item.status == 1);
+                  setNote(allDatas.description);
+                  setNewUserVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {caseAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: wp(2)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -338,25 +347,27 @@ const CasesList = ({
                 onPress={() => setFilterVisible(true)}>
                 <Image style={styles.filterImage} source={filter} />
               </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => {
-                  setUserId('');
-                  setPatientId('');
-                  setPatientName('');
-                  setDoctorId('');
-                  setDoctorName('');
-                  setPhone('');
-                  setDateOfBirth(new Date());
-                  setFee('');
-                  setStatus(false);
-                  setNote('');
-                  setErrorMessage('');
-                  setErrorVisible(false);
-                  setNewUserVisible(true);
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>New Case</Text>
-              </TouchableOpacity>
+              {caseAction.includes('create') && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setUserId('');
+                    setPatientId('');
+                    setPatientName('');
+                    setDoctorId('');
+                    setDoctorName('');
+                    setPhone('');
+                    setDateOfBirth(new Date());
+                    setFee('');
+                    setStatus(false);
+                    setNote('');
+                    setErrorMessage('');
+                    setErrorVisible(false);
+                    setNewUserVisible(true);
+                  }}
+                  style={styles.actionView}>
+                  <Text style={styles.actionText}>New Case</Text>
+                </TouchableOpacity>
+              )}
               <Modal
                 animationType="none"
                 transparent={true}
@@ -463,20 +474,25 @@ const CasesList = ({
                     ]}>
                     {'FEES'}
                   </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: isPortrait ? wp(20) : wp(15)},
-                    ]}>
-                    {'STATUS'}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: isPortrait ? wp(16) : wp(12)},
-                    ]}>
-                    {'ACTION'}
-                  </Text>
+                  {caseAction.includes('status') && (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: isPortrait ? wp(20) : wp(15)},
+                      ]}>
+                      {'STATUS'}
+                    </Text>
+                  )}
+                  {caseAction.includes('edit') ||
+                  caseAction.includes('delete') ? (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: isPortrait ? wp(16) : wp(12)},
+                      ]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

@@ -25,8 +25,12 @@ import DocumentList from '../../components/DocumentComponent/DocumentList';
 import DocumentTypeList from '../../components/DocumentComponent/DocumentTypeList';
 import {onGetCommonApi} from '../../services/Api';
 import useOrientation from '../../components/OrientationComponent';
+import {useSelector} from 'react-redux';
+
+let arrayData = ['Logo', 'Documents', 'Document Types'];
 
 export const DocumentsScreen = ({navigation}) => {
+  const rolePermission = useSelector(state => state.rolePermission);
   const {t} = useTranslation();
   const {theme} = useTheme();
   const orientation = useOrientation(); // Get current orientation
@@ -42,6 +46,55 @@ export const DocumentsScreen = ({navigation}) => {
   const [pageCount, setPageCount] = useState('1');
   const [totalPage, setTotalPage] = useState('1');
   const [documentTypePage, setDocumentTypePage] = useState('1');
+  const [documentAction, setDocumentAction] = useState([]);
+  const [documentTypeAction, setDocumentTypeAction] = useState([]);
+
+  useEffect(() => {
+    const visibility = {
+      documentVisible: false,
+      typeVisible: false,
+    };
+
+    // Helper function to process privileges
+    const processPrivileges = (
+      privileges,
+      endPoint,
+      setAction,
+      visibilityKey,
+    ) => {
+      const privilege = privileges.find(item => item.end_point === endPoint);
+      if (privilege) {
+        setAction(privilege.action.split(',').map(action => action.trim()));
+        visibility[visibilityKey] = true;
+      }
+    };
+
+    // Iterate over role permissions
+    rolePermission.forEach(item => {
+      if (item.main_module === 'Documents') {
+        processPrivileges(
+          item.privileges,
+          'documents',
+          setDocumentAction,
+          'documentVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'document_types',
+          setDocumentTypeAction,
+          'typeVisible',
+        );
+        // Handle arrayData based on visibility
+        const {documentVisible, typeVisible} = visibility;
+        console.log('Get Value::::>>>', visibility);
+        arrayData = [
+          'Logo',
+          documentVisible && 'Documents',
+          typeVisible && 'Documents Types',
+        ].filter(Boolean);
+      }
+    });
+  }, [rolePermission]);
 
   const animations = useRef(
     [0, 0, 0].map(() => new Animated.Value(300)),
@@ -158,6 +211,7 @@ export const DocumentsScreen = ({navigation}) => {
             totalPage={totalPage}
             pageCount={pageCount}
             setPageCount={setPageCount}
+            documentAction={documentAction}
           />
         ) : (
           selectedView == 'Document Types' && (
@@ -169,6 +223,7 @@ export const DocumentsScreen = ({navigation}) => {
               totalPage={documentTypePage}
               pageCount={pageCount}
               setPageCount={setPageCount}
+              documentTypeAction={documentTypeAction}
             />
           )
         )}
@@ -189,48 +244,46 @@ export const DocumentsScreen = ({navigation}) => {
 
             <View style={styles.mainModalView}>
               <View style={styles.menuContainer}>
-                {['Logo', 'Documents', 'Document Types'].map(
-                  (option, index) => (
-                    <>
-                      {option == 'Logo' ? (
-                        <Animated.View
-                          key={index}
-                          style={[
-                            styles.logoMenu,
-                            {
-                              transform: [{translateY: animations[index]}],
-                              opacity: opacities[index],
-                              marginBottom: hp(1),
-                            },
-                          ]}>
-                          <Image
-                            source={headerLogo}
-                            style={styles.headerLogoImage}
-                          />
-                        </Animated.View>
-                      ) : (
-                        <Animated.View
-                          key={index}
-                          style={[
-                            styles.menuOption,
-                            {
-                              transform: [{translateY: animations[index]}],
-                              opacity: opacities[index],
-                              backgroundColor: theme.headerColor,
-                            },
-                          ]}>
-                          <TouchableOpacity
-                            style={styles.optionButton}
-                            onPress={() => {
-                              setSelectedView(option), toggleMenu(false);
-                            }}>
-                            <Text style={styles.menuItem}>{option}</Text>
-                          </TouchableOpacity>
-                        </Animated.View>
-                      )}
-                    </>
-                  ),
-                )}
+                {arrayData.map((option, index) => (
+                  <>
+                    {option == 'Logo' ? (
+                      <Animated.View
+                        key={index}
+                        style={[
+                          styles.logoMenu,
+                          {
+                            transform: [{translateY: animations[index]}],
+                            opacity: opacities[index],
+                            marginBottom: hp(1),
+                          },
+                        ]}>
+                        <Image
+                          source={headerLogo}
+                          style={styles.headerLogoImage}
+                        />
+                      </Animated.View>
+                    ) : (
+                      <Animated.View
+                        key={index}
+                        style={[
+                          styles.menuOption,
+                          {
+                            transform: [{translateY: animations[index]}],
+                            opacity: opacities[index],
+                            backgroundColor: theme.headerColor,
+                          },
+                        ]}>
+                        <TouchableOpacity
+                          style={styles.optionButton}
+                          onPress={() => {
+                            setSelectedView(option), toggleMenu(false);
+                          }}>
+                          <Text style={styles.menuItem}>{option}</Text>
+                        </TouchableOpacity>
+                      </Animated.View>
+                    )}
+                  </>
+                ))}
 
                 <View style={styles.logoMenu}>
                   <TouchableOpacity

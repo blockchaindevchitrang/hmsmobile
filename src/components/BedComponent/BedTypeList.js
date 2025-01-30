@@ -45,6 +45,7 @@ const BedTypeList = ({
   pageCount,
   setPageCount,
   totalPage,
+  bedTypeAction,
 }) => {
   const {theme} = useTheme();
   const menuRef = useRef(null);
@@ -151,32 +152,37 @@ const BedTypeList = ({
         <View style={[styles.nameDataView]}>
           <Text style={[styles.dataHistoryText2]}>{item.title}</Text>
         </View>
-
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={() => {
-              setEventTitle(item.title);
-              setDepartmentComment(item.description);
-              setEditId(item.id);
-              setNewAccountVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={{marginLeft: wp(2)}}
-            onPress={() => {
-              setEditId(item.id);
-              setDeleteUser(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        {bedTypeAction.includes('edit') || bedTypeAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {bedTypeAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setEventTitle(item.title);
+                  setDepartmentComment(item.description);
+                  setEditId(item.id);
+                  setNewAccountVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {bedTypeAction.includes('delete') && (
+              <TouchableOpacity
+                style={{marginLeft: wp(2)}}
+                onPress={() => {
+                  setEditId(item.id);
+                  setDeleteUser(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -196,16 +202,18 @@ const BedTypeList = ({
               style={[styles.searchView, {color: theme.text}]}
             />
             <View style={styles.filterView}>
-              <TouchableOpacity
-                onPress={() => {
-                  setEditId('');
-                  setEventTitle('');
-                  setDepartmentComment('');
-                  setNewAccountVisible(true);
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>New Bed Type</Text>
-              </TouchableOpacity>
+              {bedTypeAction.includes('create') && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setEditId('');
+                    setEventTitle('');
+                    setDepartmentComment('');
+                    setNewAccountVisible(true);
+                  }}
+                  style={styles.actionView}>
+                  <Text style={styles.actionText}>New Bed Type</Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
           <View
@@ -218,13 +226,16 @@ const BedTypeList = ({
               <Text style={[styles.titleText, {width: wp(35)}]}>
                 {'BED TYPE'}
               </Text>
-              <Text
-                style={[
-                  styles.titleText,
-                  {width: wp(16), textAlign: 'center'},
-                ]}>
-                {'ACTION'}
-              </Text>
+              {bedTypeAction.includes('edit') ||
+              bedTypeAction.includes('delete') ? (
+                <Text
+                  style={[
+                    styles.titleText,
+                    {width: wp(16), textAlign: 'center'},
+                  ]}>
+                  {'ACTION'}
+                </Text>
+              ) : null}
             </View>
             <View style={styles.mainDataView}>
               <FlatList

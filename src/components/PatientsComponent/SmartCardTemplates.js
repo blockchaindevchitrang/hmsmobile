@@ -44,6 +44,7 @@ const SmartCardTemplates = ({
   totalPage,
   pageCount,
   setPageCount,
+  templateAction,
 }) => {
   const orientation = useOrientation(); // Get current orientation
   const isPortrait = orientation === 'portrait';
@@ -390,37 +391,44 @@ const SmartCardTemplates = ({
             value={item.show_patient_unique_id}
           />
         </View>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setName(item.template_name);
-              setHeaderColor(item.header_color);
-              setEmail(item.show_email);
-              setPhone(item.show_phone);
-              setDob(item.show_dob);
-              setBloodGroup(item.show_blood_group);
-              setAddress(item.show_address);
-              setUniqueId(item.show_patient_unique_id);
-              setNewUserVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={{marginLeft: wp(2)}}
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        {templateAction.includes('edit') ||
+        templateAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {templateAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setName(item.template_name);
+                  setHeaderColor(item.header_color);
+                  setEmail(item.show_email);
+                  setPhone(item.show_phone);
+                  setDob(item.show_dob);
+                  setBloodGroup(item.show_blood_group);
+                  setAddress(item.show_address);
+                  setUniqueId(item.show_patient_unique_id);
+                  setNewUserVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {templateAction.includes('delete') && (
+              <TouchableOpacity
+                style={{marginLeft: wp(2)}}
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -441,6 +449,31 @@ const SmartCardTemplates = ({
             />
             {!isPortrait && (
               <View style={styles.filterView}>
+                {templateAction.includes('create') && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setName('');
+                      setUserId('');
+                      setEmail(false);
+                      setPhone(false);
+                      setAddress(false);
+                      setBloodGroup(false);
+                      setDob(false);
+                      setUniqueId(false);
+                      setNewUserVisible(true);
+                    }}
+                    style={styles.actionView}>
+                    <Text style={styles.actionText}>
+                      New Patient Smart Card Template
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+          </View>
+          {isPortrait && (
+            <View style={styles.filterView}>
+              {templateAction.includes('create') && (
                 <TouchableOpacity
                   onPress={() => {
                     setName('');
@@ -458,18 +491,7 @@ const SmartCardTemplates = ({
                     New Patient Smart Card Template
                   </Text>
                 </TouchableOpacity>
-              </View>
-            )}
-          </View>
-          {isPortrait && (
-            <View style={styles.filterView}>
-              <TouchableOpacity
-                onPress={() => setNewUserVisible(true)}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>
-                  New Patient Smart Card Template
-                </Text>
-              </TouchableOpacity>
+              )}
             </View>
           )}
           <View
@@ -540,13 +562,16 @@ const SmartCardTemplates = ({
                     ]}>
                     {'SHOW PATIENT UNIQUE ID'}
                   </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: isPortrait ? wp(16) : wp(10)},
-                    ]}>
-                    {'ACTION'}
-                  </Text>
+                  {templateAction.includes('edit') ||
+                  templateAction.includes('delete') ? (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: isPortrait ? wp(16) : wp(10)},
+                      ]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

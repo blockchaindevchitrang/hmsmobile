@@ -68,6 +68,7 @@ const PatientAdmissionList = ({
   totalPage,
   statusId,
   setStatusId,
+  admissionAction,
 }) => {
   const orientation = useOrientation(); // Get current orientation
   const isPortrait = orientation === 'portrait';
@@ -405,65 +406,74 @@ const PatientAdmissionList = ({
           ]}>
           {item.policy_no}
         </Text>
-        <View
-          style={[styles.switchView, {width: isPortrait ? wp(20) : wp(12)}]}>
-          <Switch
-            trackColor={{
-              false: item.status == 1 ? COLORS.greenColor : COLORS.errorColor,
-              true: item.status == 1 ? COLORS.greenColor : COLORS.errorColor,
-            }}
-            thumbColor={item.status == 1 ? '#f4f3f4' : '#f4f3f4'}
-            ios_backgroundColor={COLORS.errorColor}
-            onValueChange={() => {}}
-            value={item.status == 1}
-          />
-        </View>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={async () => {
-              let allDatas = await onGetSpecificDoctor(item.id);
-              setUserId(item.id);
-              setPatientId(allDatas.patient_id);
-              setPatientName(item.patient_name);
-              setAdmissionDate(new Date(allDatas.admission_date));
-              setDoctorId(allDatas.doctor_id);
-              setDoctorName(item.doctor_name);
-              setBedId(allDatas.bed_id);
-              setBedName(item.bed);
-              setInsuranceId(allDatas.case_id);
-              setInsuranceName(
-                item.insurance_id != null ? item.insurance_id : '',
-              );
-              setPackageId(allDatas.package_id);
-              setPackageName(item.package);
-              setStatus(status == 0 ? false : true);
-              setAgentName(allDatas.agent_name);
-              setGuardianName(allDatas.guardian_name);
-              setGuardianRelation(allDatas.guardian_relation);
-              setGuardianContact(allDatas.guardian_contact);
-              setGuardianAddress(allDatas.guardian_address);
-              const accountantData1 = bedData.filter(
-                user => user.id === allDatas.bed_id,
-              );
-              setNewUserVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
+        {admissionAction.includes('status') && (
+          <View
+            style={[styles.switchView, {width: isPortrait ? wp(20) : wp(12)}]}>
+            <Switch
+              trackColor={{
+                false: item.status == 1 ? COLORS.greenColor : COLORS.errorColor,
+                true: item.status == 1 ? COLORS.greenColor : COLORS.errorColor,
+              }}
+              thumbColor={item.status == 1 ? '#f4f3f4' : '#f4f3f4'}
+              ios_backgroundColor={COLORS.errorColor}
+              onValueChange={() => {}}
+              value={item.status == 1}
             />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+          </View>
+        )}
+        {admissionAction.includes('edit') ||
+        admissionAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {admissionAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={async () => {
+                  let allDatas = await onGetSpecificDoctor(item.id);
+                  setUserId(item.id);
+                  setPatientId(allDatas.patient_id);
+                  setPatientName(item.patient_name);
+                  setAdmissionDate(new Date(allDatas.admission_date));
+                  setDoctorId(allDatas.doctor_id);
+                  setDoctorName(item.doctor_name);
+                  setBedId(allDatas.bed_id);
+                  setBedName(item.bed);
+                  setInsuranceId(allDatas.case_id);
+                  setInsuranceName(
+                    item.insurance_id != null ? item.insurance_id : '',
+                  );
+                  setPackageId(allDatas.package_id);
+                  setPackageName(item.package);
+                  setStatus(status == 0 ? false : true);
+                  setAgentName(allDatas.agent_name);
+                  setGuardianName(allDatas.guardian_name);
+                  setGuardianRelation(allDatas.guardian_relation);
+                  setGuardianContact(allDatas.guardian_contact);
+                  setGuardianAddress(allDatas.guardian_address);
+                  const accountantData1 = bedData.filter(
+                    user => user.id === allDatas.bed_id,
+                  );
+                  setNewUserVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {admissionAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: wp(2)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -545,11 +555,13 @@ const PatientAdmissionList = ({
                 }}>
                 <MenuTrigger text={''} />
                 <MenuOptions style={{marginVertical: hp(0.5)}}>
-                  <MenuOption value={'add'}>
-                    <Text style={styles.dataHistoryText3}>
-                      New Patient Admission
-                    </Text>
-                  </MenuOption>
+                  {admissionAction.includes('create') && (
+                    <MenuOption value={'add'}>
+                      <Text style={styles.dataHistoryText3}>
+                        New Patient Admission
+                      </Text>
+                    </MenuOption>
+                  )}
                   <MenuOption value={'excel'}>
                     <Text style={styles.dataHistoryText3}>Export to Excel</Text>
                   </MenuOption>
@@ -683,20 +695,25 @@ const PatientAdmissionList = ({
                     ]}>
                     {'POLICY NUMBER'}
                   </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: isPortrait ? wp(20) : wp(12)},
-                    ]}>
-                    {'STATUS'}
-                  </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: isPortrait ? wp(16) : wp(10)},
-                    ]}>
-                    {'ACTION'}
-                  </Text>
+                  {admissionAction.includes('status') && (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: isPortrait ? wp(20) : wp(12)},
+                      ]}>
+                      {'STATUS'}
+                    </Text>
+                  )}
+                  {admissionAction.includes('edit') ||
+                  admissionAction.includes('delete') ? (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: isPortrait ? wp(16) : wp(10)},
+                      ]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

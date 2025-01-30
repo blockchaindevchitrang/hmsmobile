@@ -74,6 +74,7 @@ const PayrollList = ({
   setPageCount,
   setStatusId1,
   statusId1,
+  payrollAction,
 }) => {
   const orientation = useOrientation(); // Get current orientation
   const isPortrait = orientation === 'portrait';
@@ -306,7 +307,7 @@ const PayrollList = ({
         <Text
           style={[
             styles.dataHistoryText,
-            {width: isPortrait ? wp(16) : wp(10)},
+            {width: isPortrait ? wp(16) : payrollAction.includes('edit') || payrollAction.includes('delete') ? wp(10) : wp(16)},
           ]}>
           {item.year}
         </Text>
@@ -323,57 +324,67 @@ const PayrollList = ({
             <Text style={[styles.dataHistoryText]}>{item.status}</Text>
           </View>
         </View>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={async () => {
-              let allDatas = await onGetSpecificDoctor(item.id);
-              setUserId(item.id);
-              setRole(allDatas.employeePayroll.type_string);
-              const matchingKey = Object.entries(allDatas?.types).find(
-                ([key, value]) =>
-                  value === allDatas.employeePayroll.type_string,
-              )?.[0];
-              setRoleId(matchingKey);
-              accountantData = allUserData.filter(
-                user =>
-                  user.department === allDatas.employeePayroll.type_string,
-              );
-              console.log('Get ImageLLLL', accountantData);
-              setEmployeeId(allDatas.employeePayroll.owner_id);
-              setEmployee(item.name);
-              setMonth(item.month);
-              setMonthId(allDatas.employeePayroll.month);
-              setStatus(item.status);
-              setStatusId(allDatas.employeePayroll.status);
-              setSrNo(JSON.stringify(allDatas.employeePayroll.sr_no));
-              setBasicSalary(
-                JSON.stringify(allDatas.employeePayroll.basic_salary),
-              );
-              setAllowance(JSON.stringify(allDatas.employeePayroll.allowance));
-              setDeductions(
-                JSON.stringify(allDatas.employeePayroll.deductions),
-              );
-              setNetSalary(JSON.stringify(allDatas.employeePayroll.net_salary));
-              setYear(JSON.stringify(item.year));
-              setNewUserVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        {payrollAction.includes('edit') || payrollAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {payrollAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={async () => {
+                  let allDatas = await onGetSpecificDoctor(item.id);
+                  setUserId(item.id);
+                  setRole(allDatas.employeePayroll.type_string);
+                  const matchingKey = Object.entries(allDatas?.types).find(
+                    ([key, value]) =>
+                      value === allDatas.employeePayroll.type_string,
+                  )?.[0];
+                  setRoleId(matchingKey);
+                  accountantData = allUserData.filter(
+                    user =>
+                      user.department === allDatas.employeePayroll.type_string,
+                  );
+                  console.log('Get ImageLLLL', accountantData);
+                  setEmployeeId(allDatas.employeePayroll.owner_id);
+                  setEmployee(item.name);
+                  setMonth(item.month);
+                  setMonthId(allDatas.employeePayroll.month);
+                  setStatus(item.status);
+                  setStatusId(allDatas.employeePayroll.status);
+                  setSrNo(JSON.stringify(allDatas.employeePayroll.sr_no));
+                  setBasicSalary(
+                    JSON.stringify(allDatas.employeePayroll.basic_salary),
+                  );
+                  setAllowance(
+                    JSON.stringify(allDatas.employeePayroll.allowance),
+                  );
+                  setDeductions(
+                    JSON.stringify(allDatas.employeePayroll.deductions),
+                  );
+                  setNetSalary(
+                    JSON.stringify(allDatas.employeePayroll.net_salary),
+                  );
+                  setYear(JSON.stringify(item.year));
+                  setNewUserVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {payrollAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: wp(2)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -411,29 +422,31 @@ const PayrollList = ({
                   onPress={() => setFilterVisible(true)}>
                   <Image style={styles.filterImage} source={filter} />
                 </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => {
-                    setSrNo('');
-                    setRole('');
-                    setRoleId('');
-                    setEmployee('');
-                    setEmployeeId('');
-                    setMonth('');
-                    setMonthId('');
-                    setYear('');
-                    setStatus('');
-                    setStatusId('');
-                    setBasicSalary('');
-                    setAllowance('');
-                    setDeductions('');
-                    setNetSalary('0');
-                    setErrorVisible(false);
-                    setErrorMessage('');
-                    setNewUserVisible(true);
-                  }}
-                  style={styles.actionView}>
-                  <Text style={styles.actionText}>New Employee Payroll</Text>
-                </TouchableOpacity>
+                {payrollAction.includes('create') && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setSrNo('');
+                      setRole('');
+                      setRoleId('');
+                      setEmployee('');
+                      setEmployeeId('');
+                      setMonth('');
+                      setMonthId('');
+                      setYear('');
+                      setStatus('');
+                      setStatusId('');
+                      setBasicSalary('');
+                      setAllowance('');
+                      setDeductions('');
+                      setNetSalary('0');
+                      setErrorVisible(false);
+                      setErrorMessage('');
+                      setNewUserVisible(true);
+                    }}
+                    style={styles.actionView}>
+                    <Text style={styles.actionText}>New Employee Payroll</Text>
+                  </TouchableOpacity>
+                )}
                 <Modal
                   animationType="none"
                   transparent={true}
@@ -511,29 +524,31 @@ const PayrollList = ({
                 onPress={() => setFilterVisible(true)}>
                 <Image style={styles.filterImage} source={filter} />
               </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => {
-                  setSrNo('');
-                  setRole('');
-                  setRoleId('');
-                  setEmployee('');
-                  setEmployeeId('');
-                  setMonth('');
-                  setMonthId('');
-                  setYear('');
-                  setStatus('');
-                  setStatusId('');
-                  setBasicSalary('');
-                  setAllowance('');
-                  setDeductions('');
-                  setNetSalary('0');
-                  setErrorVisible(false);
-                  setErrorMessage('');
-                  setNewUserVisible(true);
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>New Employee Payroll</Text>
-              </TouchableOpacity>
+              {payrollAction.includes('create') && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setSrNo('');
+                    setRole('');
+                    setRoleId('');
+                    setEmployee('');
+                    setEmployeeId('');
+                    setMonth('');
+                    setMonthId('');
+                    setYear('');
+                    setStatus('');
+                    setStatusId('');
+                    setBasicSalary('');
+                    setAllowance('');
+                    setDeductions('');
+                    setNetSalary('0');
+                    setErrorVisible(false);
+                    setErrorMessage('');
+                    setNewUserVisible(true);
+                  }}
+                  style={styles.actionView}>
+                  <Text style={styles.actionText}>New Employee Payroll</Text>
+                </TouchableOpacity>
+              )}
               <Modal
                 animationType="none"
                 transparent={true}
@@ -646,7 +661,7 @@ const PayrollList = ({
                   <Text
                     style={[
                       styles.titleText,
-                      {width: isPortrait ? wp(16) : wp(10)},
+                      {width: isPortrait ? wp(16) : payrollAction.includes('edit') || payrollAction.includes('delete') ? wp(10) : wp(16)},
                     ]}>
                     {'YEAR'}
                   </Text>
@@ -664,13 +679,16 @@ const PayrollList = ({
                     ]}>
                     {'STATUS'}
                   </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: isPortrait ? wp(16) : wp(10)},
-                    ]}>
-                    {'ACTION'}
-                  </Text>
+                  {payrollAction.includes('edit') ||
+                  payrollAction.includes('delete') ? (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: isPortrait ? wp(16) : wp(10)},
+                      ]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList
@@ -1416,7 +1434,7 @@ const portraitStyles = StyleSheet.create({
   },
   dataHistoryView: {
     width: '100%',
-    height: hp(8),
+    paddingVertical: hp(1),
     alignItems: 'center',
     flexDirection: 'row',
     alignSelf: 'flex-start',
@@ -1921,7 +1939,7 @@ const landscapeStyles = StyleSheet.create({
   },
   dataHistoryView: {
     width: '100%',
-    height: hp(6),
+    paddingVertical: hp(1),
     alignItems: 'center',
     flexDirection: 'row',
     alignSelf: 'flex-start',

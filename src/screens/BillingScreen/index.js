@@ -30,9 +30,14 @@ import PaymentList from '../../components/BillingComponent/PaymentList';
 import ReportList from '../../components/BillingComponent/ReportList';
 import AdvanceList from '../../components/BillingComponent/AdvanceList';
 import ManualList from '../../components/BillingComponent/ManualList';
-import {onGetAccountListApi, onGetCommonApi, onGetPayrollListApi} from '../../services/Api';
+import {
+  onGetAccountListApi,
+  onGetCommonApi,
+  onGetPayrollListApi,
+} from '../../services/Api';
 import BillList from '../../components/BillingComponent/BillList';
 import useOrientation from '../../components/OrientationComponent';
+import {useSelector} from 'react-redux';
 
 const allData = [
   {
@@ -292,7 +297,20 @@ const ManualData = [
   },
 ];
 
+let arrayData = [
+  'Logo',
+  'Accounts',
+  'Employee Payrolls',
+  'Invoices',
+  'Payments',
+  'Payment Reports',
+  'Advance Payments',
+  'Bills',
+  'Manual Billing Payments',
+];
+
 export const BillingScreen = ({navigation}) => {
+  const rolePermission = useSelector(state => state.rolePermission);
   const {t} = useTranslation();
   const {theme} = useTheme();
   const orientation = useOrientation(); // Get current orientation
@@ -331,6 +349,117 @@ export const BillingScreen = ({navigation}) => {
   const [payrollStatusId, setPayrollStatusId] = useState(1);
   const [paymentStatusId, setPaymentStatusId] = useState(1);
   const [typeId, setTypeId] = useState(1);
+  const [accountAction, setAccountAction] = useState([]);
+  const [payrollAction, setPayrollAction] = useState([]);
+  const [invoiceAction, setInvoiceAction] = useState([]);
+  const [paymentAction, setPaymentAction] = useState([]);
+  const [reportAction, setReportAction] = useState([]);
+  const [advanceAction, setAdvanceAction] = useState([]);
+  const [billAction, setBillAction] = useState([]);
+  const [manualAction, setManualAction] = useState([]);
+
+  useEffect(() => {
+    const visibility = {
+      accountVisible: false,
+      payrollVisible: false,
+      invoiceVisible: false,
+      paymentVisible: false,
+      reportVisible: false,
+      advanceVisible: false,
+      billVisible: false,
+      manualVisible: false,
+    };
+    // Helper function to process privileges
+    const processPrivileges = (
+      privileges,
+      endPoint,
+      setAction,
+      visibilityKey,
+    ) => {
+      const privilege = privileges.find(item => item.end_point === endPoint);
+      if (privilege) {
+        setAction(privilege.action.split(',').map(action => action.trim()));
+        visibility[visibilityKey] = true;
+      }
+    };
+
+    // Iterate over role permissions
+    rolePermission.forEach(item => {
+      if (item.main_module === 'Billings') {
+        processPrivileges(
+          item.privileges,
+          'accounts',
+          setAccountAction,
+          'accountVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'employee_payrolls',
+          setPayrollAction,
+          'payrollVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'invoices',
+          setInvoiceAction,
+          'invoiceVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'payments',
+          setPaymentAction,
+          'paymentVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'payment_reports',
+          setReportAction,
+          'reportVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'advance_payments',
+          setAdvanceAction,
+          'advanceVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'bills',
+          setBillAction,
+          'billVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'manual_billing_payments',
+          setManualAction,
+          'manualVisible',
+        );
+        // Handle arrayData based on visibility
+        const {
+          accountVisible,
+          payrollVisible,
+          invoiceVisible,
+          paymentVisible,
+          reportVisible,
+          advanceVisible,
+          billVisible,
+          manualVisible,
+        } = visibility;
+        console.log('Get Value::::>>>', visibility);
+        arrayData = [
+          'Logo',
+          accountVisible && 'accounts',
+          payrollVisible && 'employee_payrolls',
+          invoiceVisible && 'invoices',
+          paymentVisible && 'payments',
+          reportVisible && 'payment_reports',
+          advanceVisible && 'advance_payments',
+          billVisible && 'bills',
+          manualVisible && 'manual_billing_payments',
+        ].filter(Boolean);
+      }
+    });
+  }, [rolePermission]);
 
   const animations = useRef(
     [0, 0, 0, 0, 0, 0, 0, 0, 0].map(() => new Animated.Value(300)),
@@ -559,6 +688,7 @@ export const BillingScreen = ({navigation}) => {
             statusId={statusId}
             setTypeId={setTypeId}
             typeId={typeId}
+            accountAction={accountAction}
           />
         ) : selectedView == 'Employee Payrolls' ? (
           <PayrollList
@@ -571,6 +701,7 @@ export const BillingScreen = ({navigation}) => {
             setPageCount={setPageCount}
             setStatusId1={setPayrollStatusId}
             statusId1={payrollStatusId}
+            payrollAction={payrollAction}
           />
         ) : selectedView == 'Invoices' ? (
           <InvoicesList
@@ -582,6 +713,7 @@ export const BillingScreen = ({navigation}) => {
             pageCount={pageCount}
             setPageCount={setPageCount}
             account={accountList}
+            invoiceAction={invoiceAction}
           />
         ) : selectedView == 'Payments' ? (
           <PaymentList
@@ -592,6 +724,7 @@ export const BillingScreen = ({navigation}) => {
             totalPage={paymentPage}
             pageCount={pageCount}
             setPageCount={setPageCount}
+            paymentAction={paymentAction}
           />
         ) : selectedView == 'Payment Reports' ? (
           <ReportList
@@ -604,6 +737,7 @@ export const BillingScreen = ({navigation}) => {
             setPageCount={setPageCount}
             setStatusId={setPaymentStatusId}
             statusId={paymentStatusId}
+            reportAction={reportAction}
           />
         ) : selectedView == 'Advance Payments' ? (
           <AdvanceList
@@ -614,6 +748,7 @@ export const BillingScreen = ({navigation}) => {
             totalPage={advancePage}
             pageCount={pageCount}
             setPageCount={setPageCount}
+            advanceAction={advanceAction}
           />
         ) : selectedView == 'Bills' ? (
           <BillList
@@ -624,6 +759,7 @@ export const BillingScreen = ({navigation}) => {
             totalPage={billPage}
             pageCount={pageCount}
             setPageCount={setPageCount}
+            billAction={billAction}
           />
         ) : (
           selectedView == 'Manual Billing Payments' && (
@@ -634,6 +770,7 @@ export const BillingScreen = ({navigation}) => {
               totalPage={manualPage}
               pageCount={pageCount}
               setPageCount={setPageCount}
+              manualAction={manualAction}
             />
           )
         )}
@@ -654,17 +791,7 @@ export const BillingScreen = ({navigation}) => {
 
             <View style={styles.mainModalView}>
               <View style={styles.menuContainer}>
-                {[
-                  'Logo',
-                  'Accounts',
-                  'Employee Payrolls',
-                  'Invoices',
-                  'Payments',
-                  'Payment Reports',
-                  'Advance Payments',
-                  'Bills',
-                  'Manual Billing Payments',
-                ].map((option, index) => (
+                {arrayData.map((option, index) => (
                   <>
                     {option == 'Logo' ? (
                       <Animated.View

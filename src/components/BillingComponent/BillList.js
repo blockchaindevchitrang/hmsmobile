@@ -50,6 +50,7 @@ const BillList = ({
   totalPage,
   pageCount,
   setPageCount,
+  billAction,
 }) => {
   const admissionData = useSelector(state => state.admissionData);
   const orientation = useOrientation();
@@ -331,13 +332,36 @@ const BillList = ({
           style={[styles.nameDataView, {width: isPortrait ? wp(26) : wp(16)}]}>
           <Text style={[styles.dataHistoryText2]}>{item.bill_id}</Text>
         </View>
-        <View style={styles.nameDataView}>
+        <View
+          style={[
+            styles.nameDataView,
+            {
+              width: isPortrait
+                ? wp(55)
+                : billAction.includes('edit') || billAction.includes('delete')
+                ? wp(37)
+                : wp(53),
+            },
+          ]}>
           {item.name && (
             <ProfilePhoto style={styles.photoStyle} username={item.name} />
           )}
           <View>
             <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
-            <Text style={[styles.dataHistoryText5]}>{item.email}</Text>
+            <Text
+              style={[
+                styles.dataHistoryText5,
+                {
+                  width: isPortrait
+                    ? wp(45)
+                    : billAction.includes('edit') ||
+                      billAction.includes('delete')
+                    ? wp(33)
+                    : wp(45),
+                },
+              ]}>
+              {item.email}
+            </Text>
           </View>
         </View>
         <View
@@ -361,55 +385,63 @@ const BillList = ({
           ]}>
           {item.amount}
         </Text>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={async () => {
-              let allDatas = await onGetSpecificDoctor(item.id);
-              console.log('gert Value:::', allDatas);
-              setUserId(item.id);
-              setAdmissionId(allDatas.patientadmission.patient_admission_id);
-              setBillDate(new Date(allDatas.bill.bill_date));
-              setAdmissionDate(
-                new Date(allDatas.patientadmission.admission_date),
-              );
-              setDischargeDate(
-                new Date(allDatas.patientadmission.discharge_date),
-              );
-              setAdmissionName(
-                allDatas.patientadmission.patient_admission_id + item.name,
-              );
-              setPatientEmail(item.email);
-              // setPackageName(item.);
-              setPolicyNo(allDatas.patientadmission.policy_no);
-              let dataValue = [];
-              allDatas.bill.bill_items.map(item1 => {
-                dataValue.push({
-                  itemName: item1.item_name,
-                  qty: JSON.stringify(item1.qty),
-                  price: JSON.stringify(item1.price),
-                  amount: JSON.stringify(item1.amount),
-                });
-              });
-              setParameterArray(dataValue);
-              setNewUserVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        {billAction.includes('edit') || billAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {billAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={async () => {
+                  let allDatas = await onGetSpecificDoctor(item.id);
+                  console.log('gert Value:::', allDatas);
+                  setUserId(item.id);
+                  setAdmissionId(
+                    allDatas.patientadmission.patient_admission_id,
+                  );
+                  setBillDate(new Date(allDatas.bill.bill_date));
+                  setAdmissionDate(
+                    new Date(allDatas.patientadmission.admission_date),
+                  );
+                  setDischargeDate(
+                    new Date(allDatas.patientadmission.discharge_date),
+                  );
+                  setAdmissionName(
+                    allDatas.patientadmission.patient_admission_id + item.name,
+                  );
+                  setPatientEmail(item.email);
+                  // setPackageName(item.);
+                  setPolicyNo(allDatas.patientadmission.policy_no);
+                  let dataValue = [];
+                  allDatas.bill.bill_items.map(item1 => {
+                    dataValue.push({
+                      itemName: item1.item_name,
+                      qty: JSON.stringify(item1.qty),
+                      price: JSON.stringify(item1.price),
+                      amount: JSON.stringify(item1.amount),
+                    });
+                  });
+                  setParameterArray(dataValue);
+                  setNewUserVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {billAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: wp(2)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -451,32 +483,34 @@ const BillList = ({
               style={[styles.searchView, {color: theme.text}]}
             />
             <View style={styles.filterView}>
-              <TouchableOpacity
-                onPress={() => {
-                  setUserId('');
-                  setParameterArray([
-                    {
-                      itemName: '',
-                      qty: '',
-                      price: '',
-                      amount: '',
-                    },
-                  ]);
-                  setAdmissionId('');
-                  setBillDate(new Date());
-                  setPatientEmail('');
-                  setDoctorName('');
-                  setAdmissionDate('');
-                  setDischargeDate('');
-                  setPolicyNo('');
-                  setPackageName('');
-                  setErrorMessage('');
-                  setErrorVisible(false);
-                  setNewUserVisible(true);
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>New Bill</Text>
-              </TouchableOpacity>
+              {billAction.includes('create') && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setUserId('');
+                    setParameterArray([
+                      {
+                        itemName: '',
+                        qty: '',
+                        price: '',
+                        amount: '',
+                      },
+                    ]);
+                    setAdmissionId('');
+                    setBillDate(new Date());
+                    setPatientEmail('');
+                    setDoctorName('');
+                    setAdmissionDate('');
+                    setDischargeDate('');
+                    setPolicyNo('');
+                    setPackageName('');
+                    setErrorMessage('');
+                    setErrorVisible(false);
+                    setNewUserVisible(true);
+                  }}
+                  style={styles.actionView}>
+                  <Text style={styles.actionText}>New Bill</Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
           <View
@@ -501,7 +535,14 @@ const BillList = ({
                   <Text
                     style={[
                       styles.titleText,
-                      {width: isPortrait ? wp(55) : wp(37)},
+                      {
+                        width: isPortrait
+                          ? wp(55)
+                          : billAction.includes('edit') ||
+                            billAction.includes('delete')
+                          ? wp(37)
+                          : wp(53),
+                      },
                     ]}>
                     {'Patient'}
                   </Text>
@@ -526,13 +567,16 @@ const BillList = ({
                     ]}>
                     {'AMOUNT'}
                   </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: isPortrait ? wp(16) : wp(10)},
-                    ]}>
-                    {'ACTION'}
-                  </Text>
+                  {billAction.includes('edit') ||
+                  billAction.includes('delete') ? (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: isPortrait ? wp(16) : wp(10)},
+                      ]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

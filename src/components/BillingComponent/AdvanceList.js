@@ -50,6 +50,7 @@ const AdvanceList = ({
   totalPage,
   pageCount,
   setPageCount,
+  advanceAction,
 }) => {
   const user_data = useSelector(state => state.user_data);
   const orientation = useOrientation();
@@ -200,11 +201,37 @@ const AdvanceList = ({
             <Text style={[styles.dataHistoryText1]}>{item.receipt_no}</Text>
           </View>
         </View>
-        <View style={[styles.nameDataView]}>
-          <ProfilePhoto username={item.name} />
+        <View
+          style={[
+            styles.nameDataView,
+            {
+              width: isPortrait
+                ? wp(55)
+                : advanceAction.includes('edit') ||
+                  advanceAction.includes('delete')
+                ? wp(37)
+                : wp(53),
+            },
+          ]}>
+          {item.name && (
+            <ProfilePhoto style={styles.photoStyle} username={item.name} />
+          )}
           <View>
             <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
-            <Text style={[styles.dataHistoryText1]}>{item.email}</Text>
+            <Text
+              style={[
+                styles.dataHistoryText1,
+                {
+                  width: isPortrait
+                    ? wp(45)
+                    : advanceAction.includes('edit') ||
+                      advanceAction.includes('delete')
+                    ? wp(33)
+                    : wp(45),
+                },
+              ]}>
+              {item.email}
+            </Text>
           </View>
         </View>
         <View
@@ -216,34 +243,40 @@ const AdvanceList = ({
         <Text style={[styles.dataHistoryText, {width: wp(24)}]}>
           {item.amount}
         </Text>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={async () => {
-              let allDatas = await onGetSpecificDoctor(item.id);
-              setUserId(item.id);
-              setPatient(item.name);
-              setPatientId(allDatas.patient_id);
-              setPaymentDate(new Date(allDatas.date));
-              setAmount(JSON.stringify(item.amount));
-              setNewAccountVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        {advanceAction.includes('edit') || advanceAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {advanceAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={async () => {
+                  let allDatas = await onGetSpecificDoctor(item.id);
+                  setUserId(item.id);
+                  setPatient(item.name);
+                  setPatientId(allDatas.patient_id);
+                  setPaymentDate(new Date(allDatas.date));
+                  setAmount(JSON.stringify(item.amount));
+                  setNewAccountVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {advanceAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: wp(2)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -267,6 +300,31 @@ const AdvanceList = ({
                 <TouchableOpacity style={styles.filterView1}>
                   <Image style={styles.filterImage} source={filter} />
                 </TouchableOpacity>
+                {advanceAction.includes('create') && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setUserId('');
+                      setPatient('');
+                      setPatientId('');
+                      setErrorVisible(false);
+                      setErrorMessage('');
+                      setPaymentDate(new Date());
+                      setAmount('');
+                      setNewAccountVisible(true);
+                    }}
+                    style={styles.actionView}>
+                    <Text style={styles.actionText}>New Advance Payments</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+          </View>
+          {isPortrait && (
+            <View style={styles.filterView}>
+              <TouchableOpacity style={styles.filterView1}>
+                <Image style={styles.filterImage} source={filter} />
+              </TouchableOpacity>
+              {advanceAction.includes('create') && (
                 <TouchableOpacity
                   onPress={() => {
                     setUserId('');
@@ -281,28 +339,7 @@ const AdvanceList = ({
                   style={styles.actionView}>
                   <Text style={styles.actionText}>New Advance Payments</Text>
                 </TouchableOpacity>
-              </View>
-            )}
-          </View>
-          {isPortrait && (
-            <View style={styles.filterView}>
-              <TouchableOpacity style={styles.filterView1}>
-                <Image style={styles.filterImage} source={filter} />
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => {
-                  setUserId('');
-                  setPatient('');
-                  setPatientId('');
-                  setErrorVisible(false);
-                  setErrorMessage('');
-                  setPaymentDate(new Date());
-                  setAmount('');
-                  setNewAccountVisible(true);
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>New Advance Payments</Text>
-              </TouchableOpacity>
+              )}
             </View>
           )}
           <View
@@ -327,7 +364,15 @@ const AdvanceList = ({
                   <Text
                     style={[
                       styles.titleText,
-                      {width: isPortrait ? wp(55) : wp(37), textAlign: 'left'},
+                      {
+                        width: isPortrait
+                          ? wp(55)
+                          : advanceAction.includes('edit') ||
+                            advanceAction.includes('delete')
+                          ? wp(37)
+                          : wp(53),
+                        textAlign: 'left',
+                      },
                     ]}>
                     {'PATIENT'}
                   </Text>
@@ -341,13 +386,16 @@ const AdvanceList = ({
                   <Text style={[styles.titleText, {width: wp(24)}]}>
                     {'AMOUNT'}
                   </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: isPortrait ? wp(16) : wp(12)},
-                    ]}>
-                    {'ACTION'}
-                  </Text>
+                  {advanceAction.includes('edit') ||
+                  advanceAction.includes('delete') ? (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: isPortrait ? wp(16) : wp(12)},
+                      ]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList
@@ -583,6 +631,13 @@ const portraitStyles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: wp(3),
     marginVertical: hp(2),
+  },
+  photoStyle: {
+    width: wp(8),
+    height: wp(8),
+    borderRadius: wp(8),
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   searchView: {
     width: '100%',
@@ -1086,6 +1141,13 @@ const landscapeStyles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: wp(3),
     marginVertical: hp(2),
+  },
+  photoStyle: {
+    width: wp(5),
+    height: wp(5),
+    borderRadius: wp(5),
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   searchView: {
     width: '50%',

@@ -30,170 +30,12 @@ import {
 } from '../../services/Api';
 import BedStatus from '../../components/BedComponent/BedStatus';
 import useOrientation from '../../components/OrientationComponent';
+import {useSelector} from 'react-redux';
 
-const allData = [
-  {
-    id: 1,
-    name: 'Super Deluxe1',
-  },
-  {
-    id: 2,
-    name: 'Intensive',
-  },
-  {
-    id: 3,
-    name: 'Test Bed M3T',
-  },
-  {
-    id: 4,
-    name: 'Single',
-  },
-  {
-    id: 5,
-    name: 'YoloHealth',
-  },
-];
-
-const BedData = [
-  {
-    id: 1,
-    bed: 10,
-    bed_id: 'N2JY0SK7',
-    bed_type: 'Intensive',
-    available: 'Yes',
-    charge: '$1,000.00',
-  },
-  {
-    id: 2,
-    bed: 4,
-    bed_id: 'N2JY0SK5',
-    bed_type: 'ICU BED',
-    available: 'Yes',
-    charge: '$1,000.00',
-  },
-  {
-    id: 3,
-    bed: 5,
-    bed_id: 'N2JY0SK5',
-    bed_type: 'GENERAL WARD',
-    available: 'Yes',
-    charge: '$1,000.00',
-  },
-  {
-    id: 4,
-    bed: 8,
-    bed_id: 'N2JY0SK5',
-    bed_type: 'Delux',
-    available: 'Yes',
-    charge: '$1,000.00',
-  },
-  {
-    id: 5,
-    bed: 11,
-    bed_id: 'N2JY0SK5',
-    bed_type: 'GENERAL WARD',
-    available: 'Yes',
-    charge: '$1,000.00',
-  },
-];
-
-const BedAssignData = [
-  {
-    id: 1,
-    invoice: 'N2JY0SK7',
-    name: 'Joey Tribiyani',
-    mail: 'joey@gmail.com',
-    invoice_date: '26th May, 2024',
-    bed: 'General ward',
-    discharge: 'N/A',
-    status: true,
-  },
-  {
-    id: 2,
-    invoice: 'N2JY0SK5',
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    invoice_date: '21th May, 2024',
-    bed: 'VIP',
-    discharge: 'N/A',
-    status: true,
-  },
-  {
-    id: 3,
-    invoice: 'N2JY0SK0',
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    invoice_date: '20th Dec, 2023',
-    bed: 'Delux',
-    discharge: 'N/A',
-    status: true,
-  },
-  {
-    id: 4,
-    invoice: 'N2JY0SL3',
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    invoice_date: '28th May, 2024',
-    bed: 'General ward',
-    discharge: 'N/A',
-    status: true,
-  },
-  {
-    id: 5,
-    invoice: 'N2JY0SK8',
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    invoice_date: '24th May, 2024',
-    bed: 'General ward',
-    discharge: 'N/A',
-    status: true,
-  },
-];
-
-const ManualData = [
-  {
-    id: 1,
-    name: 'Joey Tribiyani',
-    mail: 'joey@gmail.com',
-    approved: 'Approved',
-    amount: '$1,500.00',
-    status: 'Paid',
-  },
-  {
-    id: 2,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    approved: 'Approved',
-    amount: '$1,000.00',
-    status: 'Paid',
-  },
-  {
-    id: 3,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    approved: 'N/A',
-    amount: '$500.00',
-    status: 'Unpaid',
-  },
-  {
-    id: 4,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    approved: 'Approved',
-    amount: '$1,000.00',
-    status: 'Unpaid',
-  },
-  {
-    id: 5,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    approved: 'N/A',
-    amount: '$1,000.00',
-    status: 'Paid',
-  },
-];
+let arrayData = ['Logo', 'Bed Types', 'Beds', 'Bed Assigns', 'Bed Status'];
 
 export const BedScreen = ({navigation}) => {
+  const rolePermission = useSelector(state => state.rolePermission);
   const {t} = useTranslation();
   const {theme} = useTheme();
   const orientation = useOrientation(); // Get current orientation
@@ -217,6 +59,74 @@ export const BedScreen = ({navigation}) => {
   const [assignPage, setAssignPage] = useState('1');
   const [statusId, setStatusId] = useState(1);
   const [assignStatusId, setAssignStatusId] = useState(1);
+  const [bedTypeAction, setBedTypeAction] = useState([]);
+  const [bedsAction, setBedsAction] = useState([]);
+  const [assignAction, setAssignAction] = useState([]);
+  const [statusAction, setStatusAction] = useState([]);
+
+  useEffect(() => {
+    const visibility = {
+      bedTypeVisible: false,
+      bedsVisible: false,
+      assignVisible: false,
+      statusVisible: false,
+    };
+
+    // Helper function to process privileges
+    const processPrivileges = (
+      privileges,
+      endPoint,
+      setAction,
+      visibilityKey,
+    ) => {
+      const privilege = privileges.find(item => item.end_point === endPoint);
+      if (privilege) {
+        setAction(privilege.action.split(',').map(action => action.trim()));
+        visibility[visibilityKey] = true;
+      }
+    };
+
+    // Iterate over role permissions
+    rolePermission.forEach(item => {
+      if (item.main_module === 'Bed Managements') {
+        processPrivileges(
+          item.privileges,
+          'bed_types',
+          setBedTypeAction,
+          'bedTypeVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'beds',
+          setBedsAction,
+          'bedsVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'bed_assigns',
+          setAssignAction,
+          'assignVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'bed_status',
+          setStatusAction,
+          'statusVisible',
+        );
+        // Handle arrayData based on visibility
+        const {bedTypeVisible, bedsVisible, assignVisible, statusVisible} =
+          visibility;
+        console.log('Get Value::::>>>', visibility);
+        arrayData = [
+          'Logo',
+          bedTypeVisible && 'Bed Types',
+          bedsVisible && 'Beds',
+          assignVisible && 'Bed Assigns',
+          statusVisible && 'Bed Status',
+        ].filter(Boolean);
+      }
+    });
+  }, [rolePermission]);
 
   const animations = useRef(
     [0, 0, 0, 0, 0].map(() => new Animated.Value(300)),
@@ -360,6 +270,7 @@ export const BedScreen = ({navigation}) => {
             pageCount={pageCount}
             setPageCount={setPageCount}
             totalPage={totalPage}
+            bedTypeAction={bedTypeAction}
           />
         ) : selectedView == 'Beds' ? (
           <BedList
@@ -372,6 +283,7 @@ export const BedScreen = ({navigation}) => {
             totalPage={bedPage}
             setStatusId={setStatusId}
             statusId={statusId}
+            bedsAction={bedsAction}
           />
         ) : selectedView == 'Bed Assigns' ? (
           <BedAssignList
@@ -384,6 +296,7 @@ export const BedScreen = ({navigation}) => {
             totalPage={assignPage}
             setStatusId={setAssignStatusId}
             statusId={assignStatusId}
+            assignAction={assignAction}
           />
         ) : (
           selectedView == 'Bed Status' && (
@@ -407,50 +320,48 @@ export const BedScreen = ({navigation}) => {
 
             <View style={styles.mainModalView}>
               <View style={styles.menuContainer}>
-                {['Logo', 'Bed Types', 'Beds', 'Bed Assigns', 'Bed Status'].map(
-                  (option, index) => (
-                    <>
-                      {option == 'Logo' ? (
-                        <Animated.View
-                          key={index}
-                          style={[
-                            styles.logoMenu,
-                            {
-                              transform: [{translateY: animations[index]}],
-                              opacity: opacities[index],
-                              marginBottom: hp(1),
-                            },
-                          ]}>
-                          <Image
-                            source={headerLogo}
-                            style={styles.headerLogoImage}
-                          />
-                        </Animated.View>
-                      ) : (
-                        <Animated.View
-                          key={index}
-                          style={[
-                            styles.menuOption,
-                            {
-                              transform: [{translateY: animations[index]}],
-                              opacity: opacities[index],
-                              backgroundColor: theme.headerColor,
-                            },
-                          ]}>
-                          <TouchableOpacity
-                            style={styles.optionButton}
-                            onPress={() => {
-                              setSelectedView(option);
-                              setPageCount('1');
-                              toggleMenu(false);
-                            }}>
-                            <Text style={styles.menuItem}>{option}</Text>
-                          </TouchableOpacity>
-                        </Animated.View>
-                      )}
-                    </>
-                  ),
-                )}
+                {arrayData.map((option, index) => (
+                  <>
+                    {option == 'Logo' ? (
+                      <Animated.View
+                        key={index}
+                        style={[
+                          styles.logoMenu,
+                          {
+                            transform: [{translateY: animations[index]}],
+                            opacity: opacities[index],
+                            marginBottom: hp(1),
+                          },
+                        ]}>
+                        <Image
+                          source={headerLogo}
+                          style={styles.headerLogoImage}
+                        />
+                      </Animated.View>
+                    ) : (
+                      <Animated.View
+                        key={index}
+                        style={[
+                          styles.menuOption,
+                          {
+                            transform: [{translateY: animations[index]}],
+                            opacity: opacities[index],
+                            backgroundColor: theme.headerColor,
+                          },
+                        ]}>
+                        <TouchableOpacity
+                          style={styles.optionButton}
+                          onPress={() => {
+                            setSelectedView(option);
+                            setPageCount('1');
+                            toggleMenu(false);
+                          }}>
+                          <Text style={styles.menuItem}>{option}</Text>
+                        </TouchableOpacity>
+                      </Animated.View>
+                    )}
+                  </>
+                ))}
 
                 <View style={styles.logoMenu}>
                   <TouchableOpacity

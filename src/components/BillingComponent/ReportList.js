@@ -41,6 +41,7 @@ const ReportList = ({
   setPageCount,
   setStatusId,
   statusId,
+  reportAction,
 }) => {
   const {theme} = useTheme();
   const orientation = useOrientation();

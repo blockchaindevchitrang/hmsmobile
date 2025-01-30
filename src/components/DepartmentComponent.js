@@ -68,39 +68,39 @@ const DepartmentComponent = ({
           <Text style={[styles.dataHistoryText2]}>{item.title}</Text>
         </View>
         {departmentAction.includes('edit') ||
-          (departmentAction.includes('delete') && (
-            <View style={styles.actionDataView}>
-              {departmentAction.includes('edit') && (
-                <TouchableOpacity
-                  onPress={() => {
-                    setEditId(item.id);
-                    setEventTitle(item.title);
-                    setDepartmentComment(item.description);
-                    setStatusVisible(item.status == 1 ? true : false);
-                    setDepartmentType(item.type);
-                    setAddDoctorVisible(true);
-                  }}>
-                  <Image
-                    style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-                    source={editing}
-                  />
-                </TouchableOpacity>
-              )}
-              {departmentAction.includes('delete') && (
-                <TouchableOpacity
-                  style={{marginLeft: wp(2)}}
-                  onPress={() => {
-                    setEditId(item.id);
-                    setDeleteUser(true);
-                  }}>
-                  <Image
-                    style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-                    source={deleteIcon}
-                  />
-                </TouchableOpacity>
-              )}
-            </View>
-          ))}
+        departmentAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {departmentAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setEditId(item.id);
+                  setEventTitle(item.title);
+                  setDepartmentComment(item.description);
+                  setStatusVisible(item.status == 1 ? true : false);
+                  setDepartmentType(item.type);
+                  setAddDoctorVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {departmentAction.includes('delete') && (
+              <TouchableOpacity
+                style={{marginLeft: wp(2)}}
+                onPress={() => {
+                  setEditId(item.id);
+                  setDeleteUser(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -148,18 +148,18 @@ const DepartmentComponent = ({
                   {'DOCTOR DEPARTMENT'}
                 </Text>
                 {departmentAction.includes('edit') ||
-                  (departmentAction.includes('delete') && (
-                    <Text
-                      style={[
-                        styles.titleText,
-                        {
-                          width: '25%',
-                          textAlign: isPortrait ? 'left' : 'center',
-                        },
-                      ]}>
-                      {'ACTION'}
-                    </Text>
-                  ))}
+                departmentAction.includes('delete') ? (
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {
+                        width: '25%',
+                        textAlign: isPortrait ? 'left' : 'center',
+                      },
+                    ]}>
+                    {'ACTION'}
+                  </Text>
+                ) : null}
               </View>
               <View style={styles.mainDataView}>
                 <FlatList

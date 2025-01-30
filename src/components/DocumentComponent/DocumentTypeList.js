@@ -46,6 +46,7 @@ const DocumentTypeList = ({
   totalPage,
   pageCount,
   setPageCount,
+  documentTypeAction,
 }) => {
   const {theme} = useTheme();
   const orientation = useOrientation();
@@ -163,30 +164,37 @@ const DocumentTypeList = ({
         <View style={[styles.nameDataView]}>
           <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
         </View>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setEventTitle(item.name);
-              setNewAccountVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        {documentTypeAction.includes('edit') ||
+        documentTypeAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {documentTypeAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setEventTitle(item.name);
+                  setNewAccountVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {documentTypeAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: wp(2)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -207,6 +215,25 @@ const DocumentTypeList = ({
             />
             {!isPortrait && (
               <View style={styles.filterView}>
+                {documentTypeAction.includes('create') && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setEventTitle('');
+                      setUserId('');
+                      setErrorVisible(false);
+                      setErrorMessage('');
+                      setNewAccountVisible(true);
+                    }}
+                    style={styles.actionView}>
+                    <Text style={styles.actionText}>New Document Types</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+          </View>
+          {isPortrait && (
+            <View style={styles.filterView}>
+              {documentTypeAction.includes('create') && (
                 <TouchableOpacity
                   onPress={() => {
                     setEventTitle('');
@@ -218,22 +245,7 @@ const DocumentTypeList = ({
                   style={styles.actionView}>
                   <Text style={styles.actionText}>New Document Types</Text>
                 </TouchableOpacity>
-              </View>
-            )}
-          </View>
-          {isPortrait && (
-            <View style={styles.filterView}>
-              <TouchableOpacity
-                onPress={() => {
-                  setEventTitle('');
-                  setUserId('');
-                  setErrorVisible(false);
-                  setErrorMessage('');
-                  setNewAccountVisible(true);
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>New Document Types</Text>
-              </TouchableOpacity>
+              )}
             </View>
           )}
           <View
@@ -246,13 +258,16 @@ const DocumentTypeList = ({
               <Text style={[styles.titleText, {width: wp(32)}]}>
                 {'DOCUMENT TYPE'}
               </Text>
-              <Text
-                style={[
-                  styles.titleText,
-                  {width: wp(16), textAlign: 'center'},
-                ]}>
-                {'ACTION'}
-              </Text>
+              {documentTypeAction.includes('edit') ||
+              documentTypeAction.includes('delete') ? (
+                <Text
+                  style={[
+                    styles.titleText,
+                    {width: wp(16), textAlign: 'center'},
+                  ]}>
+                  {'ACTION'}
+                </Text>
+              ) : null}
             </View>
             <View style={styles.mainDataView}>
               <FlatList

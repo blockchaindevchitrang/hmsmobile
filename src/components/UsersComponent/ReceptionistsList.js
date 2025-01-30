@@ -488,59 +488,59 @@ const ReceptionistsList = ({
           </View>
         )}
         {receptionAction.includes('edit') ||
-          (receptionAction.includes('delete') && (
-            <View style={styles.actionDataView}>
-              {receptionAction.includes('edit') && (
-                <TouchableOpacity
-                  onPress={async () => {
-                    let allData = await onGetSpecificDoctor(item.id);
-                    setUserId(item.id);
-                    const [first, last] = item.name.split(',');
-                    setFirstName(first);
-                    setLastName(last);
-                    if (isImageFormat(item?.image_url)) {
-                      setAvatar(parseFileFromUrl(item?.image_url));
-                    }
-                    setEmail(item.email);
-                    setDesignation(allData.designation);
-                    if (allData.dob != null) {
-                      setDateOfBirth(new Date(allData.dob));
-                    }
-                    setGenderType(allData.gender == 0 ? 'male' : 'female');
-                    setAddress(allData.address1);
-                    setCity(allData.city);
-                    setAddress1(allData.address2);
-                    setCountry(allData.country);
-                    setPostalCode(allData.postal_code);
-                    setQualification(allData.qualification);
-                    setNumber(allData.phone);
-                    setStatus(allData.status == 'Active' ? true : false);
-                    if (allData?.blood_group != null) {
-                      setBloodSelected(allData?.blood_group);
-                    }
-                    setNewUserVisible(true);
-                  }}>
-                  <Image
-                    style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-                    source={editing}
-                  />
-                </TouchableOpacity>
-              )}
-              {receptionAction.includes('delete') && (
-                <TouchableOpacity
-                  onPress={() => {
-                    setUserId(item.id);
-                    setDeleteUser(true);
-                  }}
-                  style={{marginLeft: wp(2)}}>
-                  <Image
-                    style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-                    source={deleteIcon}
-                  />
-                </TouchableOpacity>
-              )}
-            </View>
-          ))}
+        receptionAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {receptionAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={async () => {
+                  let allData = await onGetSpecificDoctor(item.id);
+                  setUserId(item.id);
+                  const [first, last] = item.name.split(',');
+                  setFirstName(first);
+                  setLastName(last);
+                  if (isImageFormat(item?.image_url)) {
+                    setAvatar(parseFileFromUrl(item?.image_url));
+                  }
+                  setEmail(item.email);
+                  setDesignation(allData.designation);
+                  if (allData.dob != null) {
+                    setDateOfBirth(new Date(allData.dob));
+                  }
+                  setGenderType(allData.gender == 0 ? 'male' : 'female');
+                  setAddress(allData.address1);
+                  setCity(allData.city);
+                  setAddress1(allData.address2);
+                  setCountry(allData.country);
+                  setPostalCode(allData.postal_code);
+                  setQualification(allData.qualification);
+                  setNumber(allData.phone);
+                  setStatus(allData.status == 'Active' ? true : false);
+                  if (allData?.blood_group != null) {
+                    setBloodSelected(allData?.blood_group);
+                  }
+                  setNewUserVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {receptionAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: wp(2)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -808,15 +808,15 @@ const ReceptionistsList = ({
                     </Text>
                   )}
                   {receptionAction.includes('edit') ||
-                    (receptionAction.includes('delete') && (
-                      <Text
-                        style={[
-                          styles.titleText,
-                          {width: isPortrait ? wp(16) : wp(15)},
-                        ]}>
-                        {'ACTION'}
-                      </Text>
-                    ))}
+                  receptionAction.includes('delete') ? (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: isPortrait ? wp(16) : wp(15)},
+                      ]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList
