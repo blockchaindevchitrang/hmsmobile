@@ -27,112 +27,18 @@ import IssuedItemsList from '../../components/InventoryComponent/IssuedItemsList
 import ItemStocksList from '../../components/InventoryComponent/ItemStocksList';
 import {onGetCommonApi} from '../../services/Api';
 import useOrientation from '../../components/OrientationComponent';
+import {useSelector} from 'react-redux';
 
-const allData = [
-  {
-    id: 1,
-    chargeCategory: 'Consultation',
-    description: 'N/A',
-    chargeTime: 'Operation Theatre',
-  },
-  {
-    id: 2,
-    chargeCategory: 'Online Consulation',
-    description: 'demo',
-    chargeTime: 'Procedures',
-  },
-  {
-    id: 3,
-    chargeCategory: 'Fee',
-    description: 'N/A',
-    chargeTime: 'Investigations',
-  },
-  {
-    id: 4,
-    chargeCategory: 'Other',
-    description: 'N/A',
-    chargeTime: 'Others',
-  },
-  {
-    id: 5,
-    chargeCategory: 'op',
-    description: 'N/A',
-    chargeTime: 'Operation Theatre',
-  },
-];
-
-const BloodDonorData = [
-  {
-    id: 1,
-    code: '76571',
-    chargeCategory: 'Consultation',
-    chargeType: 'Operation Theatre',
-    standard_charge: '$100.00',
-  },
-  {
-    id: 2,
-    code: '76572',
-    chargeCategory: 'Online Consultation',
-    chargeType: 'Procedures',
-    standard_charge: '$1,000.00',
-  },
-  {
-    id: 3,
-    code: '76573',
-    chargeCategory: 'Fee',
-    chargeType: 'Investigations',
-    standard_charge: '$343,442.00',
-  },
-  {
-    id: 4,
-    code: '76574',
-    chargeCategory: 'Other',
-    chargeType: 'Others',
-    standard_charge: '$5,000.00',
-  },
-  {
-    id: 5,
-    code: '76575',
-    chargeCategory: 'op',
-    chargeType: 'Operation Theatre',
-    standard_charge: '$5,000.00',
-  },
-];
-
-const BloodIssueData = [
-  {
-    id: 1,
-    name: 'Joey Tribiyani',
-    mail: 'joey@gmail.com',
-    standard_charge: '$600.00',
-  },
-  {
-    id: 2,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    standard_charge: '$600.00',
-  },
-  {
-    id: 3,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    standard_charge: '$500.00',
-  },
-  {
-    id: 4,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    standard_charge: '$500.00',
-  },
-  {
-    id: 5,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    standard_charge: '$400.00',
-  },
+let arrayData = [
+  'Logo',
+  'Item Categories',
+  'Items',
+  'Item Stocks',
+  'Issued Items',
 ];
 
 export const InventoryScreen = ({navigation}) => {
+  const rolePermission = useSelector(state => state.rolePermission);
   const {t} = useTranslation();
   const {theme} = useTheme();
   const orientation = useOrientation(); // Get current orientation
@@ -155,6 +61,75 @@ export const InventoryScreen = ({navigation}) => {
   const [itemStockPage, setItemStockPage] = useState('1');
   const [issueItemPage, setIssueItemPage] = useState('1');
   const [statusId, setStatusId] = useState(3);
+  const [categoryAction, setCategoryAction] = useState([]);
+  const [itemAction, setItemAction] = useState([]);
+  const [stockAction, setStockAction] = useState([]);
+  const [issueAction, setIssueAction] = useState([]);
+
+  useEffect(() => {
+    const visibility = {
+      categoryVisible: false,
+      itemVisible: false,
+      stockVisible: false,
+      issueVisible: false,
+    };
+
+    // Helper function to process privileges
+    const processPrivileges = (
+      privileges,
+      endPoint,
+      setAction,
+      visibilityKey,
+    ) => {
+      const privilege = privileges.find(item => item.end_point === endPoint);
+      if (privilege) {
+        setAction(privilege.action.split(',').map(action => action.trim()));
+        visibility[visibilityKey] = true;
+      }
+    };
+
+    // Iterate over role permissions
+    rolePermission.forEach(item => {
+      if (item.main_module === 'Hospital Charges') {
+        processPrivileges(
+          item.privileges,
+          'items_categories',
+          setCategoryAction,
+          'categoryVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'items',
+          setItemAction,
+          'itemVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'item_stocks',
+          setStockAction,
+          'stockVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'issued_items',
+          setIssueAction,
+          'issueVisible',
+        );
+
+        // Handle arrayData based on visibility
+        const {categoryVisible, itemVisible, stockVisible, issueVisible} =
+          visibility;
+        console.log('Get Value::::>>>', visibility);
+        arrayData = [
+          'Logo',
+          categoryVisible && 'Item Categories',
+          itemVisible && 'Items',
+          stockVisible && 'Item Stocks',
+          issueVisible && 'Issued Items',
+        ].filter(Boolean);
+      }
+    });
+  }, [rolePermission]);
 
   const animations = useRef(
     [0, 0, 0, 0, 0].map(() => new Animated.Value(300)),
@@ -313,6 +288,7 @@ export const InventoryScreen = ({navigation}) => {
             totalPage={totalPage}
             pageCount={pageCount}
             setPageCount={setPageCount}
+            categoryAction={categoryAction}
           />
         ) : selectedView == 'Items' ? (
           <ItemsList
@@ -324,6 +300,7 @@ export const InventoryScreen = ({navigation}) => {
             totalPage={itemPage}
             pageCount={pageCount}
             setPageCount={setPageCount}
+            itemAction={itemAction}
           />
         ) : selectedView == 'Item Stocks' ? (
           <ItemStocksList
@@ -336,6 +313,7 @@ export const InventoryScreen = ({navigation}) => {
             totalPage={itemStockPage}
             pageCount={pageCount}
             setPageCount={setPageCount}
+            stockAction={stockAction}
           />
         ) : (
           selectedView == 'Issued Items' && (
@@ -351,6 +329,7 @@ export const InventoryScreen = ({navigation}) => {
               setPageCount={setPageCount}
               statusId={statusId}
               setStatusId={setStatusId}
+              issueAction={issueAction}
             />
           )
         )}
@@ -371,13 +350,7 @@ export const InventoryScreen = ({navigation}) => {
 
             <View style={styles.mainModalView}>
               <View style={styles.menuContainer}>
-                {[
-                  'Logo',
-                  'Item Categories',
-                  'Items',
-                  'Item Stocks',
-                  'Issued Items',
-                ].map((option, index) => (
+                {arrayData.map((option, index) => (
                   <>
                     {option == 'Logo' ? (
                       <Animated.View

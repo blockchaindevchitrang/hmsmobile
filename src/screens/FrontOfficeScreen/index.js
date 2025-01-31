@@ -27,8 +27,18 @@ import {onGetCommonApi} from '../../services/Api';
 import PostalReceiveList from '../../components/FrontOfficeComponent/PostalReceiveList';
 import PostalDispatchList from '../../components/FrontOfficeComponent/PostalDispatchList';
 import useOrientation from '../../components/OrientationComponent';
+import {useSelector} from 'react-redux';
+
+let arrayData = [
+  'Logo',
+  'Call Logs',
+  'Visitors',
+  'Postal Receives',
+  'Postal Dispatches',
+];
 
 export const FrontOfficeScreen = ({navigation}) => {
+  const rolePermission = useSelector(state => state.rolePermission);
   const {t} = useTranslation();
   const {theme} = useTheme();
   const orientation = useOrientation(); // Get current orientation
@@ -52,6 +62,79 @@ export const FrontOfficeScreen = ({navigation}) => {
   const [dispatchPage, setDispatchPage] = useState('1');
   const [statusId, setStatusId] = useState(3);
   const [statusId1, setStatusId1] = useState(0);
+  const [callLogAction, setCallLogAction] = useState([]);
+  const [visitorAction, setVisitorAction] = useState([]);
+  const [receiveAction, setReceiveAction] = useState([]);
+  const [dispatchAction, setDispatchAction] = useState([]);
+
+  useEffect(() => {
+    const visibility = {
+      callLogVisible: false,
+      visitorVisible: false,
+      receiveVisible: false,
+      dispatchVisible: false,
+    };
+
+    // Helper function to process privileges
+    const processPrivileges = (
+      privileges,
+      endPoint,
+      setAction,
+      visibilityKey,
+    ) => {
+      const privilege = privileges.find(item => item.end_point === endPoint);
+      if (privilege) {
+        setAction(privilege.action.split(',').map(action => action.trim()));
+        visibility[visibilityKey] = true;
+      }
+    };
+
+    // Iterate over role permissions
+    rolePermission.forEach(item => {
+      if (item.main_module === 'Hospital Charges') {
+        processPrivileges(
+          item.privileges,
+          'call_logs',
+          setCallLogAction,
+          'callLogVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'visitors',
+          setVisitorAction,
+          'visitorVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'postal_receive',
+          setReceiveAction,
+          'receiveVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'postal_dispatch',
+          setDispatchAction,
+          'dispatchVisible',
+        );
+
+        // Handle arrayData based on visibility
+        const {
+          callLogVisible,
+          visitorVisible,
+          receiveVisible,
+          dispatchVisible,
+        } = visibility;
+        console.log('Get Value::::>>>', visibility);
+        arrayData = [
+          'Logo',
+          callLogVisible && 'Call Logs',
+          visitorVisible && 'Visitors',
+          receiveVisible && 'Postal Receives',
+          dispatchVisible && 'Postal Dispatches',
+        ].filter(Boolean);
+      }
+    });
+  }, [rolePermission]);
 
   const animations = useRef(
     [0, 0, 0, 0, 0].map(() => new Animated.Value(300)),
@@ -212,6 +295,7 @@ export const FrontOfficeScreen = ({navigation}) => {
             setPageCount={setPageCount}
             statusId={statusId}
             setStatusId={setStatusId}
+            callLogAction={callLogAction}
           />
         ) : selectedView == 'Visitors' ? (
           <VisitorList
@@ -224,6 +308,7 @@ export const FrontOfficeScreen = ({navigation}) => {
             setPageCount={setPageCount}
             statusId={statusId1}
             setStatusId={setStatusId1}
+            visitorAction={visitorAction}
           />
         ) : selectedView == 'Postal Receives' ? (
           <PostalReceiveList
@@ -234,6 +319,7 @@ export const FrontOfficeScreen = ({navigation}) => {
             totalPage={receivePage}
             pageCount={pageCount}
             setPageCount={setPageCount}
+            receiveAction={receiveAction}
           />
         ) : (
           selectedView == 'Postal Dispatches' && (
@@ -245,6 +331,7 @@ export const FrontOfficeScreen = ({navigation}) => {
               totalPage={dispatchPage}
               pageCount={pageCount}
               setPageCount={setPageCount}
+              dispatchAction={dispatchAction}
             />
           )
         )}
@@ -265,13 +352,7 @@ export const FrontOfficeScreen = ({navigation}) => {
 
             <View style={styles.mainModalView}>
               <View style={styles.menuContainer}>
-                {[
-                  'Logo',
-                  'Call Logs',
-                  'Visitors',
-                  'Postal Receives',
-                  'Postal Dispatches',
-                ].map((option, index) => (
+                {arrayData.map((option, index) => (
                   <>
                     {option == 'Logo' ? (
                       <Animated.View

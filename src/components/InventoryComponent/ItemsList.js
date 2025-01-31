@@ -47,6 +47,7 @@ const ItemsList = ({
   totalPage,
   pageCount,
   setPageCount,
+  itemAction,
 }) => {
   const {theme} = useTheme();
   const orientation = useOrientation();
@@ -260,42 +261,57 @@ const ItemsList = ({
           </View>
         </View>
         <View
-          style={[styles.switchView, {width: isPortrait ? wp(40) : wp(30)}]}>
+          style={[
+            styles.switchView,
+            {
+              width: isPortrait
+                ? wp(40)
+                : itemAction.includes('edit') || itemAction.includes('delete')
+                ? wp(30)
+                : wp(50),
+            },
+          ]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
             <Text style={[styles.dataHistoryText1]}>
               {item.available_quantity}
             </Text>
           </View>
         </View>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={async () => {
-              let allDatas = await onGetSpecificDoctor(item.id);
-              setUserId(item.id);
-              setName(item.name);
-              setCategoryName(item.itemcategory);
-              setCategoryId(allDatas.item_category_id);
-              setUnit(JSON.stringify(item.unit));
-              setDescription(item.description);
-              setNewAccountVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        {itemAction.includes('edit') || itemAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {itemAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={async () => {
+                  let allDatas = await onGetSpecificDoctor(item.id);
+                  setUserId(item.id);
+                  setName(item.name);
+                  setCategoryName(item.itemcategory);
+                  setCategoryId(allDatas.item_category_id);
+                  setUnit(JSON.stringify(item.unit));
+                  setDescription(item.description);
+                  setNewAccountVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {itemAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: wp(2)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -315,21 +331,23 @@ const ItemsList = ({
               style={[styles.searchView, {color: theme.text}]}
             />
             <View style={styles.filterView}>
-              <TouchableOpacity
-                onPress={() => {
-                  setUserId('');
-                  setName('');
-                  setCategoryId('');
-                  setCategoryName('');
-                  setUnit('');
-                  setDescription('');
-                  setErrorMessage('');
-                  setErrorVisible(false);
-                  setNewAccountVisible(true);
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>New Item</Text>
-              </TouchableOpacity>
+              {itemAction.includes('create') && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setUserId('');
+                    setName('');
+                    setCategoryId('');
+                    setCategoryName('');
+                    setUnit('');
+                    setDescription('');
+                    setErrorMessage('');
+                    setErrorVisible(false);
+                    setNewAccountVisible(true);
+                  }}
+                  style={styles.actionView}>
+                  <Text style={styles.actionText}>New Item</Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
 
@@ -369,17 +387,27 @@ const ItemsList = ({
                   <Text
                     style={[
                       styles.titleText,
-                      {width: isPortrait ? wp(40) : wp(30)},
+                      {
+                        width: isPortrait
+                          ? wp(40)
+                          : itemAction.includes('edit') ||
+                            itemAction.includes('delete')
+                          ? wp(30)
+                          : wp(50),
+                      },
                     ]}>
                     {'AVAILABLE QUANTITY'}
                   </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: wp(16), textAlign: 'center'},
-                    ]}>
-                    {'ACTION'}
-                  </Text>
+                  {itemAction.includes('edit') ||
+                  itemAction.includes('delete') ? (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: wp(16), textAlign: 'center'},
+                      ]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

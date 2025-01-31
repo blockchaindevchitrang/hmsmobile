@@ -64,6 +64,7 @@ const VisitorList = ({
   setPageCount,
   statusId,
   setStatusId,
+  visitorAction,
 }) => {
   const {theme} = useTheme();
   const orientation = useOrientation();
@@ -360,44 +361,50 @@ const VisitorList = ({
           ]}>
           {item.out_time}
         </Text>
-        <View
-          style={[
-            styles.actionDataView,
-            {width: isPortrait ? wp(16) : wp(12)},
-          ]}>
-          <TouchableOpacity
-            onPress={async () => {
-              let allDatas = await onGetSpecificDoctor(item.id);
-              setUserId(item.id);
-              setName(item.name);
-              setPhone(item.phone);
-              setDate(new Date(item.date));
-              setPurpose(item.purpose);
-              setPurposeId(allDatas.purpose);
-              setIdCard(item.id_card);
-              setNumberPerson(item.no_of_person);
-              setInTime(item.in_time);
-              setOutTime(item.out_time);
-              setDescription(allDatas.note);
-              setAddCallVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        {visitorAction.includes('edit') || visitorAction.includes('delete') ? (
+          <View
+            style={[
+              styles.actionDataView,
+              {width: isPortrait ? wp(16) : wp(12)},
+            ]}>
+            {visitorAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={async () => {
+                  let allDatas = await onGetSpecificDoctor(item.id);
+                  setUserId(item.id);
+                  setName(item.name);
+                  setPhone(item.phone);
+                  setDate(new Date(item.date));
+                  setPurpose(item.purpose);
+                  setPurposeId(allDatas.purpose);
+                  setIdCard(item.id_card);
+                  setNumberPerson(item.no_of_person);
+                  setInTime(item.in_time);
+                  setOutTime(item.out_time);
+                  setDescription(allDatas.note);
+                  setAddCallVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {visitorAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: wp(2)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -490,9 +497,11 @@ const VisitorList = ({
                 }}>
                 <MenuTrigger text={''} />
                 <MenuOptions style={{marginVertical: hp(0.5)}}>
-                  <MenuOption value={'add'}>
-                    <Text style={styles.dataHistoryText3}>New Visitor</Text>
-                  </MenuOption>
+                  {visitorAction.includes('create') && (
+                    <MenuOption value={'add'}>
+                      <Text style={styles.dataHistoryText3}>New Visitor</Text>
+                    </MenuOption>
+                  )}
                   <MenuOption value={'excel'}>
                     <Text style={styles.dataHistoryText3}>Export to Excel</Text>
                   </MenuOption>
@@ -619,13 +628,16 @@ const VisitorList = ({
                     ]}>
                     {'OUT TIME'}
                   </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: isPortrait ? wp(16) : wp(12)},
-                    ]}>
-                    {'ACTION'}
-                  </Text>
+                  {visitorAction.includes('edit') ||
+                  visitorAction.includes('delete') ? (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: isPortrait ? wp(16) : wp(12)},
+                      ]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

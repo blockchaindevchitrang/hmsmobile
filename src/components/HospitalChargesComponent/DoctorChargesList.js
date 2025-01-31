@@ -49,6 +49,7 @@ const DoctorChargesList = ({
   totalPage,
   pageCount,
   setPageCount,
+  opdChargeAction,
 }) => {
   const orientation = useOrientation();
   const isPortrait = orientation === 'portrait';
@@ -201,43 +202,64 @@ const DoctorChargesList = ({
         ]}>
         <View style={styles.nameDataView}>
           {item.doctor_name && (
-            <ProfilePhoto style={styles.photoStyle} username={item.doctor_name} />
+            <ProfilePhoto
+              style={styles.photoStyle}
+              username={item.doctor_name}
+            />
           )}
           <View>
             <Text style={[styles.dataHistoryText2]}>{item.doctor_name}</Text>
             <Text style={[styles.dataHistoryText5]}>{item.doctor_email}</Text>
           </View>
         </View>
-        <View style={[styles.switchView, {width: isPortrait ? wp(45) : wp(55)}]}>
+        <View
+          style={[
+            styles.switchView,
+            {
+              width: isPortrait
+                ? wp(45)
+                : opdChargeAction.includes('edit') ||
+                  opdChargeAction.includes('delete')
+                ? wp(55)
+                : wp(75),
+            },
+          ]}>
           <Text style={[styles.dataHistoryText1]}>{item.standard_charge}</Text>
         </View>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={async () => {
-              let allDatas = await onGetSpecificDoctor(item.id);
-              setUserId(item.id);
-              setDoctorId(allDatas.doctor_id);
-              setDoctorSelect(item.doctor_name);
-              setCharge(JSON.stringify(item.standard_charge));
-              setAddDonorVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        {opdChargeAction.includes('edit') ||
+        opdChargeAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {opdChargeAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={async () => {
+                  let allDatas = await onGetSpecificDoctor(item.id);
+                  setUserId(item.id);
+                  setDoctorId(allDatas.doctor_id);
+                  setDoctorSelect(item.doctor_name);
+                  setCharge(JSON.stringify(item.standard_charge));
+                  setAddDonorVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {opdChargeAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: wp(2)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -257,19 +279,21 @@ const DoctorChargesList = ({
               style={[styles.searchView, {color: theme.text}]}
             />
             <View style={styles.filterView}>
-              <TouchableOpacity
-                onPress={() => {
-                  setUserId('');
-                  setDoctorId('');
-                  setDoctorSelect('');
-                  setCharge('');
-                  setErrorVisible(false);
-                  setErrorMessage('');
-                  setAddDonorVisible(true);
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>New Charge</Text>
-              </TouchableOpacity>
+              {opdChargeAction.includes('create') && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setUserId('');
+                    setDoctorId('');
+                    setDoctorSelect('');
+                    setCharge('');
+                    setErrorVisible(false);
+                    setErrorMessage('');
+                    setAddDonorVisible(true);
+                  }}
+                  style={styles.actionView}>
+                  <Text style={styles.actionText}>New Charge</Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
           <View
@@ -291,12 +315,26 @@ const DoctorChargesList = ({
                     ]}>
                     {'DOCTORS'}
                   </Text>
-                  <Text style={[styles.titleText, {width: isPortrait ? wp(45) : wp(55)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {
+                        width: isPortrait
+                          ? wp(45)
+                          : opdChargeAction.includes('edit') ||
+                            opdChargeAction.includes('delete')
+                          ? wp(55)
+                          : wp(75),
+                      },
+                    ]}>
                     {'DOCTOR OPD CHARGES'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(16)}]}>
-                    {'ACTION'}
-                  </Text>
+                  {opdChargeAction.includes('edit') ||
+                  opdChargeAction.includes('delete') ? (
+                    <Text style={[styles.titleText, {width: wp(16)}]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

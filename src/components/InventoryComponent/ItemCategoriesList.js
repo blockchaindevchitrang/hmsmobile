@@ -45,6 +45,7 @@ const ItemCategoriesList = ({
   totalPage,
   pageCount,
   setPageCount,
+  categoryAction,
 }) => {
   const {theme} = useTheme();
   const orientation = useOrientation();
@@ -162,30 +163,37 @@ const ItemCategoriesList = ({
         <View style={[styles.nameDataView]}>
           <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
         </View>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={async () => {
-              setUserId(item.id);
-              setEventTitle(item.name);
-              setNewAccountVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        {categoryAction.includes('edit') ||
+        categoryAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {categoryAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={async () => {
+                  setUserId(item.id);
+                  setEventTitle(item.name);
+                  setNewAccountVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {categoryAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: wp(2)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -206,6 +214,25 @@ const ItemCategoriesList = ({
             />
             {!isPortrait && (
               <View style={styles.filterView}>
+                {categoryAction.includes('create') && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setUserId('');
+                      setEventTitle('');
+                      setErrorMessage('');
+                      setErrorVisible(false);
+                      setNewAccountVisible(true);
+                    }}
+                    style={styles.actionView}>
+                    <Text style={styles.actionText}>New Item Category</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+          </View>
+          {isPortrait && (
+            <View style={styles.filterView}>
+              {categoryAction.includes('create') && (
                 <TouchableOpacity
                   onPress={() => {
                     setUserId('');
@@ -217,22 +244,7 @@ const ItemCategoriesList = ({
                   style={styles.actionView}>
                   <Text style={styles.actionText}>New Item Category</Text>
                 </TouchableOpacity>
-              </View>
-            )}
-          </View>
-          {isPortrait && (
-            <View style={styles.filterView}>
-              <TouchableOpacity
-                onPress={() => {
-                  setUserId('');
-                  setEventTitle('');
-                  setErrorMessage('');
-                  setErrorVisible(false);
-                  setNewAccountVisible(true);
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>New Item Category</Text>
-              </TouchableOpacity>
+              )}
             </View>
           )}
           <View
@@ -243,13 +255,16 @@ const ItemCategoriesList = ({
                 {backgroundColor: theme.headerColor},
               ]}>
               <Text style={[styles.titleText, {width: wp(32)}]}>{'NAME'}</Text>
-              <Text
-                style={[
-                  styles.titleText,
-                  {width: wp(16), textAlign: 'center'},
-                ]}>
-                {'ACTION'}
-              </Text>
+              {categoryAction.includes('edit') ||
+              categoryAction.includes('delete') ? (
+                <Text
+                  style={[
+                    styles.titleText,
+                    {width: wp(16), textAlign: 'center'},
+                  ]}>
+                  {'ACTION'}
+                </Text>
+              ) : null}
             </View>
             <View style={styles.mainDataView}>
               <FlatList

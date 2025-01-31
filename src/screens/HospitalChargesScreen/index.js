@@ -26,8 +26,12 @@ import ChargesComponent from '../../components/HospitalChargesComponent/ChargesC
 import DoctorChargesList from '../../components/HospitalChargesComponent/DoctorChargesList';
 import {onGetCommonApi} from '../../services/Api';
 import useOrientation from '../../components/OrientationComponent';
+import {useSelector} from 'react-redux';
+
+let arrayData = ['Logo', 'Charge Categories', 'Charges', 'Doctor OPD Charges'];
 
 export const HospitalChargesScreen = ({navigation}) => {
+  const rolePermission = useSelector(state => state.rolePermission);
   const {t} = useTranslation();
   const {theme} = useTheme();
   const orientation = useOrientation(); // Get current orientation
@@ -48,6 +52,64 @@ export const HospitalChargesScreen = ({navigation}) => {
   const [chargePage, setChargePage] = useState('1');
   const [OPDChargePage, setOPDChargePage] = useState('1');
   const [statusId, setStatusId] = useState(0);
+  const [categoryAction, setCategoryAction] = useState([]);
+  const [chargeAction, setChargeAction] = useState([]);
+  const [opdChargeAction, setOpdChargeAction] = useState([]);
+
+  useEffect(() => {
+    const visibility = {
+      categoryVisible: false,
+      chargeVisible: false,
+      opdChargeVisible: false,
+    };
+
+    // Helper function to process privileges
+    const processPrivileges = (
+      privileges,
+      endPoint,
+      setAction,
+      visibilityKey,
+    ) => {
+      const privilege = privileges.find(item => item.end_point === endPoint);
+      if (privilege) {
+        setAction(privilege.action.split(',').map(action => action.trim()));
+        visibility[visibilityKey] = true;
+      }
+    };
+
+    // Iterate over role permissions
+    rolePermission.forEach(item => {
+      if (item.main_module === 'Hospital Charges') {
+        processPrivileges(
+          item.privileges,
+          'charge_categories',
+          setCategoryAction,
+          'categoryVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'charges',
+          setChargeAction,
+          'chargeVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'doctor_opd_charges',
+          setOpdChargeAction,
+          'opdChargeVisible',
+        );
+        // Handle arrayData based on visibility
+        const {categoryVisible, chargeVisible, opdChargeVisible} = visibility;
+        console.log('Get Value::::>>>', visibility);
+        arrayData = [
+          'Logo',
+          categoryVisible && 'Charge Categories',
+          chargeVisible && 'Charges',
+          opdChargeVisible && 'Doctor OPD Charges',
+        ].filter(Boolean);
+      }
+    });
+  }, [rolePermission]);
 
   const animations = useRef(
     [0, 0, 0, 0].map(() => new Animated.Value(300)),
@@ -208,6 +270,7 @@ export const HospitalChargesScreen = ({navigation}) => {
             totalPage={totalPage}
             pageCount={pageCount}
             setPageCount={setPageCount}
+            categoryAction={categoryAction}
           />
         ) : selectedView == 'Charges' ? (
           <ChargesComponent
@@ -222,6 +285,7 @@ export const HospitalChargesScreen = ({navigation}) => {
             setPageCount={setPageCount}
             statusId={statusId}
             setStatusId={setStatusId}
+            chargeAction={chargeAction}
           />
         ) : (
           selectedView == 'Doctor OPD Charges' && (
@@ -233,6 +297,7 @@ export const HospitalChargesScreen = ({navigation}) => {
               totalPage={OPDChargePage}
               pageCount={pageCount}
               setPageCount={setPageCount}
+              opdChargeAction={opdChargeAction}
             />
           )
         )}
@@ -253,12 +318,7 @@ export const HospitalChargesScreen = ({navigation}) => {
 
             <View style={styles.mainModalView}>
               <View style={styles.menuContainer}>
-                {[
-                  'Logo',
-                  'Charge Categories',
-                  'Charges',
-                  'Doctor OPD Charges',
-                ].map((option, index) => (
+                {arrayData.map((option, index) => (
                   <>
                     {option == 'Logo' ? (
                       <Animated.View

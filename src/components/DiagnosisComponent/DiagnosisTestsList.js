@@ -51,6 +51,7 @@ const DiagnosisTestsList = ({
   pageCount,
   setPageCount,
   totalPage,
+  testAction,
 }) => {
   const user_data = useSelector(state => state.user_data);
   const doctorData = useSelector(state => state.doctorData);
@@ -292,7 +293,8 @@ const DiagnosisTestsList = ({
           styles.dataHistoryView,
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
-        <View style={[styles.switchView, {width: isPortrait ? wp(30) : wp(24)}]}>
+        <View
+          style={[styles.switchView, {width: isPortrait ? wp(30) : wp(24)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
             <Text style={[styles.dataHistoryText1]}>{item.report_number}</Text>
           </View>
@@ -321,55 +323,63 @@ const DiagnosisTestsList = ({
             <Text style={[styles.dataHistoryText5]}>{item.doctor_email}</Text>
           </View>
         </View>
-        <View style={[styles.switchView, {width: isPortrait ? wp(43) : wp(35)}]}>
+        <View
+          style={[styles.switchView, {width: isPortrait ? wp(43) : wp(35)}]}>
           <Text style={[styles.dataHistoryText1]}>{item.category}</Text>
         </View>
-        <View style={[styles.switchView, {width: isPortrait ? wp(35) : wp(28)}]}>
+        <View
+          style={[styles.switchView, {width: isPortrait ? wp(35) : wp(28)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
             <Text style={[styles.dataHistoryText1]}>
               {moment(item.created_at).format('DD MMM, YYYY')}
             </Text>
           </View>
         </View>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={async () => {
-              let allDatas = await onGetSpecificDoctor(item.id);
-              setUserId(item.id);
-              setPatientId(allDatas.patient_id);
-              setPatientName(item?.patient_name);
-              setDoctorId(allDatas.doctor_id);
-              setDoctorName(item?.doctor_name);
-              setCategoryId(allDatas.category_id);
-              setCategoryName(item?.category);
-              setAge(allDatas.age);
-              setHeight(allDatas.height);
-              setWeight(allDatas.weight);
-              setAverage(allDatas.average_glucose);
-              setBloodSugar(allDatas.fasting_blood_sugar);
-              setUrineSugar(allDatas.urine_sugar);
-              setBloodPressure(allDatas.blood_pressure);
-              setDiabetes(allDatas.diabetes);
-              setCholesterol(allDatas.cholesterol);
-              setNewBloodIssueVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        {testAction.includes('edit') || testAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {testAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={async () => {
+                  let allDatas = await onGetSpecificDoctor(item.id);
+                  setUserId(item.id);
+                  setPatientId(allDatas.patient_id);
+                  setPatientName(item?.patient_name);
+                  setDoctorId(allDatas.doctor_id);
+                  setDoctorName(item?.doctor_name);
+                  setCategoryId(allDatas.category_id);
+                  setCategoryName(item?.category);
+                  setAge(allDatas.age);
+                  setHeight(allDatas.height);
+                  setWeight(allDatas.weight);
+                  setAverage(allDatas.average_glucose);
+                  setBloodSugar(allDatas.fasting_blood_sugar);
+                  setUrineSugar(allDatas.urine_sugar);
+                  setBloodPressure(allDatas.blood_pressure);
+                  setDiabetes(allDatas.diabetes);
+                  setCholesterol(allDatas.cholesterol);
+                  setNewBloodIssueVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {testAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: wp(2)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -390,6 +400,21 @@ const DiagnosisTestsList = ({
             />
             {!isPortrait && (
               <View style={styles.filterView}>
+                {testAction.includes('create') && (
+                  <TouchableOpacity
+                    onPress={() => setNewBloodIssueVisible(true)}
+                    style={styles.actionView}>
+                    <Text style={styles.actionText}>
+                      New Patient Diagnosis Test
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+          </View>
+          {isPortrait && (
+            <View style={styles.filterView}>
+              {testAction.includes('create') && (
                 <TouchableOpacity
                   onPress={() => setNewBloodIssueVisible(true)}
                   style={styles.actionView}>
@@ -397,18 +422,7 @@ const DiagnosisTestsList = ({
                     New Patient Diagnosis Test
                   </Text>
                 </TouchableOpacity>
-              </View>
-            )}
-          </View>
-          {isPortrait && (
-            <View style={styles.filterView}>
-              <TouchableOpacity
-                onPress={() => setNewBloodIssueVisible(true)}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>
-                  New Patient Diagnosis Test
-                </Text>
-              </TouchableOpacity>
+              )}
             </View>
           )}
           <View
@@ -458,13 +472,16 @@ const DiagnosisTestsList = ({
                     ]}>
                     {'CREATED ON'}
                   </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: isPortrait ? wp(16) : wp(12)},
-                    ]}>
-                    {'ACTION'}
-                  </Text>
+                  {testAction.includes('edit') ||
+                  testAction.includes('delete') ? (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: isPortrait ? wp(16) : wp(12)},
+                      ]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

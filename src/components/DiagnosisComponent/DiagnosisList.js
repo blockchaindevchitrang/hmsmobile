@@ -25,6 +25,7 @@ const DiagnosisList = ({
   pageCount,
   setPageCount,
   totalPage,
+  diagnosisAction,
 }) => {
   const orientation = useOrientation();
   const isPortrait = orientation === 'portrait';
@@ -72,23 +73,31 @@ const DiagnosisList = ({
         <Text
           style={[
             styles.dataHistoryText,
-            {width: isPortrait ? wp(27) : wp(23)},
+            {
+              width: isPortrait
+                ? wp(27)
+                : diagnosisAction.includes('report_generated')
+                ? wp(23)
+                : wp(30),
+            },
           ]}>
           {item.des}
         </Text>
-        <View
-          style={[styles.switchView, {width: isPortrait ? wp(35) : wp(30)}]}>
-          <Switch
-            trackColor={{
-              false: item.report ? COLORS.greenColor : COLORS.errorColor,
-              true: item.report ? COLORS.greenColor : COLORS.errorColor,
-            }}
-            thumbColor={item.report ? '#f4f3f4' : '#f4f3f4'}
-            ios_backgroundColor={COLORS.errorColor}
-            onValueChange={() => {}}
-            value={item.report}
-          />
-        </View>
+        {diagnosisAction.includes('report_generated') && (
+          <View
+            style={[styles.switchView, {width: isPortrait ? wp(35) : wp(30)}]}>
+            <Switch
+              trackColor={{
+                false: item.report ? COLORS.greenColor : COLORS.errorColor,
+                true: item.report ? COLORS.greenColor : COLORS.errorColor,
+              }}
+              thumbColor={item.report ? '#f4f3f4' : '#f4f3f4'}
+              ios_backgroundColor={COLORS.errorColor}
+              onValueChange={() => {}}
+              value={item.report}
+            />
+          </View>
+        )}
       </View>
     );
   };
@@ -149,17 +158,25 @@ const DiagnosisList = ({
                 <Text
                   style={[
                     styles.titleText,
-                    {width: isPortrait ? wp(27) : wp(23)},
+                    {
+                      width: isPortrait
+                        ? wp(27)
+                        : diagnosisAction.includes('report_generated')
+                        ? wp(23)
+                        : wp(30),
+                    },
                   ]}>
                   {'DESCRIPTION'}
                 </Text>
-                <Text
-                  style={[
-                    styles.titleText,
-                    {width: isPortrait ? wp(35) : wp(30)},
-                  ]}>
-                  {'REPORT GENERATED'}
-                </Text>
+                {diagnosisAction.includes('report_generated') && (
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {width: isPortrait ? wp(35) : wp(30)},
+                    ]}>
+                    {'REPORT GENERATED'}
+                  </Text>
+                )}
               </View>
               <View style={styles.mainDataView}>
                 <FlatList

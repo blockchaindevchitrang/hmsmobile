@@ -30,122 +30,17 @@ import DiagnosisCategoriesList from '../../components/DiagnosisComponent/Diagnos
 import DiagnosisTestsList from '../../components/DiagnosisComponent/DiagnosisTestsList';
 import {onGetCommonApi} from '../../services/Api';
 import useOrientation from '../../components/OrientationComponent';
+import {useSelector} from 'react-redux';
 
-const allData = [
-  {
-    id: 1,
-    report_type: 'CT Scan',
-    opo_no: 'EMP0000001',
-    date: '22:02:00 2023-05-25',
-    document: 'N/A',
-    des: 'N/A',
-    report: true,
-  },
-  {
-    id: 2,
-    report_type: 'Neck Pain',
-    opo_no: 'EMP0000002',
-    date: '22:02:00 2023-05-25',
-    document: 'N/A',
-    des: 'Neck stiffness',
-    report: false,
-  },
-  {
-    id: 3,
-    report_type: 'Blood',
-    opo_no: 'EMP0000003',
-    date: '22:02:00 2023-05-25',
-    document: 'N/A',
-    des: 'Blood',
-    report: true,
-  },
-  {
-    id: 4,
-    report_type: 'Fibrosis',
-    opo_no: 'EMP0000004',
-    date: '22:02:00 2023-05-25',
-    document: 'N/A',
-    des: 'N/A',
-    report: false,
-  },
-  {
-    id: 5,
-    report_type: 'Blood Pressure',
-    opo_no: 'EMP0000005',
-    date: '22:02:00 2023-05-25',
-    document: 'N/A',
-    des: 'Blood Pressure',
-    report: true,
-  },
-];
-
-const DiagnosisCategoriesData = [
-  {
-    id: 1,
-    name: 'Allergy',
-  },
-  {
-    id: 2,
-    name: 'Neck Pain',
-  },
-  {
-    id: 3,
-    name: 'Blood',
-  },
-  {
-    id: 4,
-    name: 'Fibrosis',
-  },
-  {
-    id: 5,
-    name: 'Blood Pressure',
-  },
-];
-
-const BloodIssueData = [
-  {
-    id: 1,
-    admission: 'EMP0000001',
-    name: 'Joey Tribiyani',
-    mail: 'joey@gmail.com',
-    date: '01 Feb, 2024',
-    discharge: 'Surgery',
-  },
-  {
-    id: 2,
-    admission: 'EMP0000002',
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    date: '9 Sept, 2020',
-    discharge: 'X-ray',
-  },
-  {
-    id: 3,
-    admission: 'EMP0000003',
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    date: '12 Dec, 2022',
-    discharge: 'Full Body checkup',
-  },
-  {
-    id: 4,
-    admission: 'EMP0000004',
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    date: '12 Dec, 2022',
-    discharge: 'MRI',
-  },
-  {
-    id: 5,
-    admission: 'EMP0000005',
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    date: '12 Dec, 2022',
-    discharge: 'Dental Implant',
-  },
+let arrayData = [
+  'Logo',
+  'Diagnosis',
+  'Diagnosis Categories',
+  'Diagnosis Tests',
 ];
 
 export const DiagnosisScreen = ({navigation}) => {
+  const rolePermission = useSelector(state => state.rolePermission);
   const {t} = useTranslation();
   const {theme} = useTheme();
   const orientation = useOrientation(); // Get current orientation
@@ -164,6 +59,65 @@ export const DiagnosisScreen = ({navigation}) => {
   const [totalPage, setTotalPage] = useState('1');
   const [categoryPage, setCategoryPage] = useState('1');
   const [testPage, setTestPage] = useState('1');
+  const [diagnosisAction, setDiagnosisAction] = useState([]);
+  const [categoryAction, setCategoryAction] = useState([]);
+  const [testAction, setTestAction] = useState([]);
+
+  useEffect(() => {
+    const visibility = {
+      diagnosisVisible: false,
+      categoryVisible: false,
+      testVisible: false,
+    };
+
+    // Helper function to process privileges
+    const processPrivileges = (
+      privileges,
+      endPoint,
+      setAction,
+      visibilityKey,
+    ) => {
+      const privilege = privileges.find(item => item.end_point === endPoint);
+      if (privilege) {
+        setAction(privilege.action.split(',').map(action => action.trim()));
+        visibility[visibilityKey] = true;
+      }
+    };
+
+    // Iterate over role permissions
+    rolePermission.forEach(item => {
+      if (item.main_module === 'Diagnosis') {
+        processPrivileges(
+          item.privileges,
+          'diagnosis',
+          setDiagnosisAction,
+          'diagnosisVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'diagnosis_categories',
+          setCategoryAction,
+          'categoryVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'diagnosis_tests',
+          setTestAction,
+          'testVisible',
+        );
+
+        // Handle arrayData based on visibility
+        const {diagnosisVisible, categoryVisible, testVisible} = visibility;
+        console.log('Get Value::::>>>', visibility);
+        arrayData = [
+          'Logo',
+          diagnosisVisible && 'Diagnosis',
+          categoryVisible && 'Diagnosis Categories',
+          testVisible && 'Diagnosis Tests',
+        ].filter(Boolean);
+      }
+    });
+  }, [rolePermission]);
 
   const animations = useRef(
     [0, 0, 0, 0].map(() => new Animated.Value(300)),
@@ -302,6 +256,7 @@ export const DiagnosisScreen = ({navigation}) => {
             pageCount={pageCount}
             setPageCount={setPageCount}
             totalPage={totalPage}
+            diagnosisAction={diagnosisAction}
           />
         ) : selectedView == 'Diagnosis Categories' ? (
           <DiagnosisCategoriesList
@@ -312,6 +267,7 @@ export const DiagnosisScreen = ({navigation}) => {
             pageCount={pageCount}
             setPageCount={setPageCount}
             totalPage={categoryPage}
+            categoryAction={categoryAction}
           />
         ) : (
           selectedView == 'Diagnosis Tests' && (
@@ -324,6 +280,7 @@ export const DiagnosisScreen = ({navigation}) => {
               pageCount={pageCount}
               setPageCount={setPageCount}
               totalPage={testPage}
+              testAction={testAction}
             />
           )
         )}
@@ -344,12 +301,7 @@ export const DiagnosisScreen = ({navigation}) => {
 
             <View style={styles.mainModalView}>
               <View style={styles.menuContainer}>
-                {[
-                  'Logo',
-                  'Diagnosis',
-                  'Diagnosis Categories',
-                  'Diagnosis Tests',
-                ].map((option, index) => (
+                {arrayData.map((option, index) => (
                   <>
                     {option == 'Logo' ? (
                       <Animated.View

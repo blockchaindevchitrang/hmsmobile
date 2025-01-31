@@ -50,6 +50,7 @@ const PathologyTest = ({
   totalPage,
   pageCount,
   setPageCount,
+  testAction,
 }) => {
   const orientation = useOrientation();
   const isPortrait = orientation === 'portrait';
@@ -413,71 +414,79 @@ const PathologyTest = ({
           ]}>
           {item.charge_category}
         </Text>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={async () => {
-              let allDatas = await onGetSpecificDoctor(item.id);
-              setUserId(item.id);
-              setPatientId(allDatas.pathologyTest.patient_id);
-              setPatientName(item.patient_name);
-              setTestName(item.test_name);
-              setTestType(item.test_type);
-              setSortName(item.short_name);
-              setMethod(allDatas.pathologyTest.method);
-              setCategoryId(allDatas.pathologyTest.category_id);
-              setCategoryName(item.category_name);
-              setUnit(JSON.stringify(allDatas.pathologyTest.unit));
-              setSubCategory(allDatas.pathologyTest.subcategory);
-              setReportDay(JSON.stringify(allDatas.pathologyTest.report_days));
-              setChargeId(allDatas.pathologyTest.charge_category_id);
-              setChargeName(item.charge_category);
-              setStandardCharge(
-                JSON.stringify(allDatas.pathologyTest.standard_charge),
-              );
-              if (allDatas.pathologyParameterItems.length > 0) {
-                allDatas.pathologyParameterItems.map(item1 => {
-                  parameterArray.push({
-                    parameter_id: item1.parameter_id,
-                    parameter_name: item1.pathology_parameter
-                      ? item1.pathology_parameter.parameter_name
-                      : '',
-                    patient_result: item1.patient_result,
-                    range: item1.pathology_parameter
-                      ? item1.pathology_parameter.reference_range
-                      : '',
-                    unit: item1.pathology_parameter
-                      ? item1.pathology_parameter.pathology_unit.name
-                      : '',
-                  });
-                });
-              } else {
-                parameterArray.push({
-                  parameter_id: '',
-                  parameter_name: '',
-                  patient_result: '',
-                  range: '',
-                  unit: '',
-                });
-              }
-              setNewUserVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        {testAction.includes('edit') || testAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {testAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={async () => {
+                  let allDatas = await onGetSpecificDoctor(item.id);
+                  setUserId(item.id);
+                  setPatientId(allDatas.pathologyTest.patient_id);
+                  setPatientName(item.patient_name);
+                  setTestName(item.test_name);
+                  setTestType(item.test_type);
+                  setSortName(item.short_name);
+                  setMethod(allDatas.pathologyTest.method);
+                  setCategoryId(allDatas.pathologyTest.category_id);
+                  setCategoryName(item.category_name);
+                  setUnit(JSON.stringify(allDatas.pathologyTest.unit));
+                  setSubCategory(allDatas.pathologyTest.subcategory);
+                  setReportDay(
+                    JSON.stringify(allDatas.pathologyTest.report_days),
+                  );
+                  setChargeId(allDatas.pathologyTest.charge_category_id);
+                  setChargeName(item.charge_category);
+                  setStandardCharge(
+                    JSON.stringify(allDatas.pathologyTest.standard_charge),
+                  );
+                  if (allDatas.pathologyParameterItems.length > 0) {
+                    allDatas.pathologyParameterItems.map(item1 => {
+                      parameterArray.push({
+                        parameter_id: item1.parameter_id,
+                        parameter_name: item1.pathology_parameter
+                          ? item1.pathology_parameter.parameter_name
+                          : '',
+                        patient_result: item1.patient_result,
+                        range: item1.pathology_parameter
+                          ? item1.pathology_parameter.reference_range
+                          : '',
+                        unit: item1.pathology_parameter
+                          ? item1.pathology_parameter.pathology_unit.name
+                          : '',
+                      });
+                    });
+                  } else {
+                    parameterArray.push({
+                      parameter_id: '',
+                      parameter_name: '',
+                      patient_result: '',
+                      range: '',
+                      unit: '',
+                    });
+                  }
+                  setNewUserVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {testAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: wp(2)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -498,6 +507,45 @@ const PathologyTest = ({
             />
             {!isPortrait && (
               <View style={styles.filterView}>
+                {testAction.includes('create') && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setUserId('');
+                      setPatientId('');
+                      setPatientName('');
+                      setTestName('');
+                      setTestType('');
+                      setSortName('');
+                      setMethod('');
+                      setCategoryId('');
+                      setCategoryName('');
+                      setUnit('');
+                      setSubCategory('');
+                      setReportDay('');
+                      setChargeId('');
+                      setChargeName('');
+                      setStandardCharge('');
+                      parameterArray.push({
+                        parameter_id: '',
+                        parameter_name: '',
+                        patient_result: '',
+                        range: '',
+                        unit: '',
+                      });
+                      setErrorMessage('');
+                      setErrorVisible(false);
+                      setNewUserVisible(true);
+                    }}
+                    style={styles.actionView}>
+                    <Text style={styles.actionText}>New Pathology Test</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+          </View>
+          {isPortrait && (
+            <View style={styles.filterView}>
+              {testAction.includes('create') && (
                 <TouchableOpacity
                   onPress={() => {
                     setUserId('');
@@ -529,42 +577,7 @@ const PathologyTest = ({
                   style={styles.actionView}>
                   <Text style={styles.actionText}>New Pathology Test</Text>
                 </TouchableOpacity>
-              </View>
-            )}
-          </View>
-          {isPortrait && (
-            <View style={styles.filterView}>
-              <TouchableOpacity
-                onPress={() => {
-                  setUserId('');
-                  setPatientId('');
-                  setPatientName('');
-                  setTestName('');
-                  setTestType('');
-                  setSortName('');
-                  setMethod('');
-                  setCategoryId('');
-                  setCategoryName('');
-                  setUnit('');
-                  setSubCategory('');
-                  setReportDay('');
-                  setChargeId('');
-                  setChargeName('');
-                  setStandardCharge('');
-                  parameterArray.push({
-                    parameter_id: '',
-                    parameter_name: '',
-                    patient_result: '',
-                    range: '',
-                    unit: '',
-                  });
-                  setErrorMessage('');
-                  setErrorVisible(false);
-                  setNewUserVisible(true);
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>New Pathology Test</Text>
-              </TouchableOpacity>
+              )}
             </View>
           )}
           <View
@@ -617,9 +630,12 @@ const PathologyTest = ({
                     ]}>
                     {'CHARGE CATEGORY'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(16)}]}>
-                    {'ACTION'}
-                  </Text>
+                  {testAction.includes('edit') ||
+                  testAction.includes('delete') ? (
+                    <Text style={[styles.titleText, {width: wp(16)}]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

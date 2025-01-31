@@ -544,9 +544,9 @@ export const SettingScreen = ({navigation}) => {
               );
             }
           })}
-          {/* {rolePermission.map((item, index) => {
+          {rolePermission.map((item, index) => {
             if (item.main_module == 'Documents') {
-              return ( */}
+              return (
                 <TouchableOpacity
                   onPress={() => navigation.navigate('DocumentsScreen')}
                   style={[
@@ -557,9 +557,9 @@ export const SettingScreen = ({navigation}) => {
                     {'Documents'}
                   </Text>
                 </TouchableOpacity>
-              {/* );
+              );
             }
-          })} */}
+          })}
           {rolePermission.map((item, index) => {
             if (item.main_module == 'Inventory') {
               return (
@@ -592,9 +592,9 @@ export const SettingScreen = ({navigation}) => {
               );
             }
           })}
-          {rolePermission.map((item, index) => {
+          {/* {rolePermission.map((item, index) => {
             if (item.main_module == 'Reports') {
-              return (
+              return ( */}
                 <TouchableOpacity
                   onPress={() => navigation.navigate('ReportsScreen')}
                   style={[
@@ -605,9 +605,9 @@ export const SettingScreen = ({navigation}) => {
                     {'Reports'}
                   </Text>
                 </TouchableOpacity>
-              );
+              {/* );
             }
-          })}
+          })} */}
           {rolePermission.map((item, index) => {
             if (item.main_module == 'Radiology') {
               return (

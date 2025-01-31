@@ -62,6 +62,7 @@ const PostalReceiveList = ({
   totalPage,
   pageCount,
   setPageCount,
+  receiveAction,
 }) => {
   const {theme} = useTheme();
   const orientation = useOrientation();
@@ -322,43 +323,56 @@ const PostalReceiveList = ({
         <Text
           style={[
             styles.dataHistoryText,
-            {width: isPortrait ? wp(26) : wp(18)},
+            {
+              width: isPortrait
+                ? wp(26)
+                : receiveAction.includes('edit') ||
+                  receiveAction.includes('delete')
+                ? wp(18)
+                : wp(32),
+            },
           ]}>
           {item.attachment != '' ? 'Download' : 'N/A'}
         </Text>
-        <View
-          style={[
-            styles.actionDataView,
-            {width: isPortrait ? wp(16) : wp(10)},
-          ]}>
-          <TouchableOpacity
-            onPress={async () => {
-              let allDatas = await onGetSpecificDoctor(item.id);
-              setUserId(item.id);
-              setFromTitle(item.from_title);
-              setReference(item.reference_no);
-              setDate(new Date(allDatas.date));
-              setToTitle(item.to_title);
-              setDescription(allDatas.address);
-              setAddCallVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(1)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        {receiveAction.includes('edit') || receiveAction.includes('delete') ? (
+          <View
+            style={[
+              styles.actionDataView,
+              {width: isPortrait ? wp(16) : wp(10)},
+            ]}>
+            {receiveAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={async () => {
+                  let allDatas = await onGetSpecificDoctor(item.id);
+                  setUserId(item.id);
+                  setFromTitle(item.from_title);
+                  setReference(item.reference_no);
+                  setDate(new Date(allDatas.date));
+                  setToTitle(item.to_title);
+                  setDescription(allDatas.address);
+                  setAddCallVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {receiveAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: wp(1)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -443,9 +457,11 @@ const PostalReceiveList = ({
                 }}>
                 <MenuTrigger text={''} />
                 <MenuOptions style={{marginVertical: hp(0.5)}}>
-                  <MenuOption value={'add'}>
-                    <Text style={styles.dataHistoryText3}>New Receive</Text>
-                  </MenuOption>
+                  {receiveAction.includes('create') && (
+                    <MenuOption value={'add'}>
+                      <Text style={styles.dataHistoryText3}>New Receive</Text>
+                    </MenuOption>
+                  )}
                   <MenuOption value={'excel'}>
                     <Text style={styles.dataHistoryText3}>Export to Excel</Text>
                   </MenuOption>
@@ -496,17 +512,27 @@ const PostalReceiveList = ({
                   <Text
                     style={[
                       styles.titleText,
-                      {width: isPortrait ? wp(26) : wp(18)},
+                      {
+                        width: isPortrait
+                          ? wp(26)
+                          : receiveAction.includes('edit') ||
+                            receiveAction.includes('delete')
+                          ? wp(18)
+                          : wp(32),
+                      },
                     ]}>
                     {'ATTACHMENT'}
                   </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: isPortrait ? wp(16) : wp(10)},
-                    ]}>
-                    {'ACTION'}
-                  </Text>
+                  {receiveAction.includes('edit') ||
+                  receiveAction.includes('delete') ? (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: isPortrait ? wp(16) : wp(10)},
+                      ]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList
@@ -624,7 +650,10 @@ const PostalReceiveList = ({
                 <Text
                   style={[
                     styles.nameTextView,
-                    {width: '100%', paddingVertical: isPortrait ? hp(1) : wp(0.5)},
+                    {
+                      width: '100%',
+                      paddingVertical: isPortrait ? hp(1) : wp(0.5),
+                    },
                   ]}
                   onPress={() => setDateModalVisible(!dateModalVisible)}>
                   {moment(date).format('DD/MM/YYYY')}

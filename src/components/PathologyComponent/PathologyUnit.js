@@ -45,6 +45,7 @@ const PathologyUnit = ({
   totalPage,
   pageCount,
   setPageCount,
+  unitAction,
 }) => {
   const {theme} = useTheme();
   const orientation = useOrientation();
@@ -214,30 +215,36 @@ const PathologyUnit = ({
         <View style={[styles.nameDataView]}>
           <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
         </View>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setEventTitle(item.name);
-              setNewAccountVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        {unitAction.includes('edit') || unitAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {unitAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setEventTitle(item.name);
+                  setNewAccountVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {unitAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: wp(2)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -258,6 +265,25 @@ const PathologyUnit = ({
             />
             {!isPortrait && (
               <View style={styles.filterView}>
+                {unitAction.includes('create') && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setUserId('');
+                      setEventTitle('');
+                      setErrorMessage('');
+                      setErrorVisible(false);
+                      setNewAccountVisible(true);
+                    }}
+                    style={styles.actionView}>
+                    <Text style={styles.actionText}>New Pathology Unit</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+          </View>
+          {isPortrait && (
+            <View style={styles.filterView}>
+              {unitAction.includes('create') && (
                 <TouchableOpacity
                   onPress={() => {
                     setUserId('');
@@ -269,22 +295,7 @@ const PathologyUnit = ({
                   style={styles.actionView}>
                   <Text style={styles.actionText}>New Pathology Unit</Text>
                 </TouchableOpacity>
-              </View>
-            )}
-          </View>
-          {isPortrait && (
-            <View style={styles.filterView}>
-              <TouchableOpacity
-                onPress={() => {
-                  setUserId('');
-                  setEventTitle('');
-                  setErrorMessage('');
-                  setErrorVisible(false);
-                  setNewAccountVisible(true);
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>New Pathology Unit</Text>
-              </TouchableOpacity>
+              )}
             </View>
           )}
           <View
@@ -295,13 +306,15 @@ const PathologyUnit = ({
                 {backgroundColor: theme.headerColor},
               ]}>
               <Text style={[styles.titleText, {width: wp(32)}]}>{'NAME'}</Text>
-              <Text
-                style={[
-                  styles.titleText,
-                  {width: wp(16), textAlign: 'center'},
-                ]}>
-                {'ACTION'}
-              </Text>
+              {unitAction.includes('edit') || unitAction.includes('delete') ? (
+                <Text
+                  style={[
+                    styles.titleText,
+                    {width: wp(16), textAlign: 'center'},
+                  ]}>
+                  {'ACTION'}
+                </Text>
+              ) : null}
             </View>
             <View style={styles.mainDataView}>
               <FlatList

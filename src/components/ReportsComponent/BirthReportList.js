@@ -49,6 +49,7 @@ const BirthReportList = ({
   totalPage,
   pageCount,
   setPageCount,
+  birthAction,
 }) => {
   const orientation = useOrientation();
   const isPortrait = orientation === 'portrait';

@@ -51,6 +51,7 @@ const MedicineList = ({
   totalPage,
   pageCount,
   setPageCount,
+  medicineAction,
 }) => {
   const {theme} = useTheme();
   const orientation = useOrientation();
@@ -275,45 +276,52 @@ const MedicineList = ({
           ]}>
           {item.buying_price}
         </Text>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={async () => {
-              let allDatas = await onGetSpecificDoctor(item.id);
-              setUserId(item.id);
-              setMedicine(item.name);
-              setBrandName(item.brand_name);
-              setBrandId(allDatas.brand_id);
-              const accountantData = medicineCategory.filter(
-                user => user.id === allDatas.category_id,
-              );
-              if (accountantData.length > 0) {
-                setCategoryName(accountantData[0].name);
-              }
-              setCategoryId(allDatas.category_id);
-              setBuyPrice(JSON.stringify(allDatas.buying_price));
-              setSellPrice(JSON.stringify(allDatas.selling_price));
-              setComposition(allDatas.salt_composition);
-              setDescription(allDatas.description);
-              setEffects(allDatas.side_effects);
-              setNewUserVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        {medicineAction.includes('edit') ||
+        medicineAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {medicineAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={async () => {
+                  let allDatas = await onGetSpecificDoctor(item.id);
+                  setUserId(item.id);
+                  setMedicine(item.name);
+                  setBrandName(item.brand_name);
+                  setBrandId(allDatas.brand_id);
+                  const accountantData = medicineCategory.filter(
+                    user => user.id === allDatas.category_id,
+                  );
+                  if (accountantData.length > 0) {
+                    setCategoryName(accountantData[0].name);
+                  }
+                  setCategoryId(allDatas.category_id);
+                  setBuyPrice(JSON.stringify(allDatas.buying_price));
+                  setSellPrice(JSON.stringify(allDatas.selling_price));
+                  setComposition(allDatas.salt_composition);
+                  setDescription(allDatas.description);
+                  setEffects(allDatas.side_effects);
+                  setNewUserVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {medicineAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: wp(2)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -333,25 +341,27 @@ const MedicineList = ({
               style={[styles.searchView, {color: theme.text}]}
             />
             <View style={styles.filterView}>
-              <TouchableOpacity
-                onPress={() => {
-                  setUserId('');
-                  setMedicine('');
-                  setBrandName('');
-                  setBrandId('');
-                  setCategoryId('');
-                  setBuyPrice('');
-                  setSellPrice('');
-                  setComposition('');
-                  setDescription('');
-                  setEffects('');
-                  setErrorMessage('');
-                  setErrorVisible(false);
-                  setNewUserVisible(true);
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>New Medicine</Text>
-              </TouchableOpacity>
+              {medicineAction.includes('create') && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setUserId('');
+                    setMedicine('');
+                    setBrandName('');
+                    setBrandId('');
+                    setCategoryId('');
+                    setBuyPrice('');
+                    setSellPrice('');
+                    setComposition('');
+                    setDescription('');
+                    setEffects('');
+                    setErrorMessage('');
+                    setErrorVisible(false);
+                    setNewUserVisible(true);
+                  }}
+                  style={styles.actionView}>
+                  <Text style={styles.actionText}>New Medicine</Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
           <View
@@ -397,13 +407,16 @@ const MedicineList = ({
                     ]}>
                     {'BUYING PRICE'}
                   </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: wp(16), textAlign: 'center'},
-                    ]}>
-                    {'ACTION'}
-                  </Text>
+                  {medicineAction.includes('edit') ||
+                  medicineAction.includes('delete') ? (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: wp(16), textAlign: 'center'},
+                      ]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

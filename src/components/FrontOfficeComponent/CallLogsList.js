@@ -64,6 +64,7 @@ const CallLogsList = ({
   setPageCount,
   statusId,
   setStatusId,
+  callLogAction,
 }) => {
   const {theme} = useTheme();
   const orientation = useOrientation();
@@ -241,7 +242,7 @@ const CallLogsList = ({
           </View>
         </View>
         <View
-          style={[styles.switchView, {width: isPortrait ? wp(40) : wp(30)}]}>
+          style={[styles.switchView, {width: isPortrait ? wp(40) : wp(32)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
             <Text style={styles.dataListText1} numberOfLines={2}>
               {item.follow_up_date}
@@ -252,44 +253,50 @@ const CallLogsList = ({
         <Text
           style={[
             styles.dataHistoryText,
-            {width: isPortrait ? wp(24) : wp(16)},
+            {width: isPortrait ? wp(24) : wp(20)},
           ]}>
           {item.call_type}
         </Text>
-        <View
-          style={[
-            styles.actionDataView,
-            {width: isPortrait ? wp(16) : wp(12)},
-          ]}>
-          <TouchableOpacity
-            onPress={async () => {
-              let allDatas = await onGetSpecificDoctor(item.id);
-              setUserId(item.id);
-              setName(item.name);
-              setPhone(item.phone);
-              setReceivedOn(new Date(item.date));
-              setFollowDate(new Date(item.follow_up_date));
-              setDepartmentComment(allDatas.description);
-              setDepartmentType(item.call_type);
-              setAddCallVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        {callLogAction.includes('edit') || callLogAction.includes('delete') ? (
+          <View
+            style={[
+              styles.actionDataView,
+              {width: isPortrait ? wp(16) : wp(12)},
+            ]}>
+            {callLogAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={async () => {
+                  let allDatas = await onGetSpecificDoctor(item.id);
+                  setUserId(item.id);
+                  setName(item.name);
+                  setPhone(item.phone);
+                  setReceivedOn(new Date(item.date));
+                  setFollowDate(new Date(item.follow_up_date));
+                  setDepartmentComment(allDatas.description);
+                  setDepartmentType(item.call_type);
+                  setAddCallVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {callLogAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: wp(2)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -378,9 +385,11 @@ const CallLogsList = ({
                 }}>
                 <MenuTrigger text={''} />
                 <MenuOptions style={{marginVertical: hp(0.5)}}>
-                  <MenuOption value={'add'}>
-                    <Text style={styles.dataHistoryText3}>New Call Log</Text>
-                  </MenuOption>
+                  {callLogAction.includes('create') && (
+                    <MenuOption value={'add'}>
+                      <Text style={styles.dataHistoryText3}>New Call Log</Text>
+                    </MenuOption>
+                  )}
                   <MenuOption value={'excel'}>
                     <Text style={styles.dataHistoryText3}>Export to Excel</Text>
                   </MenuOption>
@@ -482,24 +491,27 @@ const CallLogsList = ({
                   <Text
                     style={[
                       styles.titleText,
-                      {width: isPortrait ? wp(40) : wp(30)},
+                      {width: isPortrait ? wp(40) : wp(32)},
                     ]}>
                     {'FOLLOWED-UP TYPE'}
                   </Text>
                   <Text
                     style={[
                       styles.titleText,
-                      {width: isPortrait ? wp(24) : wp(16)},
+                      {width: isPortrait ? wp(24) : wp(20)},
                     ]}>
                     {'CALL TYPE'}
                   </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: isPortrait ? wp(16) : wp(12)},
-                    ]}>
-                    {'ACTION'}
-                  </Text>
+                  {callLogAction.includes('edit') ||
+                  callLogAction.includes('delete') ? (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: isPortrait ? wp(16) : wp(12)},
+                      ]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

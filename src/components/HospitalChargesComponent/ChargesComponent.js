@@ -54,6 +54,7 @@ const ChargesComponent = ({
   setPageCount,
   statusId,
   setStatusId,
+  chargeAction,
 }) => {
   const {theme} = useTheme();
   const orientation = useOrientation();
@@ -214,48 +215,70 @@ const ChargesComponent = ({
         <View style={[styles.actionDataView, {justifyContent: 'flex-start'}]}>
           <Text style={[styles.dataHistoryText1]}>{item.code}</Text>
         </View>
-        <View style={[styles.nameDataView, {width: isPortrait ? wp(37) : wp(30.2)}]}>
+        <View
+          style={[
+            styles.nameDataView,
+            {width: isPortrait ? wp(37) : wp(30.2)},
+          ]}>
           <Text style={[styles.dataHistoryText2]}>
             {item.charge_category_id}
           </Text>
         </View>
-        <View style={[styles.nameDataView, {width: isPortrait ? wp(35) : wp(28)}]}>
+        <View
+          style={[
+            styles.nameDataView,
+            {
+              width: isPortrait
+                ? wp(35)
+                : chargeAction.includes('edit') ||
+                  chargeAction.includes('delete')
+                ? wp(28)
+                : wp(48),
+            },
+          ]}>
           <Text style={[styles.dataHistoryText1]}>{item.charge_type}</Text>
         </View>
-        <View style={[styles.nameDataView, {width: isPortrait ? wp(35) : wp(28)}]}>
+        <View
+          style={[styles.nameDataView, {width: isPortrait ? wp(35) : wp(28)}]}>
           <Text style={[styles.dataHistoryText1]}>{item.standard_charge}</Text>
         </View>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={async () => {
-              let allDatas = await onGetSpecificDoctor(item.id);
-              setUserId(item.id);
-              setCategoryId(allDatas.charge_category_id);
-              setCategoryName(item.charge_category_id);
-              setChargeType(item.charge_type);
-              setChargeTypeId(allDatas.charge_type);
-              setCode(item.code);
-              setDescription(item.description);
-              setStandard(JSON.stringify(item.standard_charge));
-              setNewAccountVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        {chargeAction.includes('edit') || chargeAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {chargeAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={async () => {
+                  let allDatas = await onGetSpecificDoctor(item.id);
+                  setUserId(item.id);
+                  setCategoryId(allDatas.charge_category_id);
+                  setCategoryName(item.charge_category_id);
+                  setChargeType(item.charge_type);
+                  setChargeTypeId(allDatas.charge_type);
+                  setCode(item.code);
+                  setDescription(item.description);
+                  setStandard(JSON.stringify(item.standard_charge));
+                  setNewAccountVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {chargeAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: wp(2)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -280,23 +303,25 @@ const ChargesComponent = ({
                 onPress={() => setFilterVisible(true)}>
                 <Image style={styles.filterImage} source={filter} />
               </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => {
-                  setUserId('');
-                  setCategoryId('');
-                  setCategoryName('');
-                  setChargeType('');
-                  setChargeTypeId('');
-                  setCode('');
-                  setStandard('');
-                  setDescription('');
-                  setErrorVisible(false);
-                  setErrorMessage('');
-                  setNewAccountVisible(true);
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>New Charge</Text>
-              </TouchableOpacity>
+              {chargeAction.includes('create') && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setUserId('');
+                    setCategoryId('');
+                    setCategoryName('');
+                    setChargeType('');
+                    setChargeTypeId('');
+                    setCode('');
+                    setStandard('');
+                    setDescription('');
+                    setErrorVisible(false);
+                    setErrorMessage('');
+                    setNewAccountVisible(true);
+                  }}
+                  style={styles.actionView}>
+                  <Text style={styles.actionText}>New Charge</Text>
+                </TouchableOpacity>
+              )}
               <Modal
                 animationType="none"
                 transparent={true}
@@ -324,7 +349,11 @@ const ChargesComponent = ({
                         renderButton={(selectedItem, isOpen) => {
                           console.log('Get Response>>>', selectedItem);
                           return (
-                            <View style={[styles.dropdown2BtnStyle2, {width: '92%'}]}>
+                            <View
+                              style={[
+                                styles.dropdown2BtnStyle2,
+                                {width: '92%'},
+                              ]}>
                               <Text style={styles.dropdownItemTxtStyle}>
                                 {selectedItem?.name || 'Select'}
                               </Text>
@@ -372,18 +401,40 @@ const ChargesComponent = ({
                   <Text style={[styles.titleText, {width: wp(16)}]}>
                     {'CODE'}
                   </Text>
-                  <Text style={[styles.titleText, {width: isPortrait ? wp(37) : wp(30.2)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {width: isPortrait ? wp(37) : wp(30.2)},
+                    ]}>
                     {'CHARGE CATEGORY'}
                   </Text>
-                  <Text style={[styles.titleText, {width: isPortrait ? wp(35) : wp(28)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {
+                        width: isPortrait
+                          ? wp(35)
+                          : chargeAction.includes('edit') ||
+                            chargeAction.includes('delete')
+                          ? wp(28)
+                          : wp(48),
+                      },
+                    ]}>
                     {'CHARGE TYPE'}
                   </Text>
-                  <Text style={[styles.titleText, {width: isPortrait ? wp(35) : wp(28)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {width: isPortrait ? wp(35) : wp(28)},
+                    ]}>
                     {'STANDARD CHARGE'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(16)}]}>
-                    {'ACTION'}
-                  </Text>
+                  {chargeAction.includes('edit') ||
+                  chargeAction.includes('delete') ? (
+                    <Text style={[styles.titleText, {width: wp(16)}]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

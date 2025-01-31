@@ -48,6 +48,7 @@ const ChargeCategoriesList = ({
   totalPage,
   pageCount,
   setPageCount,
+  categoryAction,
 }) => {
   const {theme} = useTheme();
   const orientation = useOrientation();
@@ -188,43 +189,62 @@ const ChargeCategoriesList = ({
           styles.dataHistoryView,
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
-        <View style={[styles.nameDataView, {width: isPortrait ? wp(35) : wp(38)}]}>
+        <View
+          style={[styles.nameDataView, {width: isPortrait ? wp(35) : wp(38)}]}>
           <Text style={[styles.dataHistoryText1]}>{item.name}</Text>
         </View>
-        <View style={[styles.nameDataView, {width: isPortrait ? wp(28) : wp(33.1)}]}>
+        <View
+          style={[
+            styles.nameDataView,
+            {
+              width: isPortrait
+                ? wp(28)
+                : categoryAction.includes('edit') ||
+                  categoryAction.includes('delete')
+                ? wp(33.1)
+                : wp(53.1),
+            },
+          ]}>
           <Text style={[styles.dataHistoryText1]}>{item.description}</Text>
         </View>
         <View style={[styles.nameDataView]}>
           <Text style={[styles.dataHistoryText1]}>{item.charge_type}</Text>
         </View>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={async () => {
-              let allDatas = await onGetSpecificDoctor(item.id);
-              setUserId(item.id);
-              setEventTitle(item.name);
-              setChargeType(item.charge_type);
-              setChargeTypeId(allDatas.charge_type);
-              setDepartmentComment(item.description);
-              setNewAccountVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        {categoryAction.includes('edit') ||
+        categoryAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {categoryAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={async () => {
+                  let allDatas = await onGetSpecificDoctor(item.id);
+                  setUserId(item.id);
+                  setEventTitle(item.name);
+                  setChargeType(item.charge_type);
+                  setChargeTypeId(allDatas.charge_type);
+                  setDepartmentComment(item.description);
+                  setNewAccountVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {categoryAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: wp(2)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -245,6 +265,28 @@ const ChargeCategoriesList = ({
             />
             {!isPortrait && (
               <View style={styles.filterView}>
+                {categoryAction.includes('create') && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setUserId('');
+                      setEventTitle('');
+                      setChargeType('');
+                      setChargeTypeId('');
+                      setDepartmentComment('');
+                      setErrorVisible(false);
+                      setErrorMessage('');
+                      setNewAccountVisible(true);
+                    }}
+                    style={styles.actionView}>
+                    <Text style={styles.actionText}>New Charge Category</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+          </View>
+          {isPortrait && (
+            <View style={styles.filterView}>
+              {categoryAction.includes('create') && (
                 <TouchableOpacity
                   onPress={() => {
                     setUserId('');
@@ -259,25 +301,7 @@ const ChargeCategoriesList = ({
                   style={styles.actionView}>
                   <Text style={styles.actionText}>New Charge Category</Text>
                 </TouchableOpacity>
-              </View>
-            )}
-          </View>
-          {isPortrait && (
-            <View style={styles.filterView}>
-              <TouchableOpacity
-                onPress={() => {
-                  setUserId('');
-                  setEventTitle('');
-                  setChargeType('');
-                  setChargeTypeId('');
-                  setDepartmentComment('');
-                  setErrorVisible(false);
-                  setErrorMessage('');
-                  setNewAccountVisible(true);
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>New Charge Category</Text>
-              </TouchableOpacity>
+              )}
             </View>
           )}
           <View
@@ -292,18 +316,40 @@ const ChargeCategoriesList = ({
                     styles.titleActiveView,
                     {backgroundColor: theme.headerColor},
                   ]}>
-                  <Text style={[styles.titleText, {width: isPortrait ? wp(35) : wp(38)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {width: isPortrait ? wp(35) : wp(38)},
+                    ]}>
                     {'CHARGE CATEGORY'}
                   </Text>
-                  <Text style={[styles.titleText, {width: isPortrait ? wp(28) : wp(33.1)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {
+                        width: isPortrait
+                          ? wp(28)
+                          : categoryAction.includes('edit') ||
+                            categoryAction.includes('delete')
+                          ? wp(33.1)
+                          : wp(53.1),
+                      },
+                    ]}>
                     {'DESCRIPTION'}
                   </Text>
                   <Text style={[styles.titleText, {width: wp(35)}]}>
                     {'CHARGE TYPE'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(16), textAlign: 'center'}]}>
-                    {'ACTION'}
-                  </Text>
+                  {categoryAction.includes('edit') ||
+                  categoryAction.includes('delete') ? (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: wp(16), textAlign: 'center'},
+                      ]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

@@ -44,6 +44,7 @@ const MedicinesBrandList = ({
   totalPage,
   pageCount,
   setPageCount,
+  brandAction,
 }) => {
   const {theme} = useTheme();
   const orientation = useOrientation();
@@ -263,42 +264,62 @@ const MedicinesBrandList = ({
           styles.dataHistoryView,
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
-        <Text style={[styles.dataHistoryText, {width: isPortrait ? wp(28) : wp(32)}]}>
+        <Text
+          style={[
+            styles.dataHistoryText,
+            {width: isPortrait ? wp(28) : wp(32)},
+          ]}>
           {item.name}
         </Text>
-        <Text style={[styles.dataHistoryText1, {width: isPortrait ? wp(33) : wp(41.1)}]}>
+        <Text
+          style={[
+            styles.dataHistoryText1,
+            {
+              width: isPortrait
+                ? wp(33)
+                : brandAction.includes('edit') || brandAction.includes('delete')
+                ? wp(41.1)
+                : wp(61.1),
+            },
+          ]}>
           {item.email}
         </Text>
         <Text style={[styles.dataHistoryText1, {width: wp(33)}]}>
           {item.phone}
         </Text>
-        <View style={[styles.actionDataView, {width: wp(16)}]}>
-          <TouchableOpacity
-            onPress={async () => {
-              setUserId(item.id);
-              setIssueDate(item.name);
-              setDoctorName(item.phone);
-              setDepartmentComment(item.email);
-              setCountryCode(item.region_code);
-              setAddCallVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        {brandAction.includes('edit') || brandAction.includes('delete') ? (
+          <View style={[styles.actionDataView, {width: wp(16)}]}>
+            {brandAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={async () => {
+                  setUserId(item.id);
+                  setIssueDate(item.name);
+                  setDoctorName(item.phone);
+                  setDepartmentComment(item.email);
+                  setCountryCode(item.region_code);
+                  setAddCallVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {brandAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: wp(2)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -319,6 +340,27 @@ const MedicinesBrandList = ({
             />
             {!isPortrait && (
               <View style={styles.filterView}>
+                {brandAction.includes('create') && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setUserId('');
+                      setIssueDate('');
+                      setDoctorName('');
+                      setDepartmentComment('');
+                      setErrorMessage('');
+                      setErrorVisible(false);
+                      setAddCallVisible(true);
+                    }}
+                    style={styles.actionView}>
+                    <Text style={styles.actionText}>New Medicine Brand</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+          </View>
+          {isPortrait && (
+            <View style={styles.filterView}>
+              {brandAction.includes('create') && (
                 <TouchableOpacity
                   onPress={() => {
                     setUserId('');
@@ -332,24 +374,7 @@ const MedicinesBrandList = ({
                   style={styles.actionView}>
                   <Text style={styles.actionText}>New Medicine Brand</Text>
                 </TouchableOpacity>
-              </View>
-            )}
-          </View>
-          {isPortrait && (
-            <View style={styles.filterView}>
-              <TouchableOpacity
-                onPress={() => {
-                  setUserId('');
-                  setIssueDate('');
-                  setDoctorName('');
-                  setDepartmentComment('');
-                  setErrorMessage('');
-                  setErrorVisible(false);
-                  setAddCallVisible(true);
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>New Medicine Brand</Text>
-              </TouchableOpacity>
+              )}
             </View>
           )}
           <View
@@ -364,18 +389,40 @@ const MedicinesBrandList = ({
                     styles.titleActiveView,
                     {backgroundColor: theme.headerColor},
                   ]}>
-                  <Text style={[styles.titleText, {width: isPortrait ? wp(28) : wp(32)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {width: isPortrait ? wp(28) : wp(32)},
+                    ]}>
                     {'BRAND'}
                   </Text>
-                  <Text style={[styles.titleText, {width: isPortrait ? wp(33) : wp(41.1)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {
+                        width: isPortrait
+                          ? wp(33)
+                          : brandAction.includes('edit') ||
+                            brandAction.includes('delete')
+                          ? wp(41.1)
+                          : wp(61.1),
+                      },
+                    ]}>
                     {'EMAIL'}
                   </Text>
                   <Text style={[styles.titleText, {width: wp(33)}]}>
                     {'PHONE'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(16), textAlign: 'center'}]}>
-                    {'ACTION'}
-                  </Text>
+                  {brandAction.includes('edit') ||
+                  brandAction.includes('delete') ? (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: wp(16), textAlign: 'center'},
+                      ]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

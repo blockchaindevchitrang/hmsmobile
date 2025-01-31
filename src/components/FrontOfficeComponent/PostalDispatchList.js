@@ -62,6 +62,7 @@ const PostalDispatchList = ({
   totalPage,
   pageCount,
   setPageCount,
+  dispatchAction,
 }) => {
   const {theme} = useTheme();
   const orientation = useOrientation();
@@ -319,43 +320,57 @@ const PostalDispatchList = ({
         <Text
           style={[
             styles.dataHistoryText,
-            {width: isPortrait ? wp(26) : wp(18)},
+            {
+              width: isPortrait
+                ? wp(26)
+                : dispatchAction.includes('edit') ||
+                  dispatchAction.includes('delete')
+                ? wp(18)
+                : wp(32),
+            },
           ]}>
           {item.attachment != '' ? 'Download' : 'N/A'}
         </Text>
-        <View
-          style={[
-            styles.actionDataView,
-            {width: isPortrait ? wp(16) : wp(10)},
-          ]}>
-          <TouchableOpacity
-            onPress={async () => {
-              let allDatas = await onGetSpecificDoctor(item.id);
-              setUserId(item.id);
-              setFromTitle(item.from_title);
-              setReference(item.reference_no);
-              setDate(new Date(allDatas.date));
-              setToTitle(item.to_title);
-              setDescription(allDatas.address);
-              setAddCallVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        {dispatchAction.includes('edit') ||
+        dispatchAction.includes('delete') ? (
+          <View
+            style={[
+              styles.actionDataView,
+              {width: isPortrait ? wp(16) : wp(10)},
+            ]}>
+            {dispatchAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={async () => {
+                  let allDatas = await onGetSpecificDoctor(item.id);
+                  setUserId(item.id);
+                  setFromTitle(item.from_title);
+                  setReference(item.reference_no);
+                  setDate(new Date(allDatas.date));
+                  setToTitle(item.to_title);
+                  setDescription(allDatas.address);
+                  setAddCallVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {dispatchAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: wp(2)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -426,7 +441,13 @@ const PostalDispatchList = ({
                 onSelect={value => {
                   if (value == 'add') {
                     setUserId('');
+                    setFromTitle('');
+                    setReference('');
+                    setDate(new Date());
+                    setToTitle('');
                     setDescription('');
+                    setErrorVisible(false);
+                    setErrorMessage('');
                     setAddCallVisible(true);
                   } else {
                     onPatientAdmissionExcelGet();
@@ -434,9 +455,11 @@ const PostalDispatchList = ({
                 }}>
                 <MenuTrigger text={''} />
                 <MenuOptions style={{marginVertical: hp(0.5)}}>
-                  <MenuOption value={'add'}>
-                    <Text style={styles.dataHistoryText3}>New Receive</Text>
-                  </MenuOption>
+                  {dispatchAction.includes('create') && (
+                    <MenuOption value={'add'}>
+                      <Text style={styles.dataHistoryText3}>New Dispatch</Text>
+                    </MenuOption>
+                  )}
                   <MenuOption value={'excel'}>
                     <Text style={styles.dataHistoryText3}>Export to Excel</Text>
                   </MenuOption>
@@ -487,17 +510,27 @@ const PostalDispatchList = ({
                   <Text
                     style={[
                       styles.titleText,
-                      {width: isPortrait ? wp(26) : wp(18)},
+                      {
+                        width: isPortrait
+                          ? wp(26)
+                          : dispatchAction.includes('edit') ||
+                            dispatchAction.includes('delete')
+                          ? wp(18)
+                          : wp(32),
+                      },
                     ]}>
                     {'ATTACHMENT'}
                   </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: isPortrait ? wp(16) : wp(10)},
-                    ]}>
-                    {'ACTION'}
-                  </Text>
+                  {dispatchAction.includes('edit') ||
+                  dispatchAction.includes('delete') ? (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: isPortrait ? wp(16) : wp(10)},
+                      ]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

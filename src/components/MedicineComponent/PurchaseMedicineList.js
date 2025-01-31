@@ -62,6 +62,7 @@ const PurchaseMedicineList = ({
   pageCount,
   setPageCount,
   medicine,
+  purchaseAction,
 }) => {
   const {theme} = useTheme();
   const orientation = useOrientation();
@@ -312,19 +313,21 @@ const PurchaseMedicineList = ({
             <Text style={[styles.dataHistoryText1]}>{item.payment_status}</Text>
           </View>
         </View>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        {purchaseAction.includes('delete') && (
+          <View style={styles.actionDataView}>
+            <TouchableOpacity
+              onPress={() => {
+                setUserId(item.id);
+                setDeleteUser(true);
+              }}
+              style={{marginLeft: wp(2)}}>
+              <Image
+                style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                source={deleteIcon}
+              />
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
     );
   };
@@ -463,11 +466,13 @@ const PurchaseMedicineList = ({
                 }}>
                 <MenuTrigger text={''} />
                 <MenuOptions style={{marginVertical: hp(0.5)}}>
-                  <MenuOption value={'add'}>
-                    <Text style={styles.dataHistoryText3}>
-                      Purchase Medicine
-                    </Text>
-                  </MenuOption>
+                  {purchaseAction.includes('create') && (
+                    <MenuOption value={'add'}>
+                      <Text style={styles.dataHistoryText3}>
+                        Purchase Medicine
+                      </Text>
+                    </MenuOption>
+                  )}
                   <MenuOption value={'excel'}>
                     <Text style={styles.dataHistoryText3}>Export to Excel</Text>
                   </MenuOption>
@@ -529,9 +534,11 @@ const PurchaseMedicineList = ({
                     ]}>
                     {'PAYMENT MODE'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(16)}]}>
-                    {'ACTION'}
-                  </Text>
+                  {purchaseAction.includes('delete') && (
+                    <Text style={[styles.titleText, {width: wp(16)}]}>
+                      {'ACTION'}
+                    </Text>
+                  )}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

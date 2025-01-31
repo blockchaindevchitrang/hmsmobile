@@ -53,6 +53,7 @@ const ItemStocksList = ({
   totalPage,
   pageCount,
   setPageCount,
+  stockAction,
 }) => {
   const {theme} = useTheme();
   const orientation = useOrientation();
@@ -367,64 +368,83 @@ const ItemStocksList = ({
         <View style={styles.nameDataView}>
           <Text style={[styles.dataHistoryText2]}>{item.item}</Text>
         </View>
-        <View style={[styles.switchView, {width: isPortrait ? wp(35) : wp(26)}]}>
+        <View
+          style={[styles.switchView, {width: isPortrait ? wp(35) : wp(26)}]}>
           <Text style={[styles.dataHistoryText1]}>{item.itemcategory}</Text>
         </View>
-        <View style={[styles.switchView, {width: isPortrait ? wp(26) : wp(20)}]}>
+        <View
+          style={[styles.switchView, {width: isPortrait ? wp(26) : wp(20)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
             <Text style={[styles.dataHistoryText1]}>{item.quantity}</Text>
           </View>
         </View>
-        <View style={[styles.nameDataView, {width: isPortrait ? wp(35) : wp(26)}]}>
+        <View
+          style={[styles.nameDataView, {width: isPortrait ? wp(35) : wp(26)}]}>
           <Text style={[styles.dataHistoryText1]}>{item.purchase_price}</Text>
         </View>
-        <View style={styles.nameDataView}>
+        <View
+          style={[
+            styles.nameDataView,
+            {
+              width: isPortrait
+                ? wp(30)
+                : stockAction.includes('edit') || stockAction.includes('delete')
+                ? wp(22)
+                : wp(28),
+            },
+          ]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
             <Text style={[styles.dataHistoryText1]}>
               {moment(item.created_at).format('DD MMM, YYYY')}
             </Text>
           </View>
         </View>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={async () => {
-              let allDatas = await onGetSpecificDoctor(item.id);
-              setUserId(item.id);
-              setCategoryId(allDatas.item_category_id);
-              setCategoryName(item.itemcategory);
-              setItemId(allDatas?.item_id);
-              setItemName(item.item);
-              setSupplier(allDatas.supplier_name);
-              setStoreName(allDatas.store_name);
-              setQuantity(JSON.stringify(item.quantity));
-              setPrice(JSON.stringify(item.purchase_price));
-              setDescription(allDatas.description);
-              if (item?.attachment != null) {
-                if (isImageFormat(item?.attachment)) {
-                  setAvatar(parseFileFromUrl(item?.attachment));
-                }
-              } else {
-                setAvatar(null);
-              }
-              setNewAccountVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        {stockAction.includes('edit') || stockAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {stockAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={async () => {
+                  let allDatas = await onGetSpecificDoctor(item.id);
+                  setUserId(item.id);
+                  setCategoryId(allDatas.item_category_id);
+                  setCategoryName(item.itemcategory);
+                  setItemId(allDatas?.item_id);
+                  setItemName(item.item);
+                  setSupplier(allDatas.supplier_name);
+                  setStoreName(allDatas.store_name);
+                  setQuantity(JSON.stringify(item.quantity));
+                  setPrice(JSON.stringify(item.purchase_price));
+                  setDescription(allDatas.description);
+                  if (item?.attachment != null) {
+                    if (isImageFormat(item?.attachment)) {
+                      setAvatar(parseFileFromUrl(item?.attachment));
+                    }
+                  } else {
+                    setAvatar(null);
+                  }
+                  setNewAccountVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {stockAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: wp(2)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -444,25 +464,27 @@ const ItemStocksList = ({
               style={[styles.searchView, {color: theme.text}]}
             />
             <View style={styles.filterView}>
-              <TouchableOpacity
-                onPress={() => {
-                  setCategoryId('');
-                  setCategoryName('');
-                  setItemId('');
-                  setItemName('');
-                  setSupplier('');
-                  setStoreName('');
-                  setQuantity('');
-                  setPrice('');
-                  setDescription('');
-                  setErrorMessage('');
-                  setErrorVisible(false);
-                  setAvatar(null);
-                  setNewAccountVisible(true);
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>New Item Stock</Text>
-              </TouchableOpacity>
+              {stockAction.includes('create') && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setCategoryId('');
+                    setCategoryName('');
+                    setItemId('');
+                    setItemName('');
+                    setSupplier('');
+                    setStoreName('');
+                    setQuantity('');
+                    setPrice('');
+                    setDescription('');
+                    setErrorMessage('');
+                    setErrorVisible(false);
+                    setAvatar(null);
+                    setNewAccountVisible(true);
+                  }}
+                  style={styles.actionView}>
+                  <Text style={styles.actionText}>New Item Stock</Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
 
@@ -509,17 +531,27 @@ const ItemStocksList = ({
                   <Text
                     style={[
                       styles.titleText,
-                      {width: isPortrait ? wp(30) : wp(22)},
+                      {
+                        width: isPortrait
+                          ? wp(30)
+                          : stockAction.includes('edit') ||
+                            stockAction.includes('delete')
+                          ? wp(22)
+                          : wp(28),
+                      },
                     ]}>
                     {'CREATED ON'}
                   </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: wp(16), textAlign: 'center'},
-                    ]}>
-                    {'ACTION'}
-                  </Text>
+                  {stockAction.includes('edit') ||
+                  stockAction.includes('delete') ? (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: wp(16), textAlign: 'center'},
+                      ]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

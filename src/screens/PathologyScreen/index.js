@@ -34,112 +34,18 @@ import PathologyTest from '../../components/PathologyComponent/PathologyTest';
 import PathologyUnit from '../../components/PathologyComponent/PathologyUnit';
 import {onGetCommonApi} from '../../services/Api';
 import useOrientation from '../../components/OrientationComponent';
+import {useSelector} from 'react-redux';
 
-const allData = [
-  {
-    id: 1,
-    chargeCategory: 'Consultation',
-    description: 'N/A',
-    chargeTime: 'Operation Theatre',
-  },
-  {
-    id: 2,
-    chargeCategory: 'Online Consulation',
-    description: 'demo',
-    chargeTime: 'Procedures',
-  },
-  {
-    id: 3,
-    chargeCategory: 'Fee',
-    description: 'N/A',
-    chargeTime: 'Investigations',
-  },
-  {
-    id: 4,
-    chargeCategory: 'Other',
-    description: 'N/A',
-    chargeTime: 'Others',
-  },
-  {
-    id: 5,
-    chargeCategory: 'op',
-    description: 'N/A',
-    chargeTime: 'Operation Theatre',
-  },
-];
-
-const BloodDonorData = [
-  {
-    id: 1,
-    code: '76571',
-    chargeCategory: 'Consultation',
-    chargeType: 'Operation Theatre',
-    standard_charge: '$100.00',
-  },
-  {
-    id: 2,
-    code: '76572',
-    chargeCategory: 'Online Consultation',
-    chargeType: 'Procedures',
-    standard_charge: '$1,000.00',
-  },
-  {
-    id: 3,
-    code: '76573',
-    chargeCategory: 'Fee',
-    chargeType: 'Investigations',
-    standard_charge: '$343,442.00',
-  },
-  {
-    id: 4,
-    code: '76574',
-    chargeCategory: 'Other',
-    chargeType: 'Others',
-    standard_charge: '$5,000.00',
-  },
-  {
-    id: 5,
-    code: '76575',
-    chargeCategory: 'op',
-    chargeType: 'Operation Theatre',
-    standard_charge: '$5,000.00',
-  },
-];
-
-const BloodIssueData = [
-  {
-    id: 1,
-    name: 'Joey Tribiyani',
-    mail: 'joey@gmail.com',
-    standard_charge: '$600.00',
-  },
-  {
-    id: 2,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    standard_charge: '$600.00',
-  },
-  {
-    id: 3,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    standard_charge: '$500.00',
-  },
-  {
-    id: 4,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    standard_charge: '$500.00',
-  },
-  {
-    id: 5,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    standard_charge: '$400.00',
-  },
+let arrayData = [
+  'Logo',
+  'Pathology Categories',
+  'Pathology Unit',
+  'Pathology Parameter',
+  'Pathology Tests',
 ];
 
 export const PathologyScreen = ({navigation}) => {
+  const rolePermission = useSelector(state => state.rolePermission);
   const {t} = useTranslation();
   const {theme} = useTheme();
   const orientation = useOrientation(); // Get current orientation
@@ -150,7 +56,7 @@ export const PathologyScreen = ({navigation}) => {
   const [searchUnit, setSearchUnit] = useState('');
   const [searchPharmacists, setSearchPharmacists] = useState('');
   const [optionModalView, setOptionModalView] = useState(false);
-  const [selectedView, setSelectedView] = useState('PathologyCategories');
+  const [selectedView, setSelectedView] = useState('Pathology Categories');
   const [pathologyCategories, setPathologyCategories] = useState([]);
   const [parameter, setParameter] = useState([]);
   const [unit, setUnit] = useState([]);
@@ -161,6 +67,75 @@ export const PathologyScreen = ({navigation}) => {
   const [pathologyUnitPage, setPathologyUnitPage] = useState('1');
   const [parameterPage, setParameterPage] = useState('1');
   const [testPage, setTestPage] = useState('1');
+  const [categoryAction, setCategoryAction] = useState([]);
+  const [unitAction, setUnitAction] = useState([]);
+  const [parameterAction, setParameterAction] = useState([]);
+  const [testAction, setTestAction] = useState([]);
+
+  useEffect(() => {
+    const visibility = {
+      categoryVisible: false,
+      unitVisible: false,
+      parameterVisible: false,
+      testVisible: false,
+    };
+
+    // Helper function to process privileges
+    const processPrivileges = (
+      privileges,
+      endPoint,
+      setAction,
+      visibilityKey,
+    ) => {
+      const privilege = privileges.find(item => item.end_point === endPoint);
+      if (privilege) {
+        setAction(privilege.action.split(',').map(action => action.trim()));
+        visibility[visibilityKey] = true;
+      }
+    };
+
+    // Iterate over role permissions
+    rolePermission.forEach(item => {
+      if (item.main_module === 'Pathology') {
+        processPrivileges(
+          item.privileges,
+          'pathology_categories',
+          setCategoryAction,
+          'categoryVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'pathology_unit',
+          setUnitAction,
+          'unitVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'pathology_parameter',
+          setParameterAction,
+          'parameterVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'pathology_tests',
+          setTestAction,
+          'testVisible',
+        );
+
+        // Handle arrayData based on visibility
+        const {categoryVisible, unitVisible, parameterVisible, testVisible} =
+          visibility;
+        console.log('Get Value::::>>>', visibility);
+        arrayData = [
+          'Logo',
+          categoryVisible && 'Pathology Categories',
+          unitVisible && 'Pathology Unit',
+          parameterVisible && 'Pathology Parameter',
+          testVisible && 'Pathology Tests',
+        ].filter(Boolean);
+      }
+    });
+  }, [rolePermission]);
 
   const animations = useRef(
     [0, 0, 0, 0, 0].map(() => new Animated.Value(300)),
@@ -310,7 +285,7 @@ export const PathologyScreen = ({navigation}) => {
         />
       </View>
       <View style={styles.mainView}>
-        {selectedView == 'PathologyCategories' ? (
+        {selectedView == 'Pathology Categories' ? (
           <PathologyCategories
             searchBreak={searchAccount}
             setSearchBreak={setSearchAccount}
@@ -319,8 +294,9 @@ export const PathologyScreen = ({navigation}) => {
             totalPage={totalPage}
             pageCount={pageCount}
             setPageCount={setPageCount}
+            categoryAction={categoryAction}
           />
-        ) : selectedView == 'PathologyUnit' ? (
+        ) : selectedView == 'Pathology Unit' ? (
           <PathologyUnit
             searchBreak={searchPayroll}
             setSearchBreak={setSearchPayroll}
@@ -329,8 +305,9 @@ export const PathologyScreen = ({navigation}) => {
             totalPage={pathologyUnitPage}
             pageCount={pageCount}
             setPageCount={setPageCount}
+            unitAction={unitAction}
           />
-        ) : selectedView == 'PathologyParameter' ? (
+        ) : selectedView == 'Pathology Parameter' ? (
           <PathologyParameter
             searchBreak={searchPayroll}
             setSearchBreak={setSearchPayroll}
@@ -340,9 +317,10 @@ export const PathologyScreen = ({navigation}) => {
             totalPage={parameterPage}
             pageCount={pageCount}
             setPageCount={setPageCount}
+            parameterAction={parameterAction}
           />
         ) : (
-          selectedView == 'PathologyTest' && (
+          selectedView == 'Pathology Tests' && (
             <PathologyTest
               searchBreak={searchPharmacists}
               setSearchBreak={setSearchPharmacists}
@@ -353,6 +331,7 @@ export const PathologyScreen = ({navigation}) => {
               totalPage={testPage}
               pageCount={pageCount}
               setPageCount={setPageCount}
+              testAction={testAction}
             />
           )
         )}
@@ -373,13 +352,7 @@ export const PathologyScreen = ({navigation}) => {
 
             <View style={styles.mainModalView}>
               <View style={styles.menuContainer}>
-                {[
-                  'Logo',
-                  'PathologyCategories',
-                  'PathologyUnit',
-                  'PathologyParameter',
-                  'PathologyTest',
-                ].map((option, index) => (
+                {arrayData.map((option, index) => (
                   <>
                     {option == 'Logo' ? (
                       <Animated.View

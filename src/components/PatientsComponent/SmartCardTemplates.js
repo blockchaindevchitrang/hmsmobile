@@ -71,7 +71,8 @@ const SmartCardTemplates = ({
 
   useEffect(() => {
     setAllDataArray(allData);
-  }, []);
+    setRefresh(!refresh);
+  }, [allData]);
 
   const onChangeStatus = async (from, item, value, index) => {
     try {

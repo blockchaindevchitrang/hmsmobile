@@ -13,7 +13,7 @@ import {
   TouchableWithoutFeedback,
   ActivityIndicator,
 } from 'react-native';
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -56,6 +56,7 @@ const MedicineCategoryList = ({
   setPageCount,
   statusId,
   setStatusId,
+  categoryAction,
 }) => {
   const {theme} = useTheme();
   const orientation = useOrientation();
@@ -71,6 +72,14 @@ const MedicineCategoryList = ({
   const [deleteUser, setDeleteUser] = useState(false);
   const [loading, setLoading] = useState(false);
   const [filterVisible, setFilterVisible] = useState(false);
+  const [allDataArray, setAllDataArray] = useState([]);
+  const [refresh, setRefresh] = useState(false);
+
+  useEffect(() => {
+    setRefresh(!refresh);
+    setAllDataArray(allData);
+    setRefresh(!refresh);
+  }, [allData]);
 
   const onAddPayRollData = async () => {
     try {
@@ -198,6 +207,30 @@ const MedicineCategoryList = ({
     }
   };
 
+  const onChangeStatus = async (item, status, index) => {
+    try {
+      let array = allDataArray;
+      array[index].status = status ? 'Active' : 'Unactive';
+      setAllDataArray(array);
+      setRefresh(!refresh);
+      const urlData = `medicine-category-update/${item.id}?name=${
+        item.name
+      }&status=${status ? 1 : 0}`;
+      const response = await onGetEditAccountDataApi(urlData);
+      console.log('Response value::', response.data);
+      if (response.data.flag == 1) {
+        setLoading(false);
+        setNewAccountVisible(false);
+      } else {
+        setLoading(false);
+        setNewAccountVisible(false);
+      }
+    } catch (err) {
+      setLoading(false);
+      console.log('Error:', err);
+    }
+  };
+
   const renderItem = ({item, index}) => {
     return (
       <View
@@ -208,45 +241,58 @@ const MedicineCategoryList = ({
         <View style={[styles.nameDataView]}>
           <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
         </View>
-        <View style={[styles.nameDataView, {width: wp(24)}]}>
-          <Switch
-            trackColor={{
-              false:
-                item.status == 'Active' ? COLORS.greenColor : COLORS.errorColor,
-              true:
-                item.status == 'Active' ? COLORS.greenColor : COLORS.errorColor,
-            }}
-            thumbColor={item.status == 'Active' ? '#f4f3f4' : '#f4f3f4'}
-            ios_backgroundColor={COLORS.errorColor}
-            onValueChange={() => {}}
-            value={item.status == 'Active'}
-          />
-        </View>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={async () => {
-              setUserId(item.id);
-              setEventTitle(item.name);
-              setStatusVisible(item.status == 'Active');
-              setNewAccountVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
+        {categoryAction.includes('active/deactive') && (
+          <View style={[styles.nameDataView, {width: wp(24)}]}>
+            <Switch
+              trackColor={{
+                false:
+                  item.status == 'Active'
+                    ? COLORS.greenColor
+                    : COLORS.errorColor,
+                true:
+                  item.status == 'Active'
+                    ? COLORS.greenColor
+                    : COLORS.errorColor,
+              }}
+              thumbColor={item.status == 'Active' ? '#f4f3f4' : '#f4f3f4'}
+              ios_backgroundColor={COLORS.errorColor}
+              onValueChange={status => onChangeStatus(item, status, index)}
+              value={item.status == 'Active'}
             />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+          </View>
+        )}
+        {categoryAction.includes('edit') ||
+        categoryAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {categoryAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={async () => {
+                  setUserId(item.id);
+                  setEventTitle(item.name);
+                  setStatusVisible(item.status == 'Active');
+                  setNewAccountVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {categoryAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: wp(2)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -436,20 +482,25 @@ const MedicineCategoryList = ({
                 {backgroundColor: theme.headerColor},
               ]}>
               <Text style={[styles.titleText, {width: wp(30)}]}>{'NAME'}</Text>
-              <Text style={[styles.titleText, {width: wp(24)}]}>
-                {'STATUS'}
-              </Text>
-              <Text style={[styles.titleText, {width: wp(16)}]}>
-                {'ACTION'}
-              </Text>
+              {categoryAction.includes('active/deactive') && (
+                <Text style={[styles.titleText, {width: wp(24)}]}>
+                  {'STATUS'}
+                </Text>
+              )}
+              {categoryAction.includes('edit') ||
+              categoryAction.includes('delete') ? (
+                <Text style={[styles.titleText, {width: wp(16)}]}>
+                  {'ACTION'}
+                </Text>
+              ) : null}
             </View>
             <View style={styles.mainDataView}>
               <FlatList
-                data={allData}
+                data={allDataArray}
                 renderItem={renderItem}
                 bounces={false}
                 showsHorizontalScrollIndicator={false}
-                initialNumToRender={allData.length}
+                initialNumToRender={allDataArray.length}
                 nestedScrollEnabled
                 virtualized
                 ListEmptyComponent={() => (

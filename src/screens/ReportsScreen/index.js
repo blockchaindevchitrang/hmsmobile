@@ -27,132 +27,18 @@ import OperationReports from '../../components/ReportsComponent/OperationReports
 import InvestigationReports from '../../components/ReportsComponent/InvestigationReports';
 import {onGetCommonApi} from '../../services/Api';
 import useOrientation from '../../components/OrientationComponent';
+import {useSelector} from 'react-redux';
 
-const allData = [
-  {
-    id: 1,
-    admission: 'OMGFK57O',
-    name: 'Joey Tribiyani',
-    mail: 'joey@gmail.com',
-    date: '22:02:00 2023-05-25',
-    bed: 'Single-10',
-    status: 'Paid',
-  },
-  {
-    id: 2,
-    admission: 'OMGFK571',
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    date: '22:02:00 2023-05-25',
-    bed: 'General Ward',
-    status: 'Unpaid',
-  },
-  {
-    id: 3,
-    admission: 'OMGFK572',
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    date: '22:02:00 2023-05-25',
-    bed: 'VVIP-32',
-    status: 'Paid',
-  },
-  {
-    id: 4,
-    admission: 'OMGFK573',
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    date: '22:02:00 2023-05-25',
-    bed: 'General Ward',
-    status: 'Unpaid',
-  },
-  {
-    id: 5,
-    admission: 'OMGFK574',
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    date: '22:02:00 2023-05-25',
-    bed: 'General Ward',
-    status: 'Unpaid',
-  },
-];
-
-const BloodDonorData = [
-  {
-    id: 1,
-    name: 'Joey Tribiyani',
-    mail: 'joey@gmail.com',
-    specialist: '1:10:00 PM',
-    qualification: '1:40:00 PM',
-    status: 'Everyday',
-  },
-  {
-    id: 2,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    specialist: '12:30:00 PM',
-    qualification: '1:00:00 PM',
-    status: 'Everyday',
-  },
-  {
-    id: 3,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    specialist: '5:00:00 PM',
-    qualification: '5:30:00 PM',
-    status: 'Everyday',
-  },
-  {
-    id: 4,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    specialist: '5:00:00 PM',
-    qualification: '5:30:00 PM',
-    status: 'Everyday',
-  },
-  {
-    id: 5,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    specialist: '5:00:00 PM',
-    qualification: '5:30:00 PM',
-    status: 'Everyday',
-  },
-];
-
-const BloodIssueData = [
-  {
-    id: 1,
-    name: 'Joey Tribiyani',
-    mail: 'joey@gmail.com',
-    standard_charge: '$600.00',
-  },
-  {
-    id: 2,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    standard_charge: '$600.00',
-  },
-  {
-    id: 3,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    standard_charge: '$500.00',
-  },
-  {
-    id: 4,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    standard_charge: '$500.00',
-  },
-  {
-    id: 5,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    standard_charge: '$400.00',
-  },
+let arrayData = [
+  'Logo',
+  'Birth reports',
+  'Death reports',
+  'Investigation reports',
+  'Operation reports',
 ];
 
 export const ReportsScreen = ({navigation}) => {
+  const rolePermission = useSelector(state => state.rolePermission);
   const {t} = useTranslation();
   const {theme} = useTheme();
   const orientation = useOrientation(); // Get current orientation
@@ -174,6 +60,79 @@ export const ReportsScreen = ({navigation}) => {
   const [deathReportPage, setDeathReportPage] = useState('1');
   const [investigationPage, setInvestigationPage] = useState('1');
   const [operationPage, setOperationPage] = useState('1');
+  const [birthAction, setBirthAction] = useState([]);
+  const [deathAction, setDeathAction] = useState([]);
+  const [investigationAction, setInvestigationAction] = useState([]);
+  const [operationAction, setOperationAction] = useState([]);
+
+  useEffect(() => {
+    const visibility = {
+      birthVisible: false,
+      deathVisible: false,
+      investigationVisible: false,
+      operationVisible: false,
+    };
+
+    // Helper function to process privileges
+    const processPrivileges = (
+      privileges,
+      endPoint,
+      setAction,
+      visibilityKey,
+    ) => {
+      const privilege = privileges.find(item => item.end_point === endPoint);
+      if (privilege) {
+        setAction(privilege.action.split(',').map(action => action.trim()));
+        visibility[visibilityKey] = true;
+      }
+    };
+
+    // Iterate over role permissions
+    rolePermission.forEach(item => {
+      if (item.main_module === 'Pathology') {
+        processPrivileges(
+          item.privileges,
+          'birth_reports',
+          setBirthAction,
+          'birthVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'death_repo',
+          setDeathAction,
+          'deathVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'investigation_reports',
+          setInvestigationAction,
+          'investigationVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'operation_reports',
+          setOperationAction,
+          'operationVisible',
+        );
+
+        // Handle arrayData based on visibility
+        const {
+          birthVisible,
+          deathVisible,
+          investigationVisible,
+          operationVisible,
+        } = visibility;
+        console.log('Get Value::::>>>', visibility);
+        arrayData = [
+          'Logo',
+          birthVisible && 'Birth reports',
+          deathVisible && 'Death reports',
+          investigationVisible && 'Investigation reports',
+          operationVisible && 'Operation reports',
+        ].filter(Boolean);
+      }
+    });
+  }, [rolePermission]);
 
   const animations = useRef(
     [0, 0, 0, 0, 0].map(() => new Animated.Value(300)),
@@ -332,6 +291,7 @@ export const ReportsScreen = ({navigation}) => {
             totalPage={totalPage}
             pageCount={pageCount}
             setPageCount={setPageCount}
+            birthAction={birthAction}
           />
         ) : selectedView == 'Death reports' ? (
           <DeathReportList
@@ -342,6 +302,7 @@ export const ReportsScreen = ({navigation}) => {
             totalPage={deathReportPage}
             pageCount={pageCount}
             setPageCount={setPageCount}
+            deathAction={deathAction}
           />
         ) : selectedView == 'Investigation reports' ? (
           <InvestigationReports
@@ -352,6 +313,7 @@ export const ReportsScreen = ({navigation}) => {
             totalPage={investigationPage}
             pageCount={pageCount}
             setPageCount={setPageCount}
+            investigationAction={investigationAction}
           />
         ) : (
           selectedView == 'Operation reports' && (
@@ -363,6 +325,7 @@ export const ReportsScreen = ({navigation}) => {
               totalPage={operationPage}
               pageCount={pageCount}
               setPageCount={setPageCount}
+              operationAction={operationAction}
             />
           )
         )}
@@ -383,13 +346,7 @@ export const ReportsScreen = ({navigation}) => {
 
             <View style={styles.mainModalView}>
               <View style={styles.menuContainer}>
-                {[
-                  'Logo',
-                  'Birth reports',
-                  'Death reports',
-                  'Investigation reports',
-                  'Operation reports',
-                ].map((option, index) => (
+                {arrayData.map((option, index) => (
                   <>
                     {option == 'Logo' ? (
                       <Animated.View

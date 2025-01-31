@@ -29,8 +29,20 @@ import UsedMedicineList from '../../components/MedicineComponent/UsedMedicineLis
 import MedicineBillList from '../../components/MedicineComponent/MedicineBillList';
 import {onGetCommonApi} from '../../services/Api';
 import useOrientation from '../../components/OrientationComponent';
+import {useSelector} from 'react-redux';
+
+let arrayData = [
+  'Logo',
+  'Medicines Categories',
+  'Medicines Brands',
+  'Medicines',
+  'Purchase Medicine',
+  'Used Medicine',
+  'Medicine Bills',
+];
 
 export const MedicineScreen = ({navigation}) => {
+  const rolePermission = useSelector(state => state.rolePermission);
   const {t} = useTranslation();
   const {theme} = useTheme();
   const orientation = useOrientation(); // Get current orientation
@@ -59,6 +71,98 @@ export const MedicineScreen = ({navigation}) => {
   const [usedPage, setUsedPage] = useState('1');
   const [medicineBillPage, setMedicineBillPage] = useState('1');
   const [statusId, setStatusId] = useState(2);
+  const [categoryAction, setCategoryAction] = useState([]);
+  const [brandAction, setBrandAction] = useState([]);
+  const [medicineAction, setMedicineAction] = useState([]);
+  const [purchaseAction, setPurchaseAction] = useState([]);
+  const [usedAction, setUsedAction] = useState([]);
+  const [billAction, setBillAction] = useState([]);
+
+  useEffect(() => {
+    const visibility = {
+      categoryVisible: false,
+      brandVisible: false,
+      medicineVisible: false,
+      purchaseVisible: false,
+      usedVisible: false,
+      billVisible: false,
+    };
+
+    // Helper function to process privileges
+    const processPrivileges = (
+      privileges,
+      endPoint,
+      setAction,
+      visibilityKey,
+    ) => {
+      const privilege = privileges.find(item => item.end_point === endPoint);
+      if (privilege) {
+        setAction(privilege.action.split(',').map(action => action.trim()));
+        visibility[visibilityKey] = true;
+      }
+    };
+
+    // Iterate over role permissions
+    rolePermission.forEach(item => {
+      if (item.main_module === 'Medicines') {
+        processPrivileges(
+          item.privileges,
+          'medicine_categories',
+          setCategoryAction,
+          'categoryVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'medicine_crands',
+          setBrandAction,
+          'brandVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'medicines',
+          setMedicineAction,
+          'medicineVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'purchase_medicine',
+          setPurchaseAction,
+          'purchaseVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'used_medicine',
+          setUsedAction,
+          'usedVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'medicine_bills',
+          setBillAction,
+          'billVisible',
+        );
+        // Handle arrayData based on visibility
+        const {
+          categoryVisible,
+          brandVisible,
+          medicineVisible,
+          purchaseVisible,
+          usedVisible,
+          billVisible,
+        } = visibility;
+        console.log('Get Value::::>>>', visibility);
+        arrayData = [
+          'Logo',
+          categoryVisible && 'Medicines Categories',
+          brandVisible && 'Medicines Brands',
+          medicineVisible && 'Medicines',
+          purchaseVisible && 'Purchase Medicine',
+          usedVisible && 'Used Medicine',
+          billVisible && 'Medicine Bills',
+        ].filter(Boolean);
+      }
+    });
+  }, [rolePermission]);
 
   const animations = useRef(
     [0, 0, 0, 0, 0, 0, 0].map(() => new Animated.Value(300)),
@@ -258,6 +362,7 @@ export const MedicineScreen = ({navigation}) => {
             setPageCount={setPageCount}
             statusId={statusId}
             setStatusId={setStatusId}
+            categoryAction={categoryAction}
           />
         ) : selectedView == 'Medicines Brands' ? (
           <MedicinesBrandList
@@ -268,6 +373,7 @@ export const MedicineScreen = ({navigation}) => {
             totalPage={brandPage}
             pageCount={pageCount}
             setPageCount={setPageCount}
+            brandAction={brandAction}
           />
         ) : selectedView == 'Medicines' ? (
           <MedicineList
@@ -280,6 +386,7 @@ export const MedicineScreen = ({navigation}) => {
             totalPage={medicinePage}
             pageCount={pageCount}
             setPageCount={setPageCount}
+            medicineAction={medicineAction}
           />
         ) : selectedView == 'Purchase Medicine' ? (
           <PurchaseMedicineList
@@ -291,6 +398,7 @@ export const MedicineScreen = ({navigation}) => {
             pageCount={pageCount}
             setPageCount={setPageCount}
             medicine={medicine}
+            purchaseAction={purchaseAction}
           />
         ) : selectedView == 'Used Medicine' ? (
           <UsedMedicineList
@@ -301,6 +409,7 @@ export const MedicineScreen = ({navigation}) => {
             totalPage={usedPage}
             pageCount={pageCount}
             setPageCount={setPageCount}
+            usedAction={usedAction}
           />
         ) : (
           selectedView == 'Medicine Bills' && (
@@ -314,6 +423,7 @@ export const MedicineScreen = ({navigation}) => {
               setPageCount={setPageCount}
               medicine={medicine}
               medicineCategory={medicineCategory}
+              billAction={billAction}
             />
           )
         )}
@@ -334,15 +444,7 @@ export const MedicineScreen = ({navigation}) => {
 
             <View style={styles.mainModalView}>
               <View style={styles.menuContainer}>
-                {[
-                  'Logo',
-                  'Medicines Categories',
-                  'Medicines Brands',
-                  'Medicines',
-                  'Purchase Medicine',
-                  'Used Medicine',
-                  'Medicine Bills',
-                ].map((option, index) => (
+                {arrayData.map((option, index) => (
                   <>
                     {option == 'Logo' ? (
                       <Animated.View

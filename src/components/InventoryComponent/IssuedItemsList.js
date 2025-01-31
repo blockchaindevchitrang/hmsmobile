@@ -66,6 +66,7 @@ const IssuedItemsList = ({
   setPageCount,
   statusId,
   setStatusId,
+  issueAction,
 }) => {
   const roleData = useSelector(state => state.roleData);
   const allUserData = useSelector(state => state.allUserData);
@@ -357,40 +358,47 @@ const IssuedItemsList = ({
         <View style={styles.nameDataView}>
           <Text style={[styles.dataHistoryText2]}>{item.item}</Text>
         </View>
-        <View style={[styles.switchView, {width: isPortrait ? wp(35) : wp(28)}]}>
+        <View
+          style={[styles.switchView, {width: isPortrait ? wp(35) : wp(28)}]}>
           <Text style={[styles.dataHistoryText1]}>{item.itemcategory}</Text>
         </View>
-        <View style={[styles.switchView, {width: isPortrait ? wp(32) : wp(26)}]}>
+        <View
+          style={[styles.switchView, {width: isPortrait ? wp(32) : wp(26)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
             <Text style={[styles.dataHistoryText1]}>{item.issued_date}</Text>
           </View>
         </View>
-        <View style={[styles.nameDataView, {width: isPortrait ? wp(32) : wp(26)}]}>
+        <View
+          style={[styles.nameDataView, {width: isPortrait ? wp(32) : wp(26)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
             <Text style={[styles.dataHistoryText1]}>{item.return_date}</Text>
           </View>
         </View>
-        <View style={[styles.nameDataView, {width: isPortrait ? wp(26) : wp(20)}]}>
+        <View
+          style={[styles.nameDataView, {width: isPortrait ? wp(26) : wp(20)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
             <Text style={[styles.dataHistoryText1]}>{item.quantity}</Text>
           </View>
         </View>
-        <View style={[styles.nameDataView, {width: isPortrait ? wp(26) : wp(20)}]}>
+        <View
+          style={[styles.nameDataView, {width: isPortrait ? wp(26) : wp(20)}]}>
           <Text style={[styles.dataHistoryText1]}>{item.status}</Text>
         </View>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        {issueAction.includes('delete') && (
+          <View style={styles.actionDataView}>
+            <TouchableOpacity
+              onPress={() => {
+                setUserId(item.id);
+                setDeleteUser(true);
+              }}
+              style={{marginLeft: wp(2)}}>
+              <Image
+                style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                source={deleteIcon}
+              />
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
     );
   };
@@ -415,29 +423,31 @@ const IssuedItemsList = ({
                 onPress={() => setFilterVisible(true)}>
                 <Image style={styles.filterImage} source={filter} />
               </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => {
-                  setCategoryId('');
-                  setCategoryName('');
-                  setItemId('');
-                  setItemName('');
-                  setRoleId('');
-                  setRoleName('');
-                  setEmployeeId('');
-                  setEmployeeName('');
-                  setQuantity('');
-                  setIssueBy('');
-                  setIssueDate(new Date());
-                  setReturnDate(new Date());
-                  setAvailableQty('0');
-                  setDescription('');
-                  setErrorMessage('');
-                  setErrorVisible(false);
-                  setNewAccountVisible(true);
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>New Issued Item</Text>
-              </TouchableOpacity>
+              {issueAction.includes('create') && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setCategoryId('');
+                    setCategoryName('');
+                    setItemId('');
+                    setItemName('');
+                    setRoleId('');
+                    setRoleName('');
+                    setEmployeeId('');
+                    setEmployeeName('');
+                    setQuantity('');
+                    setIssueBy('');
+                    setIssueDate(new Date());
+                    setReturnDate(new Date());
+                    setAvailableQty('0');
+                    setDescription('');
+                    setErrorMessage('');
+                    setErrorVisible(false);
+                    setNewAccountVisible(true);
+                  }}
+                  style={styles.actionView}>
+                  <Text style={styles.actionText}>New Issued Item</Text>
+                </TouchableOpacity>
+              )}
             </View>
             <Modal
               animationType="none"
@@ -518,24 +528,50 @@ const IssuedItemsList = ({
                     ]}>
                     {'ITEM'}
                   </Text>
-                  <Text style={[styles.titleText, {width: isPortrait ? wp(35) : wp(28)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {width: isPortrait ? wp(35) : wp(28)},
+                    ]}>
                     {'ITEM CATEGORY'}
                   </Text>
-                  <Text style={[styles.titleText, {width: isPortrait ? wp(32) : wp(26)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {width: isPortrait ? wp(32) : wp(26)},
+                    ]}>
                     {'ISSUE DATE'}
                   </Text>
-                  <Text style={[styles.titleText, {width: isPortrait ? wp(32) : wp(26)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {width: isPortrait ? wp(32) : wp(26)},
+                    ]}>
                     {'RETURN DATE'}
                   </Text>
-                  <Text style={[styles.titleText, {width: isPortrait ? wp(26) : wp(20)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {width: isPortrait ? wp(26) : wp(20)},
+                    ]}>
                     {'QUANTITY'}
                   </Text>
-                  <Text style={[styles.titleText, {width: isPortrait ? wp(26) : wp(20)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {width: isPortrait ? wp(26) : wp(20)},
+                    ]}>
                     {'STATUS'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(16), textAlign: 'center'}]}>
-                    {'ACTION'}
-                  </Text>
+                  {issueAction.includes('delete') && (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: wp(16), textAlign: 'center'},
+                      ]}>
+                      {'ACTION'}
+                    </Text>
+                  )}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

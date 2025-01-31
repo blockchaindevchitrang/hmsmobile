@@ -49,6 +49,7 @@ const PathologyParameter = ({
   totalPage,
   pageCount,
   setPageCount,
+  parameterAction,
 }) => {
   const {theme} = useTheme();
   const orientation = useOrientation();
@@ -250,7 +251,17 @@ const PathologyParameter = ({
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
         <View
-          style={[styles.switchView, {width: isPortrait ? wp(25) : wp(30)}]}>
+          style={[
+            styles.switchView,
+            {
+              width: isPortrait
+                ? wp(25)
+                : parameterAction.includes('edit') ||
+                  parameterAction.includes('delete')
+                ? wp(30)
+                : wp(50),
+            },
+          ]}>
           <Text style={[styles.dataHistoryText1]}>{item.parameter_name}</Text>
         </View>
         <Text
@@ -267,35 +278,42 @@ const PathologyParameter = ({
           ]}>
           {item.unit}
         </Text>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={async () => {
-              let allDatas = await onGetSpecificDoctor(item.id);
-              setUserId(item.id);
-              setParameterName(item.parameter_name);
-              setRange(item.reference_range);
-              setUnitId(allDatas.unit_id);
-              setUnitName(item.unit);
-              setDescription(allDatas.description);
-              setNewUserVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        {parameterAction.includes('edit') ||
+        parameterAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {parameterAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={async () => {
+                  let allDatas = await onGetSpecificDoctor(item.id);
+                  setUserId(item.id);
+                  setParameterName(item.parameter_name);
+                  setRange(item.reference_range);
+                  setUnitId(allDatas.unit_id);
+                  setUnitName(item.unit);
+                  setDescription(allDatas.description);
+                  setNewUserVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {parameterAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: wp(2)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -316,6 +334,31 @@ const PathologyParameter = ({
             />
             {!isPortrait && (
               <View style={styles.filterView}>
+                {parameterAction.includes('create') && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setUserId('');
+                      setParameterName('');
+                      setRange('');
+                      setUnitId('');
+                      setUnitName('');
+                      setDescription('');
+                      setErrorMessage('');
+                      setErrorVisible(false);
+                      setNewUserVisible(true);
+                    }}
+                    style={styles.actionView}>
+                    <Text style={styles.actionText}>
+                      New Pathology Parameter
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+          </View>
+          {isPortrait && (
+            <View style={styles.filterView}>
+              {parameterAction.includes('create') && (
                 <TouchableOpacity
                   onPress={() => {
                     setUserId('');
@@ -331,26 +374,7 @@ const PathologyParameter = ({
                   style={styles.actionView}>
                   <Text style={styles.actionText}>New Pathology Parameter</Text>
                 </TouchableOpacity>
-              </View>
-            )}
-          </View>
-          {isPortrait && (
-            <View style={styles.filterView}>
-              <TouchableOpacity
-                onPress={() => {
-                  setUserId('');
-                  setParameterName('');
-                  setRange('');
-                  setUnitId('');
-                  setUnitName('');
-                  setDescription('');
-                  setErrorMessage('');
-                  setErrorVisible(false);
-                  setNewUserVisible(true);
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>New Pathology Parameter</Text>
-              </TouchableOpacity>
+              )}
             </View>
           )}
           <View
@@ -368,7 +392,14 @@ const PathologyParameter = ({
                   <Text
                     style={[
                       styles.titleText,
-                      {width: isPortrait ? wp(25) : wp(30)},
+                      {
+                        width: isPortrait
+                          ? wp(25)
+                          : parameterAction.includes('edit') ||
+                            parameterAction.includes('delete')
+                          ? wp(30)
+                          : wp(50),
+                      },
                     ]}>
                     {'NAME'}
                   </Text>
@@ -386,13 +417,16 @@ const PathologyParameter = ({
                     ]}>
                     {'UNIT'}
                   </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: wp(16), textAlign: 'center'},
-                    ]}>
-                    {'ACTION'}
-                  </Text>
+                  {parameterAction.includes('edit') ||
+                  parameterAction.includes('delete') ? (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: wp(16), textAlign: 'center'},
+                      ]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

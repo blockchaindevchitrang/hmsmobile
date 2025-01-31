@@ -25,8 +25,12 @@ import {onGetCommonApi} from '../../services/Api';
 import ConsultationList from '../../components/ConsultationComponent/ConsultationList';
 import LiveMeetingList from '../../components/ConsultationComponent/LiveMeetingList';
 import useOrientation from '../../components/OrientationComponent';
+import {useSelector} from 'react-redux';
+
+let arrayData = ['Logo', 'Live Consultations', 'Live Meetings'];
 
 export const LiveConsultationScreen = ({navigation}) => {
+  const rolePermission = useSelector(state => state.rolePermission);
   const {t} = useTranslation();
   const {theme} = useTheme();
   const orientation = useOrientation(); // Get current orientation
@@ -43,6 +47,42 @@ export const LiveConsultationScreen = ({navigation}) => {
   const [totalPage, setTotalPage] = useState('1');
   const [meetingPage, setMeetingPage] = useState('1');
   const [statusId, setStatusId] = useState(3);
+
+  useEffect(() => {
+    const visibility = {
+      consultationVisible: false,
+      meetingVisible: false,
+    };
+
+    // Helper function to process privileges
+    const processPrivileges = (privileges, endPoint, visibilityKey) => {
+      const privilege = privileges.find(item => item.end_point === endPoint);
+      if (privilege) {
+        visibility[visibilityKey] = true;
+      }
+    };
+
+    // Iterate over role permissions
+    rolePermission.forEach(item => {
+      if (item.main_module === 'Live Consultations') {
+        processPrivileges(
+          item.privileges,
+          'live_consultations',
+          'consultationVisible',
+        );
+        processPrivileges(item.privileges, 'live_meetings', 'meetingVisible');
+
+        // Handle arrayData based on visibility
+        const {consultationVisible, meetingVisible} = visibility;
+        console.log('Get Value::::>>>', visibility);
+        arrayData = [
+          'Logo',
+          consultationVisible && 'Live Consultations',
+          meetingVisible && 'Live Meetings',
+        ].filter(Boolean);
+      }
+    });
+  }, [rolePermission]);
 
   const animations = useRef(
     [0, 0, 0].map(() => new Animated.Value(300)),
@@ -190,50 +230,48 @@ export const LiveConsultationScreen = ({navigation}) => {
 
             <View style={styles.mainModalView}>
               <View style={styles.menuContainer}>
-                {['Logo', 'Live Consultations', 'Live Meetings'].map(
-                  (option, index) => (
-                    <>
-                      {option == 'Logo' ? (
-                        <Animated.View
-                          key={index}
-                          style={[
-                            styles.logoMenu,
-                            {
-                              transform: [{translateY: animations[index]}],
-                              opacity: opacities[index],
-                              marginBottom: hp(1),
-                            },
-                          ]}>
-                          <Image
-                            source={headerLogo}
-                            style={styles.headerLogoImage}
-                          />
-                        </Animated.View>
-                      ) : (
-                        <Animated.View
-                          key={index}
-                          style={[
-                            styles.menuOption,
-                            {
-                              transform: [{translateY: animations[index]}],
-                              opacity: opacities[index],
-                              backgroundColor: theme.headerColor,
-                            },
-                          ]}>
-                          <TouchableOpacity
-                            style={styles.optionButton}
-                            onPress={() => {
-                              setSelectedView(option);
-                              setPageCount('1');
-                              toggleMenu(false);
-                            }}>
-                            <Text style={styles.menuItem}>{option}</Text>
-                          </TouchableOpacity>
-                        </Animated.View>
-                      )}
-                    </>
-                  ),
-                )}
+                {arrayData.map((option, index) => (
+                  <>
+                    {option == 'Logo' ? (
+                      <Animated.View
+                        key={index}
+                        style={[
+                          styles.logoMenu,
+                          {
+                            transform: [{translateY: animations[index]}],
+                            opacity: opacities[index],
+                            marginBottom: hp(1),
+                          },
+                        ]}>
+                        <Image
+                          source={headerLogo}
+                          style={styles.headerLogoImage}
+                        />
+                      </Animated.View>
+                    ) : (
+                      <Animated.View
+                        key={index}
+                        style={[
+                          styles.menuOption,
+                          {
+                            transform: [{translateY: animations[index]}],
+                            opacity: opacities[index],
+                            backgroundColor: theme.headerColor,
+                          },
+                        ]}>
+                        <TouchableOpacity
+                          style={styles.optionButton}
+                          onPress={() => {
+                            setSelectedView(option);
+                            setPageCount('1');
+                            toggleMenu(false);
+                          }}>
+                          <Text style={styles.menuItem}>{option}</Text>
+                        </TouchableOpacity>
+                      </Animated.View>
+                    )}
+                  </>
+                ))}
 
                 <View style={styles.logoMenu}>
                   <TouchableOpacity

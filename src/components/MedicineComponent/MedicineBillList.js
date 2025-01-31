@@ -59,6 +59,7 @@ const MedicineBillList = ({
   setPageCount,
   medicine,
   medicineCategory,
+  billAction,
 }) => {
   const {theme} = useTheme();
   const orientation = useOrientation();
@@ -430,7 +431,10 @@ const MedicineBillList = ({
         </View>
         <View style={styles.nameDataView}>
           {item.patient_name != null && (
-            <ProfilePhoto style={styles.photoStyle} username={item.patient_name} />
+            <ProfilePhoto
+              style={styles.photoStyle}
+              username={item.patient_name}
+            />
           )}
           <View>
             <Text style={[styles.dataHistoryText2]}>{item.patient_name}</Text>
@@ -439,7 +443,10 @@ const MedicineBillList = ({
         </View>
         <View style={styles.nameDataView}>
           {item.doctor_name != null && (
-            <ProfilePhoto style={styles.photoStyle} username={item.doctor_name} />
+            <ProfilePhoto
+              style={styles.photoStyle}
+              username={item.doctor_name}
+            />
           )}
           <View>
             <Text style={[styles.dataHistoryText2]}>{item.doctor_name}</Text>
@@ -465,59 +472,65 @@ const MedicineBillList = ({
             <Text style={[styles.dataListText1]}>{item.payment_status}</Text>
           </View>
         </View>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={async () => {
-              let allData = await onGetSpecificDoctor(item.id);
-              setPatient(allData?.patient_id);
-              setPatientSelected(item?.patient_name);
-              setBillDate(new Date(item?.bill_date));
-              setStatus(allData?.payment_status == 1 ? true : false);
-              setPaymentTypeId(allData?.payment_type);
-              setPaymentTypeName(item?.payment_type);
-              setDiscount(JSON.stringify(allData?.discount));
-              setFinalTotal(JSON.stringify(allData?.net_amount));
-              setTaxAmount(allData?.tax_amount);
-              setNote(allData?.note);
-              setUserId(item.id);
-              let dataValue = [];
-              allData.sale_medicine.map(item1 => {
-                dataValue.push({
-                  categoryId: item1.medicine.category_id,
-                  categoryName: item1.medicine.category.name,
-                  medicineId: item1.medicine_id,
-                  medicineName: item1.medicine.name,
-                  expiryDate: new Date(item1.expiry_date),
-                  dateModalVisible: false,
-                  salesPrice: JSON.stringify(item1.sale_price),
-                  quantity: JSON.stringify(item1.sale_quantity),
-                  availableQuantity: item1.medicine.quantity,
-                  tax: JSON.stringify(item1.tax),
-                  amount: JSON.stringify(
-                    item1.sale_price * item1.sale_quantity,
-                  ),
-                });
-              });
-              setParameterArray(dataValue);
-              setNewUserVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        {billAction.includes('edit') || billAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {billAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={async () => {
+                  let allData = await onGetSpecificDoctor(item.id);
+                  setPatient(allData?.patient_id);
+                  setPatientSelected(item?.patient_name);
+                  setBillDate(new Date(item?.bill_date));
+                  setStatus(allData?.payment_status == 1 ? true : false);
+                  setPaymentTypeId(allData?.payment_type);
+                  setPaymentTypeName(item?.payment_type);
+                  setDiscount(JSON.stringify(allData?.discount));
+                  setFinalTotal(JSON.stringify(allData?.net_amount));
+                  setTaxAmount(allData?.tax_amount);
+                  setNote(allData?.note);
+                  setUserId(item.id);
+                  let dataValue = [];
+                  allData.sale_medicine.map(item1 => {
+                    dataValue.push({
+                      categoryId: item1.medicine.category_id,
+                      categoryName: item1.medicine.category.name,
+                      medicineId: item1.medicine_id,
+                      medicineName: item1.medicine.name,
+                      expiryDate: new Date(item1.expiry_date),
+                      dateModalVisible: false,
+                      salesPrice: JSON.stringify(item1.sale_price),
+                      quantity: JSON.stringify(item1.sale_quantity),
+                      availableQuantity: item1.medicine.quantity,
+                      tax: JSON.stringify(item1.tax),
+                      amount: JSON.stringify(
+                        item1.sale_price * item1.sale_quantity,
+                      ),
+                    });
+                  });
+                  setParameterArray(dataValue);
+                  setNewUserVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {billAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: wp(2)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -633,40 +646,42 @@ const MedicineBillList = ({
               style={[styles.searchView, {color: theme.text}]}
             />
             <View style={styles.filterView}>
-              <TouchableOpacity
-                onPress={() => {
-                  setUserId('');
-                  setPatient('');
-                  setPatientSelected('');
-                  setBillDate(null);
-                  setStatus(true);
-                  setPaymentTypeId('');
-                  setPaymentTypeName('');
-                  setDiscount('0.00');
-                  setFinalTotal(0);
-                  setTaxAmount(0);
-                  setNote('');
-                  setPaymentNote('');
-                  setParameterArray([
-                    {
-                      categoryId: '',
-                      categoryName: '',
-                      medicineId: '',
-                      medicineName: '',
-                      expiryDate: null,
-                      dateModalVisible: false,
-                      salesPrice: '0',
-                      quantity: '0',
-                      availableQuantity: '0',
-                      tax: '0',
-                      amount: 0,
-                    },
-                  ]);
-                  setNewUserVisible(true);
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>New Bill</Text>
-              </TouchableOpacity>
+              {billAction.includes('create') && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setUserId('');
+                    setPatient('');
+                    setPatientSelected('');
+                    setBillDate(null);
+                    setStatus(true);
+                    setPaymentTypeId('');
+                    setPaymentTypeName('');
+                    setDiscount('0.00');
+                    setFinalTotal(0);
+                    setTaxAmount(0);
+                    setNote('');
+                    setPaymentNote('');
+                    setParameterArray([
+                      {
+                        categoryId: '',
+                        categoryName: '',
+                        medicineId: '',
+                        medicineName: '',
+                        expiryDate: null,
+                        dateModalVisible: false,
+                        salesPrice: '0',
+                        quantity: '0',
+                        availableQuantity: '0',
+                        tax: '0',
+                        amount: 0,
+                      },
+                    ]);
+                    setNewUserVisible(true);
+                  }}
+                  style={styles.actionView}>
+                  <Text style={styles.actionText}>New Bill</Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
           <View
@@ -730,9 +745,12 @@ const MedicineBillList = ({
                     ]}>
                     {'PAYMENT STATUS'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(16)}]}>
-                    {'ACTION'}
-                  </Text>
+                  {billAction.includes('edit') ||
+                  billAction.includes('delete') ? (
+                    <Text style={[styles.titleText, {width: wp(16)}]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList
