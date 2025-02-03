@@ -90,54 +90,54 @@ export const MedicineScreen = ({navigation}) => {
 
     // Helper function to process privileges
     const processPrivileges = (
-      privileges,
-      endPoint,
+      privilege,
+      actions,
       setAction,
       visibilityKey,
     ) => {
-      const privilege = privileges.find(item => item.end_point === endPoint);
+      // const privilege = privileges.find(item => item.end_point === endPoint);
       if (privilege) {
-        setAction(privilege.action.split(',').map(action => action.trim()));
+        setAction(actions);
         visibility[visibilityKey] = true;
       }
     };
 
     // Iterate over role permissions
-    rolePermission.forEach(item => {
-      if (item.main_module === 'Medicines') {
+    rolePermission?.permission?.forEach(item => {
+      if (item.status === 1) {
         processPrivileges(
-          item.privileges,
-          'medicine_categories',
+          item.end_point == 'medicine_categories',
+          item.actions,
           setCategoryAction,
           'categoryVisible',
         );
         processPrivileges(
-          item.privileges,
-          'medicine_crands',
+          item.end_point == 'medicine_crands',
+          item.actions,
           setBrandAction,
           'brandVisible',
         );
         processPrivileges(
-          item.privileges,
-          'medicines',
+          item.end_point == 'medicines',
+          item.actions,
           setMedicineAction,
           'medicineVisible',
         );
         processPrivileges(
-          item.privileges,
-          'purchase_medicine',
+          item.end_point == 'purchase_medicine',
+          item.actions,
           setPurchaseAction,
           'purchaseVisible',
         );
         processPrivileges(
-          item.privileges,
-          'used_medicine',
+          item.end_point == 'used_medicine',
+          item.actions,
           setUsedAction,
           'usedVisible',
         );
         processPrivileges(
-          item.privileges,
-          'medicine_bills',
+          item.end_point == 'medicine_bills',
+          item.actions,
           setBillAction,
           'billVisible',
         );

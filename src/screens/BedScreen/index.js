@@ -74,42 +74,42 @@ export const BedScreen = ({navigation}) => {
 
     // Helper function to process privileges
     const processPrivileges = (
-      privileges,
-      endPoint,
+      privilege,
+      actions,
       setAction,
       visibilityKey,
     ) => {
-      const privilege = privileges.find(item => item.end_point === endPoint);
+      // const privilege = privileges.find(item => item.end_point === endPoint);
       if (privilege) {
-        setAction(privilege.action.split(',').map(action => action.trim()));
+        setAction(actions);
         visibility[visibilityKey] = true;
       }
     };
 
     // Iterate over role permissions
-    rolePermission.forEach(item => {
-      if (item.main_module === 'Bed Managements') {
+    rolePermission?.permission?.forEach(item => {
+      if (item.status === 1) {
         processPrivileges(
-          item.privileges,
-          'bed_types',
+          item.end_point == 'bed_types',
+          item.actions,
           setBedTypeAction,
           'bedTypeVisible',
         );
         processPrivileges(
-          item.privileges,
-          'beds',
+          item.end_point == 'beds',
+          item.actions,
           setBedsAction,
           'bedsVisible',
         );
         processPrivileges(
-          item.privileges,
-          'bed_assigns',
+          item.end_point == 'bed_assigns',
+          item.actions,
           setAssignAction,
           'assignVisible',
         );
         processPrivileges(
-          item.privileges,
-          'bed_status',
+          item.end_point == 'bed_status',
+          item.actions,
           setStatusAction,
           'statusVisible',
         );

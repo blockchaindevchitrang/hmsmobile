@@ -57,30 +57,30 @@ export const IPDScreen = ({navigation}) => {
     };
     // Helper function to process privileges
     const processPrivileges = (
-      privileges,
-      endPoint,
+      privilege,
+      actions,
       setAction,
       visibilityKey,
     ) => {
-      const privilege = privileges.find(item => item.end_point === endPoint);
+      // const privilege = privileges.find(item => item.end_point === endPoint);
       if (privilege) {
-        setAction(privilege.action.split(',').map(action => action.trim()));
+        setAction(actions);
         visibility[visibilityKey] = true;
       }
     };
 
     // Iterate over role permissions
-    rolePermission.forEach(item => {
-      if (item.main_module === 'IPD/OPD') {
+    rolePermission?.permission?.forEach(item => {
+      if (item.status === 1) {
         processPrivileges(
-          item.privileges,
-          'IPD Patients',
+          item.end_point == 'IPD Patients',
+          item.actions,
           setIPDAction,
           'ipdVisible',
         );
         processPrivileges(
-          item.privileges,
-          'OPD Patients',
+          item.end_point == 'OPD Patients',
+          item.actions,
           setOPDAction,
           'opdVisible',
         );

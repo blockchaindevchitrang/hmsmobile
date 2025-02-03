@@ -107,7 +107,7 @@ export const UsersScreen = ({navigation}) => {
     // let pharmacistVisible = false;
     // rolePermission.map(item => {
     //   if (item.main_module == 'Users') {
-    //     item.privileges.map(item1 => {
+    //     item.end_point.map(item1 => {
     //       if (item1.end_point == 'view_users') {
     //         setUserAction(item1.action.split(',').map(action => action.trim()));
     //         userVisible = true;
@@ -174,60 +174,60 @@ export const UsersScreen = ({navigation}) => {
 
     // Helper function to process privileges
     const processPrivileges = (
-      privileges,
-      endPoint,
+      privilege,
+      actions,
       setAction,
       visibilityKey,
     ) => {
-      const privilege = privileges.find(item => item.end_point === endPoint);
+      // const privilege = privileges.find(item => item.end_point === endPoint);
       if (privilege) {
-        setAction(privilege.action.split(',').map(action => action.trim()));
+        setAction(actions);
         visibility[visibilityKey] = true;
       }
     };
 
     // Iterate over role permissions
     roleData.forEach(item => {
-      if (item.main_module === 'Users') {
+      if (item.status === 1) {
         processPrivileges(
-          item.privileges,
-          'view_users',
+          item.end_point == 'view_users',
+          item.actions,
           setUserAction,
           'userVisible',
         );
         processPrivileges(
-          item.privileges,
-          'accountants',
+          item.end_point == 'accountants',
+          item.actions,
           setAccountantAction,
           'accountantVisible',
         );
         processPrivileges(
-          item.privileges,
-          'nurses',
+          item.end_point == 'nurses',
+          item.actions,
           setNurseAction,
           'nurseVisible',
         );
         processPrivileges(
-          item.privileges,
-          'receptionist',
+          item.end_point == 'receptionist',
+          item.actions,
           setReceptionAction,
           'receptionistVisible',
         );
         processPrivileges(
-          item.privileges,
-          'lab-technicians',
+          item.end_point == 'lab-technicians',
+          item.actions,
           setLabAction,
           'labVisible',
         );
         processPrivileges(
-          item.privileges,
-          'phamacists',
+          item.end_point == 'phamacists',
+          item.actions,
           setPharmacistAction,
           'pharmacistVisible',
         );
         processPrivileges(
-          item.privileges,
-          'role',
+          item.end_point == 'role',
+          item.actions,
           setRoleAction,
           'roleVisible',
         );

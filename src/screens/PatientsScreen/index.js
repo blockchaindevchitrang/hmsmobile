@@ -107,54 +107,54 @@ export const PatientsScreen = ({navigation}) => {
     };
     // Helper function to process privileges
     const processPrivileges = (
-      privileges,
-      endPoint,
+      privilege,
+      actions,
       setAction,
       visibilityKey,
     ) => {
-      const privilege = privileges.find(item => item.end_point === endPoint);
+      // const privilege = privileges.find(item => item.end_point === endPoint);
       if (privilege) {
-        setAction(privilege.action.split(',').map(action => action.trim()));
+        setAction(actions);
         visibility[visibilityKey] = true;
       }
     };
 
     // Iterate over role permissions
-    rolePermission.forEach(item => {
-      if (item.main_module === 'Patients') {
+    rolePermission?.permission?.forEach(item => {
+      if (item.status === 1) {
         processPrivileges(
-          item.privileges,
-          'patients',
+          item.end_point == 'patients',
+          item.actions,
           setPatientAction,
           'patientVisible',
         );
         processPrivileges(
-          item.privileges,
-          'cases',
+          item.end_point == 'cases',
+          item.actions,
           setCaseAction,
           'caseVisible',
         );
         processPrivileges(
-          item.privileges,
-          'case_handlers',
+          item.end_point == 'case_handlers',
+          item.actions,
           setHandlerAction,
           'handlerVisible',
         );
         processPrivileges(
-          item.privileges,
-          'patient_admissions',
+          item.end_point == 'patient_admissions',
+          item.actions,
           setAdmissionAction,
           'admissionVisible',
         );
         processPrivileges(
-          item.privileges,
-          'patient_smart_card_templates',
+          item.end_point == 'patient_smart_card_templates',
+          item.actions,
           setTemplateAction,
           'templateVisible',
         );
         processPrivileges(
-          item.privileges,
-          'generate_patient_smart_cards',
+          item.end_point == 'generate_patient_smart_cards',
+          item.actions,
           setGenerateAction,
           'generateVisible',
         );

@@ -77,42 +77,42 @@ export const FrontOfficeScreen = ({navigation}) => {
 
     // Helper function to process privileges
     const processPrivileges = (
-      privileges,
-      endPoint,
+      privilege,
+      actions,
       setAction,
       visibilityKey,
     ) => {
-      const privilege = privileges.find(item => item.end_point === endPoint);
+      // const privilege = privileges.find(item => item.end_point === endPoint);
       if (privilege) {
-        setAction(privilege.action.split(',').map(action => action.trim()));
+        setAction(actions);
         visibility[visibilityKey] = true;
       }
     };
 
     // Iterate over role permissions
-    rolePermission.forEach(item => {
-      if (item.main_module === 'Hospital Charges') {
+    rolePermission?.permission?.forEach(item => {
+      if (item.status === 1) {
         processPrivileges(
-          item.privileges,
-          'call_logs',
+          item.end_point == 'call_logs',
+          item.actions,
           setCallLogAction,
           'callLogVisible',
         );
         processPrivileges(
-          item.privileges,
-          'visitors',
+          item.end_point == 'visitors',
+          item.actions,
           setVisitorAction,
           'visitorVisible',
         );
         processPrivileges(
-          item.privileges,
-          'postal_receive',
+          item.end_point == 'postal_receive',
+          item.actions,
           setReceiveAction,
           'receiveVisible',
         );
         processPrivileges(
-          item.privileges,
-          'postal_dispatch',
+          item.end_point == 'postal_dispatch',
+          item.actions,
           setDispatchAction,
           'dispatchVisible',
         );

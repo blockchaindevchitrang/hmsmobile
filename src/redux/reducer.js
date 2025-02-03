@@ -144,7 +144,7 @@ const initialState = {
   chargeCategoryData: [],
   chargeData: [],
   admissionData: [],
-  rolePermission: [],
+  rolePermission: null,
 };
 
 // Reducer

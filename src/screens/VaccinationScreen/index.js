@@ -59,30 +59,30 @@ export const VaccinationScreen = ({navigation}) => {
 
     // Helper function to process privileges
     const processPrivileges = (
-      privileges,
-      endPoint,
+      privilege,
+      actions,
       setAction,
       visibilityKey,
     ) => {
-      const privilege = privileges.find(item => item.end_point === endPoint);
+      // const privilege = privileges.find(item => item.end_point === endPoint);
       if (privilege) {
-        setAction(privilege.action.split(',').map(action => action.trim()));
+        setAction(actions);
         visibility[visibilityKey] = true;
       }
     };
 
     // Iterate over role permissions
-    rolePermission.forEach(item => {
-      if (item.main_module === 'Vaccinations') {
+    rolePermission?.permission?.forEach(item => {
+      if (item.status === 1) {
         processPrivileges(
-          item.privileges,
-          'vaccinated_patients',
+          item.end_point == 'vaccinated_patients',
+          item.actions,
           setPatientAction,
           'patientVisible',
         );
         processPrivileges(
-          item.privileges,
-          'vaccinations',
+          item.end_point == 'vaccinations',
+          item.actions,
           setVaccinationAction,
           'vaccinationVisible',
         );

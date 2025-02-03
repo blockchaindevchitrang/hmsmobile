@@ -72,36 +72,36 @@ export const DiagnosisScreen = ({navigation}) => {
 
     // Helper function to process privileges
     const processPrivileges = (
-      privileges,
-      endPoint,
+      privilege,
+      actions,
       setAction,
       visibilityKey,
     ) => {
-      const privilege = privileges.find(item => item.end_point === endPoint);
+      // const privilege = privileges.find(item => item.end_point === endPoint);
       if (privilege) {
-        setAction(privilege.action.split(',').map(action => action.trim()));
+        setAction(actions);
         visibility[visibilityKey] = true;
       }
     };
 
     // Iterate over role permissions
-    rolePermission.forEach(item => {
-      if (item.main_module === 'Diagnosis') {
+    rolePermission?.permission?.forEach(item => {
+      if (item.status === 1) {
         processPrivileges(
-          item.privileges,
-          'diagnosis',
+          item.end_point == 'diagnosis',
+          item.actions,
           setDiagnosisAction,
           'diagnosisVisible',
         );
         processPrivileges(
-          item.privileges,
-          'diagnosis_categories',
+          item.end_point == 'diagnosis_categories',
+          item.actions,
           setCategoryAction,
           'categoryVisible',
         );
         processPrivileges(
-          item.privileges,
-          'diagnosis_tests',
+          item.end_point == 'diagnosis_tests',
+          item.actions,
           setTestAction,
           'testVisible',
         );

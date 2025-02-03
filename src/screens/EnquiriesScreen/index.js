@@ -80,17 +80,21 @@ export const EnquiriesScreen = ({navigation}) => {
 
   useEffect(() => {
     // Helper function to process privileges
-    const processPrivileges = (privileges, endPoint, setAction) => {
-      const privilege = privileges.find(item => item.end_point === endPoint);
+    const processPrivileges = (privilege, actions, setAction) => {
+      // const privilege = privileges.find(item => item.end_point === endPoint);
       if (privilege) {
-        setAction(privilege.action.split(',').map(action => action.trim()));
+        setAction(actions);
       }
     };
 
     // Iterate over role permissions
-    rolePermission.forEach(item => {
-      if (item.main_module === 'Enquiries') {
-        processPrivileges(item.privileges, 'enquiries', setEnquiryAction);
+    rolePermission?.permission?.forEach(item => {
+      if (item.status === 1) {
+        processPrivileges(
+          item.end_point == 'enquiries',
+          item.actions,
+          setEnquiryAction,
+        );
       }
     });
   }, [rolePermission]);

@@ -232,48 +232,48 @@ export const DoctorScreen = ({navigation}) => {
     };
     // Helper function to process privileges
     const processPrivileges = (
-      privileges,
-      endPoint,
+      privilege,
+      actions,
       setAction,
       visibilityKey,
     ) => {
-      const privilege = privileges.find(item => item.end_point === endPoint);
+      // const privilege = privileges.find(item => item.end_point === endPoint);
       if (privilege) {
-        setAction(privilege.action.split(',').map(action => action.trim()));
+        setAction(actions);
         visibility[visibilityKey] = true;
       }
     };
 
     // Iterate over role permissions
-    rolePermission.forEach(item => {
-      if (item.main_module === 'Doctors') {
+    rolePermission?.permission?.forEach(item => {
+      if (item.status === 1) {
         processPrivileges(
-          item.privileges,
-          'doctors',
+          item.end_point == 'doctors',
+          item.actions,
           setDoctorAction,
           'doctorVisible',
         );
         processPrivileges(
-          item.privileges,
-          'doctor_departments',
+          item.end_point == 'doctor_departments',
+          item.actions,
           setDepartmentAction,
           'departmentVisible',
         );
         processPrivileges(
-          item.privileges,
-          'schedules',
+          item.end_point == 'schedules',
+          item.actions,
           setScheduleAction,
           'scheduleVisible',
         );
         processPrivileges(
-          item.privileges,
-          'doctor_holidays',
+          item.end_point == 'doctor_holidays',
+          item.actions,
           setHolidayAction,
           'holidayVisible',
         );
         processPrivileges(
-          item.privileges,
-          'breaks',
+          item.end_point == 'breaks',
+          item.actions,
           setBreakAction,
           'breakVisible',
         );

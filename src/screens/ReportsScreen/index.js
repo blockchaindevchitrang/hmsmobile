@@ -75,42 +75,42 @@ export const ReportsScreen = ({navigation}) => {
 
     // Helper function to process privileges
     const processPrivileges = (
-      privileges,
-      endPoint,
+      privilege,
+      actions,
       setAction,
       visibilityKey,
     ) => {
-      const privilege = privileges.find(item => item.end_point === endPoint);
+      // const privilege = privileges.find(item => item.end_point === endPoint);
       if (privilege) {
-        setAction(privilege.action.split(',').map(action => action.trim()));
+        setAction(actions);
         visibility[visibilityKey] = true;
       }
     };
 
     // Iterate over role permissions
-    rolePermission.forEach(item => {
-      if (item.main_module === 'Pathology') {
+    rolePermission?.permission?.forEach(item => {
+      if (item.status === 1) {
         processPrivileges(
-          item.privileges,
-          'birth_reports',
+          item.end_point == 'birth_reports',
+          item.actions,
           setBirthAction,
           'birthVisible',
         );
         processPrivileges(
-          item.privileges,
-          'death_repo',
+          item.end_point == 'death_repo',
+          item.actions,
           setDeathAction,
           'deathVisible',
         );
         processPrivileges(
-          item.privileges,
-          'investigation_reports',
+          item.end_point == 'investigation_reports',
+          item.actions,
           setInvestigationAction,
           'investigationVisible',
         );
         processPrivileges(
-          item.privileges,
-          'operation_reports',
+          item.end_point == 'operation_reports',
+          item.actions,
           setOperationAction,
           'operationVisible',
         );

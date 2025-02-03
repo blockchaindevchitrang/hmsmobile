@@ -82,42 +82,42 @@ export const PathologyScreen = ({navigation}) => {
 
     // Helper function to process privileges
     const processPrivileges = (
-      privileges,
-      endPoint,
+      privilege,
+      actions,
       setAction,
       visibilityKey,
     ) => {
-      const privilege = privileges.find(item => item.end_point === endPoint);
+      // const privilege = privileges.find(item => item.end_point === endPoint);
       if (privilege) {
-        setAction(privilege.action.split(',').map(action => action.trim()));
+        setAction(actions);
         visibility[visibilityKey] = true;
       }
     };
 
     // Iterate over role permissions
-    rolePermission.forEach(item => {
-      if (item.main_module === 'Pathology') {
+    rolePermission?.permission?.forEach(item => {
+      if (item.status === 1) {
         processPrivileges(
-          item.privileges,
-          'pathology_categories',
+          item.end_point == 'pathology_categories',
+          item.actions,
           setCategoryAction,
           'categoryVisible',
         );
         processPrivileges(
-          item.privileges,
-          'pathology_unit',
+          item.end_point == 'pathology_unit',
+          item.actions,
           setUnitAction,
           'unitVisible',
         );
         processPrivileges(
-          item.privileges,
-          'pathology_parameter',
+          item.end_point == 'pathology_parameter',
+          item.actions,
           setParameterAction,
           'parameterVisible',
         );
         processPrivileges(
-          item.privileges,
-          'pathology_tests',
+          item.end_point == 'pathology_tests',
+          item.actions,
           setTestAction,
           'testVisible',
         );

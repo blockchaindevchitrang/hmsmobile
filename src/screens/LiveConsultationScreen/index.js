@@ -55,22 +55,21 @@ export const LiveConsultationScreen = ({navigation}) => {
     };
 
     // Helper function to process privileges
-    const processPrivileges = (privileges, endPoint, visibilityKey) => {
-      const privilege = privileges.find(item => item.end_point === endPoint);
+    const processPrivileges = (privilege, visibilityKey) => {
+      // const privilege = privileges.find(item => item.end_point === endPoint);
       if (privilege) {
         visibility[visibilityKey] = true;
       }
     };
 
     // Iterate over role permissions
-    rolePermission.forEach(item => {
-      if (item.main_module === 'Live Consultations') {
+    rolePermission?.permission?.forEach(item => {
+      if (item.status === 1) {
         processPrivileges(
-          item.privileges,
-          'live_consultations',
+          item.end_point == 'live_consultations',
           'consultationVisible',
         );
-        processPrivileges(item.privileges, 'live_meetings', 'meetingVisible');
+        processPrivileges(item.end_point == 'live_meetings', 'meetingVisible');
 
         // Handle arrayData based on visibility
         const {consultationVisible, meetingVisible} = visibility;

@@ -371,66 +371,66 @@ export const BillingScreen = ({navigation}) => {
     };
     // Helper function to process privileges
     const processPrivileges = (
-      privileges,
-      endPoint,
+      privilege,
+      actions,
       setAction,
       visibilityKey,
     ) => {
-      const privilege = privileges.find(item => item.end_point === endPoint);
+      // const privilege = privileges.find(item => item.end_point === endPoint);
       if (privilege) {
-        setAction(privilege.action.split(',').map(action => action.trim()));
+        setAction(actions);
         visibility[visibilityKey] = true;
       }
     };
 
     // Iterate over role permissions
-    rolePermission.forEach(item => {
-      if (item.main_module === 'Billings') {
+    rolePermission?.permission?.forEach(item => {
+      if (item.status === 1) {
         processPrivileges(
-          item.privileges,
-          'accounts',
+          item.end_point == 'accounts',
+          item.actions,
           setAccountAction,
           'accountVisible',
         );
         processPrivileges(
-          item.privileges,
-          'employee_payrolls',
+          item.end_point == 'employee_payrolls',
+          item.actions,
           setPayrollAction,
           'payrollVisible',
         );
         processPrivileges(
-          item.privileges,
-          'invoices',
+          item.end_point == 'invoices',
+          item.actions,
           setInvoiceAction,
           'invoiceVisible',
         );
         processPrivileges(
-          item.privileges,
-          'payments',
+          item.end_point == 'payments',
+          item.actions,
           setPaymentAction,
           'paymentVisible',
         );
         processPrivileges(
-          item.privileges,
-          'payment_reports',
+          item.end_point == 'payment_reports',
+          item.actions,
           setReportAction,
           'reportVisible',
         );
         processPrivileges(
-          item.privileges,
-          'advance_payments',
+          item.end_point == 'advance_payments',
+          item.actions,
           setAdvanceAction,
           'advanceVisible',
         );
         processPrivileges(
-          item.privileges,
-          'bills',
+          item.end_point == 'bills',
+          item.actions,
           setBillAction,
           'billVisible',
         );
         processPrivileges(
-          item.privileges,
-          'manual_billing_payments',
+          item.end_point == 'manual_billing_payments',
+          item.actions,
           setManualAction,
           'manualVisible',
         );
@@ -448,14 +448,14 @@ export const BillingScreen = ({navigation}) => {
         console.log('Get Value::::>>>', visibility);
         arrayData = [
           'Logo',
-          accountVisible && 'accounts',
-          payrollVisible && 'employee_payrolls',
-          invoiceVisible && 'invoices',
-          paymentVisible && 'payments',
-          reportVisible && 'payment_reports',
-          advanceVisible && 'advance_payments',
-          billVisible && 'bills',
-          manualVisible && 'manual_billing_payments',
+          accountVisible && 'Accounts',
+          payrollVisible && 'Employee Payrolls',
+          invoiceVisible && 'Invoices',
+          paymentVisible && 'Payments',
+          reportVisible && 'Payment Reports',
+          advanceVisible && 'Advance Payments',
+          billVisible && 'Bills',
+          manualVisible && 'Manual Billing Payments',
         ].filter(Boolean);
       }
     });

@@ -20,13 +20,16 @@ import hidden from '../../images/hidden.png';
 import facebook from '../../images/facebook.png';
 import google from '../../images/google.png';
 import {portraitStyles, landscapeStyles} from './styles';
-import {onLoginApi} from '../../services/Api';
+import {onGetCommonApi, onLoginApi} from '../../services/Api';
 import {ErrorComponent} from '../../components/ErrorComponent';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import useOrientation from '../../components/OrientationComponent';
 import RNRestart from 'react-native-restart';
+import {useDispatch} from 'react-redux';
+import {fetchRolePermission} from '../../redux/reducer';
 
 export const LoginScreen = ({navigation}) => {
+  const dispatch = useDispatch();
   const orientation = useOrientation(); // Get current orientation
   const isPortrait = orientation === 'portrait';
   const styles = isPortrait ? portraitStyles : landscapeStyles;
@@ -53,12 +56,53 @@ export const LoginScreen = ({navigation}) => {
       } else {
         const response = await onLoginApi(email, password);
         console.log('Get Response::', response.data);
-        if (response.status === 200) {
+        if (response.data.success) {
           setIsLoading(false);
           console.log('get Repsonse>>', response.data.data.token);
           AsyncStorage.setItem('accessToken', response.data.data.token);
+          if (response.data.data.user.role == 'Admin') {
+            const profileData = await onGetCommonApi('dynamic-permissions-get');
+            if (profileData.data.flag == 1) {
+              const transformedData = {
+                modules: [
+                  ...new Set(
+                    profileData.data.data.map(item => item.main_module),
+                  ),
+                ], // Extract unique main_module values
+                permission: profileData.data.data.flatMap(item =>
+                  item.privileges.map(privilege => ({
+                    end_point: privilege.end_point,
+                    status: 1,
+                    actions: privilege.action
+                      ? privilege.action.split(', ')
+                      : [],
+                  })),
+                ),
+              };
+              console.log(
+                'Get Role Data From splashscreen::::',
+                transformedData,
+              );
+              dispatch(fetchRolePermission(transformedData));
+              setTimeout(() => {
+                RNRestart.restart();
+              }, 500);
+            } else {
+              RNRestart.restart();
+            }
+          } else {
+            let margeArray = {
+              modules: response.data.data.modules,
+              permission: response.data.data.permission,
+            };
+            dispatch(fetchRolePermission(margeArray));
+            RNRestart.restart();
+          }
           // navigation.replace('TabStack');
-          RNRestart.restart();
+        } else {
+          setApiError(true);
+          setApiErrorMessage('Something is wrong.');
+          setIsLoading(false);
         }
         setIsLoading(false);
       }

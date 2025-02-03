@@ -21,7 +21,8 @@ import styles from './styles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {LogoutPopup} from '../../components/LogoutPopup';
 import useOrientation from '../../components/OrientationComponent';
-import {useSelector} from 'react-redux';
+import {useSelector, useDispatch} from 'react-redux';
+import {fetchRolePermission} from '../../redux/reducer';
 
 const rangeArray = [
   '#5eead4',
@@ -39,7 +40,9 @@ const rangeArray = [
 ];
 
 export const SettingScreen = ({navigation}) => {
+  const dispatch = useDispatch();
   const rolePermission = useSelector(state => state.rolePermission);
+  console.log('Get Role Array Value', rolePermission.modules);
   const orientation = useOrientation(); // Get current orientation
   const isPortrait = orientation === 'portrait';
   const scrollY = useRef(new Animated.Value(0)).current;
@@ -205,7 +208,8 @@ export const SettingScreen = ({navigation}) => {
     try {
       AsyncStorage.setItem('accessToken', '');
       setModalVisible(false);
-      navigation.replace('LoginScreen');
+      navigation.navigate('LoginScreen');
+      dispatch(fetchRolePermission(null));
     } catch (err) {
       console.log('err', err);
     }
@@ -316,8 +320,8 @@ export const SettingScreen = ({navigation}) => {
               {'Change Password'}
             </Text>
           </TouchableOpacity>
-          {rolePermission.map((item, index) => {
-            if (item.main_module == 'Billings') {
+          {rolePermission.modules.map((item, index) => {
+            if (item == 'Billings') {
               return (
                 <TouchableOpacity
                   onPress={() => navigation.navigate('BillingScreen')}
@@ -332,8 +336,8 @@ export const SettingScreen = ({navigation}) => {
               );
             }
           })}
-          {rolePermission.map((item, index) => {
-            if (item.main_module == 'Bed Managements') {
+          {rolePermission.modules.map((item, index) => {
+            if (item == 'Bed Managements') {
               return (
                 <TouchableOpacity
                   onPress={() => navigation.navigate('BedScreen')}
@@ -348,8 +352,8 @@ export const SettingScreen = ({navigation}) => {
               );
             }
           })}
-          {rolePermission.map((item, index) => {
-            if (item.main_module == 'Blood Banks') {
+          {rolePermission.modules.map((item, index) => {
+            if (item == 'Blood Banks') {
               return (
                 <TouchableOpacity
                   onPress={() => navigation.navigate('BloodBankScreen')}
@@ -364,9 +368,9 @@ export const SettingScreen = ({navigation}) => {
               );
             }
           })}
-          {/* {rolePermission.map((item, index) => {
-            if (item.main_module == 'Prescriptions') {
-              return ( */}
+          {rolePermission.modules.map((item, index) => {
+            if (item == 'Prescriptions') {
+              return (
                 <TouchableOpacity
                   onPress={() => navigation.navigate('PrescriptionScreen')}
                   style={[
@@ -377,11 +381,11 @@ export const SettingScreen = ({navigation}) => {
                     {'Prescriptions'}
                   </Text>
                 </TouchableOpacity>
-              {/* );
+              );
             }
-          })} */}
-          {rolePermission.map((item, index) => {
-            if (item.main_module == 'Diagnosis') {
+          })}
+          {rolePermission.modules.map((item, index) => {
+            if (item == 'Diagnosis') {
               return (
                 <TouchableOpacity
                   onPress={() => navigation.navigate('DiagnosisScreen')}
@@ -396,9 +400,9 @@ export const SettingScreen = ({navigation}) => {
               );
             }
           })}
-          {/* {rolePermission.map((item, index) => {
-            if (item.main_module == 'Enquiries') {
-              return ( */}
+          {rolePermission.modules.map((item, index) => {
+            if (item == 'Enquiries') {
+              return (
                 <TouchableOpacity
                   onPress={() => navigation.navigate('EnquiriesScreen')}
                   style={[
@@ -409,11 +413,11 @@ export const SettingScreen = ({navigation}) => {
                     {'Enquiries'}
                   </Text>
                 </TouchableOpacity>
-              {/* );
+              );
             }
-          })} */}
-          {rolePermission.map((item, index) => {
-            if (item.main_module == 'Finance') {
+          })}
+          {rolePermission.modules.map((item, index) => {
+            if (item == 'Finance') {
               return (
                 <TouchableOpacity
                   onPress={() => navigation.navigate('FinanceScreen')}
@@ -428,8 +432,8 @@ export const SettingScreen = ({navigation}) => {
               );
             }
           })}
-          {rolePermission.map((item, index) => {
-            if (item.main_module == 'Front Office') {
+          {rolePermission.modules.map((item, index) => {
+            if (item == 'Front Office') {
               return (
                 <TouchableOpacity
                   onPress={() => navigation.navigate('FrontOfficeScreen')}
@@ -444,8 +448,8 @@ export const SettingScreen = ({navigation}) => {
               );
             }
           })}
-          {rolePermission.map((item, index) => {
-            if (item.main_module == 'Hospital Charges') {
+          {rolePermission.modules.map((item, index) => {
+            if (item == 'Hospital Charges') {
               return (
                 <TouchableOpacity
                   onPress={() => navigation.navigate('HospitalChargesScreen')}
@@ -460,8 +464,8 @@ export const SettingScreen = ({navigation}) => {
               );
             }
           })}
-          {rolePermission.map((item, index) => {
-            if (item.main_module == 'IPD/OPD') {
+          {rolePermission.modules.map((item, index) => {
+            if (item == 'IPD/OPD') {
               return (
                 isPortrait && (
                   <TouchableOpacity
@@ -478,8 +482,8 @@ export const SettingScreen = ({navigation}) => {
               );
             }
           })}
-          {rolePermission.map((item, index) => {
-            if (item.main_module == 'Live Consultations') {
+          {rolePermission.modules.map((item, index) => {
+            if (item == 'Live Consultations') {
               return (
                 <TouchableOpacity
                   onPress={() => navigation.navigate('LiveConsultationScreen')}
@@ -494,8 +498,8 @@ export const SettingScreen = ({navigation}) => {
               );
             }
           })}
-          {rolePermission.map((item, index) => {
-            if (item.main_module == 'Medicines') {
+          {rolePermission.modules.map((item, index) => {
+            if (item == 'Medicines') {
               return (
                 <TouchableOpacity
                   onPress={() => navigation.navigate('MedicineScreen')}
@@ -510,8 +514,8 @@ export const SettingScreen = ({navigation}) => {
               );
             }
           })}
-          {rolePermission.map((item, index) => {
-            if (item.main_module == 'Patients') {
+          {rolePermission.modules.map((item, index) => {
+            if (item == 'Patients') {
               return (
                 isPortrait && (
                   <TouchableOpacity
@@ -528,8 +532,8 @@ export const SettingScreen = ({navigation}) => {
               );
             }
           })}
-          {rolePermission.map((item, index) => {
-            if (item.main_module == 'Vaccinations') {
+          {rolePermission.modules.map((item, index) => {
+            if (item == 'Vaccinations') {
               return (
                 <TouchableOpacity
                   onPress={() => navigation.navigate('VaccinationScreen')}
@@ -544,8 +548,8 @@ export const SettingScreen = ({navigation}) => {
               );
             }
           })}
-          {rolePermission.map((item, index) => {
-            if (item.main_module == 'Documents') {
+          {rolePermission.modules.map((item, index) => {
+            if (item == 'Documents') {
               return (
                 <TouchableOpacity
                   onPress={() => navigation.navigate('DocumentsScreen')}
@@ -560,8 +564,8 @@ export const SettingScreen = ({navigation}) => {
               );
             }
           })}
-          {rolePermission.map((item, index) => {
-            if (item.main_module == 'Inventory') {
+          {rolePermission.modules.map((item, index) => {
+            if (item == 'Inventory') {
               return (
                 <TouchableOpacity
                   onPress={() => navigation.navigate('InventoryScreen')}
@@ -576,8 +580,8 @@ export const SettingScreen = ({navigation}) => {
               );
             }
           })}
-          {rolePermission.map((item, index) => {
-            if (item.main_module == 'Pathology') {
+          {rolePermission.modules.map((item, index) => {
+            if (item == 'Pathology') {
               return (
                 <TouchableOpacity
                   onPress={() => navigation.navigate('PathologyScreen')}
@@ -592,8 +596,8 @@ export const SettingScreen = ({navigation}) => {
               );
             }
           })}
-          {rolePermission.map((item, index) => {
-            if (item.main_module == 'Reports') {
+          {rolePermission.modules.map((item, index) => {
+            if (item == 'Reports') {
               return (
                 <TouchableOpacity
                   onPress={() => navigation.navigate('ReportsScreen')}
@@ -608,8 +612,8 @@ export const SettingScreen = ({navigation}) => {
               );
             }
           })}
-          {rolePermission.map((item, index) => {
-            if (item.main_module == 'Radiology') {
+          {rolePermission.modules.map((item, index) => {
+            if (item == 'Radiology') {
               return (
                 <TouchableOpacity
                   onPress={() => navigation.navigate('RadiologyScreen')}
@@ -624,8 +628,8 @@ export const SettingScreen = ({navigation}) => {
               );
             }
           })}
-          {rolePermission.map((item, index) => {
-            if (item.main_module == 'SMS/Mail') {
+          {rolePermission.modules.map((item, index) => {
+            if (item == 'SMS/Mail') {
               return (
                 <TouchableOpacity
                   onPress={() => navigation.navigate('SMSScreen')}
@@ -640,8 +644,8 @@ export const SettingScreen = ({navigation}) => {
               );
             }
           })}
-          {rolePermission.map((item, index) => {
-            if (item.main_module == 'Services') {
+          {rolePermission.modules.map((item, index) => {
+            if (item == 'Services') {
               return (
                 <TouchableOpacity
                   onPress={() => navigation.navigate('ServiceScreen')}
@@ -656,8 +660,8 @@ export const SettingScreen = ({navigation}) => {
               );
             }
           })}
-          {rolePermission.map((item, index) => {
-            if (item.main_module == 'Transactions') {
+          {rolePermission.modules.map((item, index) => {
+            if (item == 'Transactions') {
               return (
                 <TouchableOpacity
                   onPress={() => navigation.navigate('TransactionsScreen')}

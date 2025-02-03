@@ -80,43 +80,54 @@ export const BloodBankScreen = ({navigation}) => {
     };
 
     // Helper function to process privileges
+    // const processPrivileges = (
+    //   privileges,
+    //   endPoint,
+    //   setAction,
+    //   visibilityKey,
+    // ) => {
+    //   const privilege = privileges.find(item => item.end_point === endPoint);
+    //   if (privilege) {
+    //     setAction(privilege.action.split(',').map(action => action.trim()));
+    //     visibility[visibilityKey] = true;
+    //   }
+    // };
     const processPrivileges = (
-      privileges,
-      endPoint,
+      privilege,
+      actions,
       setAction,
       visibilityKey,
     ) => {
-      const privilege = privileges.find(item => item.end_point === endPoint);
+      // const privilege = privileges.find(item => item.end_point === endPoint);
       if (privilege) {
-        setAction(privilege.action.split(',').map(action => action.trim()));
+        setAction(actions);
         visibility[visibilityKey] = true;
       }
     };
-
     // Iterate over role permissions
-    rolePermission.forEach(item => {
-      if (item.main_module === 'Blood Banks') {
+    rolePermission?.permission?.forEach(item => {
+      if (item.status === 1) {
         processPrivileges(
-          item.privileges,
-          'blood_banks',
+          item.end_point == 'blood_banks',
+          item.actions,
           setBloodBankAction,
           'bloodBankVisible',
         );
         processPrivileges(
-          item.privileges,
-          'blooddonar',
+          item.end_point == 'blooddonar',
+          item.actions,
           setDonorAction,
           'donorVisible',
         );
         processPrivileges(
-          item.privileges,
-          'blood_donations',
+          item.end_point == 'blood_donations',
+          item.actions,
           setDonationAction,
           'donationVisible',
         );
         processPrivileges(
-          item.privileges,
-          'blood_issues',
+          item.end_point == 'blood_issues',
+          item.actions,
           setIssueAction,
           'issueVisible',
         );

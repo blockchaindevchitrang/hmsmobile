@@ -27,7 +27,7 @@ import {onGetCommonApi} from '../../services/Api';
 import useOrientation from '../../components/OrientationComponent';
 import {useSelector} from 'react-redux';
 
-let arrayData = ['Logo', 'Vaccinated Patients', 'Vaccinations'];
+let arrayData = ['Logo', 'Incomes', 'Expenses'];
 
 export const FinanceScreen = ({navigation}) => {
   const rolePermission = useSelector(state => state.rolePermission);
@@ -59,30 +59,30 @@ export const FinanceScreen = ({navigation}) => {
 
     // Helper function to process privileges
     const processPrivileges = (
-      privileges,
-      endPoint,
+      privilege,
+      actions,
       setAction,
       visibilityKey,
     ) => {
-      const privilege = privileges.find(item => item.end_point === endPoint);
+      // const privilege = privileges.find(item => item.end_point === endPoint);
       if (privilege) {
-        setAction(privilege.action.split(',').map(action => action.trim()));
+        setAction(actions);
         visibility[visibilityKey] = true;
       }
     };
 
     // Iterate over role permissions
-    rolePermission.forEach(item => {
-      if (item.main_module === 'Finance') {
+    rolePermission?.permission?.forEach(item => {
+      if (item.status === 1) {
         processPrivileges(
-          item.privileges,
-          'incomes',
+          item.end_point == 'incomes',
+          item.actions,
           setIncomeAction,
           'incomeVisible',
         );
         processPrivileges(
-          item.privileges,
-          'expenses',
+          item.end_point == 'expenses',
+          item.actions,
           setExpenseAction,
           'expenseVisible',
         );
@@ -91,8 +91,8 @@ export const FinanceScreen = ({navigation}) => {
         console.log('Get Value::::>>>', visibility);
         arrayData = [
           'Logo',
-          incomeVisible && 'Vaccinated Patients',
-          expenseVisible && 'Vaccinations',
+          incomeVisible && 'Incomes',
+          expenseVisible && 'Expenses',
         ].filter(Boolean);
       }
     });
@@ -250,7 +250,7 @@ export const FinanceScreen = ({navigation}) => {
 
             <View style={styles.mainModalView}>
               <View style={styles.menuContainer}>
-                {['Logo', 'Incomes', 'Expenses'].map((option, index) => (
+                {arrayData.map((option, index) => (
                   <>
                     {option == 'Logo' ? (
                       <Animated.View

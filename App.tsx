@@ -49,8 +49,9 @@ import ReportsScreen from './src/screens/ReportsScreen';
 import TransactionsScreen from './src/screens/TransactionsScreen';
 import ForgotPassword from './src/screens/ForgotPassword';
 import FlashMessage from 'react-native-flash-message';
-import {Provider} from 'react-redux';
-import store from './src/redux/store';
+import {Provider as StateProvider} from 'react-redux';
+import store, {persistor} from './src/redux/store';
+import {PersistGate} from 'redux-persist/integration/react';
 import RadiologyScreen from './src/screens/RadiologyScreen';
 import ServiceScreen from './src/screens/ServiceScreen';
 import SMSScreen from './src/screens/SMSScreen';
@@ -378,47 +379,49 @@ function SettingStack() {
 const App = () => {
   return (
     <MenuProvider>
-      <Provider store={store}>
-        <ThemeProvider>
-          <I18nextProvider i18n={i18n}>
-            <NavigationContainer>
-              <Stack.Navigator initialRouteName="SplashScreen">
-                <Stack.Screen
-                  name="SplashScreen"
-                  component={SplashScreen}
-                  options={{headerShown: false}}
-                />
-                <Stack.Screen
-                  name="LoginScreen"
-                  component={LoginScreen}
-                  options={{headerShown: false}}
-                />
-                <Stack.Screen
-                  name="SignupScreen"
-                  component={SignupScreen}
-                  options={{headerShown: false}}
-                />
-                <Stack.Screen
-                  name="TabStack"
-                  component={TabStack}
-                  options={{headerShown: false}}
-                />
-                <Stack.Screen
-                  name="ForgotPassword"
-                  component={ForgotPassword}
-                  options={{headerShown: false}}
-                />
-                {/* <Stack.Screen
-                  name="SettingScreen"
-                  component={SettingScreen}
-                  options={{headerShown: false}}
-                /> */}
-              </Stack.Navigator>
-              <FlashMessage position={'top'} />
-            </NavigationContainer>
-          </I18nextProvider>
-        </ThemeProvider>
-      </Provider>
+      <StateProvider store={store}>
+        <PersistGate loading={null} persistor={persistor}>
+          <ThemeProvider>
+            <I18nextProvider i18n={i18n}>
+              <NavigationContainer>
+                <Stack.Navigator initialRouteName="SplashScreen">
+                  <Stack.Screen
+                    name="SplashScreen"
+                    component={SplashScreen}
+                    options={{headerShown: false}}
+                  />
+                  <Stack.Screen
+                    name="LoginScreen"
+                    component={LoginScreen}
+                    options={{headerShown: false}}
+                  />
+                  <Stack.Screen
+                    name="SignupScreen"
+                    component={SignupScreen}
+                    options={{headerShown: false}}
+                  />
+                  <Stack.Screen
+                    name="TabStack"
+                    component={TabStack}
+                    options={{headerShown: false}}
+                  />
+                  <Stack.Screen
+                    name="ForgotPassword"
+                    component={ForgotPassword}
+                    options={{headerShown: false}}
+                  />
+                  {/* <Stack.Screen
+                    name="SettingScreen"
+                    component={SettingScreen}
+                    options={{headerShown: false}}
+                  /> */}
+                </Stack.Navigator>
+                <FlashMessage position={'top'} />
+              </NavigationContainer>
+            </I18nextProvider>
+          </ThemeProvider>
+        </PersistGate>
+      </StateProvider>
     </MenuProvider>
   );
 };

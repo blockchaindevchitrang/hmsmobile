@@ -57,30 +57,30 @@ export const DocumentsScreen = ({navigation}) => {
 
     // Helper function to process privileges
     const processPrivileges = (
-      privileges,
-      endPoint,
+      privilege,
+      actions,
       setAction,
       visibilityKey,
     ) => {
-      const privilege = privileges.find(item => item.end_point === endPoint);
+      // const privilege = privileges.find(item => item.end_point === endPoint);
       if (privilege) {
-        setAction(privilege.action.split(',').map(action => action.trim()));
+        setAction(actions);
         visibility[visibilityKey] = true;
       }
     };
 
     // Iterate over role permissions
-    rolePermission.forEach(item => {
-      if (item.main_module === 'Documents') {
+    rolePermission?.permission?.forEach(item => {
+      if (item.status === 1) {
         processPrivileges(
-          item.privileges,
-          'documents',
+          item.end_point == 'documents',
+          item.actions,
           setDocumentAction,
           'documentVisible',
         );
         processPrivileges(
-          item.privileges,
-          'document_types',
+          item.end_point == 'document_types',
+          item.actions,
           setDocumentTypeAction,
           'typeVisible',
         );
