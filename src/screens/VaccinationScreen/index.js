@@ -26,89 +26,12 @@ import VaccinatedPatients from '../../components/VaccinationComponent/Vaccinated
 import VaccinationList from '../../components/VaccinationComponent/VaccinationList';
 import {onGetCommonApi} from '../../services/Api';
 import useOrientation from '../../components/OrientationComponent';
+import {useSelector} from 'react-redux';
 
-const allData = [
-  {
-    id: 1,
-    name: 'Joey Tribiyani',
-    mail: 'joey@gmail.com',
-    vaccination: 'C19 Pfiger',
-    serial_number: '113141',
-    dose_number: '20',
-    dose_given_date: '22:02:00 2023-05-25',
-  },
-  {
-    id: 2,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    vaccination: 'C19 Pfiger',
-    serial_number: '113141',
-    dose_number: '20',
-    dose_given_date: '22:02:00 2023-05-25',
-  },
-  {
-    id: 3,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    vaccination: 'C19 Pfiger',
-    serial_number: '113141',
-    dose_number: '20',
-    dose_given_date: '22:02:00 2023-05-25',
-  },
-  {
-    id: 4,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    vaccination: 'C19 Pfiger',
-    serial_number: '113141',
-    dose_number: '20',
-    dose_given_date: '22:02:00 2023-05-25',
-  },
-  {
-    id: 5,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    vaccination: 'C19 Pfiger',
-    serial_number: '113141',
-    dose_number: '20',
-    dose_given_date: '22:02:00 2023-05-25',
-  },
-];
-
-const BloodIssueData = [
-  {
-    id: 1,
-    name: 'cod',
-    manufacture: 'dada',
-    brand: 'Pfiger',
-  },
-  {
-    id: 2,
-    name: 'C19 Pfiger',
-    manufacture: 'dada',
-    brand: 'Pfiger',
-  },
-  {
-    id: 3,
-    name: 'Covid 19 Vaccinate',
-    manufacture: 'dada',
-    brand: 'Pfiger',
-  },
-  {
-    id: 4,
-    name: 'Covid 19 Vaccinate',
-    manufacture: 'dada',
-    brand: 'Pfiger',
-  },
-  {
-    id: 5,
-    name: 'Covid 19 Vaccinate',
-    manufacture: 'dada',
-    brand: 'Pfiger',
-  },
-];
+let arrayData = ['Logo', 'Vaccinated Patients', 'Vaccinations'];
 
 export const VaccinationScreen = ({navigation}) => {
+  const rolePermission = useSelector(state => state.rolePermission);
   const {t} = useTranslation();
   const {theme} = useTheme();
   const orientation = useOrientation(); // Get current orientation
@@ -125,6 +48,55 @@ export const VaccinationScreen = ({navigation}) => {
   const [pageCount, setPageCount] = useState('1');
   const [totalPage, setTotalPage] = useState('1');
   const [vaccinationPage, setVaccinationPage] = useState('1');
+  const [patientAction, setPatientAction] = useState([]);
+  const [vaccinationAction, setVaccinationAction] = useState([]);
+
+  useEffect(() => {
+    const visibility = {
+      patientVisible: false,
+      vaccinationVisible: false,
+    };
+
+    // Helper function to process privileges
+    const processPrivileges = (
+      privileges,
+      endPoint,
+      setAction,
+      visibilityKey,
+    ) => {
+      const privilege = privileges.find(item => item.end_point === endPoint);
+      if (privilege) {
+        setAction(privilege.action.split(',').map(action => action.trim()));
+        visibility[visibilityKey] = true;
+      }
+    };
+
+    // Iterate over role permissions
+    rolePermission.forEach(item => {
+      if (item.main_module === 'Vaccinations') {
+        processPrivileges(
+          item.privileges,
+          'vaccinated_patients',
+          setPatientAction,
+          'patientVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'vaccinations',
+          setVaccinationAction,
+          'vaccinationVisible',
+        );
+        // Handle arrayData based on visibility
+        const {patientVisible, vaccinationVisible} = visibility;
+        console.log('Get Value::::>>>', visibility);
+        arrayData = [
+          'Logo',
+          patientVisible && 'Vaccinated Patients',
+          vaccinationVisible && 'Vaccinations',
+        ].filter(Boolean);
+      }
+    });
+  }, [rolePermission]);
 
   const animations = useRef(
     [0, 0, 0].map(() => new Animated.Value(300)),
@@ -242,6 +214,7 @@ export const VaccinationScreen = ({navigation}) => {
             totalPage={totalPage}
             pageCount={pageCount}
             setPageCount={setPageCount}
+            patientAction={patientAction}
           />
         ) : (
           selectedView == 'Vaccinations' && (
@@ -253,6 +226,7 @@ export const VaccinationScreen = ({navigation}) => {
               totalPage={vaccinationPage}
               pageCount={pageCount}
               setPageCount={setPageCount}
+              vaccinationAction={vaccinationAction}
             />
           )
         )}
@@ -273,48 +247,46 @@ export const VaccinationScreen = ({navigation}) => {
 
             <View style={styles.mainModalView}>
               <View style={styles.menuContainer}>
-                {['Logo', 'Vaccinated Patients', 'Vaccinations'].map(
-                  (option, index) => (
-                    <>
-                      {option == 'Logo' ? (
-                        <Animated.View
-                          key={index}
-                          style={[
-                            styles.logoMenu,
-                            {
-                              transform: [{translateY: animations[index]}],
-                              opacity: opacities[index],
-                              marginBottom: hp(1),
-                            },
-                          ]}>
-                          <Image
-                            source={headerLogo}
-                            style={styles.headerLogoImage}
-                          />
-                        </Animated.View>
-                      ) : (
-                        <Animated.View
-                          key={index}
-                          style={[
-                            styles.menuOption,
-                            {
-                              transform: [{translateY: animations[index]}],
-                              opacity: opacities[index],
-                              backgroundColor: theme.headerColor,
-                            },
-                          ]}>
-                          <TouchableOpacity
-                            style={styles.optionButton}
-                            onPress={() => {
-                              setSelectedView(option), toggleMenu(false);
-                            }}>
-                            <Text style={styles.menuItem}>{option}</Text>
-                          </TouchableOpacity>
-                        </Animated.View>
-                      )}
-                    </>
-                  ),
-                )}
+                {arrayData.map((option, index) => (
+                  <>
+                    {option == 'Logo' ? (
+                      <Animated.View
+                        key={index}
+                        style={[
+                          styles.logoMenu,
+                          {
+                            transform: [{translateY: animations[index]}],
+                            opacity: opacities[index],
+                            marginBottom: hp(1),
+                          },
+                        ]}>
+                        <Image
+                          source={headerLogo}
+                          style={styles.headerLogoImage}
+                        />
+                      </Animated.View>
+                    ) : (
+                      <Animated.View
+                        key={index}
+                        style={[
+                          styles.menuOption,
+                          {
+                            transform: [{translateY: animations[index]}],
+                            opacity: opacities[index],
+                            backgroundColor: theme.headerColor,
+                          },
+                        ]}>
+                        <TouchableOpacity
+                          style={styles.optionButton}
+                          onPress={() => {
+                            setSelectedView(option), toggleMenu(false);
+                          }}>
+                          <Text style={styles.menuItem}>{option}</Text>
+                        </TouchableOpacity>
+                      </Animated.View>
+                    )}
+                  </>
+                ))}
 
                 <View style={styles.logoMenu}>
                   <TouchableOpacity

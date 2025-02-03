@@ -58,6 +58,7 @@ const VaccinatedPatients = ({
   totalPage,
   pageCount,
   setPageCount,
+  patientAction,
 }) => {
   const user_data = useSelector(state => state.user_data);
   const {theme} = useTheme();
@@ -259,38 +260,44 @@ const VaccinatedPatients = ({
             </Text>
           </View>
         </View>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={async () => {
-              let allDatas = await onGetSpecificDoctor(item.id);
-              setUserId(item.id);
-              setPatientId(allDatas.patient_id);
-              setPatientName(item.patient_name);
-              setVaccinatedId(allDatas.vaccination_id);
-              setVaccinatedName(item.vaccine_name);
-              setDoseDate(new Date(allDatas.dose_given_date));
-              setSerialNo(item.vaccination_serial_number);
-              setDoseNo(item.dose_number);
-              setNote(allDatas.description);
-              setNewAccountVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        {patientAction.includes('edit') || patientAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {patientAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={async () => {
+                  let allDatas = await onGetSpecificDoctor(item.id);
+                  setUserId(item.id);
+                  setPatientId(allDatas.patient_id);
+                  setPatientName(item.patient_name);
+                  setVaccinatedId(allDatas.vaccination_id);
+                  setVaccinatedName(item.vaccine_name);
+                  setDoseDate(new Date(allDatas.dose_given_date));
+                  setSerialNo(item.vaccination_serial_number);
+                  setDoseNo(item.dose_number);
+                  setNote(allDatas.description);
+                  setNewAccountVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {patientAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: wp(2)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -378,11 +385,13 @@ const VaccinatedPatients = ({
                 }}>
                 <MenuTrigger text={''} />
                 <MenuOptions style={{marginVertical: hp(0.5)}}>
-                  <MenuOption value={'add'}>
-                    <Text style={styles.dataHistoryText3}>
-                      Vaccinated Patient
-                    </Text>
-                  </MenuOption>
+                  {patientAction.includes('create') && (
+                    <MenuOption value={'add'}>
+                      <Text style={styles.dataHistoryText3}>
+                        Vaccinated Patient
+                      </Text>
+                    </MenuOption>
+                  )}
                   <MenuOption value={'excel'}>
                     <Text style={styles.dataHistoryText3}>Export to Excel</Text>
                   </MenuOption>
@@ -438,13 +447,16 @@ const VaccinatedPatients = ({
                     ]}>
                     {'DOSE GIVEN DATE'}
                   </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: wp(16), textAlign: 'center'},
-                    ]}>
-                    {'ACTION'}
-                  </Text>
+                  {patientAction.includes('edit') ||
+                  patientAction.includes('delete') ? (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: wp(16), textAlign: 'center'},
+                      ]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

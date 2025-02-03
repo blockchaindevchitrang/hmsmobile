@@ -50,6 +50,7 @@ const InvestigationReports = ({
   totalPage,
   pageCount,
   setPageCount,
+  investigationAction,
 }) => {
   const orientation = useOrientation();
   const isPortrait = orientation === 'portrait';
@@ -378,51 +379,58 @@ const InvestigationReports = ({
           style={[styles.dataListText1, {width: isPortrait ? wp(32) : wp(24)}]}>
           {item.attachment != null ? 'Download' : 'N/A'}
         </Text>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={async () => {
-              let allDatas = await onGetSpecificDoctor(item.id);
-              setUserId(item.id);
-              setTitle(item.title);
-              setPatientId(allDatas.investigationReport.patient_id);
-              setPatientName(item?.patient_name);
-              setDoctorId(allDatas.investigationReport.doctor_id);
-              doctorData.map(item1 => {
-                if (item1.id == allDatas?.investigationReport?.doctor_id) {
-                  setDoctorName(item1.name);
-                  return;
-                }
-              });
-              setStatusId(allDatas.investigationReport?.status);
-              setStatusName(item.status);
-              setDescription(allDatas.investigationReport?.description);
-              setDateOfBirth(new Date(allDatas.investigationReport?.date));
-              if (item?.attachment != null) {
-                if (isImageFormat(item?.attachment)) {
-                  setAvatar(parseFileFromUrl(item?.attachment));
-                }
-              } else {
-                setAvatar(null);
-              }
-              setAddHolidayVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        {investigationAction.includes('edit') ||
+        investigationAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {investigationAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={async () => {
+                  let allDatas = await onGetSpecificDoctor(item.id);
+                  setUserId(item.id);
+                  setTitle(item.title);
+                  setPatientId(allDatas.investigationReport.patient_id);
+                  setPatientName(item?.patient_name);
+                  setDoctorId(allDatas.investigationReport.doctor_id);
+                  doctorData.map(item1 => {
+                    if (item1.id == allDatas?.investigationReport?.doctor_id) {
+                      setDoctorName(item1.name);
+                      return;
+                    }
+                  });
+                  setStatusId(allDatas.investigationReport?.status);
+                  setStatusName(item.status);
+                  setDescription(allDatas.investigationReport?.description);
+                  setDateOfBirth(new Date(allDatas.investigationReport?.date));
+                  if (item?.attachment != null) {
+                    if (isImageFormat(item?.attachment)) {
+                      setAvatar(parseFileFromUrl(item?.attachment));
+                    }
+                  } else {
+                    setAvatar(null);
+                  }
+                  setAddHolidayVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {investigationAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: wp(2)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -443,6 +451,36 @@ const InvestigationReports = ({
             />
             {!isPortrait && (
               <View style={styles.filterView}>
+                {investigationAction.includes('create') && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setUserId('');
+                      setTitle('');
+                      setPatientId('');
+                      setPatientName('');
+                      setDoctorId('');
+                      setDoctorName('');
+                      setStatusId('');
+                      setStatusName('');
+                      setDescription('');
+                      setDateOfBirth(new Date());
+                      setAvatar(null);
+                      setErrorMessage('');
+                      setErrorVisible(false);
+                      setAddHolidayVisible(true);
+                    }}
+                    style={styles.actionView}>
+                    <Text style={styles.actionText}>
+                      New Investigation Reports
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+          </View>
+          {isPortrait && (
+            <View style={styles.filterView}>
+              {investigationAction.includes('create') && (
                 <TouchableOpacity
                   onPress={() => {
                     setUserId('');
@@ -465,31 +503,7 @@ const InvestigationReports = ({
                     New Investigation Reports
                   </Text>
                 </TouchableOpacity>
-              </View>
-            )}
-          </View>
-          {isPortrait && (
-            <View style={styles.filterView}>
-              <TouchableOpacity
-                onPress={() => {
-                  setUserId('');
-                  setTitle('');
-                  setPatientId('');
-                  setPatientName('');
-                  setDoctorId('');
-                  setDoctorName('');
-                  setStatusId('');
-                  setStatusName('');
-                  setDescription('');
-                  setDateOfBirth(new Date());
-                  setAvatar(null);
-                  setErrorMessage('');
-                  setErrorVisible(false);
-                  setAddHolidayVisible(true);
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>New Investigation Reports</Text>
-              </TouchableOpacity>
+              )}
             </View>
           )}
           <View
@@ -535,9 +549,12 @@ const InvestigationReports = ({
                     ]}>
                     {'Attachment'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(16)}]}>
-                    {'ACTION'}
-                  </Text>
+                  {investigationAction.includes('edit') ||
+                  investigationAction.includes('delete') ? (
+                    <Text style={[styles.titleText, {width: wp(16)}]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

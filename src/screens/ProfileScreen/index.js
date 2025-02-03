@@ -16,7 +16,7 @@ import {
   Platform,
 } from 'react-native';
 import {useTheme} from '../../utils/ThemeProvider';
-import styles from './styles';
+import {landscapeStyles, portraitStyles} from './styles';
 import Header from '../../components/Header';
 import {COLORS} from '../../utils';
 import {useTranslation} from 'react-i18next';
@@ -38,8 +38,12 @@ import {showMessage} from 'react-native-flash-message';
 import CountryPicker from 'react-native-country-picker-modal';
 import SelectDropdown from 'react-native-select-dropdown';
 import {useSelector} from 'react-redux';
+import useOrientation from '../../components/OrientationComponent';
 
 export const ProfileScreen = ({navigation}) => {
+  const orientation = useOrientation(); // Get current orientation
+  const isPortrait = orientation === 'portrait';
+  const styles = isPortrait ? portraitStyles : landscapeStyles;
   const bloodData = useSelector(state => state.bloodData);
   const {t} = useTranslation();
   const {theme} = useTheme();
@@ -98,7 +102,7 @@ export const ProfileScreen = ({navigation}) => {
           };
           setAvatar(imageData);
 
-          console.log('Selected image:', avatar);
+          console.log('Selected image:', imageData, image);
         }
       } else {
         console.log('No image selected');
@@ -117,14 +121,14 @@ export const ProfileScreen = ({navigation}) => {
       const response = await onGetCommonApi('get-profile');
       console.log('GetAccountData>>', response.data.data.user.id);
       if (response.status == 200) {
-        onGetSingleData(response.data.data.user.id);
+        onGetSingleData(response.data.data.user.id, response.data.data.user);
       }
     } catch (err) {
       console.log('Get AccountError>', err.response.data);
     }
   };
 
-  const onGetSingleData = async id => {
+  const onGetSingleData = async (id, item) => {
     try {
       const response = await onGetSpecificCommonApi(`fetch-user/${id}`);
       console.log('get ValueLL:::', response.data);
@@ -146,7 +150,10 @@ export const ProfileScreen = ({navigation}) => {
         setPostalCode(dataResponse?.postal_code);
         setCountry(dataResponse?.country);
         setDateOfBirth(new Date(dataResponse?.dob));
-        if (isImageFormat(dataResponse?.doctor_image)) {
+        if (
+          dataResponse?.doctor_image &&
+          isImageFormat(dataResponse?.doctor_image)
+        ) {
           setAvatar(parseFileFromUrl(dataResponse?.doctor_image));
         }
         setRefresh(!refresh);
@@ -154,7 +161,7 @@ export const ProfileScreen = ({navigation}) => {
         return 0;
       }
     } catch (err) {
-      console.log('Get AccountError>', err.response.data);
+      console.log('Get AccountError>', err);
     }
   };
 
@@ -334,7 +341,7 @@ export const ProfileScreen = ({navigation}) => {
                           <Text style={styles.dropdownItemTxtStyle}>
                             {doctorBlood == selectedItem?.blood_group
                               ? selectedItem?.blood_group
-                              : bloodSelected}
+                              : doctorBlood}
                           </Text>
                         ) : (
                           <Text style={styles.dropdownItemTxtStyle}>

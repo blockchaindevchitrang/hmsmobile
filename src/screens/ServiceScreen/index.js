@@ -29,112 +29,19 @@ import Packages from '../../components/ServiceComponent/Packages';
 import Ambulances from '../../components/ServiceComponent/Ambulances';
 import useOrientation from '../../components/OrientationComponent';
 import AmbulanceCall from '../../components/ServiceComponent/AmbulanceCall';
+import {useSelector} from 'react-redux';
 
-const allData = [
-  {
-    id: 1,
-    chargeCategory: 'Consultation',
-    description: 'N/A',
-    chargeTime: 'Operation Theatre',
-  },
-  {
-    id: 2,
-    chargeCategory: 'Online Consulation',
-    description: 'demo',
-    chargeTime: 'Procedures',
-  },
-  {
-    id: 3,
-    chargeCategory: 'Fee',
-    description: 'N/A',
-    chargeTime: 'Investigations',
-  },
-  {
-    id: 4,
-    chargeCategory: 'Other',
-    description: 'N/A',
-    chargeTime: 'Others',
-  },
-  {
-    id: 5,
-    chargeCategory: 'op',
-    description: 'N/A',
-    chargeTime: 'Operation Theatre',
-  },
-];
-
-const BloodDonorData = [
-  {
-    id: 1,
-    code: '76571',
-    chargeCategory: 'Consultation',
-    chargeType: 'Operation Theatre',
-    standard_charge: '$100.00',
-  },
-  {
-    id: 2,
-    code: '76572',
-    chargeCategory: 'Online Consultation',
-    chargeType: 'Procedures',
-    standard_charge: '$1,000.00',
-  },
-  {
-    id: 3,
-    code: '76573',
-    chargeCategory: 'Fee',
-    chargeType: 'Investigations',
-    standard_charge: '$343,442.00',
-  },
-  {
-    id: 4,
-    code: '76574',
-    chargeCategory: 'Other',
-    chargeType: 'Others',
-    standard_charge: '$5,000.00',
-  },
-  {
-    id: 5,
-    code: '76575',
-    chargeCategory: 'op',
-    chargeType: 'Operation Theatre',
-    standard_charge: '$5,000.00',
-  },
-];
-
-const BloodIssueData = [
-  {
-    id: 1,
-    name: 'Joey Tribiyani',
-    mail: 'joey@gmail.com',
-    standard_charge: '$600.00',
-  },
-  {
-    id: 2,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    standard_charge: '$600.00',
-  },
-  {
-    id: 3,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    standard_charge: '$500.00',
-  },
-  {
-    id: 4,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    standard_charge: '$500.00',
-  },
-  {
-    id: 5,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    standard_charge: '$400.00',
-  },
+let arrayData = [
+  'Logo',
+  'Insurances',
+  'Packages',
+  'Services',
+  'Ambulances',
+  'Ambulance Calls',
 ];
 
 export const ServiceScreen = ({navigation}) => {
+  const rolePermission = useSelector(state => state.rolePermission);
   const {t} = useTranslation();
   const {theme} = useTheme();
   const orientation = useOrientation(); // Get current orientation
@@ -163,6 +70,88 @@ export const ServiceScreen = ({navigation}) => {
   const [statusId, setStatusId] = useState(3);
   const [serviceStatusId, setServiceStatusId] = useState(3);
   const [ambulancesStatusId, setAmbulancesStatusId] = useState(3);
+  const [insuranceAction, setInsuranceAction] = useState([]);
+  const [packageAction, setPackageAction] = useState([]);
+  const [serviceAction, setServiceAction] = useState([]);
+  const [ambulanceAction, setAmbulanceAction] = useState([]);
+  const [callAction, setCallAction] = useState([]);
+
+  useEffect(() => {
+    const visibility = {
+      insuranceVisible: false,
+      packageVisible: false,
+      serviceVisible: false,
+      ambulanceVisible: false,
+      callVisible: false,
+    };
+
+    // Helper function to process privileges
+    const processPrivileges = (
+      privileges,
+      endPoint,
+      setAction,
+      visibilityKey,
+    ) => {
+      const privilege = privileges.find(item => item.end_point === endPoint);
+      if (privilege) {
+        setAction(privilege.action.split(',').map(action => action.trim()));
+        visibility[visibilityKey] = true;
+      }
+    };
+
+    // Iterate over role permissions
+    rolePermission.forEach(item => {
+      if (item.main_module === 'Services') {
+        processPrivileges(
+          item.privileges,
+          'insurances',
+          setInsuranceAction,
+          'insuranceVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'packages',
+          setPackageAction,
+          'packageVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'services',
+          setServiceAction,
+          'serviceVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'ambulances',
+          setAmbulanceAction,
+          'ambulanceVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'ambulance_calls',
+          setCallAction,
+          'callVisible',
+        );
+        // Handle arrayData based on visibility
+        const {
+          insuranceVisible,
+          packageVisible,
+          serviceVisible,
+          ambulanceVisible,
+          callVisible,
+        } = visibility;
+        console.log('Get Value::::>>>', visibility);
+        arrayData = [
+          'Logo',
+          insuranceVisible && 'Insurances',
+          packageVisible && 'Packages',
+          serviceVisible && 'Services',
+          ambulanceVisible && 'Ambulances',
+          callVisible && 'Ambulance Calls',
+        ].filter(Boolean);
+      }
+    });
+  }, [rolePermission]);
 
   const animations = useRef(
     [0, 0, 0, 0, 0, 0].map(() => new Animated.Value(300)),
@@ -343,6 +332,7 @@ export const ServiceScreen = ({navigation}) => {
             setPageCount={setPageCount}
             statusId={statusId}
             setStatusId={setStatusId}
+            insuranceAction={insuranceAction}
           />
         ) : selectedView == 'Packages' ? (
           <Packages
@@ -354,6 +344,7 @@ export const ServiceScreen = ({navigation}) => {
             totalPage={packagePage}
             pageCount={pageCount}
             setPageCount={setPageCount}
+            packageAction={packageAction}
           />
         ) : selectedView == 'Services' ? (
           <Services
@@ -366,6 +357,7 @@ export const ServiceScreen = ({navigation}) => {
             setPageCount={setPageCount}
             statusId={serviceStatusId}
             setStatusId={setServiceStatusId}
+            serviceAction={serviceAction}
           />
         ) : selectedView == 'Ambulances' ? (
           <Ambulances
@@ -378,6 +370,7 @@ export const ServiceScreen = ({navigation}) => {
             setPageCount={setPageCount}
             statusId={ambulancesStatusId}
             setStatusId={setAmbulancesStatusId}
+            ambulanceAction={ambulanceAction}
           />
         ) : (
           selectedView == 'Ambulance Calls' && (
@@ -390,6 +383,7 @@ export const ServiceScreen = ({navigation}) => {
               totalPage={ambulancesCallPage}
               pageCount={pageCount}
               setPageCount={setPageCount}
+              callAction={callAction}
             />
           )
         )}
@@ -410,14 +404,7 @@ export const ServiceScreen = ({navigation}) => {
 
             <View style={styles.mainModalView}>
               <View style={styles.menuContainer}>
-                {[
-                  'Logo',
-                  'Insurances',
-                  'Packages',
-                  'Services',
-                  'Ambulances',
-                  'Ambulance Calls',
-                ].map((option, index) => (
+                {arrayData.map((option, index) => (
                   <>
                     {option == 'Logo' ? (
                       <Animated.View

@@ -64,6 +64,7 @@ const IncomeList = ({
   setPageCount,
   statusId,
   setStatusId,
+  incomeAction,
 }) => {
   const {theme} = useTheme();
   const orientation = useOrientation();
@@ -372,46 +373,52 @@ const IncomeList = ({
           ]}>
           {item.document != '' ? 'Download' : 'N/A'}
         </Text>
-        <View
-          style={[
-            styles.actionDataView,
-            {width: isPortrait ? wp(16) : wp(12)},
-          ]}>
-          <TouchableOpacity
-            onPress={async () => {
-              setUserId(item.id);
-              let allDatas = await onGetSpecificDoctor(item.id);
-              setInvoiceNumber(item?.invoice_number);
-              setName(item?.name);
-              setDate(new Date(allDatas?.date));
-              setAmount(JSON.stringify(item?.amount));
-              setIncomeHead(item?.income_head);
-              setIncomeHeadId(allDatas?.income_head);
-              setDescription(allDatas?.description);
-              if (item.document != '') {
-                if (isImageFormat(item?.document)) {
-                  setAvatar(parseFileFromUrl(item?.document));
-                }
-              }
-              setAddIncomeVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        {incomeAction.includes('edit') || incomeAction.includes('delete') ? (
+          <View
+            style={[
+              styles.actionDataView,
+              {width: isPortrait ? wp(16) : wp(12)},
+            ]}>
+            {incomeAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={async () => {
+                  setUserId(item.id);
+                  let allDatas = await onGetSpecificDoctor(item.id);
+                  setInvoiceNumber(item?.invoice_number);
+                  setName(item?.name);
+                  setDate(new Date(allDatas?.date));
+                  setAmount(JSON.stringify(item?.amount));
+                  setIncomeHead(item?.income_head);
+                  setIncomeHeadId(allDatas?.income_head);
+                  setDescription(allDatas?.description);
+                  if (item.document != '') {
+                    if (isImageFormat(item?.document)) {
+                      setAvatar(parseFileFromUrl(item?.document));
+                    }
+                  }
+                  setAddIncomeVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {incomeAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: wp(2)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -502,9 +509,11 @@ const IncomeList = ({
                 }}>
                 <MenuTrigger text={''} />
                 <MenuOptions style={{marginVertical: hp(0.5)}}>
-                  <MenuOption value={'add'}>
-                    <Text style={styles.dataHistoryText3}>New Income</Text>
-                  </MenuOption>
+                  {incomeAction.includes('create') && (
+                    <MenuOption value={'add'}>
+                      <Text style={styles.dataHistoryText3}>New Income</Text>
+                    </MenuOption>
+                  )}
                   <MenuOption value={'excel'}>
                     <Text style={styles.dataHistoryText3}>Export to Excel</Text>
                   </MenuOption>
@@ -624,13 +633,16 @@ const IncomeList = ({
                     ]}>
                     {'ATTACHMENT'}
                   </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: isPortrait ? wp(16) : wp(12)},
-                    ]}>
-                    {'ACTION'}
-                  </Text>
+                  {incomeAction.includes('edit') ||
+                  incomeAction.includes('delete') ? (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: isPortrait ? wp(16) : wp(12)},
+                      ]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

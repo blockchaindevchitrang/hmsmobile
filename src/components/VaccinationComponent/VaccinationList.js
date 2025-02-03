@@ -55,6 +55,7 @@ const VaccinationList = ({
   totalPage,
   pageCount,
   setPageCount,
+  vaccinationAction,
 }) => {
   const {theme} = useTheme();
   const orientation = useOrientation();
@@ -208,36 +209,50 @@ const VaccinationList = ({
         <View
           style={[
             styles.nameDataView,
-            {width: isPortrait ? wp(20) : wp(38.1)},
+            {
+              width: isPortrait
+                ? wp(20)
+                : vaccinationAction.includes('edit') ||
+                  vaccinationAction.includes('delete')
+                ? wp(38.1)
+                : wp(58.1),
+            },
           ]}>
           <Text style={[styles.dataHistoryText1]}>{item.brand}</Text>
         </View>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={async () => {
-              setUserId(item.id);
-              setEventTitle(item.name);
-              setDepartmentComment(item.manufactured_by);
-              setChargeType(item.brand);
-              setNewAccountVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        {vaccinationAction.includes('edit') ||
+        vaccinationAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {vaccinationAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={async () => {
+                  setUserId(item.id);
+                  setEventTitle(item.name);
+                  setDepartmentComment(item.manufactured_by);
+                  setChargeType(item.brand);
+                  setNewAccountVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {vaccinationAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: wp(2)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -320,9 +335,13 @@ const VaccinationList = ({
                 }}>
                 <MenuTrigger text={''} />
                 <MenuOptions style={{marginVertical: hp(0.5)}}>
-                  <MenuOption value={'add'}>
-                    <Text style={styles.dataHistoryText3}>New vaccination</Text>
-                  </MenuOption>
+                  {vaccinationAction.includes('create') && (
+                    <MenuOption value={'add'}>
+                      <Text style={styles.dataHistoryText3}>
+                        New vaccination
+                      </Text>
+                    </MenuOption>
+                  )}
                   <MenuOption value={'excel'}>
                     <Text style={styles.dataHistoryText3}>Export to Excel</Text>
                   </MenuOption>
@@ -355,13 +374,23 @@ const VaccinationList = ({
                   <Text
                     style={[
                       styles.titleText,
-                      {width: isPortrait ? wp(20) : wp(38.1)},
+                      {
+                        width: isPortrait
+                          ? wp(20)
+                          : vaccinationAction.includes('edit') ||
+                            vaccinationAction.includes('delete')
+                          ? wp(38.1)
+                          : wp(58.1),
+                      },
                     ]}>
                     {'BRAND'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(16)}]}>
-                    {'ACTION'}
-                  </Text>
+                  {vaccinationAction.includes('edit') ||
+                  vaccinationAction.includes('delete') ? (
+                    <Text style={[styles.titleText, {width: wp(16)}]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

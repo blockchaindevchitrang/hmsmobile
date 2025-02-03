@@ -25,8 +25,12 @@ import IncomeList from '../../components/FinanceComponent/IncomeList';
 import ExpensesList from '../../components/FinanceComponent/ExpensesList';
 import {onGetCommonApi} from '../../services/Api';
 import useOrientation from '../../components/OrientationComponent';
+import {useSelector} from 'react-redux';
+
+let arrayData = ['Logo', 'Vaccinated Patients', 'Vaccinations'];
 
 export const FinanceScreen = ({navigation}) => {
+  const rolePermission = useSelector(state => state.rolePermission);
   const {t} = useTranslation();
   const {theme} = useTheme();
   const orientation = useOrientation(); // Get current orientation
@@ -44,6 +48,55 @@ export const FinanceScreen = ({navigation}) => {
   const [expensesPage, setExpensesPage] = useState('1');
   const [statusId, setStatusId] = useState(0);
   const [statusId1, setStatusId1] = useState(0);
+  const [incomeAction, setIncomeAction] = useState([]);
+  const [expenseAction, setExpenseAction] = useState([]);
+
+  useEffect(() => {
+    const visibility = {
+      incomeVisible: false,
+      expenseVisible: false,
+    };
+
+    // Helper function to process privileges
+    const processPrivileges = (
+      privileges,
+      endPoint,
+      setAction,
+      visibilityKey,
+    ) => {
+      const privilege = privileges.find(item => item.end_point === endPoint);
+      if (privilege) {
+        setAction(privilege.action.split(',').map(action => action.trim()));
+        visibility[visibilityKey] = true;
+      }
+    };
+
+    // Iterate over role permissions
+    rolePermission.forEach(item => {
+      if (item.main_module === 'Finance') {
+        processPrivileges(
+          item.privileges,
+          'incomes',
+          setIncomeAction,
+          'incomeVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'expenses',
+          setExpenseAction,
+          'expenseVisible',
+        );
+        // Handle arrayData based on visibility
+        const {incomeVisible, expenseVisible} = visibility;
+        console.log('Get Value::::>>>', visibility);
+        arrayData = [
+          'Logo',
+          incomeVisible && 'Vaccinated Patients',
+          expenseVisible && 'Vaccinations',
+        ].filter(Boolean);
+      }
+    });
+  }, [rolePermission]);
 
   const animations = useRef(
     [0, 0, 0].map(() => new Animated.Value(300)),
@@ -162,6 +215,7 @@ export const FinanceScreen = ({navigation}) => {
             setPageCount={setPageCount}
             statusId={statusId}
             setStatusId={setStatusId}
+            incomeAction={incomeAction}
           />
         ) : (
           selectedView == 'Expenses' && (
@@ -175,6 +229,7 @@ export const FinanceScreen = ({navigation}) => {
               setPageCount={setPageCount}
               statusId={statusId1}
               setStatusId={setStatusId1}
+              expenseAction={expenseAction}
             />
           )
         )}

@@ -29,89 +29,12 @@ import RadiologyTests from '../../components/RadiologyComponent/RadiologyTests';
 import RadiologyCategories from '../../components/RadiologyComponent/RadiologyCategories';
 import {onGetCommonApi} from '../../services/Api';
 import useOrientation from '../../components/OrientationComponent';
+import {useSelector} from 'react-redux';
 
-const allData = [
-  {
-    id: 1,
-    name: 'Joey Tribiyani',
-    mail: 'joey@gmail.com',
-    phone: '9876543210',
-    group: 'O+',
-    status: true,
-  },
-  {
-    id: 2,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    phone: 'N/A',
-    group: 'AB-',
-    status: true,
-  },
-  {
-    id: 3,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    phone: '9876543210',
-    group: 'O+',
-    status: false,
-  },
-  {
-    id: 4,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    phone: '9876543210',
-    group: 'A+',
-    status: true,
-  },
-  {
-    id: 5,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    phone: '9876543210',
-    group: 'O+',
-    status: true,
-  },
-];
-
-const PharmacistsData = [
-  {
-    id: 1,
-    name: 'Joey Tribiyani',
-    mail: 'joey@gmail.com',
-    unique_id: 'N2JY0SK9',
-    template_name: 'Testing',
-  },
-  {
-    id: 2,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    unique_id: 'N2JY0SK9',
-    template_name: 'Testing',
-  },
-  {
-    id: 3,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    unique_id: 'N2JY0SK9',
-    template_name: 'Testing',
-  },
-  {
-    id: 4,
-    name: 'Monica Geller',
-    mail: 'monica@gmail.com',
-    unique_id: 'N2JY0SK9',
-    template_name: 'Testing',
-  },
-  {
-    id: 5,
-    name: 'Ross Geller',
-    mail: 'ross@gmail.com',
-    unique_id: 'N2JY0SK9',
-    template_name: 'Testing',
-  },
-];
+let arrayData = ['Logo', 'Radiology Categories', 'Radiology Tests'];
 
 export const RadiologyScreen = ({navigation}) => {
+  const rolePermission = useSelector(state => state.rolePermission);
   const {t} = useTranslation();
   const {theme} = useTheme();
   const orientation = useOrientation(); // Get current orientation
@@ -127,6 +50,56 @@ export const RadiologyScreen = ({navigation}) => {
   const [pageCount, setPageCount] = useState('1');
   const [totalPage, setTotalPage] = useState('1');
   const [radiologyTestPage, setRadiologyTestPage] = useState('1');
+  const [categoryAction, setCategoryAction] = useState([]);
+  const [testAction, setTestAction] = useState([]);
+
+  useEffect(() => {
+    const visibility = {
+      categoryVisible: false,
+      testVisible: false,
+    };
+
+    // Helper function to process privileges
+    const processPrivileges = (
+      privileges,
+      endPoint,
+      setAction,
+      visibilityKey,
+    ) => {
+      const privilege = privileges.find(item => item.end_point === endPoint);
+      if (privilege) {
+        setAction(privilege.action.split(',').map(action => action.trim()));
+        visibility[visibilityKey] = true;
+      }
+    };
+
+    // Iterate over role permissions
+    rolePermission.forEach(item => {
+      if (item.main_module === 'Radiology') {
+        processPrivileges(
+          item.privileges,
+          'radiology_categories',
+          setCategoryAction,
+          'categoryVisible',
+        );
+        processPrivileges(
+          item.privileges,
+          'radiology_tests',
+          setTestAction,
+          'testVisible',
+        );
+
+        // Handle arrayData based on visibility
+        const {categoryVisible, testVisible} = visibility;
+        console.log('Get Value::::>>>', visibility);
+        arrayData = [
+          'Logo',
+          categoryVisible && 'Radiology Categories',
+          testVisible && 'Radiology Tests',
+        ].filter(Boolean);
+      }
+    });
+  }, [rolePermission]);
 
   const animations = useRef(
     [0, 0, 0].map(() => new Animated.Value(300)),
@@ -243,6 +216,7 @@ export const RadiologyScreen = ({navigation}) => {
             totalPage={totalPage}
             pageCount={pageCount}
             setPageCount={setPageCount}
+            categoryAction={categoryAction}
           />
         ) : (
           selectedView == 'Radiology Tests' && (
@@ -255,6 +229,7 @@ export const RadiologyScreen = ({navigation}) => {
               totalPage={radiologyTestPage}
               pageCount={pageCount}
               setPageCount={setPageCount}
+              testAction={testAction}
             />
           )
         )}
@@ -275,48 +250,46 @@ export const RadiologyScreen = ({navigation}) => {
 
             <View style={styles.mainModalView}>
               <View style={styles.menuContainer}>
-                {['Logo', 'Radiology Categories', 'Radiology Tests'].map(
-                  (option, index) => (
-                    <>
-                      {option == 'Logo' ? (
-                        <Animated.View
-                          key={index}
-                          style={[
-                            styles.logoMenu,
-                            {
-                              transform: [{translateY: animations[index]}],
-                              opacity: opacities[index],
-                              marginBottom: hp(1),
-                            },
-                          ]}>
-                          <Image
-                            source={headerLogo}
-                            style={styles.headerLogoImage}
-                          />
-                        </Animated.View>
-                      ) : (
-                        <Animated.View
-                          key={index}
-                          style={[
-                            styles.menuOption,
-                            {
-                              transform: [{translateY: animations[index]}],
-                              opacity: opacities[index],
-                              backgroundColor: theme.headerColor,
-                            },
-                          ]}>
-                          <TouchableOpacity
-                            style={styles.optionButton}
-                            onPress={() => {
-                              setSelectedView(option), toggleMenu(false);
-                            }}>
-                            <Text style={styles.menuItem}>{option}</Text>
-                          </TouchableOpacity>
-                        </Animated.View>
-                      )}
-                    </>
-                  ),
-                )}
+                {arrayData.map((option, index) => (
+                  <>
+                    {option == 'Logo' ? (
+                      <Animated.View
+                        key={index}
+                        style={[
+                          styles.logoMenu,
+                          {
+                            transform: [{translateY: animations[index]}],
+                            opacity: opacities[index],
+                            marginBottom: hp(1),
+                          },
+                        ]}>
+                        <Image
+                          source={headerLogo}
+                          style={styles.headerLogoImage}
+                        />
+                      </Animated.View>
+                    ) : (
+                      <Animated.View
+                        key={index}
+                        style={[
+                          styles.menuOption,
+                          {
+                            transform: [{translateY: animations[index]}],
+                            opacity: opacities[index],
+                            backgroundColor: theme.headerColor,
+                          },
+                        ]}>
+                        <TouchableOpacity
+                          style={styles.optionButton}
+                          onPress={() => {
+                            setSelectedView(option), toggleMenu(false);
+                          }}>
+                          <Text style={styles.menuItem}>{option}</Text>
+                        </TouchableOpacity>
+                      </Animated.View>
+                    )}
+                  </>
+                ))}
 
                 <View style={styles.logoMenu}>
                   <TouchableOpacity

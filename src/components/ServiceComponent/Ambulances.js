@@ -61,6 +61,7 @@ const Ambulances = ({
   setPageCount,
   statusId,
   setStatusId,
+  ambulanceAction,
 }) => {
   const {theme} = useTheme();
   const orientation = useOrientation();
@@ -360,40 +361,47 @@ const Ambulances = ({
             value={item.is_available == 'Available' ? true : false}
           />
         </View>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={async () => {
-              let allDatas = await onGetSpecificDoctor(item.id);
-              setUserId(item.id);
-              setVehicleNo(item.vehicle_number);
-              setVehicleModel(item.vehicle_model);
-              setYearMade(item.year_made);
-              setDriverName(item.driver_name);
-              setDriverLicense(item.driver_license);
-              setDriverContact(item.driver_contact);
-              setVehicleName(item.vehicle_type);
-              setVehicleId(allDatas.vehicle_type);
-              setDescription(allDatas.note);
-              setStatus(item.is_available == 'Available' ? true : false);
-              setNewUserVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        {ambulanceAction.includes('edit') ||
+        ambulanceAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {ambulanceAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={async () => {
+                  let allDatas = await onGetSpecificDoctor(item.id);
+                  setUserId(item.id);
+                  setVehicleNo(item.vehicle_number);
+                  setVehicleModel(item.vehicle_model);
+                  setYearMade(item.year_made);
+                  setDriverName(item.driver_name);
+                  setDriverLicense(item.driver_license);
+                  setDriverContact(item.driver_contact);
+                  setVehicleName(item.vehicle_type);
+                  setVehicleId(allDatas.vehicle_type);
+                  setDescription(allDatas.note);
+                  setStatus(item.is_available == 'Available' ? true : false);
+                  setNewUserVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {ambulanceAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: wp(2)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -419,26 +427,28 @@ const Ambulances = ({
                   onPress={() => setFilterVisible(true)}>
                   <Image style={styles.filterImage} source={filter} />
                 </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => {
-                    setUserId('');
-                    setVehicleNo('');
-                    setVehicleName('');
-                    setVehicleModel('');
-                    setVehicleId('');
-                    setYearMade('');
-                    setDriverName('');
-                    setDriverLicense('');
-                    setDriverContact('');
-                    setDescription('');
-                    setStatus(false);
-                    setErrorMessage('');
-                    setErrorVisible(false);
-                    setNewUserVisible(true);
-                  }}
-                  style={styles.actionView}>
-                  <Text style={styles.actionText}>New Ambulance</Text>
-                </TouchableOpacity>
+                {ambulanceAction.includes('create') && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setUserId('');
+                      setVehicleNo('');
+                      setVehicleName('');
+                      setVehicleModel('');
+                      setVehicleId('');
+                      setYearMade('');
+                      setDriverName('');
+                      setDriverLicense('');
+                      setDriverContact('');
+                      setDescription('');
+                      setStatus(false);
+                      setErrorMessage('');
+                      setErrorVisible(false);
+                      setNewUserVisible(true);
+                    }}
+                    style={styles.actionView}>
+                    <Text style={styles.actionText}>New Ambulance</Text>
+                  </TouchableOpacity>
+                )}
                 <Modal
                   animationType="none"
                   transparent={true}
@@ -509,26 +519,28 @@ const Ambulances = ({
                 onPress={() => setFilterVisible(true)}>
                 <Image style={styles.filterImage} source={filter} />
               </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => {
-                  setUserId('');
-                  setVehicleNo('');
-                  setVehicleName('');
-                  setVehicleModel('');
-                  setVehicleId('');
-                  setYearMade('');
-                  setDriverName('');
-                  setDriverLicense('');
-                  setDriverContact('');
-                  setDescription('');
-                  setStatus(false);
-                  setErrorMessage('');
-                  setErrorVisible(false);
-                  setNewUserVisible(true);
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>New Ambulance</Text>
-              </TouchableOpacity>
+              {ambulanceAction.includes('create') && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setUserId('');
+                    setVehicleNo('');
+                    setVehicleName('');
+                    setVehicleModel('');
+                    setVehicleId('');
+                    setYearMade('');
+                    setDriverName('');
+                    setDriverLicense('');
+                    setDriverContact('');
+                    setDescription('');
+                    setStatus(false);
+                    setErrorMessage('');
+                    setErrorVisible(false);
+                    setNewUserVisible(true);
+                  }}
+                  style={styles.actionView}>
+                  <Text style={styles.actionText}>New Ambulance</Text>
+                </TouchableOpacity>
+              )}
               <Modal
                 animationType="none"
                 transparent={true}
@@ -639,9 +651,12 @@ const Ambulances = ({
                     ]}>
                     {'Is Available'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(16)}]}>
-                    {'ACTION'}
-                  </Text>
+                  {ambulanceAction.includes('edit') ||
+                  ambulanceAction.includes('delete') ? (
+                    <Text style={[styles.titleText, {width: wp(16)}]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

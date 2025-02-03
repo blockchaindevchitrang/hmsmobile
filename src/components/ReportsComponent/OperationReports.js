@@ -49,6 +49,7 @@ const OperationReports = ({
   totalPage,
   pageCount,
   setPageCount,
+  operationAction,
 }) => {
   const orientation = useOrientation();
   const isPortrait = orientation === 'portrait';
@@ -251,7 +252,8 @@ const OperationReports = ({
           styles.dataHistoryView,
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
-        <View style={[styles.switchView, {width: isPortrait ? wp(30) : wp(24)}]}>
+        <View
+          style={[styles.switchView, {width: isPortrait ? wp(30) : wp(24)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
             <Text style={[styles.dataHistoryText1]}>{item.case_id}</Text>
           </View>
@@ -270,41 +272,49 @@ const OperationReports = ({
             <Text style={[styles.dataHistoryText5]}>{item.doctor_email}</Text>
           </View>
         </View>
-        <View style={[styles.switchView, {width: isPortrait ? wp(35) : wp(30)}]}>
+        <View
+          style={[styles.switchView, {width: isPortrait ? wp(35) : wp(30)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
             <Text style={[styles.dataHistoryText]}>{item.date}</Text>
           </View>
         </View>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={async () => {
-              let allDatas = await onGetSpecificDoctor(item.id);
-              setUserId(item.id);
-              setCaseId(item.case_id);
-              setCaseName(`${item.case_id} ${item.patient_name}`);
-              setDoctorId(allDatas.doctor_id);
-              setDoctorName(item.doctor_name);
-              setDescription(allDatas.description);
-              setDateOfBirth(new Date(allDatas.date));
-              setNewBloodIssueVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        {operationAction.includes('edit') ||
+        operationAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {operationAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={async () => {
+                  let allDatas = await onGetSpecificDoctor(item.id);
+                  setUserId(item.id);
+                  setCaseId(item.case_id);
+                  setCaseName(`${item.case_id} ${item.patient_name}`);
+                  setDoctorId(allDatas.doctor_id);
+                  setDoctorName(item.doctor_name);
+                  setDescription(allDatas.description);
+                  setDateOfBirth(new Date(allDatas.date));
+                  setNewBloodIssueVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {operationAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: wp(2)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -325,6 +335,30 @@ const OperationReports = ({
             />
             {!isPortrait && (
               <View style={styles.filterView}>
+                {operationAction.includes('create') && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setUserId('');
+                      setCaseId('');
+                      setCaseName('');
+                      setDoctorId('');
+                      setDoctorName('');
+                      setDescription('');
+                      setDateOfBirth(new Date());
+                      setErrorMessage('');
+                      setErrorVisible(false);
+                      setNewBloodIssueVisible(true);
+                    }}
+                    style={styles.actionView}>
+                    <Text style={styles.actionText}>New Operation Reports</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+          </View>
+          {isPortrait && (
+            <View style={styles.filterView}>
+              {operationAction.includes('create') && (
                 <TouchableOpacity
                   onPress={() => {
                     setUserId('');
@@ -341,27 +375,7 @@ const OperationReports = ({
                   style={styles.actionView}>
                   <Text style={styles.actionText}>New Operation Reports</Text>
                 </TouchableOpacity>
-              </View>
-            )}
-          </View>
-          {isPortrait && (
-            <View style={styles.filterView}>
-              <TouchableOpacity
-                onPress={() => {
-                  setUserId('');
-                  setCaseId('');
-                  setCaseName('');
-                  setDoctorId('');
-                  setDoctorName('');
-                  setDescription('');
-                  setDateOfBirth(new Date());
-                  setErrorMessage('');
-                  setErrorVisible(false);
-                  setNewBloodIssueVisible(true);
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>New Operation Reports</Text>
-              </TouchableOpacity>
+              )}
             </View>
           )}
           <View
@@ -376,7 +390,11 @@ const OperationReports = ({
                     styles.titleActiveView,
                     {backgroundColor: theme.headerColor},
                   ]}>
-                  <Text style={[styles.titleText, {width: isPortrait ? wp(30) : wp(24)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {width: isPortrait ? wp(30) : wp(24)},
+                    ]}>
                     {'CASE ID'}
                   </Text>
                   <Text
@@ -393,12 +411,23 @@ const OperationReports = ({
                     ]}>
                     {'DOCTORS'}
                   </Text>
-                  <Text style={[styles.titleText, {width: isPortrait ? wp(35) : wp(30)}]}>
+                  <Text
+                    style={[
+                      styles.titleText,
+                      {width: isPortrait ? wp(35) : wp(30)},
+                    ]}>
                     {'DATE'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(16), textAlign: 'center'}]}>
-                    {'ACTION'}
-                  </Text>
+                  {operationAction.includes('edit') ||
+                  operationAction.includes('delete') ? (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: wp(16), textAlign: 'center'},
+                      ]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

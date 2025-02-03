@@ -50,6 +50,7 @@ const Packages = ({
   totalPage,
   pageCount,
   setPageCount,
+  packageAction,
 }) => {
   const {theme} = useTheme();
   const orientation = useOrientation();
@@ -336,57 +337,70 @@ const Packages = ({
         <Text
           style={[
             styles.dataHistoryText1,
-            {width: isPortrait ? wp(35) : wp(36.1)},
+            {
+              width: isPortrait
+                ? wp(35)
+                : packageAction.includes('edit') ||
+                  packageAction.includes('delete')
+                ? wp(36.1)
+                : wp(56.1),
+            },
           ]}>
           {item.total_amount}
         </Text>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={async () => {
-              let allDatas = await onGetSpecificDoctor(item.id);
-              setUserId(item.id);
-              setPackageData(item.name);
-              setDiscount(item.discount);
-              setDescription(item.insurance_code);
-              totalAmount = item.total_amount;
-              if (allDatas.pathologyParameterItems.length > 0) {
-                allDatas.pathologyParameterItems.map(item1 => {
-                  parameterArray.push({
-                    service_id: item1.disease_name,
-                    service_name: item1.disease_charge,
-                    quantity: item1.quantity,
-                    rate: item1.rate,
-                    amount: item1.amount,
-                  });
-                });
-              } else {
-                parameterArray.push({
-                  service_id: '',
-                  service_name: '',
-                  quantity: '',
-                  rate: '',
-                  amount: '0',
-                });
-              }
-              setNewUserVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        {packageAction.includes('edit') || packageAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {packageAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={async () => {
+                  let allDatas = await onGetSpecificDoctor(item.id);
+                  setUserId(item.id);
+                  setPackageData(item.name);
+                  setDiscount(item.discount);
+                  setDescription(item.insurance_code);
+                  totalAmount = item.total_amount;
+                  if (allDatas.pathologyParameterItems.length > 0) {
+                    allDatas.pathologyParameterItems.map(item1 => {
+                      parameterArray.push({
+                        service_id: item1.disease_name,
+                        service_name: item1.disease_charge,
+                        quantity: item1.quantity,
+                        rate: item1.rate,
+                        amount: item1.amount,
+                      });
+                    });
+                  } else {
+                    parameterArray.push({
+                      service_id: '',
+                      service_name: '',
+                      quantity: '',
+                      rate: '',
+                      amount: '0',
+                    });
+                  }
+                  setNewUserVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {packageAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: wp(2)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -407,6 +421,35 @@ const Packages = ({
             />
             {!isPortrait && (
               <View style={styles.filterView}>
+                {packageAction.includes('create') && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setUserId('');
+                      setPackageData('');
+                      setDiscount('');
+                      setDescription('');
+                      totalAmount = 0;
+                      parameterArray.push({
+                        service_id: '',
+                        service_name: '',
+                        quantity: '',
+                        rate: '',
+                        amount: '0',
+                      });
+                      setErrorMessage('');
+                      setErrorVisible(false);
+                      setNewUserVisible(true);
+                    }}
+                    style={styles.actionView}>
+                    <Text style={styles.actionText}>New Package</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+          </View>
+          {isPortrait && (
+            <View style={styles.filterView}>
+              {packageAction.includes('create') && (
                 <TouchableOpacity
                   onPress={() => {
                     setUserId('');
@@ -428,32 +471,7 @@ const Packages = ({
                   style={styles.actionView}>
                   <Text style={styles.actionText}>New Package</Text>
                 </TouchableOpacity>
-              </View>
-            )}
-          </View>
-          {isPortrait && (
-            <View style={styles.filterView}>
-              <TouchableOpacity
-                onPress={() => {
-                  setUserId('');
-                  setPackageData('');
-                  setDiscount('');
-                  setDescription('');
-                  totalAmount = 0;
-                  parameterArray.push({
-                    service_id: '',
-                    service_name: '',
-                    quantity: '',
-                    rate: '',
-                    amount: '0',
-                  });
-                  setErrorMessage('');
-                  setErrorVisible(false);
-                  setNewUserVisible(true);
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>New Package</Text>
-              </TouchableOpacity>
+              )}
             </View>
           )}
           <View
@@ -485,13 +503,23 @@ const Packages = ({
                   <Text
                     style={[
                       styles.titleText,
-                      {width: isPortrait ? wp(35) : wp(36.1)},
+                      {
+                        width: isPortrait
+                          ? wp(35)
+                          : packageAction.includes('edit') ||
+                            packageAction.includes('delete')
+                          ? wp(36.1)
+                          : wp(56.1),
+                      },
                     ]}>
                     {'Total Amount'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(16)}]}>
-                    {'ACTION'}
-                  </Text>
+                  {packageAction.includes('edit') ||
+                  packageAction.includes('delete') ? (
+                    <Text style={[styles.titleText, {width: wp(16)}]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

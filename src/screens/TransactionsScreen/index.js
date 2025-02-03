@@ -26,56 +26,10 @@ import close from '../../images/close.png';
 import {onGetCommonApi} from '../../services/Api';
 import filter from '../../images/filter.png';
 import useOrientation from '../../components/OrientationComponent';
-
-const BloodIssueData = [
-  {
-    id: 1,
-    name: 'City Hospital N/A',
-    payment: 'Stripe',
-    amount: '$991.64',
-    date: '22:02:00 2023-03-24',
-    approved: 'Approved',
-    status: 'Paid',
-  },
-  {
-    id: 2,
-    name: 'City Hospital N/A',
-    payment: 'Stripe',
-    amount: '$991.64',
-    date: '22:02:00 2023-03-24',
-    approved: 'Approved',
-    status: 'Paid',
-  },
-  {
-    id: 3,
-    name: 'City Hospital N/A',
-    payment: 'Stripe',
-    amount: '$991.64',
-    date: '22:02:00 2023-03-24',
-    approved: 'Approved',
-    status: 'Paid',
-  },
-  {
-    id: 4,
-    name: 'City Hospital N/A',
-    payment: 'Stripe',
-    amount: '$991.64',
-    date: '22:02:00 2023-03-24',
-    approved: 'Approved',
-    status: 'Paid',
-  },
-  {
-    id: 5,
-    name: 'City Hospital N/A',
-    payment: 'Stripe',
-    amount: '$991.64',
-    date: '22:02:00 2023-03-24',
-    approved: 'Approved',
-    status: 'Paid',
-  },
-];
+import {useSelector} from 'react-redux';
 
 export const TransactionsScreen = ({navigation}) => {
+  const rolePermission = useSelector(state => state.rolePermission);
   const orientation = useOrientation(); // Get current orientation
   const isPortrait = orientation === 'portrait';
   const styles = isPortrait ? portraitStyles : landscapeStyles;

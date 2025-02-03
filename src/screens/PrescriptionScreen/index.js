@@ -77,6 +77,7 @@ const daysArray = [
 ];
 
 export const PrescriptionScreen = ({navigation}) => {
+  const rolePermission = useSelector(state => state.rolePermission);
   const orientation = useOrientation(); // Get current orientation
   const isPortrait = orientation === 'portrait';
   const styles = isPortrait ? portraitStyles : landscapeStyles;
@@ -138,6 +139,24 @@ export const PrescriptionScreen = ({navigation}) => {
   const [errorMessage, setErrorMessage] = useState('');
   const [userId, setUserId] = useState('');
   const [deleteUser, setDeleteUser] = useState(false);
+  const [prescriptionAction, setPrescriptionAction] = useState([]);
+
+  useEffect(() => {
+    // Helper function to process privileges
+    const processPrivileges = (privileges, endPoint, setAction) => {
+      const privilege = privileges.find(item => item.end_point === endPoint);
+      if (privilege) {
+        setAction(privilege.action.split(',').map(action => action.trim()));
+      }
+    };
+
+    // Iterate over role permissions
+    rolePermission.forEach(item => {
+      if (item.main_module === 'Enquiries') {
+        processPrivileges(item.privileges, 'enquiries', setPrescriptionAction);
+      }
+    });
+  }, [rolePermission]);
 
   useEffect(() => {
     onGetMedicineCategoryData();
@@ -450,6 +469,23 @@ export const PrescriptionScreen = ({navigation}) => {
     }
   };
 
+  const onChangeStatusData = async (status, index, id) => {
+    try {
+      let arrayData = prescription;
+      arrayData[index].status = status;
+
+      setPrescription(arrayData);
+      setRefresh(!refresh);
+
+      const response = await onAddAccountListApi(`prescription/${id}/status`);
+      console.log('get ValueLL:::', response.data);
+      if (response.data.flag == 1) {
+      }
+    } catch (err) {
+      console.log('Get AccountError>', err.response.data);
+    }
+  };
+
   const renderItem = ({item, index}) => {
     return (
       <View
@@ -457,7 +493,20 @@ export const PrescriptionScreen = ({navigation}) => {
           styles.dataHistoryView,
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
-        <View style={styles.nameDataView}>
+        <View
+          style={[
+            styles.nameDataView,
+            {
+              width: isPortrait
+                ? wp(55)
+                : prescriptionAction.includes('view') ||
+                  prescriptionAction.includes('print') ||
+                  prescriptionAction.includes('edit') ||
+                  prescriptionAction.includes('delete')
+                ? wp(37)
+                : wp(55),
+            },
+          ]}>
           {item.patient_name && (
             <ProfilePhoto
               style={styles.photoStyle}
@@ -466,7 +515,22 @@ export const PrescriptionScreen = ({navigation}) => {
           )}
           <View>
             <Text style={[styles.dataHistoryText2]}>{item.patient_name}</Text>
-            <Text style={[styles.dataHistoryText5]}>{item.patient_email}</Text>
+            <Text
+              style={[
+                styles.dataHistoryText5,
+                {
+                  width: isPortrait
+                    ? wp(45)
+                    : prescriptionAction.includes('view') ||
+                      prescriptionAction.includes('print') ||
+                      prescriptionAction.includes('edit') ||
+                      prescriptionAction.includes('delete')
+                    ? wp(33)
+                    : wp(45),
+                },
+              ]}>
+              {item.patient_email}
+            </Text>
           </View>
         </View>
         <View style={styles.nameDataView}>
@@ -481,89 +545,118 @@ export const PrescriptionScreen = ({navigation}) => {
             <Text style={[styles.dataHistoryText5]}>{item.doctor_email}</Text>
           </View>
         </View>
-        <View style={[styles.switchView, {width: isPortrait ? wp(35) : wp(24)}]}>
+        <View
+          style={[
+            styles.switchView,
+            {
+              width: isPortrait
+                ? wp(35)
+                : prescriptionAction.includes('status')
+                ? wp(24)
+                : wp(40),
+            },
+          ]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
             <Text style={[styles.dataHistoryText1]}>
               {moment(item.added_at).format('DD MMM, YYYY')}
             </Text>
           </View>
         </View>
-        <View style={[styles.switchView, {width: isPortrait ? wp(16) : wp(12)}]}>
-          <Switch
-            trackColor={{
-              false: item.status ? COLORS.greenColor : COLORS.errorColor,
-              true: item.status ? COLORS.greenColor : COLORS.errorColor,
-            }}
-            thumbColor={item.status ? '#f4f3f4' : '#f4f3f4'}
-            ios_backgroundColor={COLORS.errorColor}
-            onValueChange={() => {}}
-            value={item.status}
-          />
-        </View>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.greenColor}]}
-              source={view}
+        {prescriptionAction.includes('status') && (
+          <View
+            style={[styles.switchView, {width: isPortrait ? wp(16) : wp(12)}]}>
+            <Switch
+              trackColor={{
+                false: item.status ? COLORS.greenColor : COLORS.errorColor,
+                true: item.status ? COLORS.greenColor : COLORS.errorColor,
+              }}
+              thumbColor={item.status ? '#f4f3f4' : '#f4f3f4'}
+              ios_backgroundColor={COLORS.errorColor}
+              onValueChange={status =>
+                onChangeStatusData(status, index, item.id)
+              }
+              value={item.status}
             />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={async () => {
-              let allDatas = await onGetSpecificDoctor(item.id);
-              setUserId(item.id);
-              setPatientId(allDatas.patient_id);
-              setPatientName(item.patient_name);
-              setDoctorId(allDatas.doctor_id);
-              setDoctorName(item.doctor_name);
-              setAddedAt(new Date(item.added_at));
-              setStatus(item.status);
-              setAllergies(allDatas.food_allergies);
-              setTendencyBleed(allDatas.tendency_bleed);
-              setHeartDisease(allDatas.heart_disease);
-              setBloodPressure(allDatas.high_blood_pressure);
-              setDiabetic(allDatas.diabetic);
-              setSurgery(allDatas.surgery);
-              setAccident(allDatas.accident);
-              setOthers(allDatas.others);
-              setMedication(allDatas.current_medication);
-              setPregnancy(allDatas.female_pregnancy);
-              setBreastFeeding(allDatas.breast_feeding);
-              setInsurance(allDatas.health_insurance);
-              setLowIncome(allDatas.low_income);
-              setReference(allDatas.reference);
-              setPulseRate(allDatas.plus_rate);
-              setTemperature(allDatas.temperature);
-              setDescription(allDatas.problem_description);
-              setTest(allDatas.test);
-              setAdvice(allDatas.advice);
-              setNextVisit(allDatas.next_visit_qty);
-              setNextVisitName(allDatas.next_visit_time);
-              setNewBloodIssueVisible(true);
-            }}
-            style={{marginLeft: isPortrait ? wp(2) : wp(1)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity style={{marginLeft: isPortrait ? wp(2) : wp(1)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.goldenColor}]}
-              source={printing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: isPortrait ? wp(2) : wp(1)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+          </View>
+        )}
+        {prescriptionAction.includes('view') ||
+        prescriptionAction.includes('print') ||
+        prescriptionAction.includes('edit') ||
+        prescriptionAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {prescriptionAction.includes('view') && (
+              <TouchableOpacity>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.greenColor}]}
+                  source={view}
+                />
+              </TouchableOpacity>
+            )}
+            {prescriptionAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={async () => {
+                  let allDatas = await onGetSpecificDoctor(item.id);
+                  setUserId(item.id);
+                  setPatientId(allDatas.patient_id);
+                  setPatientName(item.patient_name);
+                  setDoctorId(allDatas.doctor_id);
+                  setDoctorName(item.doctor_name);
+                  setAddedAt(new Date(item.added_at));
+                  setStatus(item.status);
+                  setAllergies(allDatas.food_allergies);
+                  setTendencyBleed(allDatas.tendency_bleed);
+                  setHeartDisease(allDatas.heart_disease);
+                  setBloodPressure(allDatas.high_blood_pressure);
+                  setDiabetic(allDatas.diabetic);
+                  setSurgery(allDatas.surgery);
+                  setAccident(allDatas.accident);
+                  setOthers(allDatas.others);
+                  setMedication(allDatas.current_medication);
+                  setPregnancy(allDatas.female_pregnancy);
+                  setBreastFeeding(allDatas.breast_feeding);
+                  setInsurance(allDatas.health_insurance);
+                  setLowIncome(allDatas.low_income);
+                  setReference(allDatas.reference);
+                  setPulseRate(allDatas.plus_rate);
+                  setTemperature(allDatas.temperature);
+                  setDescription(allDatas.problem_description);
+                  setTest(allDatas.test);
+                  setAdvice(allDatas.advice);
+                  setNextVisit(allDatas.next_visit_qty);
+                  setNextVisitName(allDatas.next_visit_time);
+                  setNewBloodIssueVisible(true);
+                }}
+                style={{marginLeft: isPortrait ? wp(2) : wp(1)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {prescriptionAction.includes('print') && (
+              <TouchableOpacity
+                style={{marginLeft: isPortrait ? wp(2) : wp(1)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.goldenColor}]}
+                  source={printing}
+                />
+              </TouchableOpacity>
+            )}
+            {prescriptionAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: isPortrait ? wp(2) : wp(1)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -592,57 +685,59 @@ export const PrescriptionScreen = ({navigation}) => {
                 style={[styles.searchView, {color: theme.text}]}
               />
               <View style={styles.filterView}>
-                <TouchableOpacity
-                  onPress={() => {
-                    setUserId('');
-                    setParameterArray([
-                      {
-                        medicineId: '',
-                        medicineName: '',
-                        dosage: '',
-                        durationId: '',
-                        duration: '',
-                        timeId: '',
-                        time: '',
-                        doseId: '',
-                        doseInterval: '',
-                        comment: '',
-                      },
-                    ]);
-                    setPatientId('');
-                    setPatientName('');
-                    setDoctorId('');
-                    setDoctorName('');
-                    setAddedAt(new Date());
-                    setStatus(true);
-                    setAllergies('');
-                    setTendencyBleed('');
-                    setHeartDisease('');
-                    setBloodPressure('');
-                    setDiabetic('');
-                    setSurgery('');
-                    setAccident('');
-                    setOthers('');
-                    setMedication('');
-                    setPregnancy('');
-                    setBreastFeeding('');
-                    setInsurance('');
-                    setLowIncome('');
-                    setReference('');
-                    setPulseRate('');
-                    setTemperature('');
-                    setDescription('');
-                    setTest('');
-                    setAdvice('');
-                    setNextVisit('');
-                    setNextVisitName('');
-                    setErrorMessage('');
-                    setErrorVisible(false);
-                    setNewBloodIssueVisible(true);
-                  }}
-                  style={styles.actionView}>
-                  <Text style={styles.actionText}>New Perception</Text>
-                </TouchableOpacity>
+                {prescriptionAction.includes('create') && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setUserId('');
+                      setParameterArray([
+                        {
+                          medicineId: '',
+                          medicineName: '',
+                          dosage: '',
+                          durationId: '',
+                          duration: '',
+                          timeId: '',
+                          time: '',
+                          doseId: '',
+                          doseInterval: '',
+                          comment: '',
+                        },
+                      ]);
+                      setPatientId('');
+                      setPatientName('');
+                      setDoctorId('');
+                      setDoctorName('');
+                      setAddedAt(new Date());
+                      setStatus(true);
+                      setAllergies('');
+                      setTendencyBleed('');
+                      setHeartDisease('');
+                      setBloodPressure('');
+                      setDiabetic('');
+                      setSurgery('');
+                      setAccident('');
+                      setOthers('');
+                      setMedication('');
+                      setPregnancy('');
+                      setBreastFeeding('');
+                      setInsurance('');
+                      setLowIncome('');
+                      setReference('');
+                      setPulseRate('');
+                      setTemperature('');
+                      setDescription('');
+                      setTest('');
+                      setAdvice('');
+                      setNextVisit('');
+                      setNextVisitName('');
+                      setErrorMessage('');
+                      setErrorVisible(false);
+                      setNewBloodIssueVisible(true);
+                    }}
+                    style={styles.actionView}>
+                    <Text style={styles.actionText}>New Perception</Text>
+                  </TouchableOpacity>
+                )}
               </View>
             </View>
             <View
@@ -661,7 +756,14 @@ export const PrescriptionScreen = ({navigation}) => {
                       style={[
                         styles.titleText,
                         {
-                          width: isPortrait ? wp(55) : wp(37),
+                          width: isPortrait
+                            ? wp(55)
+                            : prescriptionAction.includes('view') ||
+                              prescriptionAction.includes('print') ||
+                              prescriptionAction.includes('edit') ||
+                              prescriptionAction.includes('delete')
+                            ? wp(37)
+                            : wp(55),
                           textAlign: 'left',
                         },
                       ]}>
@@ -680,24 +782,37 @@ export const PrescriptionScreen = ({navigation}) => {
                     <Text
                       style={[
                         styles.titleText,
-                        {width: isPortrait ? wp(35) : wp(24)},
+                        {
+                          width: isPortrait
+                            ? wp(35)
+                            : prescriptionAction.includes('status')
+                            ? wp(24)
+                            : wp(40),
+                        },
                       ]}>
                       {'ADDED AT'}
                     </Text>
-                    <Text
-                      style={[
-                        styles.titleText,
-                        {width: isPortrait ? wp(16) : wp(12)},
-                      ]}>
-                      {'STATUS'}
-                    </Text>
-                    <Text
-                      style={[
-                        styles.titleText,
-                        {width: isPortrait ? wp(24) : wp(20)},
-                      ]}>
-                      {'ACTION'}
-                    </Text>
+                    {prescriptionAction.includes('status') && (
+                      <Text
+                        style={[
+                          styles.titleText,
+                          {width: isPortrait ? wp(16) : wp(12)},
+                        ]}>
+                        {'STATUS'}
+                      </Text>
+                    )}
+                    {prescriptionAction.includes('view') ||
+                    prescriptionAction.includes('print') ||
+                    prescriptionAction.includes('edit') ||
+                    prescriptionAction.includes('delete') ? (
+                      <Text
+                        style={[
+                          styles.titleText,
+                          {width: isPortrait ? wp(24) : wp(20)},
+                        ]}>
+                        {'ACTION'}
+                      </Text>
+                    ) : null}
                   </View>
                   <View style={styles.mainDataView}>
                     <FlatList
@@ -1716,8 +1831,7 @@ export const PrescriptionScreen = ({navigation}) => {
                           </View>
                         </View>
 
-                        <View
-                          style={[styles.nameView]}>
+                        <View style={[styles.nameView]}>
                           <View style={{width: '25%'}}>
                             <Text style={styles.dataHistoryText1}>TIME</Text>
                             <SelectDropdown

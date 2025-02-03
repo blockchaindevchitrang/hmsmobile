@@ -49,6 +49,7 @@ const AmbulanceCall = ({
   totalPage,
   pageCount,
   setPageCount,
+  callAction,
 }) => {
   const user_data = useSelector(state => state.user_data);
   const orientation = useOrientation();
@@ -310,37 +311,43 @@ const AmbulanceCall = ({
           ]}>
           {item.amount}
         </Text>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={async () => {
-              let allDatas = await onGetSpecificDoctor(item.id);
-              setUserId(item.id);
-              setPatientId(allDatas.ambulanceCall.patient_id);
-              setPatientName(item.patient_name);
-              setDate(new Date(allDatas.ambulanceCall.date));
-              setDriverName(item.driver_name);
-              setVehicleId(allDatas.ambulanceCall.ambulance_id);
-              setVehicleName(item.vehicle_model);
-              setAmount(JSON.stringify(item.amount));
-              setNewUserVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        {callAction.includes('edit') || callAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {callAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={async () => {
+                  let allDatas = await onGetSpecificDoctor(item.id);
+                  setUserId(item.id);
+                  setPatientId(allDatas.ambulanceCall.patient_id);
+                  setPatientName(item.patient_name);
+                  setDate(new Date(allDatas.ambulanceCall.date));
+                  setDriverName(item.driver_name);
+                  setVehicleId(allDatas.ambulanceCall.ambulance_id);
+                  setVehicleName(item.vehicle_model);
+                  setAmount(JSON.stringify(item.amount));
+                  setNewUserVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {callAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: wp(2)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -361,6 +368,31 @@ const AmbulanceCall = ({
             />
             {!isPortrait && (
               <View style={styles.filterView}>
+                {callAction.includes('create') && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setUserId('');
+                      setPatientId('');
+                      setPatientName('');
+                      setVehicleId('');
+                      setVehicleName('');
+                      setDate(null);
+                      setDriverName('');
+                      setAmount('');
+                      setErrorMessage('');
+                      setErrorVisible(false);
+                      setNewUserVisible(true);
+                    }}
+                    style={styles.actionView}>
+                    <Text style={styles.actionText}>New Ambulance Call</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+          </View>
+          {isPortrait && (
+            <View style={styles.filterView}>
+              {callAction.includes('create') && (
                 <TouchableOpacity
                   onPress={() => {
                     setUserId('');
@@ -378,28 +410,7 @@ const AmbulanceCall = ({
                   style={styles.actionView}>
                   <Text style={styles.actionText}>New Ambulance Call</Text>
                 </TouchableOpacity>
-              </View>
-            )}
-          </View>
-          {isPortrait && (
-            <View style={styles.filterView}>
-              <TouchableOpacity
-                onPress={() => {
-                  setUserId('');
-                  setPatientId('');
-                  setPatientName('');
-                  setVehicleId('');
-                  setVehicleName('');
-                  setDate(null);
-                  setDriverName('');
-                  setAmount('');
-                  setErrorMessage('');
-                  setErrorVisible(false);
-                  setNewUserVisible(true);
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>New Ambulance Call</Text>
-              </TouchableOpacity>
+              )}
             </View>
           )}
           <View
@@ -449,13 +460,16 @@ const AmbulanceCall = ({
                     ]}>
                     {'AMOUNT'}
                   </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: wp(16), textAlign: 'center'},
-                    ]}>
-                    {'ACTION'}
-                  </Text>
+                  {callAction.includes('edit') ||
+                  callAction.includes('delete') ? (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: wp(16), textAlign: 'center'},
+                      ]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

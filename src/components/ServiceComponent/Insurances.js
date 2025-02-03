@@ -59,6 +59,7 @@ const Insurances = ({
   setPageCount,
   statusId,
   setStatusId,
+  insuranceAction,
 }) => {
   const {theme} = useTheme();
   const orientation = useOrientation();
@@ -401,51 +402,58 @@ const Insurances = ({
             value={item.status == 'Active' ? true : false}
           />
         </View>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={async () => {
-              let allDatas = await onGetSpecificDoctor(item.id);
-              setUserId(item.id);
-              setInsurance(item.name);
-              setInsuranceNo(item.insurance_no);
-              setInsuranceCode(item.insurance_code);
-              setServiceTex(item.service_tax);
-              setHospitalRate(item.hospital_rate);
-              setDiscount(allDatas.pathologyTest.method);
-              setDescription(allDatas.pathologyTest.category_id);
-              setStatus(item.status == 'Active' ? true : false);
-              if (allDatas.pathologyParameterItems.length > 0) {
-                allDatas.pathologyParameterItems.map(item1 => {
-                  parameterArray.push({
-                    disease_name: item1.disease_name,
-                    disease_charge: item1.disease_charge,
-                  });
-                });
-              } else {
-                parameterArray.push({
-                  disease_name: '',
-                  disease_charge: '',
-                });
-              }
-              setNewUserVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        {insuranceAction.includes('edit') ||
+        insuranceAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {insuranceAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={async () => {
+                  let allDatas = await onGetSpecificDoctor(item.id);
+                  setUserId(item.id);
+                  setInsurance(item.name);
+                  setInsuranceNo(item.insurance_no);
+                  setInsuranceCode(item.insurance_code);
+                  setServiceTex(item.service_tax);
+                  setHospitalRate(item.hospital_rate);
+                  setDiscount(allDatas.pathologyTest.method);
+                  setDescription(allDatas.pathologyTest.category_id);
+                  setStatus(item.status == 'Active' ? true : false);
+                  if (allDatas.pathologyParameterItems.length > 0) {
+                    allDatas.pathologyParameterItems.map(item1 => {
+                      parameterArray.push({
+                        disease_name: item1.disease_name,
+                        disease_charge: item1.disease_charge,
+                      });
+                    });
+                  } else {
+                    parameterArray.push({
+                      disease_name: '',
+                      disease_charge: '',
+                    });
+                  }
+                  setNewUserVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {insuranceAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: wp(2)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -471,28 +479,30 @@ const Insurances = ({
                   onPress={() => setFilterVisible(true)}>
                   <Image style={styles.filterImage} source={filter} />
                 </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => {
-                    setUserId('');
-                    setInsurance('');
-                    setServiceTex('');
-                    setDiscount('');
-                    setInsuranceNo('');
-                    setInsuranceCode('');
-                    setDescription('');
-                    setStatus('');
-                    setHospitalRate('');
-                    parameterArray.push({
-                      diseases_name: '',
-                      diseases_charge: '',
-                    });
-                    setErrorMessage('');
-                    setErrorVisible(false);
-                    setNewUserVisible(true);
-                  }}
-                  style={styles.actionView}>
-                  <Text style={styles.actionText}>New Insurances</Text>
-                </TouchableOpacity>
+                {insuranceAction.includes('create') && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setUserId('');
+                      setInsurance('');
+                      setServiceTex('');
+                      setDiscount('');
+                      setInsuranceNo('');
+                      setInsuranceCode('');
+                      setDescription('');
+                      setStatus('');
+                      setHospitalRate('');
+                      parameterArray.push({
+                        diseases_name: '',
+                        diseases_charge: '',
+                      });
+                      setErrorMessage('');
+                      setErrorVisible(false);
+                      setNewUserVisible(true);
+                    }}
+                    style={styles.actionView}>
+                    <Text style={styles.actionText}>New Insurances</Text>
+                  </TouchableOpacity>
+                )}
                 <Modal
                   animationType="none"
                   transparent={true}
@@ -561,28 +571,30 @@ const Insurances = ({
                 onPress={() => setFilterVisible(true)}>
                 <Image style={styles.filterImage} source={filter} />
               </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => {
-                  setUserId('');
-                  setInsurance('');
-                  setServiceTex('');
-                  setDiscount('');
-                  setInsuranceNo('');
-                  setInsuranceCode('');
-                  setDescription('');
-                  setStatus('');
-                  setHospitalRate('');
-                  parameterArray.push({
-                    diseases_name: '',
-                    diseases_charge: '',
-                  });
-                  setErrorMessage('');
-                  setErrorVisible(false);
-                  setNewUserVisible(true);
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>New Insurances</Text>
-              </TouchableOpacity>
+              {insuranceAction.includes('create') && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setUserId('');
+                    setInsurance('');
+                    setServiceTex('');
+                    setDiscount('');
+                    setInsuranceNo('');
+                    setInsuranceCode('');
+                    setDescription('');
+                    setStatus('');
+                    setHospitalRate('');
+                    parameterArray.push({
+                      diseases_name: '',
+                      diseases_charge: '',
+                    });
+                    setErrorMessage('');
+                    setErrorVisible(false);
+                    setNewUserVisible(true);
+                  }}
+                  style={styles.actionView}>
+                  <Text style={styles.actionText}>New Insurances</Text>
+                </TouchableOpacity>
+              )}
               <Modal
                 animationType="none"
                 transparent={true}
@@ -704,9 +716,12 @@ const Insurances = ({
                     ]}>
                     {'Status'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(16)}]}>
-                    {'ACTION'}
-                  </Text>
+                  {insuranceAction.includes('edit') ||
+                  insuranceAction.includes('delete') ? (
+                    <Text style={[styles.titleText, {width: wp(16)}]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

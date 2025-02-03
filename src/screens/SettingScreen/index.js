@@ -396,9 +396,9 @@ export const SettingScreen = ({navigation}) => {
               );
             }
           })}
-          {rolePermission.map((item, index) => {
+          {/* {rolePermission.map((item, index) => {
             if (item.main_module == 'Enquiries') {
-              return (
+              return ( */}
                 <TouchableOpacity
                   onPress={() => navigation.navigate('EnquiriesScreen')}
                   style={[
@@ -409,9 +409,9 @@ export const SettingScreen = ({navigation}) => {
                     {'Enquiries'}
                   </Text>
                 </TouchableOpacity>
-              );
+              {/* );
             }
-          })}
+          })} */}
           {rolePermission.map((item, index) => {
             if (item.main_module == 'Finance') {
               return (
@@ -592,9 +592,9 @@ export const SettingScreen = ({navigation}) => {
               );
             }
           })}
-          {/* {rolePermission.map((item, index) => {
+          {rolePermission.map((item, index) => {
             if (item.main_module == 'Reports') {
-              return ( */}
+              return (
                 <TouchableOpacity
                   onPress={() => navigation.navigate('ReportsScreen')}
                   style={[
@@ -605,9 +605,9 @@ export const SettingScreen = ({navigation}) => {
                     {'Reports'}
                   </Text>
                 </TouchableOpacity>
-              {/* );
+              );
             }
-          })} */}
+          })}
           {rolePermission.map((item, index) => {
             if (item.main_module == 'Radiology') {
               return (

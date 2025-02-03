@@ -37,9 +37,14 @@ import editing from '../../images/editing.png';
 import view from '../../images/view.png';
 import printing from '../../images/printing.png';
 import ProfilePhoto from '../../components/ProfilePhoto';
-import {onGetCommonApi, onGetSpecificCommonApi} from '../../services/Api';
+import {
+  onAddAccountListApi,
+  onGetCommonApi,
+  onGetSpecificCommonApi,
+} from '../../services/Api';
 import SelectDropdown from 'react-native-select-dropdown';
 import useOrientation from '../../components/OrientationComponent';
+import {useSelector} from 'react-redux';
 
 const filterArray = [
   {id: 1, name: 'All'},
@@ -48,6 +53,7 @@ const filterArray = [
 ];
 
 export const EnquiriesScreen = ({navigation}) => {
+  const rolePermission = useSelector(state => state.rolePermission);
   const {t} = useTranslation();
   const {theme} = useTheme();
   const orientation = useOrientation(); // Get current orientation
@@ -70,6 +76,24 @@ export const EnquiriesScreen = ({navigation}) => {
   const [totalPage, setTotalPage] = useState('1');
   const [statusId, setStatusId] = useState(1);
   const [filterVisible, setFilterVisible] = useState(false);
+  const [enquiryAction, setEnquiryAction] = useState([]);
+
+  useEffect(() => {
+    // Helper function to process privileges
+    const processPrivileges = (privileges, endPoint, setAction) => {
+      const privilege = privileges.find(item => item.end_point === endPoint);
+      if (privilege) {
+        setAction(privilege.action.split(',').map(action => action.trim()));
+      }
+    };
+
+    // Iterate over role permissions
+    rolePermission.forEach(item => {
+      if (item.main_module === 'Enquiries') {
+        processPrivileges(item.privileges, 'enquiries', setEnquiryAction);
+      }
+    });
+  }, [rolePermission]);
 
   useEffect(() => {
     onGetCallLogData();
@@ -107,6 +131,23 @@ export const EnquiriesScreen = ({navigation}) => {
     }
   };
 
+  const onChangeStatusData = async (status, index, id) => {
+    try {
+      let arrayData = enquiryList;
+      arrayData[index].status = status ? 'Read' : 'Unread';
+
+      setEnquiryList(arrayData);
+      setRefresh(!refresh);
+
+      const response = await onAddAccountListApi(`enquiry/${id}/status`);
+      console.log('get ValueLL:::', response.data);
+      if (response.data.flag == 1) {
+      }
+    } catch (err) {
+      console.log('Get AccountError>', err.response.data);
+    }
+  };
+
   const renderItem = ({item, index}) => {
     return (
       <View
@@ -121,33 +162,44 @@ export const EnquiriesScreen = ({navigation}) => {
             <Text style={[styles.dataHistoryText1]}>{item.email}</Text>
           </View>
         </View>
-        <View style={[styles.switchView, {width: isPortrait ? wp(45) : wp(32)}]}>
+        <View
+          style={[styles.switchView, {width: isPortrait ? wp(45) : wp(32)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightBlue}]}>
             <Text style={[styles.dataHistoryText1]}>{item.type}</Text>
           </View>
         </View>
-        <View style={[styles.switchView, {width: isPortrait ? wp(35) : wp(28)}]}>
+        <View
+          style={[styles.switchView, {width: isPortrait ? wp(35) : wp(28)}]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
             <Text style={[styles.dataHistoryText1]}>{item.created_at}</Text>
           </View>
         </View>
-        <Text style={[styles.dataHistoryText, {width: isPortrait ? wp(30) : wp(24)}]}>
+        <Text
+          style={[
+            styles.dataHistoryText,
+            {width: isPortrait ? wp(30) : wp(24)},
+          ]}>
           {item.viewed_by}
         </Text>
-        <View style={[styles.switchView, {width: isPortrait ? wp(16) : wp(12)}]}>
-          <Switch
-            trackColor={{
-              false:
-                item.status == 'Read' ? COLORS.greenColor : COLORS.errorColor,
-              true:
-                item.status == 'Read' ? COLORS.greenColor : COLORS.errorColor,
-            }}
-            thumbColor={item.status == 'Read' ? '#f4f3f4' : '#f4f3f4'}
-            ios_backgroundColor={COLORS.errorColor}
-            onValueChange={() => {}}
-            value={item.status == 'Read'}
-          />
-        </View>
+        {enquiryAction.includes('status') && (
+          <View
+            style={[styles.switchView, {width: isPortrait ? wp(16) : wp(12)}]}>
+            <Switch
+              trackColor={{
+                false:
+                  item.status == 'Read' ? COLORS.greenColor : COLORS.errorColor,
+                true:
+                  item.status == 'Read' ? COLORS.greenColor : COLORS.errorColor,
+              }}
+              thumbColor={item.status == 'Read' ? '#f4f3f4' : '#f4f3f4'}
+              ios_backgroundColor={COLORS.errorColor}
+              onValueChange={status =>
+                onChangeStatusData(status, index, item.id)
+              }
+              value={item.status == 'Read'}
+            />
+          </View>
+        )}
         <View style={styles.actionDataView}>
           <TouchableOpacity
             onPress={async () => {
@@ -275,39 +327,60 @@ export const EnquiriesScreen = ({navigation}) => {
                     <Text
                       style={[
                         styles.titleText,
-                        {width: isPortrait ? wp(55) : wp(37), textAlign: 'left'},
+                        {
+                          width: isPortrait ? wp(55) : wp(37),
+                          textAlign: 'left',
+                        },
                       ]}>
                       {'FULL NAME'}
                     </Text>
                     <Text
                       style={[
                         styles.titleText,
-                        {width: isPortrait ? wp(45) : wp(32), textAlign: 'center'},
+                        {
+                          width: isPortrait ? wp(45) : wp(32),
+                          textAlign: 'center',
+                        },
                       ]}>
                       {'TYPE'}
                     </Text>
                     <Text
                       style={[
                         styles.titleText,
-                        {width: isPortrait ? wp(35) : wp(28), textAlign: 'center'},
+                        {
+                          width: isPortrait ? wp(35) : wp(28),
+                          textAlign: 'center',
+                        },
                       ]}>
                       {'CREATED ON'}
                     </Text>
                     <Text
                       style={[
                         styles.titleText,
-                        {width: isPortrait ? wp(30) : wp(24), textAlign: 'left'},
+                        {
+                          width: isPortrait ? wp(30) : wp(24),
+                          textAlign: 'left',
+                        },
                       ]}>
                       {'VIEWED BY'}
                     </Text>
+                    {enquiryAction.includes('status') && (
+                      <Text
+                        style={[
+                          styles.titleText,
+                          {
+                            width: isPortrait ? wp(16) : wp(12),
+                            textAlign: 'center',
+                          },
+                        ]}>
+                        {'STATUS'}
+                      </Text>
+                    )}
                     <Text
                       style={[
                         styles.titleText,
-                        {width: isPortrait ? wp(16) : wp(12), textAlign: 'center'},
+                        {width: isPortrait ? wp(16) : wp(12)},
                       ]}>
-                      {'STATUS'}
-                    </Text>
-                    <Text style={[styles.titleText, {width: isPortrait ? wp(16) : wp(12)}]}>
                       {'ACTION'}
                     </Text>
                   </View>

@@ -51,6 +51,7 @@ const DeathReportList = ({
   totalPage,
   pageCount,
   setPageCount,
+  deathAction,
 }) => {
   const orientation = useOrientation();
   const isPortrait = orientation === 'portrait';
@@ -287,36 +288,42 @@ const DeathReportList = ({
             <Text style={[styles.dataHistoryText]}>{item.date}</Text>
           </View>
         </View>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={async () => {
-              let allDatas = await onGetSpecificDoctor(item.id);
-              setUserId(item.id);
-              setCaseId(item.case_id);
-              setCaseName(`${item.case_id} ${item.patient_name}`);
-              setDoctorId(allDatas.doctor_id);
-              setDoctorName(item.doctor_name);
-              setDescription(allDatas.description);
-              setDateOfBirth(new Date(allDatas.date));
-              setNewBloodIssueVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        {deathAction.includes('edit') || deathAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {deathAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={async () => {
+                  let allDatas = await onGetSpecificDoctor(item.id);
+                  setUserId(item.id);
+                  setCaseId(item.case_id);
+                  setCaseName(`${item.case_id} ${item.patient_name}`);
+                  setDoctorId(allDatas.doctor_id);
+                  setDoctorName(item.doctor_name);
+                  setDescription(allDatas.description);
+                  setDateOfBirth(new Date(allDatas.date));
+                  setNewBloodIssueVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {deathAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: wp(2)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -337,6 +344,30 @@ const DeathReportList = ({
             />
             {!isPortrait && (
               <View style={styles.filterView}>
+                {deathAction.includes('create') && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setUserId('');
+                      setCaseId('');
+                      setCaseName('');
+                      setDoctorId('');
+                      setDoctorName('');
+                      setDescription('');
+                      setDateOfBirth(new Date());
+                      setErrorMessage('');
+                      setErrorVisible(false);
+                      setNewBloodIssueVisible(true);
+                    }}
+                    style={styles.actionView}>
+                    <Text style={styles.actionText}>New Death Reports</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+          </View>
+          {isPortrait && (
+            <View style={styles.filterView}>
+              {deathAction.includes('create') && (
                 <TouchableOpacity
                   onPress={() => {
                     setUserId('');
@@ -353,27 +384,7 @@ const DeathReportList = ({
                   style={styles.actionView}>
                   <Text style={styles.actionText}>New Death Reports</Text>
                 </TouchableOpacity>
-              </View>
-            )}
-          </View>
-          {isPortrait && (
-            <View style={styles.filterView}>
-              <TouchableOpacity
-                onPress={() => {
-                  setUserId('');
-                  setCaseId('');
-                  setCaseName('');
-                  setDoctorId('');
-                  setDoctorName('');
-                  setDescription('');
-                  setDateOfBirth(new Date());
-                  setErrorMessage('');
-                  setErrorVisible(false);
-                  setNewBloodIssueVisible(true);
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>New Death Reports</Text>
-              </TouchableOpacity>
+              )}
             </View>
           )}
           <View
@@ -416,13 +427,16 @@ const DeathReportList = ({
                     ]}>
                     {'DATE'}
                   </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: wp(16), textAlign: 'center'},
-                    ]}>
-                    {'ACTION'}
-                  </Text>
+                  {deathAction.includes('edit') ||
+                  deathAction.includes('delete') ? (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: wp(16), textAlign: 'center'},
+                      ]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

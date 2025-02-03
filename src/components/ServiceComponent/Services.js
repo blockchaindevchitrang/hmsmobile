@@ -57,6 +57,7 @@ const Services = ({
   setPageCount,
   statusId,
   setStatusId,
+  serviceAction,
 }) => {
   const {theme} = useTheme();
   const orientation = useOrientation();
@@ -274,7 +275,18 @@ const Services = ({
         <Text style={[styles.dataHistoryText1, {width: wp(26)}]}>
           {item.rate}
         </Text>
-        <View style={[styles.switchView]}>
+        <View
+          style={[
+            styles.switchView,
+            {
+              width: isPortrait
+                ? wp(22)
+                : serviceAction.includes('edit') ||
+                  serviceAction.includes('delete')
+                ? wp(20.1)
+                : wp(40.1),
+            },
+          ]}>
           <Switch
             trackColor={{
               false:
@@ -288,35 +300,41 @@ const Services = ({
             value={item.status == 'Active' ? true : false}
           />
         </View>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={async () => {
-              let allDatas = await onGetSpecificDoctor(item.id);
-              setUserId(item.id);
-              setService(item.name);
-              setQuantity(item.quantity);
-              setRate(item.rate);
-              setDescription(allDatas.description);
-              setStatus(item.status == 'Active' ? true : false);
-              setNewUserVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        {serviceAction.includes('edit') || serviceAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {serviceAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={async () => {
+                  let allDatas = await onGetSpecificDoctor(item.id);
+                  setUserId(item.id);
+                  setService(item.name);
+                  setQuantity(item.quantity);
+                  setRate(item.rate);
+                  setDescription(allDatas.description);
+                  setStatus(item.status == 'Active' ? true : false);
+                  setNewUserVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {serviceAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: wp(2)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -342,21 +360,23 @@ const Services = ({
                   onPress={() => setFilterVisible(true)}>
                   <Image style={styles.filterImage} source={filter} />
                 </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => {
-                    setUserId('');
-                    setService('');
-                    setQuantity('');
-                    setRate('');
-                    setDescription('');
-                    setStatus(false);
-                    setErrorMessage('');
-                    setErrorVisible(false);
-                    setNewUserVisible(true);
-                  }}
-                  style={styles.actionView}>
-                  <Text style={styles.actionText}>New Service</Text>
-                </TouchableOpacity>
+                {serviceAction.includes('create') && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setUserId('');
+                      setService('');
+                      setQuantity('');
+                      setRate('');
+                      setDescription('');
+                      setStatus(false);
+                      setErrorMessage('');
+                      setErrorVisible(false);
+                      setNewUserVisible(true);
+                    }}
+                    style={styles.actionView}>
+                    <Text style={styles.actionText}>New Service</Text>
+                  </TouchableOpacity>
+                )}
                 <Modal
                   animationType="none"
                   transparent={true}
@@ -425,21 +445,23 @@ const Services = ({
                 onPress={() => setFilterVisible(true)}>
                 <Image style={styles.filterImage} source={filter} />
               </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => {
-                  setUserId('');
-                  setService('');
-                  setQuantity('');
-                  setRate('');
-                  setDescription('');
-                  setStatus(false);
-                  setErrorMessage('');
-                  setErrorVisible(false);
-                  setNewUserVisible(true);
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>New Service</Text>
-              </TouchableOpacity>
+              {serviceAction.includes('create') && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setUserId('');
+                    setService('');
+                    setQuantity('');
+                    setRate('');
+                    setDescription('');
+                    setStatus(false);
+                    setErrorMessage('');
+                    setErrorVisible(false);
+                    setNewUserVisible(true);
+                  }}
+                  style={styles.actionView}>
+                  <Text style={styles.actionText}>New Service</Text>
+                </TouchableOpacity>
+              )}
               <Modal
                 animationType="none"
                 transparent={true}
@@ -524,13 +546,23 @@ const Services = ({
                   <Text
                     style={[
                       styles.titleText,
-                      {width: isPortrait ? wp(22) : wp(20.1)},
+                      {
+                        width: isPortrait
+                          ? wp(22)
+                          : serviceAction.includes('edit') ||
+                            serviceAction.includes('delete')
+                          ? wp(20.1)
+                          : wp(40.1),
+                      },
                     ]}>
                     {'Status'}
                   </Text>
-                  <Text style={[styles.titleText, {width: wp(16)}]}>
-                    {'ACTION'}
-                  </Text>
+                  {serviceAction.includes('edit') ||
+                  serviceAction.includes('delete') ? (
+                    <Text style={[styles.titleText, {width: wp(16)}]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList

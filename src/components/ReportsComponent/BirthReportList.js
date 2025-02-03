@@ -286,36 +286,42 @@ const BirthReportList = ({
             <Text style={[styles.dataHistoryText]}>{item.date}</Text>
           </View>
         </View>
-        <View style={styles.actionDataView}>
-          <TouchableOpacity
-            onPress={async () => {
-              let allDatas = await onGetSpecificDoctor(item.id);
-              setUserId(item.id);
-              setCaseId(item.case_id);
-              setCaseName(`${item.case_id} ${item.patient_name}`);
-              setDoctorId(allDatas.doctor_id);
-              setDoctorName(item.doctor_name);
-              setDescription(allDatas.description);
-              setDateOfBirth(new Date(allDatas.date));
-              setNewBloodIssueVisible(true);
-            }}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.blueColor}]}
-              source={editing}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => {
-              setUserId(item.id);
-              setDeleteUser(true);
-            }}
-            style={{marginLeft: wp(2)}}>
-            <Image
-              style={[styles.editImage, {tintColor: COLORS.errorColor}]}
-              source={deleteIcon}
-            />
-          </TouchableOpacity>
-        </View>
+        {birthAction.includes('edit') || birthAction.includes('delete') ? (
+          <View style={styles.actionDataView}>
+            {birthAction.includes('edit') && (
+              <TouchableOpacity
+                onPress={async () => {
+                  let allDatas = await onGetSpecificDoctor(item.id);
+                  setUserId(item.id);
+                  setCaseId(item.case_id);
+                  setCaseName(`${item.case_id} ${item.patient_name}`);
+                  setDoctorId(allDatas.doctor_id);
+                  setDoctorName(item.doctor_name);
+                  setDescription(allDatas.description);
+                  setDateOfBirth(new Date(allDatas.date));
+                  setNewBloodIssueVisible(true);
+                }}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.blueColor}]}
+                  source={editing}
+                />
+              </TouchableOpacity>
+            )}
+            {birthAction.includes('delete') && (
+              <TouchableOpacity
+                onPress={() => {
+                  setUserId(item.id);
+                  setDeleteUser(true);
+                }}
+                style={{marginLeft: wp(2)}}>
+                <Image
+                  style={[styles.editImage, {tintColor: COLORS.errorColor}]}
+                  source={deleteIcon}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : null}
       </View>
     );
   };
@@ -336,6 +342,30 @@ const BirthReportList = ({
             />
             {!isPortrait && (
               <View style={styles.filterView}>
+                {birthAction.includes('create') && (
+                  <TouchableOpacity
+                    onPress={() => {
+                      setUserId('');
+                      setCaseId('');
+                      setCaseName('');
+                      setDoctorId('');
+                      setDoctorName('');
+                      setDescription('');
+                      setDateOfBirth(new Date());
+                      setErrorMessage('');
+                      setErrorVisible(false);
+                      setNewBloodIssueVisible(true);
+                    }}
+                    style={styles.actionView}>
+                    <Text style={styles.actionText}>New Birth Reports</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+          </View>
+          {isPortrait && (
+            <View style={styles.filterView}>
+              {birthAction.includes('create') && (
                 <TouchableOpacity
                   onPress={() => {
                     setUserId('');
@@ -352,27 +382,7 @@ const BirthReportList = ({
                   style={styles.actionView}>
                   <Text style={styles.actionText}>New Birth Reports</Text>
                 </TouchableOpacity>
-              </View>
-            )}
-          </View>
-          {isPortrait && (
-            <View style={styles.filterView}>
-              <TouchableOpacity
-                onPress={() => {
-                  setUserId('');
-                  setCaseId('');
-                  setCaseName('');
-                  setDoctorId('');
-                  setDoctorName('');
-                  setDescription('');
-                  setDateOfBirth(new Date());
-                  setErrorMessage('');
-                  setErrorVisible(false);
-                  setNewBloodIssueVisible(true);
-                }}
-                style={styles.actionView}>
-                <Text style={styles.actionText}>New Birth Reports</Text>
-              </TouchableOpacity>
+              )}
             </View>
           )}
           <View
@@ -415,13 +425,16 @@ const BirthReportList = ({
                     ]}>
                     {'DATE'}
                   </Text>
-                  <Text
-                    style={[
-                      styles.titleText,
-                      {width: wp(16), textAlign: 'center'},
-                    ]}>
-                    {'ACTION'}
-                  </Text>
+                  {birthAction.includes('edit') ||
+                  birthAction.includes('delete') ? (
+                    <Text
+                      style={[
+                        styles.titleText,
+                        {width: wp(16), textAlign: 'center'},
+                      ]}>
+                      {'ACTION'}
+                    </Text>
+                  ) : null}
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList
