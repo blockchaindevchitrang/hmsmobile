@@ -18,12 +18,13 @@ import {
   widthPercentageToDP as wp,
 } from './src/components/Pixel';
 import chart from './src/images/dashboards.png';
-import bot from './src/images/health.png';
+import padlock from './src/images/padlock.png';
 import robot1 from './src/images/appointment.png';
 import setting from './src/images/more.png';
 import people from './src/images/people.png';
 import duplicate from './src/images/duplicate.png';
 import patient from './src/images/patient.png';
+import user from './src/images/user.png';
 import AppointmentScreen from './src/screens/AppointmentScreen';
 import DoctorScreen from './src/screens/DoctorScreen';
 import {useTheme} from './src/utils/ThemeProvider';
@@ -65,12 +66,10 @@ const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
 interface RoleData {
-  rolePermission: [
-    {
-      main_module: string;
-      privileges: string[];
-    },
-  ];
+  rolePermission: {
+    modules: string[];
+    permission: string[];
+  };
 }
 
 const TabStack = () => {
@@ -108,35 +107,115 @@ const TabStack = () => {
           elevation: 3,
         },
       }}>
-      {/* {rolePermission.map(item => {
-        if (item.main_module == 'Dashboard') {
-          return ( */}
-      <Tab.Screen
-        name="DashboardScreen"
-        component={DashboardScreen}
-        options={{
-          headerShown: false,
-          tabBarIcon: ({focused}) => (
-            <View
-              style={[
-                isPortrait ? styles.bottomView : styles.bottomView1,
-                {
-                  backgroundColor: focused
-                    ? COLORS.white
-                    : theme.headerColor,
-                },
-              ]}>
-              <Image style={styles.imageView} source={chart} />
-            </View>
-          ),
-        }}
-      />
-      {/* );
+      {rolePermission.modules.map(item => {
+        if (item == 'Dashboard') {
+          return (
+            <Tab.Screen
+              name="DashboardScreen"
+              component={DashboardScreen}
+              options={{
+                headerShown: false,
+                tabBarIcon: ({focused}) => (
+                  <View
+                    style={[
+                      isPortrait ? styles.bottomView : styles.bottomView1,
+                      {
+                        backgroundColor: focused
+                          ? COLORS.white
+                          : theme.headerColor,
+                      },
+                    ]}>
+                    <Image style={styles.imageView} source={chart} />
+                  </View>
+                ),
+              }}
+            />
+          );
         }
-      })} */}
+      })}
+      {rolePermission.modules.map(item => {
+        if (item == 'Appointments') {
+          return (
+            <Tab.Screen
+              name="AppointmentScreen"
+              component={AppointmentScreen}
+              options={{
+                headerShown: false,
+                tabBarIcon: ({focused}) => (
+                  <View
+                    style={[
+                      isPortrait ? styles.bottomView : styles.bottomView1,
+                      {
+                        backgroundColor: focused ? COLORS.white : theme.headerColor,
+                      },
+                    ]}>
+                    <Image style={styles.imageView2} source={robot1} />
+                  </View>
+                ),
+              }}
+            />
+          );
+        }
+      })}
+      {rolePermission.modules.map(item => {
+        if (item == 'IPD/OPD') {
+          return (
+            !isPortrait && (
+              <Tab.Screen
+                name="IPDScreen"
+                component={IPDScreen}
+                options={{
+                  headerShown: false,
+                  tabBarIcon: ({focused}) => (
+                    <View
+                      style={[
+                        isPortrait ? styles.bottomView : styles.bottomView1,
+                        {
+                          backgroundColor: focused
+                            ? COLORS.white
+                            : theme.headerColor,
+                        },
+                      ]}>
+                      <Image style={styles.imageView1} source={duplicate} />
+                    </View>
+                  ),
+                }}
+              />
+            )
+          );
+        }
+      })}
+      {rolePermission.modules.map(item => {
+        if (item == 'Patients') {
+          return (
+            !isPortrait && (
+              <Tab.Screen
+                name="PatientsScreen"
+                component={PatientsScreen}
+                options={{
+                  headerShown: false,
+                  tabBarIcon: ({focused}) => (
+                    <View
+                      style={[
+                        isPortrait ? styles.bottomView : styles.bottomView1,
+                        {
+                          backgroundColor: focused
+                            ? COLORS.white
+                            : theme.headerColor,
+                        },
+                      ]}>
+                      <Image style={styles.imageView1} source={patient} />
+                    </View>
+                  ),
+                }}
+              />
+            )
+          );
+        }
+      })}
       <Tab.Screen
-        name="AppointmentScreen"
-        component={AppointmentScreen}
+        name="ChangePasswordScreen"
+        component={ChangePasswordScreen}
         options={{
           headerShown: false,
           tabBarIcon: ({focused}) => (
@@ -147,32 +226,14 @@ const TabStack = () => {
                   backgroundColor: focused ? COLORS.white : theme.headerColor,
                 },
               ]}>
-              <Image style={styles.imageView2} source={robot1} />
+              <Image style={styles.imageView1} source={padlock} />
             </View>
           ),
         }}
       />
       <Tab.Screen
-        name="DoctorScreen"
-        component={DoctorScreen}
-        options={{
-          headerShown: false,
-          tabBarIcon: ({focused}) => (
-            <View
-              style={[
-                isPortrait ? styles.bottomView : styles.bottomView1,
-                {
-                  backgroundColor: focused ? COLORS.white : theme.headerColor,
-                },
-              ]}>
-              <Image style={styles.imageView1} source={bot} />
-            </View>
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="UsersScreen"
-        component={UsersScreen}
+        name="ProfileScreen"
+        component={ProfileScreen}
         options={{
           headerShown: false,
           tabBarIcon: ({focused}) => (
@@ -181,49 +242,11 @@ const TabStack = () => {
                 isPortrait ? styles.bottomView : styles.bottomView1,
                 {backgroundColor: focused ? COLORS.white : theme.headerColor},
               ]}>
-              <Image style={styles.imageView1} source={people} />
+              <Image style={styles.imageView1} source={user} />
             </View>
           ),
         }}
       />
-      {!isPortrait && (
-        <Tab.Screen
-          name="IPDScreen"
-          component={IPDScreen}
-          options={{
-            headerShown: false,
-            tabBarIcon: ({focused}) => (
-              <View
-                style={[
-                  isPortrait ? styles.bottomView : styles.bottomView1,
-                  {
-                    backgroundColor: focused ? COLORS.white : theme.headerColor,
-                  },
-                ]}>
-                <Image style={styles.imageView1} source={duplicate} />
-              </View>
-            ),
-          }}
-        />
-      )}
-      {!isPortrait && (
-        <Tab.Screen
-          name="PatientsScreen"
-          component={PatientsScreen}
-          options={{
-            headerShown: false,
-            tabBarIcon: ({focused}) => (
-              <View
-                style={[
-                  isPortrait ? styles.bottomView : styles.bottomView1,
-                  {backgroundColor: focused ? COLORS.white : theme.headerColor},
-                ]}>
-                <Image style={styles.imageView1} source={patient} />
-              </View>
-            ),
-          }}
-        />
-      )}
       <Tab.Screen
         name="SettingStack"
         component={SettingStack}
@@ -250,6 +273,16 @@ function SettingStack() {
       <Stack.Screen
         name="SettingScreen"
         component={SettingScreen}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="DoctorScreen"
+        component={DoctorScreen}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="UsersScreen"
+        component={UsersScreen}
         options={{headerShown: false}}
       />
       <Stack.Screen

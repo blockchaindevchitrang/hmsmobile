@@ -305,21 +305,38 @@ export const SettingScreen = ({navigation}) => {
               dropdownStyle={styles.dropdown2DropdownStyle}
             />
           </View>
-          <TouchableOpacity
-            onPress={() => navigation.navigate('ProfileScreen')}
-            style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
-            <Text style={[styles.text, {color: theme.text}]}>
-              {'Update Profile'}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => navigation.navigate('ChangePasswordScreen')}
-            style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
-            <Text style={[styles.text, {color: theme.text}]}>
-              {'Change Password'}
-            </Text>
-          </TouchableOpacity>
+          {rolePermission.modules.map((item, index) => {
+            if (item == 'Users') {
+              return (
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('UsersScreen')}
+                  style={[
+                    styles.menuOption,
+                    {backgroundColor: theme.headerColor},
+                  ]}>
+                  <Text style={[styles.text, {color: theme.text}]}>
+                    {'Users'}
+                  </Text>
+                </TouchableOpacity>
+              );
+            }
+          })}
+          {rolePermission.modules.map((item, index) => {
+            if (item == 'Doctors') {
+              return (
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('DoctorScreen')}
+                  style={[
+                    styles.menuOption,
+                    {backgroundColor: theme.headerColor},
+                  ]}>
+                  <Text style={[styles.text, {color: theme.text}]}>
+                    {'Doctors'}
+                  </Text>
+                </TouchableOpacity>
+              );
+            }
+          })}
           {rolePermission.modules.map((item, index) => {
             if (item == 'Billings') {
               return (

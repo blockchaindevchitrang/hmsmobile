@@ -30,6 +30,7 @@ import draw from '../../images/draw.png';
 import DatePicker from 'react-native-date-picker';
 import ImagePicker from 'react-native-image-crop-picker';
 import {
+  onAddAccountListApi,
   onAddUsersApi,
   onDeleteUserDataApi,
   onGetSpecificUsersDataApi,
@@ -99,7 +100,12 @@ const UserList = ({
   const [errorMessage, setErrorMessage] = useState('');
   const [filterVisible, setFilterVisible] = useState(false);
   const [roleList, setRoleList] = useState([]);
+  const [userList, setUserList] = useState([]);
   const [refresh, setRefresh] = useState(false);
+
+  useEffect(() => {
+    setUserList(allData);
+  }, [allData]);
 
   useEffect(() => {
     try {
@@ -195,6 +201,54 @@ const UserList = ({
     };
   }
 
+  const onChangeVerifyData = async (status, index, id) => {
+    try {
+      let arrayData = userList;
+      arrayData[index].email_verified_at = status ? new Date() : null;
+
+      setUserList(arrayData);
+      setRefresh(!refresh);
+
+      const response = await onAddAccountListApi(`users-verified/${id}`);
+      console.log('get ValueLL:::', response.data);
+      if (response.data.flag == 1) {
+      }
+    } catch (err) {
+      console.log('Get AccountError>', err.response.data);
+    }
+  };
+
+  const onChangeStatusData = async (status, index, item) => {
+    try {
+      let arrayData = userList;
+      arrayData[index].status = status ? 'Active' : 'Inactive';
+      setUserList(arrayData);
+      setRefresh(!refresh);
+      let getData = await onGetSpecificDoctor(item.id);
+      const [first, last] = item.name.split(',');
+      const formdata = new FormData();
+      formdata.append('first_name', first);
+      formdata.append('last_name', last);
+      formdata.append('email', item.email);
+      if (isImageFormat(item?.image_url)) {
+        formdata.append('image', parseFileFromUrl(item?.image_url));
+      }
+      formdata.append('status', status ? 1 : 0);
+      formdata.append('department_id', getData.department_id);
+      formdata.append('country', getData.country);
+      formdata.append('city', getData.city);
+      formdata.append('postal_code', getData.postal_code);
+      formdata.append('address1', getData.address1);
+      formdata.append('gender', getData.gender);
+      const response = await onUpdateUserDataApi(item.id, formdata);
+      console.log('get ValueLL:::', formdata, response.data);
+      if (response.data.flag == 1) {
+      }
+    } catch (err) {
+      console.log('Get AccountError>', err.response.data);
+    }
+  };
+
   const renderItem = ({item, index}) => {
     return (
       <View
@@ -243,13 +297,23 @@ const UserList = ({
           <View style={[styles.switchView]}>
             <Switch
               trackColor={{
-                false: item.verify ? COLORS.greenColor : COLORS.errorColor,
-                true: item.verify ? COLORS.greenColor : COLORS.errorColor,
+                false:
+                  item.email_verified_at != null
+                    ? COLORS.greenColor
+                    : COLORS.errorColor,
+                true:
+                  item.email_verified_at != null
+                    ? COLORS.greenColor
+                    : COLORS.errorColor,
               }}
-              thumbColor={item.verify ? '#f4f3f4' : '#f4f3f4'}
+              thumbColor={
+                item.email_verified_at != null ? '#f4f3f4' : '#f4f3f4'
+              }
               ios_backgroundColor={COLORS.errorColor}
-              onValueChange={() => {}}
-              value={item.verify}
+              onValueChange={status =>
+                onChangeVerifyData(status, index, item.id)
+              }
+              value={item.email_verified_at != null}
             />
           </View>
         )}
@@ -258,13 +322,21 @@ const UserList = ({
             style={[styles.switchView, {width: isPortrait ? wp(24) : wp(20)}]}>
             <Switch
               trackColor={{
-                false: item.status ? COLORS.greenColor : COLORS.errorColor,
-                true: item.status ? COLORS.greenColor : COLORS.errorColor,
+                false:
+                  item.status == 'Active'
+                    ? COLORS.greenColor
+                    : COLORS.errorColor,
+                true:
+                  item.status == 'Active'
+                    ? COLORS.greenColor
+                    : COLORS.errorColor,
               }}
-              thumbColor={item.status ? '#f4f3f4' : '#f4f3f4'}
+              thumbColor={item.status == 'Active' ? '#f4f3f4' : '#f4f3f4'}
               ios_backgroundColor={COLORS.errorColor}
-              onValueChange={() => {}}
-              value={item.status}
+              onValueChange={status => {
+                onChangeStatusData(status, index, item);
+              }}
+              value={item.status == 'Active'}
             />
           </View>
         )}
@@ -273,7 +345,7 @@ const UserList = ({
             {userAction.includes('edit') && (
               <TouchableOpacity
                 onPress={async () => {
-                  let allData = await onGetSpecificDoctor(item.id);
+                  let getData = await onGetSpecificDoctor(item.id);
                   setUserId(item.id);
                   const [first, last] = item.name.split(',');
                   if (isImageFormat(item?.image_url)) {
@@ -282,16 +354,16 @@ const UserList = ({
                   setFirstName(first);
                   setLastName(last);
                   setEmail(item.email);
-                  setRole(allData.department_id);
+                  setRole(getData.department_id);
                   setDoctorSelectedName(item?.department);
-                  if (allData.dob != null) {
-                    setDateOfBirth(new Date(allData.dob));
+                  if (getData.dob != null) {
+                    setDateOfBirth(new Date(getData.dob));
                   }
-                  setGenderType(allData.gender == 0 ? 'male' : 'female');
-                  setAddress(allData.address1);
-                  setCity(allData.city);
-                  setCountry(allData.country);
-                  setPostalCode(allData.postal_code);
+                  setGenderType(getData.gender == 0 ? 'male' : 'female');
+                  setAddress(getData.address1);
+                  setCity(getData.city);
+                  setCountry(getData.country);
+                  setPostalCode(getData.postal_code);
                   setNewUserVisible(true);
                 }}>
                 <Image
@@ -444,9 +516,9 @@ const UserList = ({
         formdata.append('first_name', firstName);
         formdata.append('last_name', lastName);
         formdata.append('email', email);
-        // formdata.append('phone', '');
-        // formdata.append('region_code', '+91');
-        formdata.append('image', '');
+        if (avatar != null) {
+          formdata.append('image', avatar);
+        }
         formdata.append('department_id', role);
         formdata.append('country', country);
         formdata.append('city', city);
@@ -753,11 +825,11 @@ const UserList = ({
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList
-                    data={allData}
+                    data={userList}
                     renderItem={renderItem}
                     bounces={false}
                     showsVerticalScrollIndicator={false}
-                    initialNumToRender={allData.length}
+                    initialNumToRender={userList.length}
                     nestedScrollEnabled
                     virtualized
                     ListEmptyComponent={() => (

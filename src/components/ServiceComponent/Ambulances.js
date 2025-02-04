@@ -13,7 +13,7 @@ import {
   TouchableWithoutFeedback,
   Modal,
 } from 'react-native';
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -88,6 +88,11 @@ const Ambulances = ({
   const [countryCode, setCountryCode] = useState('91');
   const [country, setCountry] = useState(null);
   const [filterVisible, setFilterVisible] = useState(false);
+  const [allDataArray, setAllDataArray] = useState([]);
+
+  useEffect(() => {
+    setAllDataArray(allData);
+  }, [allData]);
 
   const onSelect = country => {
     console.log('Get Selected Country', country);
@@ -305,6 +310,23 @@ const Ambulances = ({
     }
   };
 
+  const onStatusChange = async (item, index) => {
+    try {
+      let array = allDataArray;
+      array[index].is_available =
+        item.is_available == 'Available' ? 'Not Available' : 'Available';
+      setAllDataArray(array);
+      setRefresh(!refresh);
+      let urlData = `available-ambulance/${item.id}/status`;
+      const response = await onAddAccountListApi(urlData);
+      console.log('Get Response Edit DataLL', response.data);
+      if (response.data.flag == 1) {
+      }
+    } catch (err) {
+      console.log('Error>', err);
+    }
+  };
+
   const renderItem = ({item, index}) => {
     return (
       <View
@@ -357,7 +379,7 @@ const Ambulances = ({
               item.is_available == 'Available' ? '#f4f3f4' : '#f4f3f4'
             }
             ios_backgroundColor={COLORS.errorColor}
-            onValueChange={() => {}}
+            onValueChange={() => onStatusChange(item, index)}
             value={item.is_available == 'Available' ? true : false}
           />
         </View>
@@ -660,11 +682,11 @@ const Ambulances = ({
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList
-                    data={allData}
+                    data={allDataArray}
                     renderItem={renderItem}
                     bounces={false}
                     showsHorizontalScrollIndicator={false}
-                    initialNumToRender={allData.length}
+                    initialNumToRender={allDataArray.length}
                     nestedScrollEnabled
                     virtualized
                     ListEmptyComponent={() => (

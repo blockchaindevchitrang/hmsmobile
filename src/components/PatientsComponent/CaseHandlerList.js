@@ -13,7 +13,7 @@ import {
   TouchableWithoutFeedback,
   Modal,
 } from 'react-native';
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -101,6 +101,12 @@ const CaseHandlerList = ({
   const [errorMessage, setErrorMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [filterVisible, setFilterVisible] = useState(false);
+  const [userList, setUserList] = useState([]);
+  const [refresh, setRefresh] = useState(false);
+
+  useEffect(() => {
+    setUserList(allData);
+  }, [allData]);
 
   const openProfileImagePicker = async () => {
     try {
@@ -389,6 +395,41 @@ const CaseHandlerList = ({
     };
   }
 
+  const onChangeStatusData = async (test, index, item) => {
+    try {
+      let arrayData = userList;
+      arrayData[index].status = test ? 'Active' : 'Inactive';
+      setUserList(arrayData);
+      setRefresh(!refresh);
+      let getData = await onGetSpecificDoctor(item.id);
+      const [first, last] = item.name.split(',');
+      const formdata = new FormData();
+
+      formdata.append('first_name', first);
+      formdata.append('last_name', last);
+      formdata.append('email', item.email);
+      formdata.append('phone', getData.phone);
+      if (isImageFormat(item?.image_url)) {
+        formdata.append('image', parseFileFromUrl(item?.image_url));
+      }
+      formdata.append('status', test ? 1 : 0);
+      formdata.append('designation', getData.designation);
+      formdata.append('qualification', getData.qualification);
+      formdata.append('department_id', '8');
+      formdata.append('address2', getData.address2);
+      formdata.append('city', getData.city);
+      formdata.append('postal_code', getData.postal_code);
+      formdata.append('address1', getData.address1);
+      formdata.append('gender', getData.gender);
+      const response = await onUpdateUserDataApi(item.id, formdata);
+      console.log('get ValueLL:::', formdata, response.data);
+      if (response.data.flag == 1) {
+      }
+    } catch (err) {
+      console.log('Get AccountError>', err.response.data);
+    }
+  };
+
   const renderItem = ({item, index}) => {
     return (
       <View
@@ -461,7 +502,7 @@ const CaseHandlerList = ({
               }}
               thumbColor={item.status ? '#f4f3f4' : '#f4f3f4'}
               ios_backgroundColor={COLORS.errorColor}
-              onValueChange={() => {}}
+              onValueChange={test => onChangeStatusData(test, index, item)}
               value={item.status}
             />
           </View>
@@ -471,7 +512,7 @@ const CaseHandlerList = ({
             {handlerAction.includes('edit') && (
               <TouchableOpacity
                 onPress={async () => {
-                  let allData = await onGetSpecificDoctor(item.id);
+                  let getData = await onGetSpecificDoctor(item.id);
                   setUserId(item.id);
                   const [first, last] = item.name.split(',');
                   setFirstName(first);
@@ -480,21 +521,21 @@ const CaseHandlerList = ({
                     setAvatar(parseFileFromUrl(item?.image_url));
                   }
                   setEmail(item.email);
-                  setDesignation(allData.designation);
-                  if (allData.dob != null) {
-                    setDateOfBirth(new Date(allData.dob));
+                  setDesignation(getData.designation);
+                  if (getData.dob != null) {
+                    setDateOfBirth(new Date(getData.dob));
                   }
                   setGenderType(item.gender == 0 ? 'male' : 'female');
                   setAddress(item.address1);
                   setCity(item.city);
                   setCountry(item.country);
                   setPostalCode(item.postal_code);
-                  setAddress1(allData.address2);
-                  setQualification(allData.qualification);
-                  setNumber(allData.phone);
-                  setStatus(allData.status == 'Active' ? true : false);
-                  if (allData?.blood_group != null) {
-                    setBloodSelected(allData?.blood_group);
+                  setAddress1(getData.address2);
+                  setQualification(getData.qualification);
+                  setNumber(getData.phone);
+                  setStatus(getData.status == 'Active' ? true : false);
+                  if (getData?.blood_group != null) {
+                    setBloodSelected(getData?.blood_group);
                   }
                   setNewUserVisible(true);
                 }}>
@@ -724,11 +765,11 @@ const CaseHandlerList = ({
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList
-                    data={allData}
+                    data={userList}
                     renderItem={renderItem}
                     bounces={false}
                     showsHorizontalScrollIndicator={false}
-                    initialNumToRender={allData.length}
+                    initialNumToRender={userList.length}
                     nestedScrollEnabled
                     virtualized
                     ListEmptyComponent={() => (

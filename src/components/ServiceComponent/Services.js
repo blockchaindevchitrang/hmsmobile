@@ -13,7 +13,7 @@ import {
   TouchableWithoutFeedback,
   Modal,
 } from 'react-native';
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -76,6 +76,11 @@ const Services = ({
   const [deleteUser, setDeleteUser] = useState(false);
   const [loading, setLoading] = useState(false);
   const [filterVisible, setFilterVisible] = useState(false);
+  const [allDataArray, setAllDataArray] = useState([]);
+
+  useEffect(() => {
+    setAllDataArray(allData);
+  }, [allData]);
 
   const onAddPayRollData = async () => {
     try {
@@ -257,6 +262,22 @@ const Services = ({
     }
   };
 
+  const onStatusChange = async (item, index) => {
+    try {
+      let array = allDataArray;
+      array[index].status = item.status == 'Deactive' ? 'Active' : 'Deactive';
+      setAllDataArray(array);
+      setRefresh(!refresh);
+      let urlData = `services/${item.id}/status`;
+      const response = await onAddAccountListApi(urlData);
+      console.log('Get Response Edit DataLL', response.data);
+      if (response.data.flag == 1) {
+      }
+    } catch (err) {
+      console.log('Error>', err);
+    }
+  };
+
   const renderItem = ({item, index}) => {
     return (
       <View
@@ -296,7 +317,7 @@ const Services = ({
             }}
             thumbColor={item.status == 'Active' ? '#f4f3f4' : '#f4f3f4'}
             ios_backgroundColor={COLORS.errorColor}
-            onValueChange={() => {}}
+            onValueChange={() => onStatusChange(item, index)}
             value={item.status == 'Active' ? true : false}
           />
         </View>
@@ -566,11 +587,11 @@ const Services = ({
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList
-                    data={allData}
+                    data={allDataArray}
                     renderItem={renderItem}
                     bounces={false}
                     showsHorizontalScrollIndicator={false}
-                    initialNumToRender={allData.length}
+                    initialNumToRender={allDataArray.length}
                     nestedScrollEnabled
                     virtualized
                     ListEmptyComponent={() => (

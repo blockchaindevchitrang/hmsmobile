@@ -13,7 +13,7 @@ import {
   TouchableWithoutFeedback,
   Modal,
 } from 'react-native';
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -93,6 +93,12 @@ const AccountantList = ({
   const [errorVisible, setErrorVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [filterVisible, setFilterVisible] = useState(false);
+  const [userList, setUserList] = useState([]);
+  const [refresh, setRefresh] = useState(false);
+
+  useEffect(() => {
+    setUserList(allData);
+  }, [allData]);
 
   const openProfileImagePicker = async () => {
     try {
@@ -400,6 +406,41 @@ const AccountantList = ({
     };
   }
 
+  const onChangeStatusData = async (status, index, item) => {
+    try {
+      let arrayData = userList;
+      arrayData[index].status = status ? 'Active' : 'Inactive';
+      setUserList(arrayData);
+      setRefresh(!refresh);
+      let getData = await onGetSpecificDoctor(item.id);
+      const [first, last] = item.name.split(',');
+      const formdata = new FormData();
+
+      formdata.append('first_name', first);
+      formdata.append('last_name', last);
+      formdata.append('email', item.email);
+      formdata.append('phone', getData.phone);
+      if (isImageFormat(item?.image_url)) {
+        formdata.append('image', parseFileFromUrl(item?.image_url));
+      }
+      formdata.append('status', status ? 1 : 0);
+      formdata.append('designation', getData.designation);
+      formdata.append('qualification', getData.qualification);
+      formdata.append('department_id', '7');
+      formdata.append('address2', allData.address2);
+      formdata.append('city', getData.city);
+      formdata.append('postal_code', getData.postal_code);
+      formdata.append('address1', getData.address1);
+      formdata.append('gender', getData.gender);
+      const response = await onUpdateUserDataApi(item.id, formdata);
+      console.log('get ValueLL:::', formdata, response.data);
+      if (response.data.flag == 1) {
+      }
+    } catch (err) {
+      console.log('Get AccountError>', err.response.data);
+    }
+  };
+
   const renderItem = ({item, index}) => {
     return (
       <View
@@ -456,7 +497,9 @@ const AccountantList = ({
               }}
               thumbColor={item.status == 'Active' ? '#f4f3f4' : '#f4f3f4'}
               ios_backgroundColor={COLORS.errorColor}
-              onValueChange={() => {}}
+              onValueChange={status => {
+                onChangeStatusData(status, index, item);
+              }}
               value={item.status == 'Active' ? true : false}
             />
           </View>

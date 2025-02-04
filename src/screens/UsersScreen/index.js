@@ -51,7 +51,7 @@ let arrayData = [
 ];
 
 export const UsersScreen = ({navigation}) => {
-  const roleData = useSelector(state => state.rolePermission);
+  const rolePermission = useSelector(state => state.rolePermission);
   const {t} = useTranslation();
   const {theme} = useTheme();
   const orientation = useOrientation(); // Get current orientation
@@ -71,7 +71,7 @@ export const UsersScreen = ({navigation}) => {
   const [receptionistData, setReceptionistData] = useState([]);
   const [labTechniciansData, setLabTechniciansData] = useState([]);
   const [pharmacistsData, setPharmacistsData] = useState([]);
-  const [rolePermission, setRolePermission] = useState([]);
+  const [rolePermissions, setRolePermission] = useState([]);
   const [pageCount, setPageCount] = useState('1');
   const [totalPage, setTotalPage] = useState('1');
   const [nurseTotalPage, setNurseTotalPage] = useState('1');
@@ -187,7 +187,7 @@ export const UsersScreen = ({navigation}) => {
     };
 
     // Iterate over role permissions
-    roleData.forEach(item => {
+    rolePermission.permission.forEach(item => {
       if (item.status === 1) {
         processPrivileges(
           item.end_point == 'view_users',
@@ -255,7 +255,7 @@ export const UsersScreen = ({navigation}) => {
       labVisible && 'Lab Technicians',
       pharmacistVisible && 'Pharmacists',
     ].filter(Boolean);
-  }, [roleData]);
+  }, [rolePermission]);
 
   useEffect(() => {
     onGetUserData();
@@ -452,10 +452,10 @@ export const UsersScreen = ({navigation}) => {
 
   const onGetRolePermissionData = async () => {
     try {
-      const roleData = await onGetRoleDataApi();
-      console.log('Get roleData Response::', roleData.data.data);
-      if (roleData.data.data) {
-        setRolePermission(roleData.data.data);
+      const roleDataResponse = await onGetRoleDataApi();
+      console.log('Get roleData Response::', roleDataResponse.data.data);
+      if (roleDataResponse.data.data) {
+        setRolePermission(roleDataResponse.data.data);
         setRefresh(!refresh);
       }
     } catch (err) {
@@ -495,7 +495,7 @@ export const UsersScreen = ({navigation}) => {
           <RoleList
             searchBreak={searchAccountant}
             setSearchBreak={setSearchAccountant}
-            allData={rolePermission}
+            allData={rolePermissions}
             onGetData={onGetRolePermissionData}
             roleAction={roleAction}
           />

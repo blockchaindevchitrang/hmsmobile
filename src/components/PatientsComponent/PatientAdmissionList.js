@@ -108,6 +108,11 @@ const PatientAdmissionList = ({
   const [userId, setUserId] = useState('');
   const [deleteUser, setDeleteUser] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [allDataArray, setAllDataArray] = useState([]);
+
+  useEffect(() => {
+    setAllDataArray(allData);
+  }, [allData]);
 
   useEffect(() => {
     onGetInsuranceData();
@@ -321,6 +326,22 @@ const PatientAdmissionList = ({
     }
   };
 
+  const onStatusChange = async (item, index) => {
+    try {
+      let array = allDataArray;
+      array[index].status = item.status == 0 ? 1 : 0;
+      setAllDataArray(array);
+      setRefresh(!refresh);
+      let urlData = `patient-admissions/${item.id}/status`;
+      const response = await onAddAccountListApi(urlData);
+      console.log('Get Response Edit DataLL', response.data);
+      if (response.data.flag == 1) {
+      }
+    } catch (err) {
+      console.log('Error>', err);
+    }
+  };
+
   const renderItem = ({item, index}) => {
     return (
       <View
@@ -416,7 +437,7 @@ const PatientAdmissionList = ({
               }}
               thumbColor={item.status == 1 ? '#f4f3f4' : '#f4f3f4'}
               ios_backgroundColor={COLORS.errorColor}
-              onValueChange={() => {}}
+              onValueChange={() => onStatusChange(item, index)}
               value={item.status == 1}
             />
           </View>
@@ -717,11 +738,11 @@ const PatientAdmissionList = ({
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList
-                    data={allData}
+                    data={allDataArray}
                     renderItem={renderItem}
                     bounces={false}
                     showsHorizontalScrollIndicator={false}
-                    initialNumToRender={allData.length}
+                    initialNumToRender={allDataArray.length}
                     nestedScrollEnabled
                     virtualized
                     ListEmptyComponent={() => (

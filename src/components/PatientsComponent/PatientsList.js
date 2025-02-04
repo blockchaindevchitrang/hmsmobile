@@ -13,7 +13,7 @@ import {
   TouchableWithoutFeedback,
   Modal,
 } from 'react-native';
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -36,6 +36,7 @@ import {
   MenuTrigger,
 } from 'react-native-popup-menu';
 import {
+  onAddAccountListApi,
   onAddPatientApi,
   onDeleteCommonApi,
   onUpdatePatientApi,
@@ -111,6 +112,11 @@ const PatientsList = ({
   const [petName, setPetName] = useState('');
   const [loading, setLoading] = useState(false);
   const [filterVisible, setFilterVisible] = useState(false);
+  const [allDataArray, setAllDataArray] = useState([]);
+
+  useEffect(() => {
+    setAllDataArray(allData);
+  }, [allData]);
 
   const openProfileImagePicker = async () => {
     try {
@@ -226,6 +232,22 @@ const PatientsList = ({
     }
   };
 
+  const onStatusChange = async (item, index) => {
+    try {
+      let array = allDataArray;
+      array[index].status = item.status == 0 ? 1 : 0;
+      setAllDataArray(array);
+      setRefresh(!refresh);
+      let urlData = `patient-status/${item.id}/status`;
+      const response = await onAddAccountListApi(urlData);
+      console.log('Get Response Edit DataLL', response.data);
+      if (response.data.flag == 1) {
+      }
+    } catch (err) {
+      console.log('Error>', err);
+    }
+  };
+
   const renderItem = ({item, index}) => {
     return (
       <View
@@ -302,7 +324,7 @@ const PatientsList = ({
                 item?.patient_user?.status == 1 ? '#f4f3f4' : '#f4f3f4'
               }
               ios_backgroundColor={COLORS.errorColor}
-              onValueChange={() => {}}
+              onValueChange={() => onStatusChange(item, index)}
               value={item?.patient_user?.status == 1}
             />
           </View>
@@ -590,11 +612,11 @@ const PatientsList = ({
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList
-                    data={allData}
+                    data={allDataArray}
                     renderItem={renderItem}
                     bounces={false}
                     showsVerticalScrollIndicator={false}
-                    initialNumToRender={allData.length}
+                    initialNumToRender={allDataArray.length}
                     nestedScrollEnabled
                     virtualized
                     ListEmptyComponent={() => (

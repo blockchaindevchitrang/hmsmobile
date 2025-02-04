@@ -237,7 +237,7 @@ const DoctorComponent = ({
       array[index].status = item.status == 0 ? 1 : 0;
       setAllDataArray(array);
       setRefresh(!refresh);
-      let urlData = `doctor-status/${item.id}/status`;
+      let urlData = `patient-status/${item.id}/status`;
       const response = await onAddAccountListApi(urlData);
       console.log('Get Response Edit DataLL', response.data);
       if (response.data.flag == 1) {

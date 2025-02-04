@@ -13,7 +13,7 @@ import {
   TouchableWithoutFeedback,
   ActivityIndicator,
 } from 'react-native';
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -87,6 +87,12 @@ const BedAssignList = ({
   const [errorMessage, setErrorMessage] = useState('');
   const [userId, setUserId] = useState('');
   const [deleteUser, setDeleteUser] = useState(false);
+  const [allDataArray, setAllDataArray] = useState([]);
+  const [refresh, setRefresh] = useState(false);
+
+  useEffect(() => {
+    setAllDataArray(allData);
+  }, [allData]);
 
   const onAddBedAssign = async () => {
     try {
@@ -243,6 +249,22 @@ const BedAssignList = ({
     }
   };
 
+  const onStatusChange = async (item, index) => {
+    try {
+      let array = allDataArray;
+      array[index].status = item.status == 'Deactive' ? 'Active' : 'Deactive';
+      setAllDataArray(array);
+      setRefresh(!refresh);
+      let urlData = `bed-assign-active-deactive/${item.id}`;
+      const response = await onAddAccountListApi(urlData);
+      console.log('Get Response Edit DataLL', response.data);
+      if (response.data.flag == 1) {
+      }
+    } catch (err) {
+      console.log('Error>', err);
+    }
+  };
+
   const renderItem = ({item, index}) => {
     return (
       <View
@@ -312,7 +334,7 @@ const BedAssignList = ({
               }}
               thumbColor={item.status == 'Active' ? '#f4f3f4' : '#f4f3f4'}
               ios_backgroundColor={COLORS.errorColor}
-              onValueChange={() => {}}
+              onValueChange={() => onStatusChange(item, index)}
               value={item.status == 'Active'}
             />
           </View>
@@ -617,11 +639,11 @@ const BedAssignList = ({
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList
-                    data={allData}
+                    data={allDataArray}
                     renderItem={renderItem}
                     bounces={false}
                     showsHorizontalScrollIndicator={false}
-                    initialNumToRender={allData.length}
+                    initialNumToRender={allDataArray.length}
                     nestedScrollEnabled
                     virtualized
                     ListEmptyComponent={() => (

@@ -13,7 +13,7 @@ import {
   TouchableWithoutFeedback,
   ActivityIndicator,
 } from 'react-native';
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   widthPercentageToDP as wp,
   heightPercentageToDP as hp,
@@ -81,6 +81,12 @@ const AccountList = ({
   const [deleteUser, setDeleteUser] = useState(false);
   const [filterVisible, setFilterVisible] = useState(false);
   const [typeVisible, setTypeVisible] = useState(false);
+  const [allDataArray, setAllDataArray] = useState([]);
+  const [refresh, setRefresh] = useState(false);
+
+  useEffect(() => {
+    setAllDataArray(allData);
+  }, [allData]);
 
   const onDeleteRecord = async () => {
     try {
@@ -139,6 +145,22 @@ const AccountList = ({
     }
   };
 
+  const onStatusChange = async (item, index) => {
+    try {
+      let array = allDataArray;
+      array[index].status = item.status == 'Deactive' ? 'Active' : 'Deactive';
+      setAllDataArray(array);
+      setRefresh(!refresh);
+      let urlData = `account-status/${item.id}/activeDeactive`;
+      const response = await onAddAccountListApi(urlData);
+      console.log('Get Response Edit DataLL', response.data);
+      if (response.data.flag == 1) {
+      }
+    } catch (err) {
+      console.log('Error>', err);
+    }
+  };
+
   const renderItem = ({item, index}) => {
     return (
       <View
@@ -147,11 +169,35 @@ const AccountList = ({
           {backgroundColor: index % 2 == 0 ? '#eeeeee' : COLORS.white},
         ]}>
         <View
-          style={[styles.nameDataView, {width: isPortrait ? accountAction.includes('edit') || accountAction.includes('delete') ? wp(35) : wp(60) : accountAction.includes('edit') || accountAction.includes('delete') ? wp(40) : wp(60)}]}>
+          style={[
+            styles.nameDataView,
+            {
+              width: isPortrait
+                ? accountAction.includes('edit') ||
+                  accountAction.includes('delete')
+                  ? wp(35)
+                  : wp(60)
+                : accountAction.includes('edit') ||
+                  accountAction.includes('delete')
+                ? wp(40)
+                : wp(60),
+            },
+          ]}>
           <Text style={[styles.dataHistoryText2]}>{item.name}</Text>
         </View>
         <View
-          style={[styles.switchView, {width: isPortrait ? accountAction.includes('status') ? wp(22) : wp(30) : accountAction.includes('status') ? wp(35.1) : wp(70.1)}]}>
+          style={[
+            styles.switchView,
+            {
+              width: isPortrait
+                ? accountAction.includes('status')
+                  ? wp(22)
+                  : wp(30)
+                : accountAction.includes('status')
+                ? wp(35.1)
+                : wp(70.1),
+            },
+          ]}>
           <View style={[styles.dateBox1, {backgroundColor: theme.lightColor}]}>
             <Text style={[styles.dataHistoryText]}>{item.type}</Text>
           </View>
@@ -172,7 +218,7 @@ const AccountList = ({
               }}
               thumbColor={item.status ? '#f4f3f4' : '#f4f3f4'}
               ios_backgroundColor={COLORS.errorColor}
-              onValueChange={() => {}}
+              onValueChange={() => onStatusChange(item, index)}
               value={item.status == 'Active' ? true : false}
             />
           </View>
@@ -393,14 +439,32 @@ const AccountList = ({
                   <Text
                     style={[
                       styles.titleText,
-                      {width: isPortrait ? accountAction.includes('edit') || accountAction.includes('delete') ? wp(35) : wp(60) : accountAction.includes('edit') || accountAction.includes('delete') ? wp(40) : wp(60)},
+                      {
+                        width: isPortrait
+                          ? accountAction.includes('edit') ||
+                            accountAction.includes('delete')
+                            ? wp(35)
+                            : wp(60)
+                          : accountAction.includes('edit') ||
+                            accountAction.includes('delete')
+                          ? wp(40)
+                          : wp(60),
+                      },
                     ]}>
                     {'ACCOUNTS'}
                   </Text>
                   <Text
                     style={[
                       styles.titleText,
-                      {width: isPortrait ? accountAction.includes('status') ? wp(22) : wp(30) : accountAction.includes('status') ? wp(35.1) : wp(70.1)},
+                      {
+                        width: isPortrait
+                          ? accountAction.includes('status')
+                            ? wp(22)
+                            : wp(30)
+                          : accountAction.includes('status')
+                          ? wp(35.1)
+                          : wp(70.1),
+                      },
                     ]}>
                     {'TYPE'}
                   </Text>
@@ -426,11 +490,11 @@ const AccountList = ({
                 </View>
                 <View style={styles.mainDataView}>
                   <FlatList
-                    data={allData}
+                    data={allDataArray}
                     renderItem={renderItem}
                     bounces={false}
                     showsHorizontalScrollIndicator={false}
-                    initialNumToRender={allData.length}
+                    initialNumToRender={allDataArray.length}
                     nestedScrollEnabled
                     virtualized
                     ListEmptyComponent={() => (
