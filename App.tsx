@@ -61,6 +61,7 @@ import ProfileScreen from './src/screens/ProfileScreen';
 import ChangePasswordScreen from './src/screens/ChangePasswordScreen';
 import useOrientation from './src/components/OrientationComponent';
 import {useSelector} from 'react-redux';
+import NotificationScreen from './src/screens/NotificationScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -403,6 +404,11 @@ function SettingStack() {
       <Stack.Screen
         name="ChangePasswordScreen"
         component={ChangePasswordScreen}
+        options={{headerShown: false}}
+      />
+      <Stack.Screen
+        name="NotificationScreen"
+        component={NotificationScreen}
         options={{headerShown: false}}
       />
     </Stack.Navigator>

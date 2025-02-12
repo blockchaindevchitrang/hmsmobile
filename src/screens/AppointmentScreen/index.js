@@ -131,6 +131,7 @@ const appointmentData = [
     status: 'Cancel',
   },
 ];
+let arrayData = ['Logo', 'Appointments', 'Appointments Transaction'];
 
 export const AppointmentScreen = ({navigation}) => {
   const rolePermission = useSelector(state => state.rolePermission);
@@ -160,22 +161,16 @@ export const AppointmentScreen = ({navigation}) => {
   const [statusId, setStatusId] = useState(1);
   const [appointmentAction, setAppointmentAction] = useState('');
 
-  let arrayData = ['Logo', 'Appointments', 'Appointments Transaction'];
-
   useEffect(() => {
     let dataArray = [];
     let appointmentVisible = false;
     let transactionVisible = false;
-    rolePermission.map(item => {
-      if (item.main_module == 'Appointments') {
-        item.privileges.map(item1 => {
-          if (item1.end_point == 'appointments') {
-            dataArray = item1.action.split(',').map(action => action.trim());
-            appointmentVisible = true;
-          } else if (item1.end_point == 'appointment_transaction') {
-            transactionVisible = true;
-          }
-        });
+    rolePermission?.permission?.map(item => {
+      if (item.end_point == 'appointments') {
+        dataArray = item.actions;
+        appointmentVisible = true;
+      } else if (item.end_point == 'appointment_transaction') {
+        transactionVisible = true;
       }
     });
     if (!appointmentVisible) {

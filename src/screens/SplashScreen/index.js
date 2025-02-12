@@ -194,10 +194,12 @@ export const SplashScreen = ({navigation}) => {
           }
         } else {
           alert('Role permission not access to any module.');
+          AsyncStorage.setItem('accessToken', '');
           navigation.replace('LoginScreen');
         }
       } else {
         alert('Role permission not access to any module.');
+        AsyncStorage.setItem('accessToken', '');
         navigation.replace('LoginScreen');
       }
     } else {

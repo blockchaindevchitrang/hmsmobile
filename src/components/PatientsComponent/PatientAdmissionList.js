@@ -598,7 +598,7 @@ const PatientAdmissionList = ({
                     onPress={() => {
                       setFilterVisible(false);
                     }}>
-                    <View style={styles.modalOverlay} />
+                    <View style={styles.modalOverlay1} />
                   </TouchableWithoutFeedback>
                   <View style={styles.filterFirstView}>
                     <Text style={styles.filterTitle}>Filter Options</Text>
@@ -1963,6 +1963,13 @@ const portraitStyles = StyleSheet.create({
     left: 0,
     right: 0,
   },
+  modalOverlay1: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+  },
   filterModal: {
     flex: 1,
     alignItems: 'flex-end',
@@ -1973,6 +1980,13 @@ const portraitStyles = StyleSheet.create({
     borderRadius: 5,
     marginTop: hp(17),
     marginRight: wp(2),
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.22,
+    shadowRadius: 2.22,
+    elevation: 3,
   },
   filterTitle: {
     fontSize: hp(2.2),
@@ -2542,6 +2556,13 @@ const landscapeStyles = StyleSheet.create({
     borderRadius: 5,
     marginTop: hp(13),
     marginRight: wp(2),
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.22,
+    shadowRadius: 2.22,
+    elevation: 3,
   },
   filterTitle: {
     fontSize: hp(2.2),

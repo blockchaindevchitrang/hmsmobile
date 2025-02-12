@@ -1441,13 +1441,6 @@ const portraitStyles = StyleSheet.create({
     flex: 1,
     alignItems: 'flex-end',
   },
-  filterFirstView: {
-    width: '60%',
-    backgroundColor: 'white',
-    borderRadius: 5,
-    marginTop: hp(17),
-    marginRight: wp(2),
-  },
   filterTitle: {
     fontSize: hp(2.2),
     fontFamily: Fonts.FONTS.PoppinsBold,
@@ -2004,13 +1997,6 @@ const landscapeStyles = StyleSheet.create({
   filterModal: {
     flex: 1,
     alignItems: 'flex-end',
-  },
-  filterFirstView: {
-    width: '60%',
-    backgroundColor: 'white',
-    borderRadius: 5,
-    marginTop: hp(17),
-    marginRight: wp(2),
   },
   filterTitle: {
     fontSize: hp(2.2),

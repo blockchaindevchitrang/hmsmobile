@@ -2013,6 +2013,13 @@ const portraitStyles = StyleSheet.create({
     borderRadius: 5,
     marginTop: hp(17),
     marginRight: wp(2),
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.22,
+    shadowRadius: 2.22,
+    elevation: 3,
   },
   filterTitle: {
     fontSize: hp(2.2),

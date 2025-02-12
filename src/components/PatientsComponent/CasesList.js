@@ -1438,6 +1438,13 @@ const portraitStyles = StyleSheet.create({
     borderRadius: 5,
     marginTop: hp(17),
     marginRight: wp(2),
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.22,
+    shadowRadius: 2.22,
+    elevation: 3,
   },
   filterTitle: {
     fontSize: hp(2.2),
@@ -1861,7 +1868,6 @@ const landscapeStyles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'rgba(0,0,0,0.3)',
   },
   maneModalView: {
     justifyContent: 'center',
@@ -2007,6 +2013,13 @@ const landscapeStyles = StyleSheet.create({
     borderRadius: 5,
     marginTop: hp(13),
     marginRight: wp(2),
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.22,
+    shadowRadius: 2.22,
+    elevation: 3,
   },
   filterTitle: {
     fontSize: hp(2.2),

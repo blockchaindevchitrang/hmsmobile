@@ -307,7 +307,14 @@ const PayrollList = ({
         <Text
           style={[
             styles.dataHistoryText,
-            {width: isPortrait ? wp(16) : payrollAction.includes('edit') || payrollAction.includes('delete') ? wp(10) : wp(16)},
+            {
+              width: isPortrait
+                ? wp(16)
+                : payrollAction.includes('edit') ||
+                  payrollAction.includes('delete')
+                ? wp(10)
+                : wp(16),
+            },
           ]}>
           {item.year}
         </Text>
@@ -661,7 +668,14 @@ const PayrollList = ({
                   <Text
                     style={[
                       styles.titleText,
-                      {width: isPortrait ? wp(16) : payrollAction.includes('edit') || payrollAction.includes('delete') ? wp(10) : wp(16)},
+                      {
+                        width: isPortrait
+                          ? wp(16)
+                          : payrollAction.includes('edit') ||
+                            payrollAction.includes('delete')
+                          ? wp(10)
+                          : wp(16),
+                      },
                     ]}>
                     {'YEAR'}
                   </Text>
@@ -1777,6 +1791,13 @@ const portraitStyles = StyleSheet.create({
     borderRadius: 5,
     marginTop: hp(25),
     marginRight: wp(2),
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.22,
+    shadowRadius: 2.22,
+    elevation: 3,
   },
   filterTitle: {
     fontSize: hp(2.2),

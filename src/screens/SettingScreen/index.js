@@ -17,7 +17,7 @@ import {
 } from '../../components/Pixel';
 import {COLORS, Fonts} from '../../utils';
 import SelectDropdown from 'react-native-select-dropdown';
-import styles from './styles';
+import {landscapeStyles, portraitStyles} from './styles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {LogoutPopup} from '../../components/LogoutPopup';
 import useOrientation from '../../components/OrientationComponent';
@@ -45,6 +45,7 @@ export const SettingScreen = ({navigation}) => {
   console.log('Get Role Array Value', rolePermission.modules);
   const orientation = useOrientation(); // Get current orientation
   const isPortrait = orientation === 'portrait';
+  const styles = isPortrait ? portraitStyles : landscapeStyles;
   const scrollY = useRef(new Animated.Value(0)).current;
   const {t, i18n} = useTranslation();
   // const {theme, toggleTheme, colorTheme} = useTheme();

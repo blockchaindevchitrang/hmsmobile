@@ -8,7 +8,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import {useTheme} from '../../utils/ThemeProvider';
-import styles from './styles';
+import {landscapeStyles, portraitStyles} from './styles';
 import Header from '../../components/Header';
 import {COLORS} from '../../utils';
 import {useTranslation} from 'react-i18next';
@@ -18,10 +18,14 @@ import {
 } from '../../components/Pixel';
 import {onGetEditAccountDataApi} from '../../services/Api';
 import {showMessage} from 'react-native-flash-message';
+import useOrientation from '../../components/OrientationComponent';
 
 export const ChangePasswordScreen = ({navigation}) => {
   const {t} = useTranslation();
   const {theme} = useTheme();
+  const orientation = useOrientation(); // Get current orientation
+  const isPortrait = orientation === 'portrait';
+  const styles = isPortrait ? portraitStyles : landscapeStyles;
   const [currentPass, setCurrentPass] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPass, setConfirmPass] = useState('');
@@ -58,6 +62,9 @@ export const ChangePasswordScreen = ({navigation}) => {
             duration: 3000,
           });
           setLoading(false);
+          setCurrentPass('');
+          setPassword('');
+          setConfirmPass('');
         } else {
           setLoading(false);
           showMessage({

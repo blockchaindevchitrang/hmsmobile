@@ -237,11 +237,28 @@ export const ProfileScreen = ({navigation}) => {
 
         if (response.data.flag == 1) {
           showMessage({
-            message: 'Profile Edited Successfully',
+            message: 'Profile Updated Successfully',
             type: 'success',
             duration: 3000,
           });
           setLoading(false);
+          setFirstName('');
+          setLastName('');
+          setCity('');
+          setEmail('');
+          setUserId('');
+          setDesignation('');
+          setDoctorContact('');
+          setCountryCode('');
+          setGenderType('female');
+          setQualification('');
+          setDoctorBlood('');
+          setAddress('');
+          setAddress2('');
+          setPostalCode('');
+          setCountry('');
+          setDateOfBirth(null);
+          setAvatar(null);
         } else {
           setLoading(false);
           showMessage({

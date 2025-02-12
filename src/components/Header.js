@@ -56,7 +56,7 @@ const Header = ({
           {!notify && (
             <TouchableOpacity
               style={styles.bellButtonView}
-              onPress={notificationPress}>
+              onPress={() => navigation.navigate('NotificationScreen')}>
               <Image
                 style={[
                   styles.bellIcon,

@@ -1751,13 +1751,6 @@ const landscapeStyles = StyleSheet.create({
     flex: 1,
     alignItems: 'flex-end',
   },
-  filterFirstView: {
-    width: '40%',
-    backgroundColor: 'white',
-    borderRadius: 5,
-    marginTop: hp(13),
-    marginRight: wp(2),
-  },
   filterTitle: {
     fontSize: hp(2.2),
     fontFamily: Fonts.FONTS.PoppinsBold,
