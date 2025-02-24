@@ -406,11 +406,6 @@ function SettingStack() {
         component={ChangePasswordScreen}
         options={{headerShown: false}}
       />
-      <Stack.Screen
-        name="NotificationScreen"
-        component={NotificationScreen}
-        options={{headerShown: false}}
-      />
     </Stack.Navigator>
   );
 }
@@ -447,6 +442,11 @@ const App = () => {
                   <Stack.Screen
                     name="ForgotPassword"
                     component={ForgotPassword}
+                    options={{headerShown: false}}
+                  />
+                  <Stack.Screen
+                    name="NotificationScreen"
+                    component={NotificationScreen}
                     options={{headerShown: false}}
                   />
                   {/* <Stack.Screen

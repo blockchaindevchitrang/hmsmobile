@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   FlatList,
   ScrollView,
@@ -17,8 +17,10 @@ import {
   widthPercentageToDP as wp,
 } from '../../components/Pixel';
 import useOrientation from '../../components/OrientationComponent';
-import { onGetCommonApi } from '../../services/Api';
+import {onGetCommonApi} from '../../services/Api';
 import moment from 'moment';
+import {COLORS} from '../../utils';
+import SubHeader from '../../components/SubHeader';
 
 export const NotificationScreen = ({navigation}) => {
   const {t} = useTranslation();
@@ -57,13 +59,44 @@ export const NotificationScreen = ({navigation}) => {
     }
   };
 
+  const onReadAllFunction = async () => {
+    try {
+      const response = await onGetCommonApi('read-all-notification');
+      if (response.data.success) {
+        onGetCallLogData();
+      }
+    } catch (err) {
+      console.log('Error:>', err);
+    }
+  };
+
   const renderItem = ({item, index}) => {
     return (
-      <View style={styles.dataHistoryView}>
-        <Text style={styles.notificationTitleText}>{item.title}</Text>
-        <Text style={styles.timeText}>
-          {moment(item.created_at).format('DD-MM-YYYY')}
-        </Text>
+      <View
+        style={[
+          styles.dataHistoryView,
+          {
+            backgroundColor:
+              item.read_at != null
+                ? COLORS.lightColor
+                : COLORS.headerGreenColor,
+          },
+        ]}>
+        <View style={{width: '70%'}}>
+          <Text style={styles.notificationTitleText}>{item.title}</Text>
+          {item.text != null && (
+            <Text style={styles.timeText}>{item.text}</Text>
+          )}
+        </View>
+        <View>
+          <Text style={styles.timeText}>
+            {isPortrait
+              ? `${moment(item.created_at).format('DD-MM-YYYY')}\n${moment(
+                  item.created_at,
+                ).format('hh:mm:ss')}`
+              : moment(item.created_at).format('DD-MM-YYYY hh:mm:ss')}
+          </Text>
+        </View>
       </View>
     );
   };
@@ -71,16 +104,29 @@ export const NotificationScreen = ({navigation}) => {
   return (
     <View style={[styles.container, {backgroundColor: theme.lightColor}]}>
       <View style={styles.headerView}>
-        <Header
+        {/* <Header
           title={t('notification')}
           navigation={navigation}
           onPress={() => navigation.openDrawer()}
           notify={true}
           moreIcon={true}
+        /> */}
+        <SubHeader
+          title={t('notification')}
+          onPress={() => navigation.goBack()}
+          rightValue={true}
+          readPress={() => onReadAllFunction()}
         />
       </View>
       <View style={[styles.mainView, {backgroundColor: theme.background}]}>
         <View style={styles.mainHeaderView}>
+          {/* {notificationData.length > 0 && (
+            <TouchableOpacity
+              onPress={() => onReadAllFunction()}
+              style={styles.readAllView}>
+              <Text style={styles.readAllText}>Read All</Text>
+            </TouchableOpacity>
+          )} */}
           <FlatList
             data={notificationData}
             renderItem={renderItem}

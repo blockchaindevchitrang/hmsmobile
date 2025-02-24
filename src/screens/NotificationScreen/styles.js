@@ -40,10 +40,15 @@ export const portraitStyles = StyleSheet.create({
   },
   dataHistoryView: {
     width: '100%',
-    paddingVertical: hp(1),
+    paddingVertical: hp(2),
     alignItems: 'center',
     flexDirection: 'row',
     alignSelf: 'flex-start',
+    justifyContent: 'space-between',
+    backgroundColor: COLORS.lightColor,
+    paddingHorizontal: wp(2),
+    marginTop: hp(1.5),
+    borderRadius: 5,
   },
   notificationTitleText: {
     fontSize: hp(2),
@@ -53,7 +58,22 @@ export const portraitStyles = StyleSheet.create({
   timeText: {
     fontSize: hp(1.8),
     fontFamily: Fonts.FONTS.PoppinsMedium,
-    color: COLORS.greyColor,
+    color: COLORS.textColor,
+  },
+  readAllView: {
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+    paddingHorizontal: wp(4),
+    paddingVertical: hp(1),
+    marginVertical: hp(1),
+    alignSelf: 'flex-end',
+    backgroundColor: COLORS.blueColor,
+    borderRadius: 3,
+  },
+  readAllText: {
+    fontSize: hp(2),
+    fontFamily: Fonts.FONTS.PoppinsSemiBold,
+    color: COLORS.white,
   },
 });
 
@@ -96,6 +116,11 @@ export const landscapeStyles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     alignSelf: 'flex-start',
+    justifyContent: 'space-between',
+    backgroundColor: COLORS.lightColor,
+    paddingHorizontal: wp(2),
+    marginTop: hp(1.5),
+    borderRadius: 8,
   },
   notificationTitleText: {
     fontSize: hp(2),
@@ -105,6 +130,21 @@ export const landscapeStyles = StyleSheet.create({
   timeText: {
     fontSize: hp(1.8),
     fontFamily: Fonts.FONTS.PoppinsMedium,
-    color: COLORS.greyColor,
+    color: COLORS.textColor,
+  },
+  readAllView: {
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+    paddingHorizontal: wp(2),
+    paddingVertical: hp(0.5),
+    marginVertical: hp(1),
+    alignSelf: 'flex-end',
+    backgroundColor: COLORS.blueColor,
+    borderRadius: 5,
+  },
+  readAllText: {
+    fontSize: hp(2),
+    fontFamily: Fonts.FONTS.PoppinsSemiBold,
+    color: COLORS.white,
   },
 });
