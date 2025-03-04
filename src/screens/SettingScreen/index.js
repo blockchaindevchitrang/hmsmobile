@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   View,
   Animated,
+  SafeAreaView,
 } from 'react-native';
 import {useTheme} from '../../utils/ThemeProvider';
 import Header from '../../components/Header';
@@ -23,6 +24,7 @@ import {LogoutPopup} from '../../components/LogoutPopup';
 import useOrientation from '../../components/OrientationComponent';
 import {useSelector, useDispatch} from 'react-redux';
 import {fetchRolePermission} from '../../redux/reducer';
+import {hasNotch} from 'react-native-device-info';
 
 const rangeArray = [
   '#5eead4',
@@ -218,6 +220,13 @@ export const SettingScreen = ({navigation}) => {
 
   return (
     <View style={{flex: 1, backgroundColor: theme.background}}>
+      <View
+        style={{
+          width: '100%',
+          height: hasNotch() ? hp(5) : 0,
+          backgroundColor: theme.headerColor,
+        }}
+      />
       <View style={styles.headerView}>
         <Header
           title={t('setting')}
@@ -236,7 +245,7 @@ export const SettingScreen = ({navigation}) => {
         <ScrollView
           contentContainerStyle={{paddingBottom: hp(12)}}
           showsVerticalScrollIndicator={false}>
-          <View
+          {/* <View
             style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
             <Text style={[styles.text, {color: theme.text}]}>
               {colorTheme === 'dark' ? 'Dark Mode' : 'Light Mode'}
@@ -248,7 +257,7 @@ export const SettingScreen = ({navigation}) => {
               onValueChange={toggleTheme}
               value={colorTheme === 'dark'}
             />
-          </View>
+          </View> */}
 
           <View
             style={[styles.menuOption, {backgroundColor: theme.headerColor}]}>
@@ -500,7 +509,7 @@ export const SettingScreen = ({navigation}) => {
               );
             }
           })}
-          {rolePermission.modules.map((item, index) => {
+          {/* {rolePermission.modules.map((item, index) => {
             if (item == 'Live Consultations') {
               return (
                 <TouchableOpacity
@@ -515,7 +524,7 @@ export const SettingScreen = ({navigation}) => {
                 </TouchableOpacity>
               );
             }
-          })}
+          })} */}
           {rolePermission.modules.map((item, index) => {
             if (item == 'Medicines') {
               return (
@@ -646,7 +655,7 @@ export const SettingScreen = ({navigation}) => {
               );
             }
           })}
-          {rolePermission.modules.map((item, index) => {
+          {/* {rolePermission.modules.map((item, index) => {
             if (item == 'SMS/Mail') {
               return (
                 <TouchableOpacity
@@ -661,7 +670,7 @@ export const SettingScreen = ({navigation}) => {
                 </TouchableOpacity>
               );
             }
-          })}
+          })} */}
           {rolePermission.modules.map((item, index) => {
             if (item == 'Services') {
               return (

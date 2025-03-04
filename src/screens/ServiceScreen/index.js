@@ -30,6 +30,7 @@ import Ambulances from '../../components/ServiceComponent/Ambulances';
 import useOrientation from '../../components/OrientationComponent';
 import AmbulanceCall from '../../components/ServiceComponent/AmbulanceCall';
 import {useSelector} from 'react-redux';
+import { hasNotch } from 'react-native-device-info';
 
 let arrayData = [
   'Logo',
@@ -312,6 +313,13 @@ export const ServiceScreen = ({navigation}) => {
 
   return (
     <View style={[styles.container, {backgroundColor: theme.lightColor}]}>
+      <View
+        style={{
+          width: '100%',
+          height: hasNotch() ? hp(5) : 0,
+          backgroundColor: theme.headerColor,
+        }}
+      />
       <View style={styles.headerView}>
         <Header
           title={t('service')}

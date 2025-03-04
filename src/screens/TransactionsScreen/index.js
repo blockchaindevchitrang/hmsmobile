@@ -27,6 +27,7 @@ import {onGetCommonApi} from '../../services/Api';
 import filter from '../../images/filter.png';
 import useOrientation from '../../components/OrientationComponent';
 import {useSelector} from 'react-redux';
+import { hasNotch } from 'react-native-device-info';
 
 export const TransactionsScreen = ({navigation}) => {
   const rolePermission = useSelector(state => state.rolePermission);
@@ -156,6 +157,13 @@ export const TransactionsScreen = ({navigation}) => {
 
   return (
     <View style={[styles.container, {backgroundColor: theme.lightColor}]}>
+      <View
+        style={{
+          width: '100%',
+          height: hasNotch() ? hp(5) : 0,
+          backgroundColor: theme.headerColor,
+        }}
+      />
       <View style={styles.headerView}>
         <Header
           title={t('transactions')}

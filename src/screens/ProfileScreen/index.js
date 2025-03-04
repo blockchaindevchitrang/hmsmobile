@@ -39,6 +39,7 @@ import CountryPicker from 'react-native-country-picker-modal';
 import SelectDropdown from 'react-native-select-dropdown';
 import {useSelector} from 'react-redux';
 import useOrientation from '../../components/OrientationComponent';
+import { hasNotch } from 'react-native-device-info';
 
 export const ProfileScreen = ({navigation}) => {
   const orientation = useOrientation(); // Get current orientation
@@ -292,6 +293,13 @@ export const ProfileScreen = ({navigation}) => {
 
   return (
     <View style={[styles.safeAreaStyle, {backgroundColor: theme.lightColor}]}>
+      <View
+        style={{
+          width: '100%',
+          height: hasNotch() ? hp(5) : 0,
+          backgroundColor: theme.headerColor,
+        }}
+      />
       <View style={styles.headerView}>
         <Header
           title={t('update_profile')}

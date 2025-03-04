@@ -31,6 +31,7 @@ import moment from 'moment';
 import ProfilePhoto from '../../components/ProfilePhoto';
 import {useSelector} from 'react-redux';
 import useOrientation from '../../components/OrientationComponent';
+import {hasNotch} from 'react-native-device-info';
 
 export const DashboardScreen = ({navigation}) => {
   const dashboardData = useSelector(state => state.dashboardData);
@@ -48,19 +49,19 @@ export const DashboardScreen = ({navigation}) => {
     onUpcomingData();
   }, []);
 
-  const onGetDashboardData = async () => {
-    try {
-      const response = await onDashboardGetApi();
-      console.log('Get onGetDashboardData>>', response);
-      if (response.status === 200) {
-        console.log('Get onGetDashboardData>>', response.data.data);
-        setDashboardData(response.data.data);
-        setRefresh(!refresh);
-      }
-    } catch (err) {
-      console.log('Error:', err.response.data);
-    }
-  };
+  // const onGetDashboardData = async () => {
+  //   try {
+  //     const response = await onDashboardGetApi();
+  //     console.log('Get onGetDashboardData>>', response);
+  //     if (response.status === 200) {
+  //       console.log('Get onGetDashboardData>>', response.data.data);
+  //       setDashboardData(response.data.data);
+  //       setRefresh(!refresh);
+  //     }
+  //   } catch (err) {
+  //     console.log('Error:', err.response.data);
+  //   }
+  // };
 
   const onUpcomingData = async () => {
     try {
@@ -92,6 +93,13 @@ export const DashboardScreen = ({navigation}) => {
 
   return (
     <View style={[styles.container, {backgroundColor: theme.lightColor}]}>
+      <View
+        style={{
+          width: '100%',
+          height: hasNotch() ? hp(5) : 0,
+          backgroundColor: theme.headerColor,
+        }}
+      />
       <View style={styles.headerView}>
         <Header
           title={t('dashboard')}
@@ -346,7 +354,10 @@ export const DashboardScreen = ({navigation}) => {
                       return (
                         <View style={[styles.dataView1]}>
                           <View style={styles.nameDataView}>
-                            <ProfilePhoto style={styles.photoStyle} username={item.patient_name} />
+                            <ProfilePhoto
+                              style={styles.photoStyle}
+                              username={item.patient_name}
+                            />
                             <View>
                               <Text style={[styles.dataHistoryText2]}>
                                 {item.patient_name}
@@ -359,7 +370,10 @@ export const DashboardScreen = ({navigation}) => {
                             </View>
                           </View>
                           <View style={styles.nameDataView}>
-                            <ProfilePhoto style={styles.photoStyle} username={item.doctor_name} />
+                            <ProfilePhoto
+                              style={styles.photoStyle}
+                              username={item.doctor_name}
+                            />
                             <View>
                               <Text style={[styles.dataHistoryText2]}>
                                 {item.doctor_name}
@@ -426,7 +440,10 @@ export const DashboardScreen = ({navigation}) => {
                       return (
                         <View style={[styles.dataView1]}>
                           <View style={styles.nameDataView}>
-                            <ProfilePhoto style={styles.photoStyle} username={item.patient_name} />
+                            <ProfilePhoto
+                              style={styles.photoStyle}
+                              username={item.patient_name}
+                            />
                             <View>
                               <Text style={[styles.dataHistoryText2]}>
                                 {item.patient_name}
@@ -437,7 +454,10 @@ export const DashboardScreen = ({navigation}) => {
                             </View>
                           </View>
                           <View style={styles.nameDataView}>
-                            <ProfilePhoto style={styles.photoStyle} username={item.doctor_name} />
+                            <ProfilePhoto
+                              style={styles.photoStyle}
+                              username={item.doctor_name}
+                            />
                             <View>
                               <Text style={[styles.dataHistoryText2]}>
                                 {item.doctor_name}

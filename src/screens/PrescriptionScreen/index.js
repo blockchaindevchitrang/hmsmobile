@@ -49,6 +49,7 @@ import ProfilePhoto from '../../components/ProfilePhoto';
 import moment from 'moment';
 import {useSelector} from 'react-redux';
 import useOrientation from '../../components/OrientationComponent';
+import { hasNotch } from 'react-native-device-info';
 
 const durationArray = [
   {id: 1, name: 'One day only'},
@@ -667,6 +668,13 @@ export const PrescriptionScreen = ({navigation}) => {
 
   return (
     <View style={[styles.container, {backgroundColor: theme.lightColor}]}>
+      <View
+        style={{
+          width: '100%',
+          height: hasNotch() ? hp(5) : 0,
+          backgroundColor: theme.headerColor,
+        }}
+      />
       <View style={styles.headerView}>
         <Header
           title={t('prescription')}

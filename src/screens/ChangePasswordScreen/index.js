@@ -19,6 +19,7 @@ import {
 import {onGetEditAccountDataApi} from '../../services/Api';
 import {showMessage} from 'react-native-flash-message';
 import useOrientation from '../../components/OrientationComponent';
+import { hasNotch } from 'react-native-device-info';
 
 export const ChangePasswordScreen = ({navigation}) => {
   const {t} = useTranslation();
@@ -98,6 +99,13 @@ export const ChangePasswordScreen = ({navigation}) => {
 
   return (
     <View style={[styles.safeAreaStyle, {backgroundColor: theme.lightColor}]}>
+      <View
+        style={{
+          width: '100%',
+          height: hasNotch() ? hp(5) : 0,
+          backgroundColor: theme.headerColor,
+        }}
+      />
       <View style={styles.headerView}>
         <Header
           title={t('update_password')}
