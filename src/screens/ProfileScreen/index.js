@@ -39,7 +39,7 @@ import CountryPicker from 'react-native-country-picker-modal';
 import SelectDropdown from 'react-native-select-dropdown';
 import {useSelector} from 'react-redux';
 import useOrientation from '../../components/OrientationComponent';
-import { hasNotch } from 'react-native-device-info';
+import {hasNotch} from 'react-native-device-info';
 
 export const ProfileScreen = ({navigation}) => {
   const orientation = useOrientation(); // Get current orientation
